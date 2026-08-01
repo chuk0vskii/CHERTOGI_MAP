@@ -76,14 +76,15 @@ h1 {
   line-height: 0;
 }
 
-.row-1 { margin-left: 0; }
-.row-2 { margin-left: 0; }
-.row-3 { margin-left: 0; }
-.row-4 { margin-left: 0; }
-.row-5 { margin-left: 0; }
-.row-6 { margin-left: 0; }
-.row-7 { margin-left: 0; }
-.row-8 { margin-left: 0; }
+/* ===== СМЕЩЕНИЯ РЯДОВ ===== */
+.row-1 { margin-left: 0; }        /* Первый ряд — без смещения */
+.row-2 { margin-left: -50px; }
+.row-3 { margin-left: -50px; }
+.row-4 { margin-left: -50px; }
+.row-5 { margin-left: -50px; }
+.row-6 { margin-left: -50px; }
+.row-7 { margin-left: -50px; }
+.row-8 { margin-left: -50px; }
 
 /* ===== ГЕКСЫ ===== */
 .hex {
@@ -92,7 +93,6 @@ h1 {
   height: 104px;
   flex-shrink: 0;
   
-  /* ЭТОТ clip-path ДЕЛАЕТ ГЕКСЫ, А НЕ КВАДРАТЫ */
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   
@@ -227,6 +227,13 @@ h1 {
   #hex-name {
     font-size: 22px;
   }
+  .row-2 { margin-left: -30px; }
+  .row-3 { margin-left: -30px; }
+  .row-4 { margin-left: -30px; }
+  .row-5 { margin-left: -30px; }
+  .row-6 { margin-left: -30px; }
+  .row-7 { margin-left: -30px; }
+  .row-8 { margin-left: -30px; }
 }
 
 @media (max-width: 480px) {
@@ -237,4 +244,11 @@ h1 {
   .hex .hex-name {
     font-size: 7px;
   }
+  .row-2 { margin-left: -20px; }
+  .row-3 { margin-left: -20px; }
+  .row-4 { margin-left: -20px; }
+  .row-5 { margin-left: -20px; }
+  .row-6 { margin-left: -20px; }
+  .row-7 { margin-left: -20px; }
+  .row-8 { margin-left: -20px; }
 }
