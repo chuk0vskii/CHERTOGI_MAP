@@ -60,23 +60,15 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  hex.style.width = '120px';
-  hex.style.height = '104px';
-
   if (state.unlocked) {
     hex.classList.add('unlocked');
-    hex.style.background = `linear-gradient(135deg, #4a7c59, #2d5a3d)`;
-    hex.style.borderColor = 'rgba(255,215,0,0.6)';
   } else {
     hex.classList.add('locked');
-    hex.style.background = `linear-gradient(135deg, #3d3d3d, #1a1a2e)`;
-    hex.style.borderColor = 'rgba(100,100,100,0.3)';
   }
 
   const nameSpan = document.createElement('span');
   nameSpan.className = 'hex-name';
   nameSpan.textContent = state.name || hexId;
-  nameSpan.style.fontSize = '11px';
   hex.appendChild(nameSpan);
 
   hex.addEventListener('click', () => showInfo(hexId));
@@ -96,12 +88,21 @@ function showInfo(hexId) {
 
 function zoomIn() {
   zoomLevel = Math.min(zoomLevel + 0.1, 2);
-  renderMap();
+  // Здесь можно добавить увеличение размера гексов
+  document.querySelectorAll('.hex').forEach(el => {
+    const size = 120 * zoomLevel;
+    el.style.width = size + 'px';
+    el.style.height = (size * 0.866) + 'px';
+  });
 }
 
 function zoomOut() {
   zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
-  renderMap();
+  document.querySelectorAll('.hex').forEach(el => {
+    const size = 120 * zoomLevel;
+    el.style.width = size + 'px';
+    el.style.height = (size * 0.866) + 'px';
+  });
 }
 
 document.querySelector('.close')?.addEventListener('click', () => {
