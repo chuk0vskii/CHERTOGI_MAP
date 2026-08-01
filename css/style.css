@@ -55,55 +55,30 @@ h1 {
 }
 
 #hex-grid {
-  width: 100%;
-  max-width: 100%;
+  width: 1400px;
+  height: 600px;
   margin-top: 80px;
-  display: flex;
-  justify-content: center;
-  padding: 10px;
-  overflow-x: auto;
+  position: relative;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
 
-.columns-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 0;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-
-/* ===== ЖЁСТКИЕ СМЕЩЕНИЯ ДЛЯ ПЛОТНОЙ УКЛАДКИ ===== */
-.column-1 { margin-left: 0; margin-top: 0; }
-.column-2 { margin-left: -30px; margin-top: -52px; }
-.column-3 { margin-left: -30px; margin-top: -52px; }
-.column-4 { margin-left: 0; margin-top: 0; }
-.column-5 { margin-left: -30px; margin-top: -52px; }
-.column-6 { margin-left: -30px; margin-top: -52px; }
-.column-7 { margin-left: -30px; margin-top: -52px; }
-.column-8 { margin-left: 0; margin-top: 0; }
-
-/* ===== ГЕКСЫ ===== */
 .hex {
+  position: absolute;
   width: 120px;
   height: 104px;
-  flex-shrink: 0;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   background-size: cover;
   background-position: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
   border: 2px solid rgba(255, 255, 255, 0.2);
   margin: 0;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hex:hover {
@@ -205,13 +180,24 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
-@media (max-width: 768px) {
-  .hex {
-    width: 80px;
-    height: 69px;
+@media (max-width: 1400px) {
+  #hex-grid {
+    transform: scale(0.8);
+    transform-origin: top left;
   }
-  .hex .hex-name {
-    font-size: 9px;
+}
+
+@media (max-width: 1024px) {
+  #hex-grid {
+    transform: scale(0.6);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 768px) {
+  #hex-grid {
+    transform: scale(0.4);
+    transform-origin: top left;
   }
   .controls {
     top: 10px;
@@ -231,11 +217,8 @@ h1 {
 }
 
 @media (max-width: 480px) {
-  .hex {
-    width: 60px;
-    height: 52px;
-  }
-  .hex .hex-name {
-    font-size: 7px;
+  #hex-grid {
+    transform: scale(0.25);
+    transform-origin: top left;
   }
 }
