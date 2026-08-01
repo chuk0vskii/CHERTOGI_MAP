@@ -74,7 +74,7 @@ h1 {
   justify-content: center;
   align-items: flex-start;
   gap: 0;
-  transform: scale(0.08);  /* Уменьшаем для отображения на экране */
+  transform: scale(0.08);
   transform-origin: top center;
 }
 
@@ -88,7 +88,7 @@ h1 {
 
 /* ===== СМЕЩЕНИЯ ДЛЯ ПЛОТНОЙ УКЛАДКИ ===== */
 .column-1 { margin-top: 0; }
-.column-2 { margin-top: -461.5px; }   /* -высота/4 */
+.column-2 { margin-top: -461.5px; }
 .column-3 { margin-top: -461.5px; }
 .column-4 { margin-top: 0; }
 .column-5 { margin-top: -461.5px; }
@@ -96,12 +96,12 @@ h1 {
 .column-7 { margin-top: -461.5px; }
 .column-8 { margin-top: 0; }
 
-/* ===== ГЕКСЫ (ВЕРШИНА ВПРАВО) ===== */
+/* ===== ГЕКСЫ (ВЕРШИНА СМОТРИТ ВПРАВО) ===== */
 .hex {
   width: 2133px !important;
   height: 1846px !important;
   
-  /* ===== ВЕРШИНА СМОТРИТ ВПРАВО ===== */
+  /* ===== ПРАВИЛЬНЫЙ clip-path: ВЕРШИНА ВПРАВО ===== */
   clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   -webkit-clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   
@@ -117,7 +117,7 @@ h1 {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin: 0;  /* Убираем отступы для плотной укладки */
+  margin: 0;
 }
 
 .hex:hover {
@@ -144,7 +144,7 @@ h1 {
   padding: 5px;
   line-height: 1.2;
   z-index: 2;
-  font-size: 180px;  /* ~10% от ширины гекса */
+  font-size: 180px;
 }
 
 /* ===== МОДАЛЬНОЕ ОКНО ===== */
@@ -218,7 +218,7 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ===== АДАПТИВНОСТЬ (изменяем масштаб под экран) ===== */
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 1400px) {
   .columns-container {
     transform: scale(0.06);
