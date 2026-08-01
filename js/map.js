@@ -19,7 +19,7 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  const rows = [
+  const columns = [
     ['0.1', '0.2', '0', '0.3', '0.4'],
     ['1', '2', '3', '4'],
     ['5', '6', '7', '8'],
@@ -30,17 +30,19 @@ function renderMap() {
     ['26', '27', '28', '29']
   ];
 
-  rows.forEach((row, rowIndex) => {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = `row row-${rowIndex + 1}`;
-    
-    row.forEach(hexId => {
-      const hexElement = createHexElement(hexId);
-      rowDiv.appendChild(hexElement);
+  const container = document.createElement('div');
+  container.className = 'columns-container';
+
+  columns.forEach((col, index) => {
+    const colDiv = document.createElement('div');
+    colDiv.className = `column column-${index + 1}`;
+    col.forEach(id => {
+      colDiv.appendChild(createHexElement(id));
     });
-    
-    grid.appendChild(rowDiv);
+    container.appendChild(colDiv);
   });
+
+  grid.appendChild(container);
 
   const total = Object.keys(hexData).length;
   const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
@@ -52,7 +54,7 @@ function createHexElement(hexId) {
   const hex = document.createElement('div');
   hex.className = 'hex';
   hex.dataset.id = hexId;
-  
+
   const state = hexData[hexId];
   if (!state) {
     hex.textContent = '?';
@@ -60,16 +62,7 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  // ===== ИНДИВИДУАЛЬНОЕ СМЕЩЕНИЕ ДЛЯ ГЕКСА "1" =====
-  if (hexId === '1') {
-    hex.style.marginLeft = '30px';  // Сдвигаем Деревню Ольховка вправо на 30px
-  }
-
-  if (state.unlocked) {
-    hex.classList.add('unlocked');
-  } else {
-    hex.classList.add('locked');
-  }
+  hex.classList.add(state.unlocked ? 'unlocked' : 'locked');
 
   const nameSpan = document.createElement('span');
   nameSpan.className = 'hex-name';
