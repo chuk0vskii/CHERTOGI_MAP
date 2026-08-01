@@ -65,8 +65,9 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  hex.style.width = '2133px';
-  hex.style.height = '1846px';
+  // ===== УМЕНЬШЕННЫЙ РАЗМЕР ДЛЯ ЭКРАНА =====
+  hex.style.width = '213px';
+  hex.style.height = '184px';
 
   if (state.unlocked) {
     hex.classList.add('unlocked');
@@ -81,7 +82,7 @@ function createHexElement(hexId) {
   const nameSpan = document.createElement('span');
   nameSpan.className = 'hex-name';
   nameSpan.textContent = state.name || hexId;
-  nameSpan.style.fontSize = '180px';
+  nameSpan.style.fontSize = '18px';
   hex.appendChild(nameSpan);
 
   hex.addEventListener('click', () => showInfo(hexId));
@@ -99,12 +100,20 @@ function showInfo(hexId) {
   modal.style.display = 'block';
 }
 
-function zoomIn(){zoomLevel=Math.min(zoomLevel+0.1,2);renderMap();}
-function zoomOut(){zoomLevel=Math.max(zoomLevel-0.1,0.5);renderMap();}
+function zoomIn() {
+  zoomLevel = Math.min(zoomLevel + 0.1, 2);
+  renderMap();
+}
+
+function zoomOut() {
+  zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+  renderMap();
+}
 
 document.querySelector('.close')?.addEventListener('click', () => {
   document.getElementById('info-modal').style.display = 'none';
 });
+
 window.addEventListener('click', (e) => {
   if (e.target === document.getElementById('info-modal')) {
     document.getElementById('info-modal').style.display = 'none';
