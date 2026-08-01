@@ -19,16 +19,10 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  // ===== 8 СТОЛБЦОВ =====
+  // ===== ТОЛЬКО 2 ГЕКСА =====
   const columns = [
-    ['0.1', '0.2', '0', '0.3', '0.4'],  // Столбец 1 (5)
-    ['1', '2', '3', '4'],                // Столбец 2 (4)
-    ['5', '6', '7', '8'],                // Столбец 3 (4)
-    ['9', '10', '11', '12', '13'],       // Столбец 4 (5)
-    ['14', '15', '16', '17'],            // Столбец 5 (4)
-    ['18', '19', '20', '21'],            // Столбец 6 (4)
-    ['22', '23', '24', '25'],            // Столбец 7 (4)
-    ['26', '27', '28', '29']             // Столбец 8 (4)
+    ['0.1'],  // Столбец 1 (1 гекс)
+    ['1']     // Столбец 2 (1 гекс)
   ];
 
   const columnsContainer = document.createElement('div');
@@ -36,13 +30,7 @@ function renderMap() {
 
   columns.forEach((column, colIndex) => {
     const colDiv = document.createElement('div');
-    // colIndex + 2 = номер столбца (2, 3, 4, 5, 6, 7, 8)
-    // Для первого столбца (colIndex === 0) не добавляем класс смещения
-    let className = `column column-${colIndex + 1}`;
-    if (colIndex > 0) {
-      className += ' column-shifted'; // Для всех столбцов кроме первого
-    }
-    colDiv.className = className;
+    colDiv.className = `column column-${colIndex + 1}`;
     
     column.forEach(hexId => {
       const hexElement = createHexElement(hexId);
