@@ -19,16 +19,15 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  // ===== 8 РЯДОВ (ГОРИЗОНТАЛЬНО) =====
   const rows = [
-    ['0.1', '0.2', '0', '0.3', '0.4'],  // Ряд 1 (5 гексов)
-    ['1', '2', '3', '4'],                // Ряд 2 (4 гекса)
-    ['5', '6', '7', '8'],                // Ряд 3 (4 гекса)
-    ['9', '10', '11', '12', '13'],       // Ряд 4 (5 гексов)
-    ['14', '15', '16', '17'],            // Ряд 5 (4 гекса)
-    ['18', '19', '20', '21'],            // Ряд 6 (4 гекса)
-    ['22', '23', '24', '25'],            // Ряд 7 (4 гекса)
-    ['26', '27', '28', '29']             // Ряд 8 (4 гекса)
+    ['0.1', '0.2', '0', '0.3', '0.4'],
+    ['1', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', '11', '12', '13'],
+    ['14', '15', '16', '17'],
+    ['18', '19', '20', '21'],
+    ['22', '23', '24', '25'],
+    ['26', '27', '28', '29']
   ];
 
   rows.forEach((row, rowIndex) => {
@@ -61,9 +60,8 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  // Размер гекса
-  hex.style.width = '213px';
-  hex.style.height = '184px';
+  hex.style.width = '120px';
+  hex.style.height = '104px';
 
   if (state.unlocked) {
     hex.classList.add('unlocked');
@@ -78,7 +76,7 @@ function createHexElement(hexId) {
   const nameSpan = document.createElement('span');
   nameSpan.className = 'hex-name';
   nameSpan.textContent = state.name || hexId;
-  nameSpan.style.fontSize = '18px';
+  nameSpan.style.fontSize = '11px';
   hex.appendChild(nameSpan);
 
   hex.addEventListener('click', () => showInfo(hexId));
