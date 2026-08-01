@@ -81,17 +81,17 @@ h1 {
   flex-shrink: 0;
 }
 
-/* ===== ПЛОТНАЯ УКЛАДКА (СМЕЩЕНИЯ) ===== */
+/* ===== ВСЕ СТОЛБЦЫ НА ОДНОМ УРОВНЕ (БЕЗ ВЕРТИКАЛЬНОГО СМЕЩЕНИЯ) ===== */
 .column-1 {
   margin-top: 0;
   margin-left: 0;
 }
 .column-2 {
-  margin-top: -138px;
+  margin-top: 0;
   margin-left: -160px;
 }
 .column-3 {
-  margin-top: -138px;
+  margin-top: 0;
   margin-left: -320px;
 }
 .column-4 {
@@ -99,15 +99,15 @@ h1 {
   margin-left: -480px;
 }
 .column-5 {
-  margin-top: -138px;
+  margin-top: 0;
   margin-left: -640px;
 }
 .column-6 {
-  margin-top: -138px;
+  margin-top: 0;
   margin-left: -800px;
 }
 .column-7 {
-  margin-top: -138px;
+  margin-top: 0;
   margin-left: -960px;
 }
 .column-8 {
@@ -234,6 +234,7 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
   .hex {
     width: 160px !important;
@@ -258,13 +259,12 @@ h1 {
     font-size: 22px;
   }
   
-  /* Пересчёт смещений для мобильных */
-  .column-2 { margin-top: -103px; margin-left: -120px; }
-  .column-3 { margin-top: -103px; margin-left: -240px; }
+  .column-2 { margin-top: 0; margin-left: -120px; }
+  .column-3 { margin-top: 0; margin-left: -240px; }
   .column-4 { margin-top: 0; margin-left: -360px; }
-  .column-5 { margin-top: -103px; margin-left: -480px; }
-  .column-6 { margin-top: -103px; margin-left: -600px; }
-  .column-7 { margin-top: -103px; margin-left: -720px; }
+  .column-5 { margin-top: 0; margin-left: -480px; }
+  .column-6 { margin-top: 0; margin-left: -600px; }
+  .column-7 { margin-top: 0; margin-left: -720px; }
   .column-8 { margin-top: 0; margin-left: -840px; }
 }
 
@@ -277,12 +277,11 @@ h1 {
     font-size: 11px;
   }
   
-  /* Пересчёт смещений для телефонов */
-  .column-2 { margin-top: -78px; margin-left: -90px; }
-  .column-3 { margin-top: -78px; margin-left: -180px; }
+  .column-2 { margin-top: 0; margin-left: -90px; }
+  .column-3 { margin-top: 0; margin-left: -180px; }
   .column-4 { margin-top: 0; margin-left: -270px; }
-  .column-5 { margin-top: -78px; margin-left: -360px; }
-  .column-6 { margin-top: -78px; margin-left: -450px; }
-  .column-7 { margin-top: -78px; margin-left: -540px; }
+  .column-5 { margin-top: 0; margin-left: -360px; }
+  .column-6 { margin-top: 0; margin-left: -450px; }
+  .column-7 { margin-top: 0; margin-left: -540px; }
   .column-8 { margin-top: 0; margin-left: -630px; }
 }
