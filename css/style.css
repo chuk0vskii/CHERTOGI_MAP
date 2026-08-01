@@ -42,10 +42,24 @@ body {
   transform: scale(1.05);
 }
 
+/* ===== ЗАГОЛОВОК ===== */
+h1 {
+  text-align: center;
+  color: #ffd700;
+  margin-top: 10px;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+#progress {
+  text-align: center;
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
 /* ===== СЕТКА ===== */
 #hex-grid {
   width: 100%;
-  max-width: 1400px;
+  max-width: 100%;
   margin-top: 80px;
   display: flex;
   justify-content: center;
@@ -60,6 +74,8 @@ body {
   justify-content: center;
   align-items: flex-start;
   gap: 0;
+  transform: scale(0.08);  /* Уменьшаем для отображения на экране */
+  transform-origin: top center;
 }
 
 /* ===== СТОЛБЦЫ ===== */
@@ -70,20 +86,20 @@ body {
   gap: 0;
 }
 
-/* Смещения для плотной укладки (вершина вправо) */
+/* ===== СМЕЩЕНИЯ ДЛЯ ПЛОТНОЙ УКЛАДКИ ===== */
 .column-1 { margin-top: 0; }
-.column-2 { margin-top: 20px; }
-.column-3 { margin-top: 20px; }
+.column-2 { margin-top: -461.5px; }   /* -высота/4 */
+.column-3 { margin-top: -461.5px; }
 .column-4 { margin-top: 0; }
-.column-5 { margin-top: 20px; }
-.column-6 { margin-top: 20px; }
-.column-7 { margin-top: 20px; }
+.column-5 { margin-top: -461.5px; }
+.column-6 { margin-top: -461.5px; }
+.column-7 { margin-top: -461.5px; }
 .column-8 { margin-top: 0; }
 
-/* ===== ГЕКСЫ (ВЕРШИНА СМОТРИТ ВПРАВО) ===== */
+/* ===== ГЕКСЫ (ВЕРШИНА ВПРАВО) ===== */
 .hex {
-  width: 138px !important;
-  height: 120px !important;
+  width: 2133px !important;
+  height: 1846px !important;
   
   /* ===== ВЕРШИНА СМОТРИТ ВПРАВО ===== */
   clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
@@ -101,11 +117,11 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin: 0 -2px;
+  margin: 0;  /* Убираем отступы для плотной укладки */
 }
 
 .hex:hover {
-  transform: scale(1.08);
+  transform: scale(1.05);
   filter: brightness(1.2);
   border-color: rgba(255, 215, 0, 0.8);
   z-index: 10;
@@ -128,7 +144,7 @@ body {
   padding: 5px;
   line-height: 1.2;
   z-index: 2;
-  font-size: 14px;
+  font-size: 180px;  /* ~10% от ширины гекса */
 }
 
 /* ===== МОДАЛЬНОЕ ОКНО ===== */
@@ -202,30 +218,31 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 1024px) {
-  .hex {
-    width: 104px !important;
-    height: 90px !important;
+/* ===== АДАПТИВНОСТЬ (изменяем масштаб под экран) ===== */
+@media (max-width: 1400px) {
+  .columns-container {
+    transform: scale(0.06);
   }
   .hex .hex-name {
-    font-size: 11px;
+    font-size: 140px;
   }
-  .column-2 { margin-top: 15px; }
-  .column-3 { margin-top: 15px; }
-  .column-5 { margin-top: 15px; }
-  .column-6 { margin-top: 15px; }
-  .column-7 { margin-top: 15px; }
-  .column-8 { margin-top: 0; }
+}
+
+@media (max-width: 1024px) {
+  .columns-container {
+    transform: scale(0.045);
+  }
+  .hex .hex-name {
+    font-size: 100px;
+  }
 }
 
 @media (max-width: 768px) {
-  .hex {
-    width: 69px !important;
-    height: 60px !important;
+  .columns-container {
+    transform: scale(0.035);
   }
   .hex .hex-name {
-    font-size: 8px;
+    font-size: 80px;
   }
   .controls {
     top: 10px;
@@ -242,32 +259,13 @@ body {
   #hex-name {
     font-size: 22px;
   }
-  .column-2 { margin-top: 10px; }
-  .column-3 { margin-top: 10px; }
-  .column-5 { margin-top: 10px; }
-  .column-6 { margin-top: 10px; }
-  .column-7 { margin-top: 10px; }
-  .column-8 { margin-top: 0; }
 }
 
 @media (max-width: 480px) {
-  .hex {
-    width: 46px !important;
-    height: 40px !important;
+  .columns-container {
+    transform: scale(0.025);
   }
   .hex .hex-name {
-    font-size: 6px;
+    font-size: 60px;
   }
-  .columns-container {
-    gap: 0;
-  }
-  .column {
-    gap: 0;
-  }
-  .column-2 { margin-top: 8px; }
-  .column-3 { margin-top: 8px; }
-  .column-5 { margin-top: 8px; }
-  .column-6 { margin-top: 8px; }
-  .column-7 { margin-top: 8px; }
-  .column-8 { margin-top: 0; }
 }
