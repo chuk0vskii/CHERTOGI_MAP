@@ -19,16 +19,15 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  // ===== 8 СТОЛБЦОВ (33 ГЕКСА) =====
   const columns = [
-    ['0.1', '0.2', '0', '0.3', '0.4'],  // Колонка 1 (5)
-    ['1', '2', '3', '4'],                // Колонка 2 (4)
-    ['5', '6', '7', '8'],                // Колонка 3 (4)
-    ['9', '10', '11', '12', '13'],       // Колонка 4 (5)
-    ['14', '15', '16', '17'],            // Колонка 5 (4)
-    ['18', '19', '20', '21'],            // Колонка 6 (4)
-    ['22', '23', '24', '25'],            // Колонка 7 (4)
-    ['26', '27', '28', '29']             // Колонка 8 (4)
+    ['0.1', '0.2', '0', '0.3', '0.4'],
+    ['1', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', '11', '12', '13'],
+    ['14', '15', '16', '17'],
+    ['18', '19', '20', '21'],
+    ['22', '23', '24', '25'],
+    ['26', '27', '28', '29']
   ];
 
   const columnsContainer = document.createElement('div');
@@ -48,7 +47,6 @@ function renderMap() {
 
   grid.appendChild(columnsContainer);
 
-  // Прогресс
   const total = Object.keys(hexData).length;
   const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
   const p = document.getElementById('progress');
@@ -67,7 +65,6 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  // ===== ФИКСИРОВАННЫЙ РАЗМЕР 2133x1846 =====
   hex.style.width = '2133px';
   hex.style.height = '1846px';
 
