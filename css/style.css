@@ -56,7 +56,7 @@ h1 {
 
 #hex-grid {
   width: 100%;
-  max-width: 100%;
+  max-width: 1400px;
   margin-top: 80px;
   display: flex;
   flex-direction: column;
@@ -76,7 +76,6 @@ h1 {
   line-height: 0;
 }
 
-/* ===== СМЕЩЕНИЯ РЯДОВ (ВСЕ РЯДЫ ВЫРОВНЕНЫ ПО ЛЕВОМУ КРАЮ) ===== */
 .row-1 { margin-left: 0; }
 .row-2 { margin-left: 0; }
 .row-3 { margin-left: 0; }
@@ -89,37 +88,37 @@ h1 {
 /* ===== ГЕКСЫ ===== */
 .hex {
   display: inline-block;
-  width: 120px !important;
-  height: 104px !important;
+  width: 120px;
+  height: 104px;
   flex-shrink: 0;
   
+  /* ЭТОТ clip-path ДЕЛАЕТ ГЕКСЫ, А НЕ КВАДРАТЫ */
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   
-  border-radius: 0;
   background-size: cover;
   background-position: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  margin: -2px -2px; /* небольшое перекрытие для стыковки */
-  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  margin: -2px -2px;
 }
 
 .hex:hover {
   transform: scale(1.05);
-  filter: brightness(1.2);
-  border-color: rgba(255, 215, 0, 0.8);
   z-index: 10;
+  border-color: #ffd700;
 }
 
 .hex.locked {
-  filter: grayscale(0.8) brightness(0.5);
+  background: #2a2a3a;
+  filter: grayscale(0.8) brightness(0.6);
 }
 
 .hex.unlocked {
-  filter: brightness(1);
+  background: linear-gradient(135deg, #2d7d4a, #1a4a2a);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .hex .hex-name {
@@ -132,6 +131,8 @@ h1 {
   line-height: 1.2;
   z-index: 2;
   font-size: 11px;
+  width: 100%;
+  word-wrap: break-word;
 }
 
 .modal {
@@ -203,11 +204,10 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
   .hex {
-    width: 80px !important;
-    height: 69px !important;
+    width: 80px;
+    height: 69px;
   }
   .hex .hex-name {
     font-size: 9px;
@@ -231,8 +231,8 @@ h1 {
 
 @media (max-width: 480px) {
   .hex {
-    width: 60px !important;
-    height: 52px !important;
+    width: 60px;
+    height: 52px;
   }
   .hex .hex-name {
     font-size: 7px;
