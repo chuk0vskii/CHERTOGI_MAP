@@ -19,28 +19,40 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  const rows = [
-    ['0.1', '0.2', '0', '0.3', '0.4'],
-    ['1', '2', '3', '4'],
-    ['5', '6', '7', '8'],
-    ['9', '10', '11', '12', '13'],
-    ['14', '15', '16', '17'],
-    ['18', '19', '20', '21'],
-    ['22', '23', '24', '25'],
-    ['26', '27', '28', '29']
+  // ===== 8 СТОЛБЦОВ =====
+  const columns = [
+    ['0.1', '0.2', '0', '0.3', '0.4'],  // Столбец 1 (5)
+    ['1', '2', '3', '4'],                // Столбец 2 (4)
+    ['5', '6', '7', '8'],                // Столбец 3 (4)
+    ['9', '10', '11', '12', '13'],       // Столбец 4 (5)
+    ['14', '15', '16', '17'],            // Столбец 5 (4)
+    ['18', '19', '20', '21'],            // Столбец 6 (4)
+    ['22', '23', '24', '25'],            // Столбец 7 (4)
+    ['26', '27', '28', '29']             // Столбец 8 (4)
   ];
 
-  rows.forEach((row, rowIndex) => {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = `row row-${rowIndex + 1}`;
+  const columnsContainer = document.createElement('div');
+  columnsContainer.className = 'columns-container';
+
+  columns.forEach((column, colIndex) => {
+    const colDiv = document.createElement('div');
+    // colIndex + 2 = номер столбца (2, 3, 4, 5, 6, 7, 8)
+    // Для первого столбца (colIndex === 0) не добавляем класс смещения
+    let className = `column column-${colIndex + 1}`;
+    if (colIndex > 0) {
+      className += ' column-shifted'; // Для всех столбцов кроме первого
+    }
+    colDiv.className = className;
     
-    row.forEach(hexId => {
+    column.forEach(hexId => {
       const hexElement = createHexElement(hexId);
-      rowDiv.appendChild(hexElement);
+      colDiv.appendChild(hexElement);
     });
     
-    grid.appendChild(rowDiv);
+    columnsContainer.appendChild(colDiv);
   });
+
+  grid.appendChild(columnsContainer);
 
   const total = Object.keys(hexData).length;
   const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
@@ -88,7 +100,6 @@ function showInfo(hexId) {
 
 function zoomIn() {
   zoomLevel = Math.min(zoomLevel + 0.1, 2);
-  // Здесь можно добавить увеличение размера гексов
   document.querySelectorAll('.hex').forEach(el => {
     const size = 120 * zoomLevel;
     el.style.width = size + 'px';
