@@ -19,33 +19,29 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  const columns = [
-    ['0.1', '0.2', '0', '0.3', '0.4'],
-    ['1', '2', '3', '4'],
-    ['5', '6', '7', '8'],
-    ['9', '10', '11', '12', '13'],
-    ['14', '15', '16', '17'],
-    ['18', '19', '20', '21'],
-    ['22', '23', '24', '25'],
-    ['26', '27', '28', '29']
+  // ===== 8 РЯДОВ (ГОРИЗОНТАЛЬНО) =====
+  const rows = [
+    ['0.1', '0.2', '0', '0.3', '0.4'],  // Ряд 1 (5 гексов)
+    ['1', '2', '3', '4'],                // Ряд 2 (4 гекса)
+    ['5', '6', '7', '8'],                // Ряд 3 (4 гекса)
+    ['9', '10', '11', '12', '13'],       // Ряд 4 (5 гексов)
+    ['14', '15', '16', '17'],            // Ряд 5 (4 гекса)
+    ['18', '19', '20', '21'],            // Ряд 6 (4 гекса)
+    ['22', '23', '24', '25'],            // Ряд 7 (4 гекса)
+    ['26', '27', '28', '29']             // Ряд 8 (4 гекса)
   ];
 
-  const columnsContainer = document.createElement('div');
-  columnsContainer.className = 'columns-container';
-
-  columns.forEach((column, colIndex) => {
-    const colDiv = document.createElement('div');
-    colDiv.className = `column column-${colIndex + 1}`;
+  rows.forEach((row, rowIndex) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = `row row-${rowIndex + 1}`;
     
-    column.forEach(hexId => {
+    row.forEach(hexId => {
       const hexElement = createHexElement(hexId);
-      colDiv.appendChild(hexElement);
+      rowDiv.appendChild(hexElement);
     });
     
-    columnsContainer.appendChild(colDiv);
+    grid.appendChild(rowDiv);
   });
-
-  grid.appendChild(columnsContainer);
 
   const total = Object.keys(hexData).length;
   const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
@@ -65,6 +61,7 @@ function createHexElement(hexId) {
     return hex;
   }
 
+  // Размер гекса
   hex.style.width = '213px';
   hex.style.height = '184px';
 
