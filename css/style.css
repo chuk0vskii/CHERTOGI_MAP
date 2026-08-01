@@ -56,7 +56,7 @@ h1 {
 
 #hex-grid {
   width: 100%;
-  max-width: 1400px;
+  max-width: 100%;
   margin-top: 80px;
   display: flex;
   flex-direction: column;
@@ -76,14 +76,14 @@ h1 {
   line-height: 0;
 }
 
-/* ===== СМЕЩЕНИЯ РЯДОВ ВЛЕВО ===== */
+/* ===== СМЕЩЕНИЯ РЯДОВ ===== */
 .row-1 { margin-left: 0; }
-.row-2 { margin-left: 0; }
-.row-3 { margin-left: 0; }
+.row-2 { margin-left: -30px; }  /* Сдвиг влево на 1/4 ширины */
+.row-3 { margin-left: -30px; }
 .row-4 { margin-left: 0; }
-.row-5 { margin-left: 0; }
-.row-6 { margin-left: 0; }
-.row-7 { margin-left: 0; }
+.row-5 { margin-left: -30px; }
+.row-6 { margin-left: -30px; }
+.row-7 { margin-left: -30px; }
 .row-8 { margin-left: 0; }
 
 /* ===== ГЕКСЫ ===== */
@@ -103,7 +103,7 @@ h1 {
   transition: all 0.3s ease;
   position: relative;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  margin: -2px -2px;
+  margin: 0;
   padding: 0;
 }
 
@@ -203,7 +203,6 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
   .hex {
     width: 80px !important;
@@ -227,6 +226,11 @@ h1 {
   #hex-name {
     font-size: 22px;
   }
+  .row-2 { margin-left: -20px; }
+  .row-3 { margin-left: -20px; }
+  .row-5 { margin-left: -20px; }
+  .row-6 { margin-left: -20px; }
+  .row-7 { margin-left: -20px; }
 }
 
 @media (max-width: 480px) {
@@ -237,4 +241,9 @@ h1 {
   .hex .hex-name {
     font-size: 7px;
   }
+  .row-2 { margin-left: -15px; }
+  .row-3 { margin-left: -15px; }
+  .row-5 { margin-left: -15px; }
+  .row-6 { margin-left: -15px; }
+  .row-7 { margin-left: -15px; }
 }
