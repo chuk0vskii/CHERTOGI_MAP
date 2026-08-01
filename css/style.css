@@ -15,7 +15,6 @@ body {
   padding: 20px;
 }
 
-/* ===== КНОПКИ ЗУМА ===== */
 .controls {
   position: fixed;
   top: 20px;
@@ -42,7 +41,6 @@ body {
   transform: scale(1.05);
 }
 
-/* ===== СЕТКА ===== */
 #hex-grid {
   width: 100%;
   max-width: 1400px;
@@ -53,41 +51,38 @@ body {
   padding: 10px;
 }
 
-/* ===== КОНТЕЙНЕР СО СТОЛБЦАМИ ===== */
 .columns-container {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
-  gap: 4px;
+  gap: 0;
 }
 
-/* ===== СТОЛБЦЫ ===== */
 .column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
 
-/* Смещения столбцов для состыковки гексов */
+/* Смещения для плотной укладки */
 .column-1 { margin-top: 0; }
 .column-2 { margin-top: 20px; }
 .column-3 { margin-top: 20px; }
 .column-4 { margin-top: 0; }
 .column-5 { margin-top: 20px; }
 .column-6 { margin-top: 20px; }
-.column-7 { margin-top: 40px; }
-.column-8 { margin-top: 40px; }
+.column-7 { margin-top: 20px; }
+.column-8 { margin-top: 0; }  /* ← ИСПРАВЛЕНО! */
 
-/* ===== ГЕКСЫ ===== */
+/* ===== ГЕКСЫ (ПЛОСКАЯ ГРАНЬ СВЕРХУ) ===== */
 .hex {
   width: 120px !important;
-  height: 138px !important;  /* 120 * 1.1547 */
+  height: 138px !important;
   
-  /* Форма гекса */
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  -webkit-clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   
   border-radius: 0;
   background-size: cover;
@@ -101,6 +96,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin: -2px 0;
 }
 
 .hex:hover {
@@ -130,7 +126,6 @@ body {
   font-size: 14px;
 }
 
-/* ===== МОДАЛЬНОЕ ОКНО ===== */
 .modal {
   display: none;
   position: fixed;
@@ -190,7 +185,6 @@ body {
   font-weight: bold;
 }
 
-/* ===== АНИМАЦИИ ===== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -214,8 +208,8 @@ body {
   .column-3 { margin-top: 15px; }
   .column-5 { margin-top: 15px; }
   .column-6 { margin-top: 15px; }
-  .column-7 { margin-top: 30px; }
-  .column-8 { margin-top: 30px; }
+  .column-7 { margin-top: 15px; }
+  .column-8 { margin-top: 0; }
 }
 
 @media (max-width: 768px) {
@@ -245,8 +239,8 @@ body {
   .column-3 { margin-top: 10px; }
   .column-5 { margin-top: 10px; }
   .column-6 { margin-top: 10px; }
-  .column-7 { margin-top: 20px; }
-  .column-8 { margin-top: 20px; }
+  .column-7 { margin-top: 10px; }
+  .column-8 { margin-top: 0; }
 }
 
 @media (max-width: 480px) {
@@ -258,15 +252,15 @@ body {
     font-size: 6px;
   }
   .columns-container {
-    gap: 2px;
+    gap: 0;
   }
   .column {
-    gap: 2px;
+    gap: 0;
   }
   .column-2 { margin-top: 8px; }
   .column-3 { margin-top: 8px; }
   .column-5 { margin-top: 8px; }
   .column-6 { margin-top: 8px; }
-  .column-7 { margin-top: 16px; }
-  .column-8 { margin-top: 16px; }
+  .column-7 { margin-top: 8px; }
+  .column-8 { margin-top: 0; }
 }
