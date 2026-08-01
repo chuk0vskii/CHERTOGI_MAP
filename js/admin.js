@@ -42,7 +42,7 @@ function renderAdminPanel() {
     <div class="controls">
       <button class="btn-save" onclick="window.saveAll()">💾 Сохранить все изменения</button>
       <span id="save-status"></span>
-      <button onclick="window.clearToken()" style="background:#666;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;">🔑 Сменить токен</button>
+      <button onclick="window.clearToken()" class="btn-clear">🔑 Сменить токен</button>
     </div>
     <div class="total-info">Всего гексов: ${Object.keys(hexData).length}</div>
     <div id="hex-list"></div>
@@ -93,7 +93,6 @@ function renderAdminPanel() {
 window.saveAll = async function() {
   if (isSaving) return;
   
-  // Запрашиваем токен если его нет
   if (!githubToken) {
     const token = askForToken();
     if (!token) {
@@ -151,7 +150,6 @@ window.saveAll = async function() {
     status.textContent = `❌ ${error.message}`;
     status.style.color = '#f44336';
     console.error(error);
-    // Если ошибка с токеном, сбрасываем его
     if (error.message.includes('токен') || error.message.includes('credentials')) {
       githubToken = null;
     }
@@ -169,7 +167,6 @@ window.clearToken = function() {
   }, 2000);
 };
 
-// Запуск
 if (authenticate()) {
   loadData();
 }
