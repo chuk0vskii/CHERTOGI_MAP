@@ -15,7 +15,6 @@ body {
   padding: 20px;
 }
 
-/* ===== КНОПКИ ЗУМА ===== */
 .controls {
   position: fixed;
   top: 20px;
@@ -42,21 +41,6 @@ body {
   transform: scale(1.05);
 }
 
-/* ===== ЗАГОЛОВОК ===== */
-h1 {
-  text-align: center;
-  color: #ffd700;
-  margin-top: 10px;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-}
-
-#progress {
-  text-align: center;
-  color: #aaa;
-  margin-bottom: 20px;
-}
-
-/* ===== СЕТКА ===== */
 #hex-grid {
   width: 100%;
   max-width: 100%;
@@ -67,7 +51,7 @@ h1 {
   padding: 10px;
 }
 
-/* ===== КОНТЕЙНЕР СО СТОЛБЦАМИ ===== */
+/* ===== ОСНОВНАЯ СЕТКА ===== */
 .columns-container {
   display: flex;
   flex-direction: row;
@@ -78,7 +62,6 @@ h1 {
   transform-origin: top center;
 }
 
-/* ===== СТОЛБЦЫ ===== */
 .column {
   display: flex;
   flex-direction: column;
@@ -86,9 +69,9 @@ h1 {
   gap: 0;
 }
 
-/* ===== СМЕЩЕНИЯ ДЛЯ ПЛОТНОЙ УКЛАДКИ ===== */
+/* ===== ПРАВИЛЬНАЯ УКЛАДКА ===== */
 .column-1 { margin-top: 0; }
-.column-2 { margin-top: -461.5px; }
+.column-2 { margin-top: -461.5px; }   /* -1846/4 */
 .column-3 { margin-top: -461.5px; }
 .column-4 { margin-top: 0; }
 .column-5 { margin-top: -461.5px; }
@@ -96,12 +79,11 @@ h1 {
 .column-7 { margin-top: -461.5px; }
 .column-8 { margin-top: 0; }
 
-/* ===== ГЕКСЫ (ВЕРШИНА СМОТРИТ ВПРАВО) ===== */
+/* ===== ГЕКС ===== */
 .hex {
   width: 2133px !important;
   height: 1846px !important;
   
-  /* ===== ПРАВИЛЬНЫЙ clip-path: ВЕРШИНА ВПРАВО ===== */
   clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   -webkit-clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   
@@ -207,7 +189,6 @@ h1 {
   font-weight: bold;
 }
 
-/* ===== АНИМАЦИИ ===== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
