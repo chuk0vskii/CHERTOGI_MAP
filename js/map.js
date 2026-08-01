@@ -62,7 +62,7 @@ function createHexElement(hexId) {
 
   // ===== ИНДИВИДУАЛЬНОЕ СМЕЩЕНИЕ ДЛЯ ГЕКСА "1" =====
   if (hexId === '1') {
-    hex.style.marginTop = '52px';  // Опускаем только Деревню Ольховка
+    hex.style.marginLeft = '30px';  // Сдвигаем Деревню Ольховка вправо на 30px
   }
 
   if (state.unlocked) {
