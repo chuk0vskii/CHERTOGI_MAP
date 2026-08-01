@@ -65,7 +65,7 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  // ===== УМЕНЬШЕННЫЙ РАЗМЕР ДЛЯ ЭКРАНА =====
+  // Размер гекса (213x184)
   hex.style.width = '213px';
   hex.style.height = '184px';
 
