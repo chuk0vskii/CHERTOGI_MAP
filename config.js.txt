@@ -1,0 +1,6 @@
+export const CONFIG = {
+  ADMIN_PASSWORD: "мой_важный_пароль_123",  // Пароль можно оставить
+  HEX_SIZE: { width: 2133, height: 1846 },
+  GITHUB_REPO: "chukovskii/CHERTOGI_MAP"
+  // Токен УДАЛЕН! Теперь его нет в файле
+};

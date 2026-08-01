@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗺️ Карта мира</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="controls">
+    <button id="zoom-in">🔍 +</button>
+    <button id="zoom-out">🔍 −</button>
+  </div>
+
+  <h1 style="text-align:center;margin-top:20px;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.3);">
+    🗺️ Исследование мира
+  </h1>
+  <p style="text-align:center;color:#aaa;margin-bottom:20px;">
+    Нажимайте на гексы для информации
+  </p>
+  <p id="progress" style="text-align:center;color:#aaa;"></p>
+
+  <div id="hex-grid"></div>
+
+  <!-- Модальное окно -->
+  <div id="info-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="hex-name">Название</h2>
+      <p id="hex-desc">Описание</p>
+      <p id="hex-status">Статус</p>
+    </div>
+  </div>
+
+  <script type="module" src="js/map.js"></script>
+</body>
+</html>
