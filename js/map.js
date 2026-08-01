@@ -28,7 +28,7 @@ function renderMap() {
     ['14', '15', '16', '17'],            // Колонка 5 (4)
     ['18', '19', '20', '21'],            // Колонка 6 (4)
     ['22', '23', '24', '25'],            // Колонка 7 (4)
-    ['26', '27', '28', '29']             // Колонка 8 (4) ← ДОБАВЛЕНЫ 28 И 29!
+    ['26', '27', '28', '29']             // Колонка 8 (4)
   ];
 
   const columnsContainer = document.createElement('div');
@@ -67,13 +67,13 @@ function createHexElement(hexId) {
     return hex;
   }
 
-  // Размер с учётом зума (базовый размер 120px)
+  // Размер с учетом зума (база 120px)
   const baseSize = 120;
   const size = Math.min(baseSize * zoomLevel, 240);
-  hex.style.width = size + 'px';
-  hex.style.height = (size * 1.1547) + 'px';  // Правильное соотношение для гекса
+  // Для гекса с вершиной вправо: ширина = размер * 1.1547, высота = размер
+  hex.style.width = (size * 1.1547) + 'px';
+  hex.style.height = size + 'px';
 
-  // Цвет и статус
   if (state.unlocked) {
     hex.classList.add('unlocked');
     hex.style.background = `linear-gradient(135deg, #4a7c59, #2d5a3d)`;
@@ -84,14 +84,12 @@ function createHexElement(hexId) {
     hex.style.borderColor = 'rgba(100,100,100,0.3)';
   }
 
-  // Название гекса
   const nameSpan = document.createElement('span');
   nameSpan.className = 'hex-name';
   nameSpan.textContent = state.name || hexId;
   nameSpan.style.fontSize = Math.max(10, 14 * zoomLevel) + 'px';
   hex.appendChild(nameSpan);
 
-  // Клик для информации
   hex.addEventListener('click', () => showInfo(hexId));
   return hex;
 }
@@ -110,7 +108,6 @@ function showInfo(hexId) {
 function zoomIn(){zoomLevel=Math.min(zoomLevel+0.1,2);renderMap();}
 function zoomOut(){zoomLevel=Math.max(zoomLevel-0.1,0.5);renderMap();}
 
-// Закрытие модального окна
 document.querySelector('.close')?.addEventListener('click', () => {
   document.getElementById('info-modal').style.display = 'none';
 });
@@ -120,12 +117,8 @@ window.addEventListener('click', (e) => {
   }
 });
 
-// Кнопки зума
 document.getElementById('zoom-in').addEventListener('click', zoomIn);
 document.getElementById('zoom-out').addEventListener('click', zoomOut);
 
-// Загрузка карты
 loadMapState();
-
-// Автообновление каждые 10 секунд
 setInterval(loadMapState, 10000);
