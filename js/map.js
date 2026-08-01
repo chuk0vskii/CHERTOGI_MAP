@@ -19,28 +19,28 @@ function renderMap() {
   const grid = document.getElementById('hex-grid');
   grid.innerHTML = '';
 
-  // ===== ТОЛЬКО 2 ГЕКСА =====
-  const columns = [
-    ['0.1'],  // Столбец 1 (1 гекс)
-    ['1']     // Столбец 2 (1 гекс)
+  const rows = [
+    ['0.1', '0.2', '0', '0.3', '0.4'],
+    ['1', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', '11', '12', '13'],
+    ['14', '15', '16', '17'],
+    ['18', '19', '20', '21'],
+    ['22', '23', '24', '25'],
+    ['26', '27', '28', '29']
   ];
 
-  const columnsContainer = document.createElement('div');
-  columnsContainer.className = 'columns-container';
-
-  columns.forEach((column, colIndex) => {
-    const colDiv = document.createElement('div');
-    colDiv.className = `column column-${colIndex + 1}`;
+  rows.forEach((row, rowIndex) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = `row row-${rowIndex + 1}`;
     
-    column.forEach(hexId => {
+    row.forEach(hexId => {
       const hexElement = createHexElement(hexId);
-      colDiv.appendChild(hexElement);
+      rowDiv.appendChild(hexElement);
     });
     
-    columnsContainer.appendChild(colDiv);
+    grid.appendChild(rowDiv);
   });
-
-  grid.appendChild(columnsContainer);
 
   const total = Object.keys(hexData).length;
   const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
@@ -58,6 +58,11 @@ function createHexElement(hexId) {
     hex.textContent = '?';
     hex.style.background = '#333';
     return hex;
+  }
+
+  // ===== ИНДИВИДУАЛЬНОЕ СМЕЩЕНИЕ ДЛЯ ГЕКСА "1" =====
+  if (hexId === '1') {
+    hex.style.marginTop = '52px';  // Опускаем только Деревню Ольховка
   }
 
   if (state.unlocked) {
