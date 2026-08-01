@@ -15,6 +15,7 @@ body {
   padding: 20px;
 }
 
+/* ===== КНОПКИ ЗУМА ===== */
 .controls {
   position: fixed;
   top: 20px;
@@ -41,6 +42,7 @@ body {
   transform: scale(1.05);
 }
 
+/* ===== СЕТКА ===== */
 #hex-grid {
   width: 100%;
   max-width: 1400px;
@@ -51,6 +53,7 @@ body {
   padding: 10px;
 }
 
+/* ===== КОНТЕЙНЕР СО СТОЛБЦАМИ ===== */
 .columns-container {
   display: flex;
   flex-direction: row;
@@ -59,6 +62,7 @@ body {
   gap: 0;
 }
 
+/* ===== СТОЛБЦЫ ===== */
 .column {
   display: flex;
   flex-direction: column;
@@ -66,7 +70,7 @@ body {
   gap: 0;
 }
 
-/* Смещения для плотной укладки */
+/* Смещения для плотной укладки (вершина вправо) */
 .column-1 { margin-top: 0; }
 .column-2 { margin-top: 20px; }
 .column-3 { margin-top: 20px; }
@@ -74,15 +78,16 @@ body {
 .column-5 { margin-top: 20px; }
 .column-6 { margin-top: 20px; }
 .column-7 { margin-top: 20px; }
-.column-8 { margin-top: 0; }  /* ← ИСПРАВЛЕНО! */
+.column-8 { margin-top: 0; }
 
-/* ===== ГЕКСЫ (ПЛОСКАЯ ГРАНЬ СВЕРХУ) ===== */
+/* ===== ГЕКСЫ (ВЕРШИНА СМОТРИТ ВПРАВО) ===== */
 .hex {
-  width: 120px !important;
-  height: 138px !important;
+  width: 138px !important;
+  height: 120px !important;
   
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  /* ===== ВЕРШИНА СМОТРИТ ВПРАВО ===== */
+  clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
+  -webkit-clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   
   border-radius: 0;
   background-size: cover;
@@ -96,7 +101,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin: -2px 0;
+  margin: 0 -2px;
 }
 
 .hex:hover {
@@ -126,6 +131,7 @@ body {
   font-size: 14px;
 }
 
+/* ===== МОДАЛЬНОЕ ОКНО ===== */
 .modal {
   display: none;
   position: fixed;
@@ -185,6 +191,7 @@ body {
   font-weight: bold;
 }
 
+/* ===== АНИМАЦИИ ===== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -198,8 +205,8 @@ body {
 /* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 1024px) {
   .hex {
-    width: 90px !important;
-    height: 104px !important;
+    width: 104px !important;
+    height: 90px !important;
   }
   .hex .hex-name {
     font-size: 11px;
@@ -214,8 +221,8 @@ body {
 
 @media (max-width: 768px) {
   .hex {
-    width: 60px !important;
-    height: 69px !important;
+    width: 69px !important;
+    height: 60px !important;
   }
   .hex .hex-name {
     font-size: 8px;
@@ -245,8 +252,8 @@ body {
 
 @media (max-width: 480px) {
   .hex {
-    width: 40px !important;
-    height: 46px !important;
+    width: 46px !important;
+    height: 40px !important;
   }
   .hex .hex-name {
     font-size: 6px;
