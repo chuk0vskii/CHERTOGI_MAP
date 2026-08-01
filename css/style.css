@@ -1,273 +1,121 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+import { CONFIG } from '../config.js';
+
+let hexData = {};
+let zoomLevel = 1;
+
+async function loadMapState() {
+  try {
+    const response = await fetch('data/map-state.json?t=' + Date.now());
+    const data = await response.json();
+    hexData = data.hexes;
+    renderMap();
+  } catch (error) {
+    console.error('Ошибка загрузки карты:', error);
+    document.getElementById('hex-grid').innerHTML = '<p style="color:red;">⚠️ Не удалось загрузить карту</p>';
+  }
 }
 
-body {
-  background: #1a1a2e;
-  color: white;
-  font-family: Arial, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
+function renderMap() {
+  const grid = document.getElementById('hex-grid');
+  grid.innerHTML = '';
+
+  const rows = [
+    ['0.1', '0.2', '0', '0.3', '0.4'],
+    ['1', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', '11', '12', '13'],
+    ['14', '15', '16', '17'],
+    ['18', '19', '20', '21'],
+    ['22', '23', '24', '25'],
+    ['26', '27', '28', '29']
+  ];
+
+  rows.forEach((row, rowIndex) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = `row row-${rowIndex + 1}`;
+    
+    row.forEach(hexId => {
+      const hexElement = createHexElement(hexId);
+      rowDiv.appendChild(hexElement);
+    });
+    
+    grid.appendChild(rowDiv);
+  });
+
+  const total = Object.keys(hexData).length;
+  const unlocked = Object.values(hexData).filter(h => h.unlocked).length;
+  const p = document.getElementById('progress');
+  if (p) p.textContent = `📊 Прогресс: ${unlocked}/${total} (${Math.round(unlocked/total*100)}%)`;
 }
 
-.controls {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-  display: flex;
-  gap: 10px;
-}
-
-.controls button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.3s;
-  backdrop-filter: blur(10px);
-}
-
-.controls button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-h1 {
-  text-align: center;
-  color: #ffd700;
-  margin-top: 10px;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-}
-
-#progress {
-  text-align: center;
-  color: #aaa;
-  margin-bottom: 20px;
-}
-
-#hex-grid {
-  width: 100%;
-  max-width: 100%;
-  margin-top: 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 10px;
-  gap: 0;
-}
-
-/* ===== РЯДЫ ===== */
-.row {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  line-height: 0;
-}
-
-/* ===== СМЕЩЕНИЯ РЯДОВ ===== */
-.row-1 {
-  margin-left: 0;
-  margin-top: 0;
-}
-.row-2 {
-  margin-left: -30px;
-  margin-top: -52px;
-}
-.row-3 {
-  margin-left: -30px;
-  margin-top: -52px;
-}
-.row-4 {
-  margin-left: 0;
-  margin-top: 0;
-}
-.row-5 {
-  margin-left: -30px;
-  margin-top: -52px;
-}
-.row-6 {
-  margin-left: -30px;
-  margin-top: -52px;
-}
-.row-7 {
-  margin-left: -30px;
-  margin-top: -52px;
-}
-.row-8 {
-  margin-left: 0;
-  margin-top: 0;
-}
-
-/* ===== ГЕКСЫ ===== */
-.hex {
-  display: inline-block;
-  width: 120px !important;
-  height: 104px !important;
-  flex-shrink: 0;
+function createHexElement(hexId) {
+  const hex = document.createElement('div');
+  hex.className = 'hex';
+  hex.dataset.id = hexId;
   
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  
-  border-radius: 0;
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  margin: 0;
-  padding: 0;
-}
-
-.hex:hover {
-  transform: scale(1.05);
-  filter: brightness(1.2);
-  border-color: rgba(255, 215, 0, 0.8);
-  z-index: 10;
-}
-
-.hex.locked {
-  filter: grayscale(0.8) brightness(0.5);
-}
-
-.hex.unlocked {
-  filter: brightness(1);
-}
-
-.hex .hex-name {
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
-  text-align: center;
-  color: white;
-  pointer-events: none;
-  padding: 2px;
-  line-height: 1.2;
-  z-index: 2;
-  font-size: 11px;
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
-  animation: fadeIn 0.3s;
-}
-
-.modal-content {
-  background: linear-gradient(135deg, #2d2d44, #1a1a2e);
-  margin: 10% auto;
-  padding: 40px;
-  border-radius: 20px;
-  max-width: 500px;
-  color: white;
-  border: 2px solid rgba(255, 215, 0, 0.3);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  animation: slideUp 0.4s;
-}
-
-.close {
-  float: right;
-  font-size: 28px;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.5);
-  transition: 0.3s;
-}
-
-.close:hover {
-  color: white;
-  transform: rotate(90deg);
-}
-
-#hex-name {
-  font-size: 28px;
-  margin-bottom: 15px;
-  color: #ffd700;
-}
-
-#hex-desc {
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 20px 0;
-  color: #ccc;
-}
-
-#hex-status {
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  font-weight: bold;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@media (max-width: 768px) {
-  .hex {
-    width: 80px !important;
-    height: 69px !important;
+  const state = hexData[hexId];
+  if (!state) {
+    hex.textContent = '?';
+    hex.style.background = '#333';
+    return hex;
   }
-  .hex .hex-name {
-    font-size: 9px;
+
+  hex.style.width = '120px';
+  hex.style.height = '104px';
+
+  if (state.unlocked) {
+    hex.classList.add('unlocked');
+    hex.style.background = `linear-gradient(135deg, #4a7c59, #2d5a3d)`;
+    hex.style.borderColor = 'rgba(255,215,0,0.6)';
+  } else {
+    hex.classList.add('locked');
+    hex.style.background = `linear-gradient(135deg, #3d3d3d, #1a1a2e)`;
+    hex.style.borderColor = 'rgba(100,100,100,0.3)';
   }
-  .controls {
-    top: 10px;
-    right: 10px;
-  }
-  .controls button {
-    padding: 5px 10px;
-    font-size: 16px;
-  }
-  .modal-content {
-    margin: 20% 10%;
-    padding: 20px;
-  }
-  #hex-name {
-    font-size: 22px;
-  }
-  .row-2 { margin-left: -20px; margin-top: -35px; }
-  .row-3 { margin-left: -20px; margin-top: -35px; }
-  .row-5 { margin-left: -20px; margin-top: -35px; }
-  .row-6 { margin-left: -20px; margin-top: -35px; }
-  .row-7 { margin-left: -20px; margin-top: -35px; }
+
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'hex-name';
+  nameSpan.textContent = state.name || hexId;
+  nameSpan.style.fontSize = '11px';
+  hex.appendChild(nameSpan);
+
+  hex.addEventListener('click', () => showInfo(hexId));
+  return hex;
 }
 
-@media (max-width: 480px) {
-  .hex {
-    width: 60px !important;
-    height: 52px !important;
-  }
-  .hex .hex-name {
-    font-size: 7px;
-  }
-  .row-2 { margin-left: -15px; margin-top: -26px; }
-  .row-3 { margin-left: -15px; margin-top: -26px; }
-  .row-5 { margin-left: -15px; margin-top: -26px; }
-  .row-6 { margin-left: -15px; margin-top: -26px; }
-  .row-7 { margin-left: -15px; margin-top: -26px; }
+function showInfo(hexId) {
+  const state = hexData[hexId];
+  if (!state) return;
+  const modal = document.getElementById('info-modal');
+  document.getElementById('hex-name').textContent = state.name || 'Без названия';
+  document.getElementById('hex-desc').textContent = state.desc || 'Нет описания';
+  document.getElementById('hex-status').textContent = state.unlocked ? '✅ Открыт' : '🔒 Закрыт';
+  document.getElementById('hex-status').style.color = state.unlocked ? '#4caf50' : '#f44336';
+  modal.style.display = 'block';
 }
+
+function zoomIn() {
+  zoomLevel = Math.min(zoomLevel + 0.1, 2);
+  renderMap();
+}
+
+function zoomOut() {
+  zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+  renderMap();
+}
+
+document.querySelector('.close')?.addEventListener('click', () => {
+  document.getElementById('info-modal').style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('info-modal')) {
+    document.getElementById('info-modal').style.display = 'none';
+  }
+});
+
+document.getElementById('zoom-in').addEventListener('click', zoomIn);
+document.getElementById('zoom-out').addEventListener('click', zoomOut);
+
+loadMapState();
+setInterval(loadMapState, 10000);
