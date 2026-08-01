@@ -70,6 +70,7 @@ h1 {
   justify-content: center;
   align-items: flex-start;
   gap: 0;
+  margin-left: 0;
 }
 
 .column {
@@ -77,24 +78,48 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 0;
+  flex-shrink: 0;
 }
 
-/* ===== СМЕЩЕНИЯ ДЛЯ ПЛОТНОЙ УКЛАДКИ ===== */
-.column-1 { margin-top: 0; }
-.column-2 { margin-top: -138px; }
-.column-3 { margin-top: -138px; }
-.column-4 { margin-top: 0; }
-.column-5 { margin-top: -138px; }
-.column-6 { margin-top: -138px; }
-.column-7 { margin-top: -138px; }
-.column-8 { margin-top: 0; }
+/* ===== ПЛОТНАЯ УКЛАДКА (СМЕЩЕНИЯ) ===== */
+.column-1 {
+  margin-top: 0;
+  margin-left: 0;
+}
+.column-2 {
+  margin-top: -138px;
+  margin-left: -160px;
+}
+.column-3 {
+  margin-top: -138px;
+  margin-left: -320px;
+}
+.column-4 {
+  margin-top: 0;
+  margin-left: -480px;
+}
+.column-5 {
+  margin-top: -138px;
+  margin-left: -640px;
+}
+.column-6 {
+  margin-top: -138px;
+  margin-left: -800px;
+}
+.column-7 {
+  margin-top: -138px;
+  margin-left: -960px;
+}
+.column-8 {
+  margin-top: 0;
+  margin-left: -1120px;
+}
 
-/* ===== ГЕКСЫ С ПЛОСКОЙ ГРАНЬЮ СВЕРХУ ===== */
+/* ===== ГЕКСЫ ===== */
 .hex {
   width: 213px !important;
   height: 184px !important;
   
-  /* ===== ЭТОТ clip-path ДАЁТ ШЕСТИУГОЛЬНИК С ПЛОСКОЙ ГРАНЬЮ СВЕРХУ ===== */
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   
@@ -140,7 +165,6 @@ h1 {
   font-size: 18px;
 }
 
-/* ===== МОДАЛЬНОЕ ОКНО ===== */
 .modal {
   display: none;
   position: fixed;
@@ -210,7 +234,6 @@ h1 {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
   .hex {
     width: 160px !important;
@@ -234,11 +257,15 @@ h1 {
   #hex-name {
     font-size: 22px;
   }
-  .column-2 { margin-top: -103px; }
-  .column-3 { margin-top: -103px; }
-  .column-5 { margin-top: -103px; }
-  .column-6 { margin-top: -103px; }
-  .column-7 { margin-top: -103px; }
+  
+  /* Пересчёт смещений для мобильных */
+  .column-2 { margin-top: -103px; margin-left: -120px; }
+  .column-3 { margin-top: -103px; margin-left: -240px; }
+  .column-4 { margin-top: 0; margin-left: -360px; }
+  .column-5 { margin-top: -103px; margin-left: -480px; }
+  .column-6 { margin-top: -103px; margin-left: -600px; }
+  .column-7 { margin-top: -103px; margin-left: -720px; }
+  .column-8 { margin-top: 0; margin-left: -840px; }
 }
 
 @media (max-width: 480px) {
@@ -249,9 +276,13 @@ h1 {
   .hex .hex-name {
     font-size: 11px;
   }
-  .column-2 { margin-top: -78px; }
-  .column-3 { margin-top: -78px; }
-  .column-5 { margin-top: -78px; }
-  .column-6 { margin-top: -78px; }
-  .column-7 { margin-top: -78px; }
+  
+  /* Пересчёт смещений для телефонов */
+  .column-2 { margin-top: -78px; margin-left: -90px; }
+  .column-3 { margin-top: -78px; margin-left: -180px; }
+  .column-4 { margin-top: 0; margin-left: -270px; }
+  .column-5 { margin-top: -78px; margin-left: -360px; }
+  .column-6 { margin-top: -78px; margin-left: -450px; }
+  .column-7 { margin-top: -78px; margin-left: -540px; }
+  .column-8 { margin-top: 0; margin-left: -630px; }
 }
