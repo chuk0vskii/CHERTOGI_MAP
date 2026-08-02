@@ -2,9 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Карта с зумом (из форума)</title>
+    <title>Карта с зумом</title>
     <style>
-        /* Убираем всё лишнее */
         * {
             margin: 0;
             padding: 0;
@@ -20,28 +19,24 @@
             align-items: center;
         }
 
-        /* Контейнер, в котором будет карта */
-        #mapContainer {
+        .wrapper {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
+            position: relative;
             cursor: grab;
         }
 
-        #mapContainer:active {
+        .wrapper:active {
             cursor: grabbing;
         }
 
-        /* Сама картинка */
-        #mapImage {
+        .wrapper img {
             display: block;
-            width: 5100px;  /* Оригинальная ширина */
-            height: 2500px; /* Оригинальная высота */
-            max-width: none;
-            transform-origin: center center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
             will-change: transform;
             pointer-events: none;
             user-select: none;
@@ -51,112 +46,123 @@
 </head>
 <body>
 
-<div id="mapContainer">
-    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
+<div class="wrapper" id="mapWrapper">
+    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта" id="mapImage">
 </div>
 
 <script>
     (function() {
-        // ===== ЭЛЕМЕНТЫ =====
-        const container = document.getElementById('mapContainer');
         const img = document.getElementById('mapImage');
+        const wrapper = document.getElementById('mapWrapper');
 
-        // ===== РАЗМЕРЫ КАРТЫ (оригинальные) =====
+        // ===== РАЗМЕРЫ КАРТЫ =====
         const IMG_W = 5100;
         const IMG_H = 2500;
 
         // ===== СОСТОЯНИЕ =====
-        let scale = 1;          // Текущий масштаб
-        const MIN_SCALE = 1.0;  // Не меньше 100%
-        const MAX_SCALE = 2.0;  // Не больше 200%
+        let scale = 1;
+        let tx = 0;
+        let ty = 0;
+        let dragging = false;
+        let startX, startY, startTx, startTy;
+        let initialScale = 1; // Запоминаем начальный масштаб
 
-        // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
-        function updateScale() {
-            img.style.transform = `scale(${scale})`;
+        // ===== ОБНОВЛЕНИЕ =====
+        function update() {
+            img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
         }
 
-        // ===== ЦЕНТРИРОВАНИЕ ПРИ ЗАГРУЗКЕ =====
-        function centerImage() {
-            const rect = container.getBoundingClientRect();
-            // Считаем, какой масштаб нужен, чтобы карта поместилась в экран
-            const scaleX = rect.width / IMG_W;
-            const scaleY = rect.height / IMG_H;
-            // Берём минимальный, чтобы карта не вылезала за границы
-            scale = Math.min(scaleX, scaleY);
-            // Но не меньше 1.0 (чтобы карта не была меньше оригинала)
-            scale = Math.max(scale, 1.0);
-            updateScale();
+        // ===== ЦЕНТРИРОВАНИЕ =====
+        function center() {
+            const rect = wrapper.getBoundingClientRect();
+            const sx = rect.width / IMG_W;
+            const sy = rect.height / IMG_H;
+            initialScale = Math.max(sx, sy, 1.0); // Запоминаем начальный масштаб
+            scale = initialScale;
+            tx = (rect.width - IMG_W * scale) / 2;
+            ty = (rect.height - IMG_H * scale) / 2;
+            update();
         }
 
-        // ===== ЗУМ КОЛЕСИКОМ (как на форуме, но с ограничениями) =====
-        container.addEventListener('wheel', function(e) {
+        // ===== ЗУМ ОТ ЦЕНТРА (С ОГРАНИЧЕНИЕМ НА УМЕНЬШЕНИЕ) =====
+        wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-            // Определяем направление прокрутки
-            const delta = e.deltaY || e.detail || e.wheelDelta;
-            let newScale = scale;
+            const rect = wrapper.getBoundingClientRect();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
 
-            if (delta > 0) {
-                // Крутим вниз — уменьшаем
-                newScale = scale - 0.05;
-                if (newScale < MIN_SCALE) newScale = MIN_SCALE;
-            } else {
-                // Крутим вверх — увеличиваем
-                newScale = scale + 0.05;
-                if (newScale > MAX_SCALE) newScale = MAX_SCALE;
-            }
+            const delta = e.deltaY > 0 ? -0.08 : 0.08;
+            let newScale = scale + delta;
+            
+            // ===== ГЛАВНОЕ: НЕ ДАЁМ СТАТЬ МЕНЬШЕ НАЧАЛЬНОГО МАСШТАБА =====
+            newScale = Math.min(Math.max(newScale, initialScale), 2.0);
 
-            // Если масштаб не изменился — ничего не делаем
             if (newScale === scale) return;
 
+            const px = (cx - tx) / (IMG_W * scale);
+            const py = (cy - ty) / (IMG_H * scale);
+
+            const newW = IMG_W * newScale;
+            const newH = IMG_H * newScale;
+
+            tx = cx - px * newW;
+            ty = cy - py * newH;
+
+            const maxX = rect.width - newW;
+            const maxY = rect.height - newH;
+            tx = Math.min(Math.max(tx, maxX), 0);
+            ty = Math.min(Math.max(ty, maxY), 0);
+
             scale = newScale;
-            updateScale();
+            update();
         }, { passive: false });
 
         // ===== ПЕРЕТАСКИВАНИЕ =====
-        let isDragging = false;
-        let startX, startY, startScrollLeft, startScrollTop;
-
-        container.addEventListener('mousedown', function(e) {
+        wrapper.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
-            isDragging = true;
+            dragging = true;
             startX = e.clientX;
             startY = e.clientY;
-            startScrollLeft = container.scrollLeft;
-            startScrollTop = container.scrollTop;
-            container.style.cursor = 'grabbing';
+            startTx = tx;
+            startTy = ty;
+            wrapper.style.cursor = 'grabbing';
         });
 
         window.addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            container.scrollLeft = startScrollLeft - dx;
-            container.scrollTop = startScrollTop - dy;
+            if (!dragging) return;
+            tx = startTx + (e.clientX - startX);
+            ty = startTy + (e.clientY - startY);
+
+            const rect = wrapper.getBoundingClientRect();
+            const maxX = rect.width - IMG_W * scale;
+            const maxY = rect.height - IMG_H * scale;
+            tx = Math.min(Math.max(tx, maxX), 0);
+            ty = Math.min(Math.max(ty, maxY), 0);
+
+            update();
         });
 
         window.addEventListener('mouseup', function() {
-            if (isDragging) {
-                isDragging = false;
-                container.style.cursor = 'grab';
+            if (dragging) {
+                dragging = false;
+                wrapper.style.cursor = 'grab';
             }
         });
 
         // ===== ЗАПУСК =====
         if (img.complete) {
-            centerImage();
+            center();
         } else {
-            img.addEventListener('load', centerImage);
+            img.addEventListener('load', center);
         }
 
-        // Запасной вариант, если картинка долго грузится
-        setTimeout(centerImage, 1000);
+        setTimeout(center, 500);
 
-        // Пересчёт при изменении размера окна
         let resizeTimer;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(centerImage, 100);
+            resizeTimer = setTimeout(center, 100);
         });
 
     })();
