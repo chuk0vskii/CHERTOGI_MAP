@@ -70,7 +70,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 100px 20px 40px;
     }
@@ -80,11 +80,21 @@
       font-size: 42px;
       color: #ffd700;
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 10px;
       text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
     }
 
-    .generator {
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ===== ГЕНЕРАТОР ЗНАКОВ ===== */
+    .sign-section {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
@@ -92,28 +102,28 @@
       margin-bottom: 30px;
     }
 
-    .generator-controls {
+    .sign-controls {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       align-items: flex-end;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
-    .generator-controls .field {
+    .sign-controls .field {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .generator-controls .field label {
+    .sign-controls .field label {
       font-size: 13px;
       color: rgba(255, 255, 255, 0.5);
       letter-spacing: 1px;
       text-transform: uppercase;
     }
 
-    .generator-controls .field select {
+    .sign-controls .field select {
       padding: 10px 16px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -125,16 +135,16 @@
       transition: border-color 0.3s;
     }
 
-    .generator-controls .field select:hover {
+    .sign-controls .field select:hover {
       border-color: rgba(255, 215, 0, 0.4);
     }
 
-    .generator-controls .field select:focus {
+    .sign-controls .field select:focus {
       outline: none;
       border-color: #ffd700;
     }
 
-    .generator-controls .field select option {
+    .sign-controls .field select option {
       background: #1a1a2e;
       color: white;
     }
@@ -163,49 +173,185 @@
       transform: scale(0.96);
     }
 
-    .result {
+    .sign-result {
       background: rgba(255, 215, 0, 0.05);
       border: 1px solid rgba(255, 215, 0, 0.15);
       border-radius: 12px;
-      padding: 25px 30px;
-      min-height: 120px;
+      padding: 20px 25px;
+      min-height: 80px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       transition: all 0.4s ease;
     }
 
-    .result .number {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.3);
-      letter-spacing: 1px;
-    }
-
-    .result .number strong {
-      color: #ffd700;
-      font-size: 18px;
-    }
-
-    .result .title {
-      font-size: 24px;
+    .sign-result .title {
+      font-size: 20px;
       color: #ffd700;
       font-weight: bold;
       font-family: 'Calypso', 'Times New Roman', serif;
     }
 
-    .result .description {
-      font-size: 16px;
-      line-height: 1.8;
+    .sign-result .description {
+      font-size: 15px;
+      line-height: 1.6;
       color: #ccc;
     }
 
-    .result-placeholder {
-      color: rgba(255, 255, 255, 0.15);
-      text-align: center;
-      font-size: 18px;
-      padding: 20px 0;
+    .sign-result .meta {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 1px;
     }
 
+    .sign-result .meta strong {
+      color: #ffd700;
+    }
+
+    .sign-result-placeholder {
+      color: rgba(255, 255, 255, 0.15);
+      text-align: center;
+      font-size: 16px;
+      padding: 15px 0;
+    }
+
+    /* ===== КАЛЬКУЛЯТОР СЛОЖНОСТИ ===== */
+    .calculator {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 30px;
+      margin-top: 30px;
+    }
+
+    .calculator h2 {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px;
+      color: #ffd700;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .calc-table {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .calc-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      border-left: 3px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .calc-row .label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #ffd700;
+      min-width: 170px;
+    }
+
+    .calc-row .label .examples {
+      font-weight: normal;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.3);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .calc-row select {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 14px;
+      min-width: 160px;
+      cursor: pointer;
+      transition: border-color 0.3s;
+      flex: 1;
+      max-width: 260px;
+    }
+
+    .calc-row select:hover {
+      border-color: rgba(255, 215, 0, 0.4);
+    }
+
+    .calc-row select:focus {
+      outline: none;
+      border-color: #ffd700;
+    }
+
+    .calc-row select option {
+      background: #1a1a2e;
+      color: white;
+    }
+
+    .calc-row .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffd700;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .total-difficulty {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.02));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 12px;
+      padding: 18px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .total-difficulty .label {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1px;
+    }
+
+    .total-difficulty .value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    }
+
+    .total-difficulty .value .modifier {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: normal;
+    }
+
+    .difficulty-change {
+      display: inline-block;
+      padding: 2px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      margin-left: 8px;
+    }
+
+    .difficulty-change.positive {
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.15);
+    }
+
+    .difficulty-change.negative {
+      color: #51cf66;
+      background: rgba(81, 207, 102, 0.15);
+    }
+
+    /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .top-banner {
         height: 56px;
@@ -227,10 +373,22 @@
       h1 {
         font-size: 30px;
       }
-      .generator {
-        padding: 20px;
+      .calc-row {
+        flex-direction: column;
+        align-items: stretch;
       }
-      .generator-controls {
+      .calc-row .label {
+        min-width: auto;
+      }
+      .calc-row select {
+        max-width: none;
+        width: 100%;
+      }
+      .total-difficulty {
+        flex-direction: column;
+        text-align: center;
+      }
+      .sign-controls {
         flex-direction: column;
         align-items: stretch;
       }
@@ -238,12 +396,6 @@
         margin-left: 0;
         width: 100%;
         justify-content: center;
-      }
-      .result .title {
-        font-size: 20px;
-      }
-      .result .description {
-        font-size: 15px;
       }
     }
 
@@ -268,11 +420,8 @@
       h1 {
         font-size: 24px;
       }
-      .result .title {
-        font-size: 18px;
-      }
-      .result .description {
-        font-size: 14px;
+      .total-difficulty .value {
+        font-size: 26px;
       }
     }
   </style>
@@ -290,12 +439,14 @@
 
 <div class="container">
   <h1>⚜️ Фаза Знаки</h1>
+  <div class="subtitle">Судьба определяет твой путь</div>
 
-  <div class="generator">
-    <div class="generator-controls">
+  <!-- ===== ГЕНЕРАТОР ЗНАКОВ ===== -->
+  <div class="sign-section">
+    <div class="sign-controls">
       <div class="field">
-        <label for="bonus">Бонус знаков</label>
-        <select id="bonus">
+        <label for="signBonus">Бонус знаков</label>
+        <select id="signBonus">
           <option value="0">0</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -309,127 +460,187 @@
           <option value="10">10</option>
         </select>
       </div>
-      <button class="btn-draw" id="drawBtn">🎲 Сделать проверку</button>
+      <button class="btn-draw" id="drawSignBtn">🎲 Сделать проверку</button>
     </div>
 
-    <div class="result" id="result">
-      <div class="result-placeholder">Нажмите «Сделать проверку», чтобы узнать свой знак</div>
+    <div class="sign-result" id="signResult">
+      <div class="sign-result-placeholder">Нажмите «Сделать проверку», чтобы узнать свой знак</div>
+    </div>
+  </div>
+
+  <!-- ===== КАЛЬКУЛЯТОР СЛОЖНОСТИ ===== -->
+  <div class="calculator">
+    <h2>⚔️ Сложность Пути</h2>
+
+    <div class="calc-table">
+      <!-- Длительность -->
+      <div class="calc-row">
+        <div class="label">
+          Длительность
+          <span class="examples">Короткое, Среднее, Длительное, Экспедиция</span>
+        </div>
+        <select id="duration">
+          <option value="0">Выберите</option>
+          <option value="1">Короткое +1</option>
+          <option value="2">Среднее +2</option>
+          <option value="3">Длительное +3</option>
+          <option value="4">Экспедиция +4</option>
+        </select>
+        <span class="value" id="durationValue">+0</span>
+      </div>
+
+      <!-- Проходимость Местности -->
+      <div class="calc-row">
+        <div class="label">
+          Проходимость Местности
+          <span class="examples">Легкая, Средняя, Тяжелая, Смертельная</span>
+        </div>
+        <select id="terrain">
+          <option value="0">Выберите</option>
+          <option value="1">Легкая сложность +1</option>
+          <option value="2">Средней сложности +2</option>
+          <option value="3">Тяжелая сложность +3</option>
+          <option value="4">Смертельная сложность +4</option>
+        </select>
+        <span class="value" id="terrainValue">+0</span>
+      </div>
+
+      <!-- Опасности -->
+      <div class="calc-row">
+        <div class="label">
+          Опасности
+          <span class="examples">Сверх Опасно, Смертельно, Готовься к концу, Встреча с судьбой</span>
+        </div>
+        <select id="danger">
+          <option value="0">Выберите</option>
+          <option value="1">Сверх Опасно +1</option>
+          <option value="2">Смертельно +2</option>
+          <option value="3">Готовься на конец +3</option>
+          <option value="4">Встреча с судьбой +4</option>
+        </select>
+        <span class="value" id="dangerValue">+0</span>
+      </div>
+    </div>
+
+    <!-- ИТОГОВАЯ СЛОЖНОСТЬ -->
+    <div class="total-difficulty">
+      <span class="label">⚔️ Сложность Пути</span>
+      <span class="value">
+        <span id="totalDifficulty">0</span>
+        <span class="modifier" id="signModifier"></span>
+      </span>
     </div>
   </div>
 </div>
 
 <script>
+  // ===== БАЗА ЗНАКОВ (1–20) =====
   const SIGNS = [
     null,
-    {
-      title: 'Знак Тьмы',
-      description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда–либо. Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.'
-    },
-    {
-      title: 'Знак Рока',
-      description: 'Знак влечет ощущение неминуемого конца и мысли о том, что это путешествие — плохая идея. До первой успешной проверки, все проверки группы совершаются с помехой.'
-    },
-    {
-      title: 'Знак Зверя',
-      description: 'Знак означает, что что-то охотится в Чертогах, и оно знает, что вы отправляетесь в путь. Группа не может избежать встреч с опасными существами в фазе Путь.'
-    },
-    {
-      title: 'Знак Красного Ветра',
-      description: 'Это знак вражды Акрепы и Нарара, что означает бушующий ветер и изменение песков. Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.'
-    },
-    {
-      title: 'Знак Ай\'анги',
-      description: 'Этот знак означает, что Ай\'aнга недоволен, предвидятся буря. Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.'
-    },
-    {
-      title: 'Знак Червя',
-      description: 'Знак предвещает беду с провизией и едой. Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.'
-    },
-    {
-      title: 'Знак Золотого Плода',
-      description: 'Предвещает невероятный пир и то, что еда будет вкусна, словно нектар богов. Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.'
-    },
-    {
-      title: 'Знак Вдохновения',
-      description: 'Знак предвещает невероятные виды и хорошую погоду, которая вдохновляет группу. Первый бросок для избежания усталости, группа делает с преимуществом.'
-    },
-    {
-      title: 'Знак Нарара',
-      description: 'Знак означает благословение северного ветра, который поможет в пути группе. Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).'
-    },
-    {
-      title: 'Знак Шамаса',
-      description: 'Знак предвещает, что лучи Шамаса не позволят опасности скрыться от ваших глаз. Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.'
-    },
-    {
-      title: 'Знак Шептуна',
-      description: 'Знак означает невероятное вдохновение на приключение и предчувствие удачи. Все в группе получают 1 кость удачи на фазу Путь.'
-    },
-    {
-      title: 'Знак Звёзд',
-      description: 'Знак высшего оберега, звезды следят за вами и надеются на поступки, которые долетят до Тингира. Сложность пути понижается на 2.'
-    },
-    {
-      title: 'Знак Голода',
-      description: 'Знак предвещает встречу с голодными духами, которые хотят, чтобы и вы познали их голод. Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.'
-    },
-    {
-      title: 'Знак Золотой Нити',
-      description: 'Знак означает невероятную удачу и поддержку судьбы. В фазе Путь все проверки ролей делаются с преимуществом.'
-    },
-    {
-      title: 'Знак Закрытого Ока',
-      description: 'Знак предвещает трудную видимость под дозором Ману. +1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.'
-    },
-    {
-      title: 'Знак Прибытия',
-      description: 'Знак предвещает тяжелый путь, но легкое прибытие к цели. Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.'
-    },
-    {
-      title: 'Знак Пути',
-      description: 'Знак предвещает легкий путь, но тяжелое прибытие к цели. Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.'
-    },
-    {
-      title: 'Знак Конца',
-      description: 'Знак означает смерть, двуглавые совы бдят, чтобы обрезать нить судьбы искателя. Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.'
-    },
-    {
-      title: 'Знак Черного Треугольника',
-      description: 'Знак показывает дребезжание в нитях судьбы, и Вуаль это слышит. При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.'
-    },
-    {
-      title: 'Знак Очага',
-      description: 'Знак предвещает легкое возвращение домой. Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.'
-    }
+    { title: 'Знак Тьмы', description: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.', mod: 2 },
+    { title: 'Знак Рока', description: 'До первой успешной проверки, все проверки группы совершаются с помехой.', mod: 0 },
+    { title: 'Знак Зверя', description: 'Группа не может избежать встреч с опасными существами в фазе Путь.', mod: 0 },
+    { title: 'Знак Красного Ветра', description: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.', mod: 1 },
+    { title: 'Знак Ай\'анги', description: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.', mod: 1 },
+    { title: 'Знак Червя', description: 'Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.', mod: 1 },
+    { title: 'Знак Золотого Плода', description: 'Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.', mod: -1 },
+    { title: 'Знак Вдохновения', description: 'Первый бросок для избежания усталости, группа делает с преимуществом.', mod: 0 },
+    { title: 'Знак Нарара', description: 'Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).', mod: -1 },
+    { title: 'Знак Шамаса', description: 'Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.', mod: 0 },
+    { title: 'Знак Шептуна', description: 'Все в группе получают 1 кость удачи на фазу Путь.', mod: 0 },
+    { title: 'Знак Звёзд', description: 'Сложность пути понижается на 2.', mod: -2 },
+    { title: 'Знак Голода', description: 'Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.', mod: 0 },
+    { title: 'Знак Золотой Нити', description: 'В фазе Путь все проверки ролей делаются с преимуществом.', mod: 0 },
+    { title: 'Знак Закрытого Ока', description: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.', mod: 0 },
+    { title: 'Знак Прибытия', description: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.', mod: 0 },
+    { title: 'Знак Пути', description: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.', mod: 0 },
+    { title: 'Знак Конца', description: 'Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.', mod: 0 },
+    { title: 'Знак Черного Треугольника', description: 'При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.', mod: 0 },
+    { title: 'Знак Очага', description: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.', mod: -3 }
   ];
 
-  const bonusSelect = document.getElementById('bonus');
-  const drawBtn = document.getElementById('drawBtn');
-  const resultDiv = document.getElementById('result');
+  // ===== ЭЛЕМЕНТЫ ГЕНЕРАТОРА =====
+  const signBonusSelect = document.getElementById('signBonus');
+  const drawSignBtn = document.getElementById('drawSignBtn');
+  const signResultDiv = document.getElementById('signResult');
 
+  // ===== ЭЛЕМЕНТЫ КАЛЬКУЛЯТОРА =====
+  const durationSelect = document.getElementById('duration');
+  const terrainSelect = document.getElementById('terrain');
+  const dangerSelect = document.getElementById('danger');
+  const durationValue = document.getElementById('durationValue');
+  const terrainValue = document.getElementById('terrainValue');
+  const dangerValue = document.getElementById('dangerValue');
+  const totalDisplay = document.getElementById('totalDifficulty');
+  const signModifierDisplay = document.getElementById('signModifier');
+
+  // ===== СОСТОЯНИЕ =====
+  let currentSignMod = 0;
+
+  // ===== ОБНОВЛЕНИЕ СЛОЖНОСТИ =====
+  function updateDifficulty() {
+    const duration = parseInt(durationSelect.value, 10) || 0;
+    const terrain = parseInt(terrainSelect.value, 10) || 0;
+    const danger = parseInt(dangerSelect.value, 10) || 0;
+
+    durationValue.textContent = duration > 0 ? `+${duration}` : '+0';
+    terrainValue.textContent = terrain > 0 ? `+${terrain}` : '+0';
+    dangerValue.textContent = danger > 0 ? `+${danger}` : '+0';
+
+    let total = duration + terrain + danger + currentSignMod;
+    if (total < 0) total = 0;
+
+    totalDisplay.textContent = total;
+
+    if (currentSignMod > 0) {
+      signModifierDisplay.textContent = ` (+${currentSignMod} от знака)`;
+      signModifierDisplay.style.color = '#ff6b6b';
+    } else if (currentSignMod < 0) {
+      signModifierDisplay.textContent = ` (${currentSignMod} от знака)`;
+      signModifierDisplay.style.color = '#51cf66';
+    } else {
+      signModifierDisplay.textContent = '';
+    }
+  }
+
+  // ===== ГЕНЕРАЦИЯ ЗНАКА =====
   function drawSign() {
-    const bonus = parseInt(bonusSelect.value, 10);
+    const bonus = parseInt(signBonusSelect.value, 10);
     const random = Math.floor(Math.random() * 20) + 1;
     let index = random + bonus;
     if (index > 20) index = 20;
 
     const sign = SIGNS[index];
     if (!sign) {
-      resultDiv.innerHTML = `<div class="result-placeholder">⚠️ Знак не найден. Попробуйте снова.</div>`;
+      signResultDiv.innerHTML = `<div class="sign-result-placeholder">⚠️ Знак не найден. Попробуйте снова.</div>`;
       return;
     }
 
-    resultDiv.innerHTML = `
-      <div class="number">
+    // Обновляем модификатор сложности
+    currentSignMod = sign.mod || 0;
+
+    signResultDiv.innerHTML = `
+      <div class="meta">
         Выпало: <strong>${random}</strong> 
-        ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffd700;font-size:20px;">${index}</strong>` : ''}
+        ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffd700;font-size:18px;">${index}</strong>` : ''}
+        ${sign.mod !== 0 ? ` | Изменение сложности: <strong style="color:${sign.mod > 0 ? '#ff6b6b' : '#51cf66'}">${sign.mod > 0 ? '+' : ''}${sign.mod}</strong>` : ''}
       </div>
       <div class="title">${sign.title}</div>
       <div class="description">${sign.description}</div>
     `;
+
+    updateDifficulty();
   }
 
-  drawBtn.addEventListener('click', drawSign);
+  // ===== ОБРАБОТЧИКИ =====
+  drawSignBtn.addEventListener('click', drawSign);
+
+  durationSelect.addEventListener('change', updateDifficulty);
+  terrainSelect.addEventListener('change', updateDifficulty);
+  dangerSelect.addEventListener('change', updateDifficulty);
+
+  // ===== ПЕРВЫЙ ЗАПУСК =====
+  updateDifficulty();
 </script>
 
 </body>
