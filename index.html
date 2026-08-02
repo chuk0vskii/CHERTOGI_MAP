@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Карта с метками</title>
+  <title>Огненные чертоги</title>
   <style>
     * {
       margin: 0;
@@ -26,6 +26,45 @@
     }
     .wrapper:active {
       cursor: grabbing;
+    }
+
+    /* ===== ВЕРХНИЙ БАННЕР ===== */
+    .top-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 0 20px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+      user-select: none;
+    }
+
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 32px;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      letter-spacing: 4px;
+      font-weight: normal;
+    }
+
+    .top-banner .subtitle {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 2px;
+      margin-left: 20px;
+      padding-left: 20px;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      text-transform: uppercase;
     }
 
     /* ===== КАРТА ===== */
@@ -97,11 +136,11 @@
       opacity: 1;
     }
 
-    /* ===== ИНФОРМАЦИОННОЕ ОКНО (СПРАВА) ===== */
+    /* ===== ИНФОРМАЦИОННОЕ ОКНО ===== */
     .info-panel {
       position: fixed;
       top: 0;
-      right: -450px; /* Скрыто за экраном */
+      right: -450px;
       width: 400px;
       height: 100vh;
       background: linear-gradient(135deg, #1a1a2e, #2d2d44);
@@ -169,7 +208,6 @@
       border-left: 3px solid #ffd700;
     }
 
-    /* Оверлей (затемнение фона) */
     .overlay {
       position: fixed;
       top: 0;
@@ -187,18 +225,61 @@
       opacity: 1;
       pointer-events: auto;
     }
+
+    /* ===== АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ УСТРОЙСТВА ===== */
+    @media (max-width: 768px) {
+      .top-banner {
+        height: 56px;
+      }
+      .top-banner .title {
+        font-size: 22px;
+        letter-spacing: 2px;
+      }
+      .top-banner .subtitle {
+        display: none;
+      }
+      .info-panel {
+        width: 320px;
+        right: -360px;
+      }
+      .info-panel-title {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-banner {
+        height: 48px;
+      }
+      .top-banner .title {
+        font-size: 18px;
+        letter-spacing: 1px;
+      }
+      .info-panel {
+        width: 280px;
+        right: -320px;
+        padding: 20px 16px;
+      }
+      .info-panel-title {
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
 
+<!-- ===== ВЕРХНИЙ БАННЕР ===== -->
+<div class="top-banner">
+  <span class="title">Огненные чертоги</span>
+  <span class="subtitle">Интерактивная карта</span>
+</div>
+
+<!-- ===== КАРТА И МЕТКИ ===== -->
 <div class="wrapper" id="mapWrapper">
-  <!-- КАРТА -->
   <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
 
-  <!-- КОНТЕЙНЕР С МЕТКАМИ -->
   <div class="markers-container" id="markersContainer">
 
-    <!-- ===== МЕТКА 1 (твоя иконка) ===== -->
     <div class="marker" style="left: 1500px; top: 800px;" 
          data-name="Штаб синдиката"
          data-description="Здесь находится главный штаб синдиката. Вход строго по пропускам.">
@@ -206,7 +287,6 @@
       <span class="marker-tooltip">Штаб синдиката</span>
     </div>
 
-    <!-- ===== МЕТКА 2 (замок) ===== -->
     <div class="marker" style="left: 2800px; top: 1200px;" 
          data-name="Замок графа"
          data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
@@ -214,7 +294,6 @@
       <span class="marker-tooltip">Замок графа</span>
     </div>
 
-    <!-- ===== МЕТКА 3 (деревня) ===== -->
     <div class="marker" style="left: 3800px; top: 600px;" 
          data-name="Деревня Ольховка"
          data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
@@ -259,14 +338,12 @@
     let minScale = 1;
     const MAX_SCALE = 2.0;
 
-    // ===== ОБНОВЛЕНИЕ ТРАНСФОРМАЦИИ =====
     function update() {
       const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       img.style.transform = transform;
       markersContainer.style.transform = transform;
     }
 
-    // ===== ЦЕНТРИРОВАНИЕ =====
     function center() {
       const rect = wrapper.getBoundingClientRect();
       const sx = rect.width / IMG_W;
@@ -278,7 +355,6 @@
       update();
     }
 
-    // ===== ЗУМ ПОД КУРСОРОМ =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
@@ -310,7 +386,6 @@
       update();
     }, { passive: false });
 
-    // ===== ПЕРЕТАСКИВАНИЕ =====
     let isDragging = false;
     let startX, startY, startTx, startTy;
 
@@ -345,23 +420,20 @@
       }
     });
 
-    // ===== ОТКРЫТИЕ ИНФО-ОКНА ПРИ КЛИКЕ НА МЕТКУ =====
+    // ===== ОТКРЫТИЕ ИНФО-ОКНА =====
     document.querySelectorAll('.marker').forEach(marker => {
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
-
         const name = this.dataset.name || 'Без названия';
         const description = this.dataset.description || 'Описание отсутствует.';
-
         infoTitle.textContent = name;
         infoDescription.textContent = description;
-
         infoPanel.classList.add('open');
         overlay.classList.add('active');
       });
     });
 
-    // ===== ЗАКРЫТИЕ ИНФО-ОКНА =====
+    // ===== ЗАКРЫТИЕ =====
     function closeInfo() {
       infoPanel.classList.remove('open');
       overlay.classList.remove('active');
@@ -369,12 +441,8 @@
 
     infoClose.addEventListener('click', closeInfo);
     overlay.addEventListener('click', closeInfo);
-
-    // Закрытие по Escape
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeInfo();
-      }
+      if (e.key === 'Escape') closeInfo();
     });
 
     // ===== ЗАПУСК =====
