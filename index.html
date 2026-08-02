@@ -93,7 +93,7 @@
 
             // Новый масштаб
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
-            const newScale = Math.min(Math.max(scale + delta, 0.5), 2.0);
+            const newScale = Math.min(Math.max(scale + delta, 0.1), 2.0);
 
             if (newScale === scale) return;
 
