@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Карта с зумом</title>
+  <title>Карта</title>
   
   <!-- OpenLayers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
@@ -20,6 +20,9 @@
       background: #1a1a2e;
       overflow: hidden;
       height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     #map {
@@ -28,7 +31,6 @@
       position: relative;
     }
 
-    /* Информация о зуме */
     .zoom-info {
       position: fixed;
       bottom: 30px;
@@ -62,6 +64,11 @@
       pointer-events: none;
       z-index: 1000;
       text-align: center;
+    }
+
+    /* Стили для корректного отображения */
+    .ol-viewport {
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -108,7 +115,6 @@
 
     function updateZoomDisplay() {
       const zoom = view.getZoom();
-      // Переводим зум в проценты (от 0.2 до 2.5)
       const minZoom = view.getMinZoom();
       const maxZoom = view.getMaxZoom();
       const percent = Math.round(((zoom - minZoom) / (maxZoom - minZoom)) * 100);
@@ -123,20 +129,14 @@
       map.updateSize();
     });
 
-    // ===== ИСПРАВЛЕНИЕ: не даём OpenLayers перехватывать клики =====
-    // Убираем стандартное поведение перетаскивания, чтобы не было конфликтов
-    const interactions = map.getInteractions();
-    interactions.forEach(function(interaction) {
-      if (interaction instanceof ol.interaction.DragPan) {
-        interaction.setActive(true); // Оставляем только перетаскивание
-      }
-    });
-
     // ===== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ =====
     setTimeout(function() {
       map.updateSize();
       view.setCenter([0, 0]);
     }, 1000);
+
+    // ===== ОТЛАДКА =====
+    console.log('Карта инициализирована');
 
   })();
 </script>
