@@ -65,7 +65,7 @@
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+           const delta = e.deltaY > 0 ? -0.03 : 0.03;
             let newScale = scale + delta;
             newScale = Math.min(Math.max(newScale, 1.0), 3.0);
 
