@@ -37,7 +37,7 @@
 
     .map-container {
       position: relative;
-      transform-origin: 0 0; /* Важно для правильного масштабирования */
+      transform-origin: center center; /* Центрируем точку трансформации */
       will-change: transform;
     }
 
@@ -91,7 +91,6 @@
 
 <div class="map-wrapper" id="mapWrapper">
   <div class="map-container" id="mapContainer">
-    <!-- ССЫЛКА НА ТВОЮ КАРТУ (JPG) -->
     <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
   </div>
 </div>
@@ -108,9 +107,9 @@
     const zoomDisplay = document.getElementById('zoomLevel');
 
     // ===== ПАРАМЕТРЫ =====
-    const MIN_SCALE = 0.3;    // Минимальный зум
-    const MAX_SCALE = 1.5;    // Максимальный зум
-    const ZOOM_STEP = 0.08;   // Шаг зума
+    const MIN_SCALE = 0.3;
+    const MAX_SCALE = 1.5;
+    const ZOOM_STEP = 0.08;
 
     // ===== СОСТОЯНИЕ =====
     let scale = 1;
@@ -129,6 +128,7 @@
       const containerWidth = 5100 * scale;
       const containerHeight = 2500 * scale;
 
+      // Считаем, чтобы карта была по центру
       translateX = (wrapperRect.width - containerWidth) / 2;
       translateY = (wrapperRect.height - containerHeight) / 2;
 
@@ -155,22 +155,22 @@
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
-      // Получаем координаты мыши относительно контейнера
+      // Получаем координаты мыши относительно картинки
       const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // Вычисляем новый масштаб
+      // Новый масштаб
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // Координаты точки под мышью в системе координат карты (до зума)
+      // Координаты точки под мышью внутри карты
       const mapX = (mouseX - translateX) / scale;
       const mapY = (mouseY - translateY) / scale;
 
-      // Обновляем масштаб
+      // Применяем новый масштаб
       scale = newScale;
 
       // Новое смещение, чтобы точка под мышью осталась на месте
