@@ -37,8 +37,9 @@
 
     .map-container {
       position: relative;
-      transform-origin: center center; /* Центрируем точку трансформации */
+      transform-origin: 0 0; /* Простая точка отсчёта */
       will-change: transform;
+      /* Начальное положение — центрируем через JavaScript */
     }
 
     .map-container img {
@@ -106,7 +107,11 @@
     const container = document.getElementById('mapContainer');
     const zoomDisplay = document.getElementById('zoomLevel');
 
-    // ===== ПАРАМЕТРЫ =====
+    // ===== РАЗМЕРЫ КАРТЫ (измени под свои) =====
+    const MAP_WIDTH = 5100;
+    const MAP_HEIGHT = 2500;
+
+    // ===== ПАРАМЕТРЫ ЗУМА =====
     const MIN_SCALE = 0.3;
     const MAX_SCALE = 1.5;
     const ZOOM_STEP = 0.08;
@@ -122,26 +127,28 @@
       zoomDisplay.textContent = Math.round(scale * 100);
     }
 
-    // ===== ЦЕНТРИРОВАНИЕ =====
+    // ===== ЦЕНТРИРОВАНИЕ КАРТЫ =====
     function centerMap() {
       const wrapperRect = wrapper.getBoundingClientRect();
-      const containerWidth = 5100 * scale;
-      const containerHeight = 2500 * scale;
+      const containerWidth = MAP_WIDTH * scale;
+      const containerHeight = MAP_HEIGHT * scale;
 
-      // Считаем, чтобы карта была по центру
+      // Смещаем так, чтобы карта была по центру
       translateX = (wrapperRect.width - containerWidth) / 2;
       translateY = (wrapperRect.height - containerHeight) / 2;
 
+      // Не даём уехать за границы
       constrainTranslate();
       updateTransform();
     }
 
-    // ===== ОГРАНИЧЕНИЕ СМЕЩЕНИЯ =====
+    // ===== ОГРАНИЧЕНИЕ ПЕРЕМЕЩЕНИЯ =====
     function constrainTranslate() {
       const wrapperRect = wrapper.getBoundingClientRect();
-      const containerWidth = 5100 * scale;
-      const containerHeight = 2500 * scale;
+      const containerWidth = MAP_WIDTH * scale;
+      const containerHeight = MAP_HEIGHT * scale;
 
+      // Минимальное и максимальное смещение
       const minX = wrapperRect.width - containerWidth;
       const maxX = 0;
       translateX = Math.min(Math.max(translateX, minX), maxX);
@@ -151,26 +158,26 @@
       translateY = Math.min(Math.max(translateY, minY), maxY);
     }
 
-    // ===== ЗУМ ОТНОСИТЕЛЬНО КУРСОРА =====
+    // ===== ЗУМ КОЛЕСИКОМ (относительно курсора) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
-      // Получаем координаты мыши относительно картинки
+      // Если карта ещё не загружена — ничего не делаем
+      if (!container.querySelector('img').complete) return;
+
       const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // Новый масштаб
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // Координаты точки под мышью внутри карты
+      // Старые координаты точки под мышью внутри карты
       const mapX = (mouseX - translateX) / scale;
       const mapY = (mouseY - translateY) / scale;
 
-      // Применяем новый масштаб
       scale = newScale;
 
       // Новое смещение, чтобы точка под мышью осталась на месте
@@ -181,7 +188,7 @@
       updateTransform();
     }, { passive: false });
 
-    // ===== ПЕРЕТАСКИВАНИЕ МЫШЬЮ =====
+    // ===== ПЕРЕТАСКИВАНИЕ =====
     let isDragging = false;
     let startX, startY, startTranslateX, startTranslateY;
 
@@ -212,22 +219,32 @@
       }
     });
 
-    // ===== ПЕРЕСТРОЕНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
+    // ===== АДАПТАЦИЯ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(centerMap, 100);
     });
 
-    // ===== ЗАПУСК =====
+    // ===== ЗАПУСК ПОСЛЕ ЗАГРУЗКИ =====
     const img = container.querySelector('img');
-    if (img.complete) {
+
+    function onImageLoad() {
       centerMap();
-    } else {
-      img.addEventListener('load', centerMap);
     }
 
-    setTimeout(centerMap, 500);
+    if (img.complete) {
+      onImageLoad();
+    } else {
+      img.addEventListener('load', onImageLoad);
+    }
+
+    // Запасной вариант — если картинка не загрузилась за 2 секунды
+    setTimeout(function() {
+      if (scale === 1 && translateX === 0 && translateY === 0) {
+        centerMap();
+      }
+    }, 2000);
 
   })();
 </script>
