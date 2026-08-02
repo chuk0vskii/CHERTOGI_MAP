@@ -2,165 +2,126 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Карта с зумом</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта (OpenLayers)</title>
+
+    <!-- ===== OpenLayers (как на референсе) ===== -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: #1a1a2e;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-
-        .wrapper {
+        #map {
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
             position: relative;
-            cursor: grab;
         }
-
-        .wrapper:active {
-            cursor: grabbing;
-        }
-
-        .wrapper img {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform-origin: 0 0;
-            will-change: transform;
+        .zoom-info {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #aaa;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             pointer-events: none;
-            user-select: none;
-            -webkit-user-drag: none;
+            z-index: 1000;
+        }
+        .zoom-info span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .hint {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.3);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 1000;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<div class="wrapper" id="mapWrapper">
-    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта" id="mapImage">
-</div>
+<div id="map"></div>
+
+<div class="zoom-info">Зум: <span id="zoomLevel">100</span>%</div>
+<div class="hint">🖱 Колесико мыши — приблизить / отдалить</div>
 
 <script>
     (function() {
-        const img = document.getElementById('mapImage');
-        const wrapper = document.getElementById('mapWrapper');
-
         // ===== РАЗМЕРЫ КАРТЫ =====
-        const IMG_W = 5100;
-        const IMG_H = 2500;
+        const MAP_W = 5100;
+        const MAP_H = 2500;
+        const MAP_URL = 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg';
 
-        // ===== СОСТОЯНИЕ =====
-        let scale = 1;
-        let tx = 0;
-        let ty = 0;
-        let dragging = false;
-        let startX, startY, startTx, startTy;
-
-        // ===== ОБНОВЛЕНИЕ =====
-        function update() {
-            img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-        }
-
-        // ===== ЦЕНТРИРОВАНИЕ =====
-        function center() {
-            const rect = wrapper.getBoundingClientRect();
-            const sx = rect.width / IMG_W;
-            const sy = rect.height / IMG_H;
-            scale = Math.max(sx, sy, 1.0);
-            tx = (rect.width - IMG_W * scale) / 2;
-            ty = (rect.height - IMG_H * scale) / 2;
-            update();
-        }
-
-        // ===== ЗУМ ОТ ЦЕНТРА =====
-        wrapper.addEventListener('wheel', function(e) {
-            e.preventDefault();
-
-            const rect = wrapper.getBoundingClientRect();
-            const cx = rect.width / 2;
-            const cy = rect.height / 2;
-
-            const delta = e.deltaY > 0 ? -0.08 : 0.08;
-            let newScale = scale + delta;
-            newScale = Math.min(Math.max(newScale, 0.1), 3.0);
-
-            if (newScale === scale) return;
-
-            const px = (cx - tx) / (IMG_W * scale);
-            const py = (cy - ty) / (IMG_H * scale);
-
-            const newW = IMG_W * newScale;
-            const newH = IMG_H * newScale;
-
-            tx = cx - px * newW;
-            ty = cy - py * newH;
-
-            const maxX = rect.width - newW;
-            const maxY = rect.height - newH;
-            tx = Math.min(Math.max(tx, maxX), 0);
-            ty = Math.min(Math.max(ty, maxY), 0);
-
-            scale = newScale;
-            update();
-        }, { passive: false });
-
-        // ===== ПЕРЕТАСКИВАНИЕ =====
-        wrapper.addEventListener('mousedown', function(e) {
-            if (e.button !== 0) return;
-            dragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startTx = tx;
-            startTy = ty;
-            wrapper.style.cursor = 'grabbing';
+        // ===== 1. СОЗДАЁМ КАРТУ (как в референсе) =====
+        const map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Image({
+                    source: new ol.source.ImageStatic({
+                        url: MAP_URL,
+                        imageSize: [MAP_W, MAP_H],
+                        projection: 'EPSG:3857'
+                    })
+                })
+            ],
+            view: new ol.View({
+                projection: 'EPSG:3857',
+                center: [0, 0],
+                zoom: 0.5,
+                minZoom: 0.2,
+                maxZoom: 2.5
+            }),
+            controls: [] // Убираем все кнопки
         });
 
-        window.addEventListener('mousemove', function(e) {
-            if (!dragging) return;
-            tx = startTx + (e.clientX - startX);
-            ty = startTy + (e.clientY - startY);
+        // ===== 2. ОТОБРАЖЕНИЕ ЗУМА =====
+        const zoomDisplay = document.getElementById('zoomLevel');
+        const view = map.getView();
 
-            const rect = wrapper.getBoundingClientRect();
-            const maxX = rect.width - IMG_W * scale;
-            const maxY = rect.height - IMG_H * scale;
-            tx = Math.min(Math.max(tx, maxX), 0);
-            ty = Math.min(Math.max(ty, maxY), 0);
-
-            update();
-        });
-
-        window.addEventListener('mouseup', function() {
-            if (dragging) {
-                dragging = false;
-                wrapper.style.cursor = 'grab';
-            }
-        });
-
-        // ===== ЗАПУСК =====
-        if (img.complete) {
-            center();
-        } else {
-            img.addEventListener('load', center);
+        function updateZoomDisplay() {
+            const zoom = view.getZoom();
+            const minZoom = view.getMinZoom();
+            const maxZoom = view.getMaxZoom();
+            const percent = Math.round(((zoom - minZoom) / (maxZoom - minZoom)) * 100);
+            zoomDisplay.textContent = Math.min(Math.max(percent, 0), 100) + '%';
         }
 
-        setTimeout(center, 500);
+        view.on('change:resolution', updateZoomDisplay);
+        setTimeout(updateZoomDisplay, 500);
 
-        let resizeTimer;
+        // ===== 3. ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
         window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(center, 100);
+            map.updateSize();
         });
 
+        setTimeout(function() {
+            map.updateSize();
+            view.setCenter([0, 0]);
+        }, 1000);
+
+        // ===== 4. (ОПЦИОНАЛЬНО) ОТЛАДКА =====
+        console.log('Карта OpenLayers загружена');
     })();
 </script>
 
