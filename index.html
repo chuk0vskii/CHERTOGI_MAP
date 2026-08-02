@@ -37,8 +37,7 @@
 
     .map-container {
       position: relative;
-      transform-origin: center center;
-      transition: transform 0.1s ease-out;
+      transform-origin: 0 0; /* Важно для правильного масштабирования */
       will-change: transform;
     }
 
@@ -92,8 +91,8 @@
 
 <div class="map-wrapper" id="mapWrapper">
   <div class="map-container" id="mapContainer">
-    <!-- ===== СЮДА ВСТАВЬ ССЫЛКУ НА ТВОЮ КАРТУ ===== -->
-    <img src="https://github.com/chuk0vskii/CHERTOGI_MAP/blob/main/map.jpg" alt="Карта">
+    <!-- ССЫЛКА НА ТВОЮ КАРТУ (JPG) -->
+    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
   </div>
 </div>
 
@@ -108,21 +107,23 @@
     const container = document.getElementById('mapContainer');
     const zoomDisplay = document.getElementById('zoomLevel');
 
-    const MIN_SCALE = 0.3;
-    const MAX_SCALE = 1.5;
-    const ZOOM_STEP = 0.08;
+    // ===== ПАРАМЕТРЫ =====
+    const MIN_SCALE = 0.3;    // Минимальный зум
+    const MAX_SCALE = 1.5;    // Максимальный зум
+    const ZOOM_STEP = 0.08;   // Шаг зума
 
+    // ===== СОСТОЯНИЕ =====
     let scale = 1;
-    let isDragging = false;
-    let startX, startY, startTranslateX, startTranslateY;
     let translateX = 0;
     let translateY = 0;
 
+    // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
     function updateTransform() {
       container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
       zoomDisplay.textContent = Math.round(scale * 100);
     }
 
+    // ===== ЦЕНТРИРОВАНИЕ =====
     function centerMap() {
       const wrapperRect = wrapper.getBoundingClientRect();
       const containerWidth = 5100 * scale;
@@ -131,36 +132,11 @@
       translateX = (wrapperRect.width - containerWidth) / 2;
       translateY = (wrapperRect.height - containerHeight) / 2;
 
-      translateX = Math.min(translateX, 0);
-      translateY = Math.min(translateY, 0);
-      translateX = Math.max(translateX, wrapperRect.width - containerWidth);
-      translateY = Math.max(translateY, wrapperRect.height - containerHeight);
-
+      constrainTranslate();
       updateTransform();
     }
 
-    wrapper.addEventListener('wheel', function(e) {
-      e.preventDefault();
-
-      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-      const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
-
-      if (newScale === scale) return;
-
-      const rect = container.getBoundingClientRect();
-      const mouseX = (e.clientX - rect.left) / scale;
-      const mouseY = (e.clientY - rect.top) / scale;
-
-      scale = newScale;
-
-      const newRect = container.getBoundingClientRect();
-      translateX = translateX + (e.clientX - newRect.left) - mouseX * scale;
-      translateY = translateY + (e.clientY - newRect.top) - mouseY * scale;
-
-      constrainTranslate();
-      updateTransform();
-    }, { passive: false });
-
+    // ===== ОГРАНИЧЕНИЕ СМЕЩЕНИЯ =====
     function constrainTranslate() {
       const wrapperRect = wrapper.getBoundingClientRect();
       const containerWidth = 5100 * scale;
@@ -174,6 +150,40 @@
       const maxY = 0;
       translateY = Math.min(Math.max(translateY, minY), maxY);
     }
+
+    // ===== ЗУМ ОТНОСИТЕЛЬНО КУРСОРА =====
+    wrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+
+      // Получаем координаты мыши относительно контейнера
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Вычисляем новый масштаб
+      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+      const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
+
+      if (newScale === scale) return;
+
+      // Координаты точки под мышью в системе координат карты (до зума)
+      const mapX = (mouseX - translateX) / scale;
+      const mapY = (mouseY - translateY) / scale;
+
+      // Обновляем масштаб
+      scale = newScale;
+
+      // Новое смещение, чтобы точка под мышью осталась на месте
+      translateX = mouseX - mapX * scale;
+      translateY = mouseY - mapY * scale;
+
+      constrainTranslate();
+      updateTransform();
+    }, { passive: false });
+
+    // ===== ПЕРЕТАСКИВАНИЕ МЫШЬЮ =====
+    let isDragging = false;
+    let startX, startY, startTranslateX, startTranslateY;
 
     wrapper.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
@@ -202,12 +212,14 @@
       }
     });
 
+    // ===== ПЕРЕСТРОЕНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(centerMap, 100);
     });
 
+    // ===== ЗАПУСК =====
     const img = container.querySelector('img');
     if (img.complete) {
       centerMap();
