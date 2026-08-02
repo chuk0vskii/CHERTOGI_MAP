@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Карта с зумом</title>
+    <title>Карта с зумом под курсором</title>
     <style>
         * {
             margin: 0;
@@ -25,18 +25,21 @@
             align-items: center;
             overflow: hidden;
             position: relative;
+            cursor: grab;
+        }
+        .wrapper:active {
+            cursor: grabbing;
         }
         .wrapper img {
             display: block;
             width: 100%;
             height: 100%;
             object-fit: contain;
-            cursor: grab;
             transform-origin: 0 0;
             will-change: transform;
-        }
-        .wrapper img:active {
-            cursor: grabbing;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
         }
     </style>
 </head>
@@ -48,6 +51,8 @@
 
 <script>
     (function() {
+        'use strict';
+
         const img = document.getElementById('mapImage');
         const wrapper = document.getElementById('mapWrapper');
 
@@ -56,42 +61,45 @@
         let translateX = 0;
         let translateY = 0;
 
-        // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
+        // ===== ОБНОВЛЕНИЕ =====
         function updateTransform() {
             img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
 
-        // ===== ЦЕНТРИРОВАНИЕ ПРИ ЗАГРУЗКЕ =====
+        // ===== ЦЕНТРИРОВАНИЕ =====
         function centerImage() {
             const wrapperRect = wrapper.getBoundingClientRect();
-            const imgRect = img.getBoundingClientRect();
-
-            // Размеры картинки в пикселях (оригинальные)
             const imgWidth = img.naturalWidth || 5100;
             const imgHeight = img.naturalHeight || 2500;
 
-            // Масштабируем до размеров окна
             const scaleX = wrapperRect.width / imgWidth;
             const scaleY = wrapperRect.height / imgHeight;
-            const initialScale = Math.min(scaleX, scaleY);
+            scale = Math.min(scaleX, scaleY);
 
-            scale = initialScale;
-
-            // Смещаем, чтобы картинка была по центру
             translateX = (wrapperRect.width - imgWidth * scale) / 2;
             translateY = (wrapperRect.height - imgHeight * scale) / 2;
 
             updateTransform();
         }
 
-        // ===== ЗУМ КОЛЕСИКОМ (ОТНОСИТЕЛЬНО КУРСОРА) =====
+        // ===== ЗУМ ПОД КУРСОРОМ (ПРАВИЛЬНЫЙ) =====
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-            // Получаем координаты мыши относительно картинки
-            const rect = img.getBoundingClientRect();
+            // Координаты мыши внутри wrapper
+            const rect = wrapper.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
+
+            // Текущий размер картинки в пикселях
+            const imgWidth = img.naturalWidth || 5100;
+            const imgHeight = img.naturalHeight || 2500;
+            const currentWidth = imgWidth * scale;
+            const currentHeight = imgHeight * scale;
+
+            // Положение мыши относительно картинки (в %)
+            const percentX = (mouseX - translateX) / currentWidth;
+            const percentY = (mouseY - translateY) / currentHeight;
 
             // Новый масштаб
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
@@ -99,26 +107,22 @@
 
             if (newScale === scale) return;
 
-            // Координаты точки под мышью внутри картинки (до зума)
-            const mapX = (mouseX - translateX) / scale;
-            const mapY = (mouseY - translateY) / scale;
-
-            // Применяем новый масштаб
-            scale = newScale;
+            // Новый размер
+            const newWidth = imgWidth * newScale;
+            const newHeight = imgHeight * newScale;
 
             // Новое смещение, чтобы точка под мышью осталась на месте
-            translateX = mouseX - mapX * scale;
-            translateY = mouseY - mapY * scale;
+            translateX = mouseX - percentX * newWidth;
+            translateY = mouseY - percentY * newHeight;
 
-            // Не даём картинке уехать за края
+            // Ограничения (чтобы карта не уезжала)
             const wrapperRect = wrapper.getBoundingClientRect();
-            const imgWidth = img.naturalWidth || 5100;
-            const imgHeight = img.naturalHeight || 2500;
-            const maxX = wrapperRect.width - imgWidth * scale;
-            const maxY = wrapperRect.height - imgHeight * scale;
+            const maxX = wrapperRect.width - newWidth;
+            const maxY = wrapperRect.height - newHeight;
             translateX = Math.min(Math.max(translateX, maxX), 0);
             translateY = Math.min(Math.max(translateY, maxY), 0);
 
+            scale = newScale;
             updateTransform();
         }, { passive: false });
 
@@ -141,7 +145,6 @@
             translateX = startTranslateX + (e.clientX - startX);
             translateY = startTranslateY + (e.clientY - startY);
 
-            // Ограничения
             const wrapperRect = wrapper.getBoundingClientRect();
             const imgWidth = img.naturalWidth || 5100;
             const imgHeight = img.naturalHeight || 2500;
@@ -167,10 +170,8 @@
             img.addEventListener('load', centerImage);
         }
 
-        // Запасной вариант
         setTimeout(centerImage, 1000);
 
-        // Пересчёт при изменении размера окна
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
