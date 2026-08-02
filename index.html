@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Карта · зум под курсор</title>
+  <title>Карта с метками</title>
   <style>
     * {
       margin: 0;
@@ -27,7 +27,9 @@
     .wrapper:active {
       cursor: grabbing;
     }
-    .wrapper img {
+
+    /* ===== КАРТА ===== */
+    .wrapper img#mapImage {
       display: block;
       position: absolute;
       top: 0;
@@ -38,36 +40,115 @@
       user-select: none;
       -webkit-user-drag: none;
     }
+
+    /* ===== КОНТЕЙНЕР ДЛЯ МЕТОК ===== */
+    .markers-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5100px;
+      height: 2500px;
+      transform-origin: 0 0;
+      will-change: transform;
+      pointer-events: none;
+    }
+
+    /* ===== МЕТКА ===== */
+    .marker {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      transform: translate(-50%, -50%);
+    }
+
+    .marker:hover {
+      transform: translate(-50%, -50%) scale(1.3);
+      filter: brightness(1.3);
+    }
+
+    .marker img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .marker-tooltip {
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffd700;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .marker:hover .marker-tooltip {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
 
 <div class="wrapper" id="mapWrapper">
-  <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта" id="mapImage">
+  <!-- КАРТА -->
+  <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
+
+  <!-- КОНТЕЙНЕР С МЕТКАМИ -->
+  <div class="markers-container" id="markersContainer">
+
+    <!-- ===== МЕТКА 1 (твоя иконка) ===== -->
+    <div class="marker" style="left: 1500px; top: 800px;" data-name="Штаб синдиката">
+      <img src="assets/icons/sindicat.png" alt="Синдикат" width="40" height="40">
+      <span class="marker-tooltip">Штаб синдиката</span>
+    </div>
+
+    <!-- ===== МЕТКА 2 (замок, внешняя иконка) ===== -->
+    <div class="marker" style="left: 2800px; top: 1200px;" data-name="Замок графа">
+      <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок" width="40" height="40">
+      <span class="marker-tooltip">Замок графа</span>
+    </div>
+
+    <!-- ===== МЕТКА 3 (деревня, внешняя иконка) ===== -->
+    <div class="marker" style="left: 3800px; top: 600px;" data-name="Деревня Ольховка">
+      <img src="https://cdn-icons-png.flaticon.com/512/1828/1828977.png" alt="Деревня" width="40" height="40">
+      <span class="marker-tooltip">Деревня Ольховка</span>
+    </div>
+
+  </div>
 </div>
 
 <script>
   (function() {
     const img = document.getElementById('mapImage');
     const wrapper = document.getElementById('mapWrapper');
+    const markersContainer = document.getElementById('markersContainer');
 
-    // размеры картинки (оригинал)
     const IMG_W = 5100;
     const IMG_H = 2500;
 
-    // состояние
     let scale = 1;
     let tx = 0;
     let ty = 0;
-    let minScale = 1;          // заполнится при центрировании
-    const MAX_SCALE = 2.0;     // максимум 200%
+    let minScale = 1;
+    const MAX_SCALE = 2.0;
 
-    // обновление трансформации
     function update() {
-      img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      img.style.transform = transform;
+      markersContainer.style.transform = transform;
     }
 
-    // центрирование карты в окне (карта видна целиком)
     function center() {
       const rect = wrapper.getBoundingClientRect();
       const sx = rect.width / IMG_W;
@@ -79,35 +160,28 @@
       update();
     }
 
-    // ===== ЗУМ ПОД КУРСОРОМ (КОЛЕСИКО) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
       const rect = wrapper.getBoundingClientRect();
-
-      // координаты мыши относительно wrapper (в пикселях)
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // новый масштаб
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
       let newScale = scale + delta;
       newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // считаем, где находится точка под курсором внутри картинки (в долях)
       const px = (mouseX - tx) / (IMG_W * scale);
       const py = (mouseY - ty) / (IMG_H * scale);
 
       const newW = IMG_W * newScale;
       const newH = IMG_H * newScale;
 
-      // новое смещение — точка под курсором остаётся на месте
       tx = mouseX - px * newW;
       ty = mouseY - py * newH;
 
-      // границы (чтобы карта не уезжала за край)
       const maxX = rect.width - newW;
       const maxY = rect.height - newH;
       tx = Math.min(Math.max(tx, maxX), 0);
@@ -117,7 +191,6 @@
       update();
     }, { passive: false });
 
-    // ===== ПЕРЕТАСКИВАНИЕ =====
     let isDragging = false;
     let startX, startY, startTx, startTy;
 
@@ -150,6 +223,15 @@
         isDragging = false;
         wrapper.style.cursor = 'grab';
       }
+    });
+
+    // ===== КЛИК ПО МЕТКЕ =====
+    document.querySelectorAll('.marker').forEach(marker => {
+      marker.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const name = this.dataset.name || 'Без названия';
+        alert(`📍 ${name}`);
+      });
     });
 
     // ===== ЗАПУСК =====
