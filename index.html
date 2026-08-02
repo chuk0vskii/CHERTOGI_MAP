@@ -92,7 +92,7 @@
 
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             let newScale = scale + delta;
-            newScale = Math.min(Math.max(newScale, 1.0), 2.0);
+            newScale = Math.min(Math.max(newScale, 0.1), 2.0);
 
             if (newScale === scale) return;
 
