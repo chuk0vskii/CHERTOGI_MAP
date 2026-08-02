@@ -61,6 +61,8 @@
 
         // ===== СОСТОЯНИЕ =====
         let scale = 1;
+        let minScale = 1; // ← ИЗНАЧАЛЬНЫЙ МАСШТАБ
+        const MAX_SCALE = 2.0;
         let tx = 0;
         let ty = 0;
         let dragging = false;
@@ -76,13 +78,15 @@
             const rect = wrapper.getBoundingClientRect();
             const sx = rect.width / IMG_W;
             const sy = rect.height / IMG_H;
-            scale = Math.max(sx, sy, 1.0);
+            // Сохраняем изначальный масштаб
+            minScale = Math.max(sx, sy, 1.0);
+            scale = minScale;
             tx = (rect.width - IMG_W * scale) / 2;
             ty = (rect.height - IMG_H * scale) / 2;
             update();
         }
 
-        // ===== ЗУМ ОТ ЦЕНТРА =====
+        // ===== ЗУМ ОТ ЦЕНТРА (с новым минимальным масштабом) =====
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
@@ -92,7 +96,8 @@
 
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             let newScale = scale + delta;
-            newScale = Math.min(Math.max(newScale, 0.1), 2.0);
+            // Минимальный зум теперь = minScale (изначальный масштаб)
+            newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
             if (newScale === scale) return;
 
