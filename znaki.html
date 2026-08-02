@@ -4,10 +4,304 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Огненные чертоги — Знаки</title>
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #1a1a2e;
+      color: white;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ===== БАННЕР (копия из index.html) ===== */
+    .top-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      padding: 0 30px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+      user-select: none;
+    }
+
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      letter-spacing: 4px;
+      font-weight: normal;
+    }
+
+    .top-banner .nav-links {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .top-banner .nav-links a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .top-banner .nav-links a:hover {
+      color: #ffd700;
+    }
+
+    .top-banner .nav-links a.active {
+      color: #ffd700;
+      border-bottom-color: #ffd700;
+    }
+
+    /* ===== КОНТЕНТ СТРАНИЦЫ ===== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    h1 {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 42px;
+      color: #ffd700;
+      text-align: center;
+      margin-bottom: 10px;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ===== ГЕНЕРАТОР ===== */
+    .generator {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .generator-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+      margin-bottom: 25px;
+    }
+
+    .generator-controls .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .generator-controls .field label {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .generator-controls .field select,
+    .generator-controls .field input {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 16px;
+      min-width: 80px;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .generator-controls .field select:hover,
+    .generator-controls .field input:hover {
+      border-color: rgba(255, 215, 0, 0.4);
+    }
+
+    .generator-controls .field select:focus,
+    .generator-controls .field input:focus {
+      outline: none;
+      border-color: #ffd700;
+    }
+
+    .generator-controls .field select option {
+      background: #1a1a2e;
+      color: white;
+    }
+
+    .btn-draw {
+      padding: 12px 40px;
+      background: linear-gradient(135deg, #ffd700, #f0c000);
+      color: #1a1a2e;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+      margin-left: auto;
+    }
+
+    .btn-draw:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 30px rgba(255, 215, 0, 0.35);
+    }
+
+    .btn-draw:active {
+      transform: scale(0.96);
+    }
+
+    /* ===== РЕЗУЛЬТАТ ===== */
+    .result {
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      border-radius: 12px;
+      padding: 25px 30px;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.4s ease;
+    }
+
+    .result .number {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 1px;
+    }
+
+    .result .number strong {
+      color: #ffd700;
+      font-size: 18px;
+    }
+
+    .result .title {
+      font-size: 24px;
+      color: #ffd700;
+      font-weight: bold;
+      font-family: 'Calypso', 'Times New Roman', serif;
+    }
+
+    .result .description {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #ccc;
+    }
+
+    .result .description em {
+      color: #ffd700;
+      font-style: italic;
+    }
+
+    .result-placeholder {
+      color: rgba(255, 255, 255, 0.2);
+      text-align: center;
+      font-size: 18px;
+      padding: 20px 0;
+    }
+
+    /* ===== АДАПТАЦИЯ ===== */
+    @media (max-width: 768px) {
+      .top-banner {
+        height: 56px;
+        padding: 0 16px;
+      }
+      .top-banner .title {
+        font-size: 18px;
+        letter-spacing: 2px;
+      }
+      .top-banner .nav-links {
+        gap: 12px;
+      }
+      .top-banner .nav-links a {
+        font-size: 12px;
+      }
+      .container {
+        padding: 80px 16px 30px;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      .generator {
+        padding: 20px;
+      }
+      .generator-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-draw {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+      }
+      .result .title {
+        font-size: 20px;
+      }
+      .result .description {
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-banner {
+        height: 48px;
+        padding: 0 12px;
+      }
+      .top-banner .title {
+        font-size: 15px;
+        letter-spacing: 1px;
+      }
+      .top-banner .nav-links {
+        gap: 8px;
+      }
+      .top-banner .nav-links a {
+        font-size: 10px;
+      }
+      .container {
+        padding: 70px 12px 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      .result .title {
+        font-size: 18px;
+      }
+      .result .description {
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 <body>
 
+<!-- ===== БАННЕР ===== -->
 <div class="top-banner">
   <span class="title">Огненные чертоги</span>
   <div class="nav-links">
@@ -17,14 +311,164 @@
   </div>
 </div>
 
-<div class="page-content">
-  <h1>⚜️ Фаза «Знаки»</h1>
-  <div class="subtitle">Расшифровка древних символов</div>
-  <div class="description">
-    <p><strong>Здесь будет описание фазы «Знаки».</strong></p>
-    <p style="margin-top: 12px; color: #aaa;">Ты можешь добавить сюда текст, картинки, таблицы — всё, что нужно для этой фазы.</p>
+<!-- ===== КОНТЕНТ ===== -->
+<div class="container">
+  <h1>⚜️ Знаки Чертогов</h1>
+  <div class="subtitle">Тяни знак — узнай свою судьбу</div>
+
+  <div class="generator">
+    <div class="generator-controls">
+      <div class="field">
+        <label for="bonus">Бонус знаков</label>
+        <select id="bonus">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <button class="btn-draw" id="drawBtn">🎲 Вытянуть знак</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-placeholder">Нажми «Вытянуть знак», чтобы узнать свой знак</div>
+    </div>
   </div>
 </div>
+
+<script>
+  // ===== БАЗА ЗНАКОВ (1–20) =====
+  const SIGNS = [
+    null, // индекс 0 пустой, чтобы нумерация совпадала
+    {
+      title: 'Знак Тьмы',
+      description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда–либо. Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.'
+    },
+    {
+      title: 'Знак Рока',
+      description: 'Знак влечет ощущение неминуемого конца и мысли о том, что это путешествие — плохая идея. До первой успешной проверки, все проверки группы совершаются с помехой.'
+    },
+    {
+      title: 'Знак Зверя',
+      description: 'Знак означает, что что-то охотится в Чертогах, и оно знает, что вы отправляетесь в путь. Группа не может избежать встреч с опасными существами в фазе Путь.'
+    },
+    {
+      title: 'Знак Красного Ветра',
+      description: 'Это знак вражды Акрепы и Нарара, что означает бушующий ветер и изменение песков. Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.'
+    },
+    {
+      title: 'Знак Ай\'анги',
+      description: 'Этот знак означает, что Ай\'aнга недоволен, предвидятся буря. Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.'
+    },
+    {
+      title: 'Знак Червя',
+      description: 'Знак предвещает беду с провизией и едой. Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.'
+    },
+    {
+      title: 'Знак Золотого Плода',
+      description: 'Предвещает невероятный пир и то, что еда будет вкусна, словно нектар богов. Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.'
+    },
+    {
+      title: 'Знак Вдохновения',
+      description: 'Знак предвещает невероятные виды и хорошую погоду, которая вдохновляет группу. Первый бросок для избежания усталости, группа делает с преимуществом.'
+    },
+    {
+      title: 'Знак Нарара',
+      description: 'Знак означает благословение северного ветра, который поможет в пути группе. Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).'
+    },
+    {
+      title: 'Знак Шамаса',
+      description: 'Знак предвещает, что лучи Шамаса не позволят опасности скрыться от ваших глаз. Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.'
+    },
+    {
+      title: 'Знак Шептуна',
+      description: 'Знак означает невероятное вдохновение на приключение и предчувствие удачи. Все в группе получают 1 кость удачи на фазу Путь.'
+    },
+    {
+      title: 'Знак Звёзд',
+      description: 'Знак высшего оберега, звезды следят за вами и надеются на поступки, которые долетят до Тингира. Сложность пути понижается на 2.'
+    },
+    {
+      title: 'Знак Голода',
+      description: 'Знак предвещает встречу с голодными духами, которые хотят, чтобы и вы познали их голод. Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.'
+    },
+    {
+      title: 'Знак Золотой Нити',
+      description: 'Знак означает невероятную удачу и поддержку судьбы. В фазе Путь все проверки ролей делаются с преимуществом.'
+    },
+    {
+      title: 'Знак Закрытого Ока',
+      description: 'Знак предвещает трудную видимость под дозором Ману. +1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.'
+    },
+    {
+      title: 'Знак Прибытия',
+      description: 'Знак предвещает тяжелый путь, но легкое прибытие к цели. Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.'
+    },
+    {
+      title: 'Знак Пути',
+      description: 'Знак предвещает легкий путь, но тяжелое прибытие к цели. Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.'
+    },
+    {
+      title: 'Знак Конца',
+      description: 'Знак означает смерть, двуглавые совы бдят, чтобы обрезать нить судьбы искателя. Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.'
+    },
+    {
+      title: 'Знак Черного Треугольника',
+      description: 'Знак показывает дребезжание в нитях судьбы, и Вуаль это слышит. При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.'
+    },
+    {
+      title: 'Знак Очага',
+      description: 'Знак предвещает легкое возвращение домой. Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.'
+    }
+  ];
+
+  // ===== ЭЛЕМЕНТЫ =====
+  const bonusSelect = document.getElementById('bonus');
+  const drawBtn = document.getElementById('drawBtn');
+  const resultDiv = document.getElementById('result');
+
+  // ===== ФУНКЦИЯ ГЕНЕРАЦИИ =====
+  function drawSign() {
+    const bonus = parseInt(bonusSelect.value, 10);
+    const random = Math.floor(Math.random() * 20) + 1; // 1–20
+    let index = random + bonus;
+
+    // Если индекс > 20 — берём 20 (максимум)
+    if (index > 20) index = 20;
+
+    const sign = SIGNS[index];
+
+    // Проверка на случай, если знак не найден
+    if (!sign) {
+      resultDiv.innerHTML = `<div class="result-placeholder">⚠️ Знак не найден. Попробуйте снова.</div>`;
+      return;
+    }
+
+    // Отображаем результат
+    resultDiv.innerHTML = `
+      <div class="number">
+        Выпало: <strong>${random}</strong> 
+        ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffd700;font-size:20px;">${index}</strong>` : ''}
+        ${bonus === 0 ? '' : ''}
+      </div>
+      <div class="title">${sign.title}</div>
+      <div class="description">${sign.description}</div>
+    `;
+  }
+
+  // ===== КНОПКА =====
+  drawBtn.addEventListener('click', drawSign);
+
+  // ===== ПЕРВЫЙ ЗАПУСК (показать знак при загрузке) =====
+  drawSign();
+</script>
 
 </body>
 </html>
