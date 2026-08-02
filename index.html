@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Карта с зумом (OpenLayers)</title>
+  <title>Карта с зумом</title>
   
-  <!-- Подключаем OpenLayers -->
+  <!-- OpenLayers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
   <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
   
@@ -18,11 +18,8 @@
 
     body {
       background: #1a1a2e;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       overflow: hidden;
+      height: 100vh;
     }
 
     #map {
@@ -66,33 +63,31 @@
       z-index: 1000;
       text-align: center;
     }
-
-    /* Стили OpenLayers */
-    .ol-viewport {
-      border-radius: 8px;
-      overflow: hidden;
-    }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div class="zoom-info">Зум: <span id="zoomLevel">1</span>x</div>
+<div class="zoom-info">Зум: <span id="zoomLevel">100</span>%</div>
 <div class="hint">🖱 Колесико мыши — приблизить / отдалить</div>
 
 <script>
   (function() {
     'use strict';
 
-    // ===== 1. СОЗДАЁМ КАРТУ =====
+    // ===== РАЗМЕРЫ КАРТЫ =====
+    const MAP_WIDTH = 5100;
+    const MAP_HEIGHT = 2500;
+
+    // ===== СОЗДАЁМ КАРТУ =====
     const map = new ol.Map({
-      target: 'map', // id элемента, куда вставляем карту
+      target: 'map',
       layers: [
         new ol.layer.Image({
           source: new ol.source.ImageStatic({
             url: 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg',
-            imageSize: [5100, 2500], // РАЗМЕРЫ ТВОЕЙ КАРТЫ
+            imageSize: [MAP_WIDTH, MAP_HEIGHT],
             projection: 'EPSG:3857'
           })
         })
@@ -101,35 +96,46 @@
         projection: 'EPSG:3857',
         center: [0, 0],
         zoom: 0.5,
-        minZoom: 0.3,
-        maxZoom: 2
-      })
+        minZoom: 0.2,
+        maxZoom: 2.5
+      }),
+      controls: [] // Убираем все стандартные кнопки
     });
 
-    // ===== 2. ОТОБРАЖЕНИЕ ТЕКУЩЕГО ЗУМА =====
+    // ===== ОТОБРАЖЕНИЕ ЗУМА =====
     const zoomDisplay = document.getElementById('zoomLevel');
-
-    map.getView().on('change:resolution', function() {
-      const zoom = map.getView().getZoom();
-      // Переводим зум в проценты (условно)
-      const percent = Math.round((zoom / 2) * 100);
-      zoomDisplay.textContent = percent + '%';
-    });
-
-    // ===== 3. НАСТРОЙКА КАРТЫ =====
-    // Отключаем все лишние элементы управления (для чистоты)
     const view = map.getView();
-    view.setCenter([0, 0]);
 
-    // ===== 4. ПЕРЕСЧЁТ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
+    function updateZoomDisplay() {
+      const zoom = view.getZoom();
+      // Переводим зум в проценты (от 0.2 до 2.5)
+      const minZoom = view.getMinZoom();
+      const maxZoom = view.getMaxZoom();
+      const percent = Math.round(((zoom - minZoom) / (maxZoom - minZoom)) * 100);
+      zoomDisplay.textContent = Math.min(Math.max(percent, 0), 100) + '%';
+    }
+
+    view.on('change:resolution', updateZoomDisplay);
+    setTimeout(updateZoomDisplay, 500);
+
+    // ===== ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
     window.addEventListener('resize', function() {
       map.updateSize();
     });
 
-    // ===== 5. ДОПОЛНИТЕЛЬНЫЙ КОНТРОЛЬ =====
-    // Если карта не отображается — принудительно обновляем через 1 секунду
+    // ===== ИСПРАВЛЕНИЕ: не даём OpenLayers перехватывать клики =====
+    // Убираем стандартное поведение перетаскивания, чтобы не было конфликтов
+    const interactions = map.getInteractions();
+    interactions.forEach(function(interaction) {
+      if (interaction instanceof ol.interaction.DragPan) {
+        interaction.setActive(true); // Оставляем только перетаскивание
+      }
+    });
+
+    // ===== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ =====
     setTimeout(function() {
       map.updateSize();
+      view.setCenter([0, 0]);
     }, 1000);
 
   })();
