@@ -35,6 +35,7 @@
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+            /* Размеры картинки задаются в JS */
         }
     </style>
 </head>
@@ -59,10 +60,8 @@
         let scale = 1;
         let translateX = 0;
         let translateY = 0;
-        let isDragging = false;
-        let startX, startY, startTranslateX, startTranslateY;
 
-        // ===== ОБНОВЛЕНИЕ =====
+        // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
         function updateTransform() {
             img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
@@ -71,53 +70,60 @@
         function centerImage() {
             const wrapperRect = wrapper.getBoundingClientRect();
 
+            // Вычисляем масштаб, чтобы карта поместилась в окно
             const scaleX = wrapperRect.width / IMG_WIDTH;
             const scaleY = wrapperRect.height / IMG_HEIGHT;
-            scale = Math.max(scaleX, scaleY);
+            scale = Math.min(scaleX, scaleY, 1); // Не больше 1
 
+            // Смещаем, чтобы карта была по центру
             translateX = (wrapperRect.width - IMG_WIDTH * scale) / 2;
             translateY = (wrapperRect.height - IMG_HEIGHT * scale) / 2;
 
             updateTransform();
         }
 
-        // ===== ЗУМ ПОД КУРСОРОМ (ПРОСТОЙ И РАБОЧИЙ) =====
+        // ===== ЗУМ ПОД КУРСОРОМ =====
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-            // Координаты мыши
+            // Координаты мыши внутри wrapper
             const rect = wrapper.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
             // Новый масштаб
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
-            const newScale = Math.min(Math.max(scale + delta, 1.0), 2.0);
+            const newScale = Math.min(Math.max(scale + delta, 0.1), 2.0);
 
             if (newScale === scale) return;
 
-            // Старые координаты точки под мышью
-            const oldX = (mouseX - translateX) / scale;
-            const oldY = (mouseY - translateY) / scale;
+            // Процентное положение мыши внутри картинки
+            const percentX = (mouseX - translateX) / (IMG_WIDTH * scale);
+            const percentY = (mouseY - translateY) / (IMG_HEIGHT * scale);
 
-            // Применяем новый масштаб
-            scale = newScale;
+            // Новые размеры
+            const newWidth = IMG_WIDTH * newScale;
+            const newHeight = IMG_HEIGHT * newScale;
 
-            // Новое смещение
-            translateX = mouseX - oldX * scale;
-            translateY = mouseY - oldY * scale;
+            // Новое смещение, чтобы точка под мышью осталась на месте
+            translateX = mouseX - percentX * newWidth;
+            translateY = mouseY - percentY * newHeight;
 
             // Ограничения
             const wrapperRect = wrapper.getBoundingClientRect();
-            const maxX = wrapperRect.width - IMG_WIDTH * scale;
-            const maxY = wrapperRect.height - IMG_HEIGHT * scale;
+            const maxX = wrapperRect.width - newWidth;
+            const maxY = wrapperRect.height - newHeight;
             translateX = Math.min(Math.max(translateX, maxX), 0);
             translateY = Math.min(Math.max(translateY, maxY), 0);
 
+            scale = newScale;
             updateTransform();
         }, { passive: false });
 
         // ===== ПЕРЕТАСКИВАНИЕ =====
+        let isDragging = false;
+        let startX, startY, startTranslateX, startTranslateY;
+
         wrapper.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
             isDragging = true;
