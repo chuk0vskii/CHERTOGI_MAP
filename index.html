@@ -82,7 +82,7 @@
             update();
         }
 
-        // ===== ЗУМ (от центра) =====
+        // ===== ЗУМ ОТ ЦЕНТРА =====
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
@@ -96,7 +96,6 @@
 
             if (newScale === scale) return;
 
-            // Координаты точки в центре внутри картинки
             const px = (cx - tx) / (IMG_W * scale);
             const py = (cy - ty) / (IMG_H * scale);
 
@@ -106,7 +105,6 @@
             tx = cx - px * newW;
             ty = cy - py * newH;
 
-            // Границы
             const maxX = rect.width - newW;
             const maxY = rect.height - newH;
             tx = Math.min(Math.max(tx, maxX), 0);
