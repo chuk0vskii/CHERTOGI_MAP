@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Карта с зумом</title>
+  <title>Карта</title>
   <style>
     * {
       margin: 0;
@@ -37,9 +37,9 @@
 
     .map-container {
       position: relative;
-      transform-origin: 0 0; /* Простая точка отсчёта */
+      transform-origin: center center;
+      transition: transform 0.05s linear;
       will-change: transform;
-      /* Начальное положение — центрируем через JavaScript */
     }
 
     .map-container img {
@@ -107,91 +107,63 @@
     const container = document.getElementById('mapContainer');
     const zoomDisplay = document.getElementById('zoomLevel');
 
-    // ===== РАЗМЕРЫ КАРТЫ (измени под свои) =====
-    const MAP_WIDTH = 5100;
-    const MAP_HEIGHT = 2500;
-
-    // ===== ПАРАМЕТРЫ ЗУМА =====
+    // ===== ПАРАМЕТРЫ =====
     const MIN_SCALE = 0.3;
     const MAX_SCALE = 1.5;
     const ZOOM_STEP = 0.08;
 
-    // ===== СОСТОЯНИЕ =====
     let scale = 1;
     let translateX = 0;
     let translateY = 0;
+    let isDragging = false;
+    let startX, startY, startTranslateX, startTranslateY;
 
-    // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
+    // ===== ОБНОВЛЕНИЕ =====
     function updateTransform() {
       container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
       zoomDisplay.textContent = Math.round(scale * 100);
     }
 
-    // ===== ЦЕНТРИРОВАНИЕ КАРТЫ =====
+    // ===== ЦЕНТРИРОВАНИЕ =====
     function centerMap() {
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const containerWidth = MAP_WIDTH * scale;
-      const containerHeight = MAP_HEIGHT * scale;
-
-      // Смещаем так, чтобы карта была по центру
-      translateX = (wrapperRect.width - containerWidth) / 2;
-      translateY = (wrapperRect.height - containerHeight) / 2;
-
-      // Не даём уехать за границы
-      constrainTranslate();
+      const rect = wrapper.getBoundingClientRect();
+      const w = 5100 * scale;
+      const h = 2500 * scale;
+      translateX = (rect.width - w) / 2;
+      translateY = (rect.height - h) / 2;
+      constrain();
       updateTransform();
     }
 
-    // ===== ОГРАНИЧЕНИЕ ПЕРЕМЕЩЕНИЯ =====
-    function constrainTranslate() {
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const containerWidth = MAP_WIDTH * scale;
-      const containerHeight = MAP_HEIGHT * scale;
+    // ===== ГРАНИЦЫ =====
+    function constrain() {
+      const rect = wrapper.getBoundingClientRect();
+      const w = 5100 * scale;
+      const h = 2500 * scale;
 
-      // Минимальное и максимальное смещение
-      const minX = wrapperRect.width - containerWidth;
+      const minX = rect.width - w;
       const maxX = 0;
       translateX = Math.min(Math.max(translateX, minX), maxX);
 
-      const minY = wrapperRect.height - containerHeight;
+      const minY = rect.height - h;
       const maxY = 0;
       translateY = Math.min(Math.max(translateY, minY), maxY);
     }
 
-    // ===== ЗУМ КОЛЕСИКОМ (относительно курсора) =====
+    // ===== ЗУМ =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
-
-      // Если карта ещё не загружена — ничего не делаем
-      if (!container.querySelector('img').complete) return;
-
-      const rect = container.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
 
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // Старые координаты точки под мышью внутри карты
-      const mapX = (mouseX - translateX) / scale;
-      const mapY = (mouseY - translateY) / scale;
-
       scale = newScale;
-
-      // Новое смещение, чтобы точка под мышью осталась на месте
-      translateX = mouseX - mapX * scale;
-      translateY = mouseY - mapY * scale;
-
-      constrainTranslate();
-      updateTransform();
+      centerMap(); // просто центрируем заново
     }, { passive: false });
 
     // ===== ПЕРЕТАСКИВАНИЕ =====
-    let isDragging = false;
-    let startX, startY, startTranslateX, startTranslateY;
-
     wrapper.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
       isDragging = true;
@@ -204,11 +176,9 @@
 
     window.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      translateX = startTranslateX + dx;
-      translateY = startTranslateY + dy;
-      constrainTranslate();
+      translateX = startTranslateX + (e.clientX - startX);
+      translateY = startTranslateY + (e.clientY - startY);
+      constrain();
       updateTransform();
     });
 
@@ -219,32 +189,22 @@
       }
     });
 
-    // ===== АДАПТАЦИЯ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
+    // ===== РЕСАЙЗ =====
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(centerMap, 100);
     });
 
-    // ===== ЗАПУСК ПОСЛЕ ЗАГРУЗКИ =====
+    // ===== СТАРТ =====
     const img = container.querySelector('img');
-
-    function onImageLoad() {
-      centerMap();
-    }
-
     if (img.complete) {
-      onImageLoad();
+      centerMap();
     } else {
-      img.addEventListener('load', onImageLoad);
+      img.addEventListener('load', centerMap);
     }
 
-    // Запасной вариант — если картинка не загрузилась за 2 секунды
-    setTimeout(function() {
-      if (scale === 1 && translateX === 0 && translateY === 0) {
-        centerMap();
-      }
-    }, 2000);
+    setTimeout(centerMap, 1000);
 
   })();
 </script>
