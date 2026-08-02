@@ -1,40 +1,124 @@
-// ===== ЗУМ ПОД КУРСОРОМ (С ПРАВИЛЬНЫМ МИНИМУМОМ) =====
-wrapper.addEventListener('wheel', function(e) {
-    e.preventDefault();
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта с зумом</title>
+    
+    <!-- OpenLayers -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #1a1a2e;
+            overflow: hidden;
+            height: 100vh;
+        }
+        #map {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .zoom-info {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #aaa;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .zoom-info span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .hint {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.3);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
 
-    // Координаты мыши внутри wrapper
-    const rect = wrapper.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+<div id="map"></div>
 
-    // Новый масштаб
-    const delta = e.deltaY > 0 ? -0.08 : 0.08;
-    let newScale = scale + delta;
+<div class="zoom-info">Зум: <span id="zoomLevel">100</span>%</div>
+<div class="hint">🖱 Колесико мыши — приблизить / отдалить</div>
 
-    // ===== ГЛАВНОЕ ИЗМЕНЕНИЕ: НЕ ДАЁМ СТАТЬ МЕНЬШЕ 1.0 =====
-    newScale = Math.min(Math.max(newScale, 1.0), 2.0);
+<script>
+    // ===== РАЗМЕРЫ КАРТЫ =====
+    const MAP_WIDTH = 5100;
+    const MAP_HEIGHT = 2500;
+    const MAP_URL = 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg';
 
-    if (newScale === scale) return;
+    // ===== СОЗДАЁМ КАРТУ =====
+    const map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Image({
+                source: new ol.source.ImageStatic({
+                    url: MAP_URL,
+                    imageSize: [MAP_WIDTH, MAP_HEIGHT],
+                    projection: 'EPSG:3857'
+                })
+            })
+        ],
+        view: new ol.View({
+            projection: 'EPSG:3857',
+            center: [0, 0],
+            zoom: 0.5,
+            minZoom: 0.2,
+            maxZoom: 2.5
+        }),
+        controls: [] // Убираем все кнопки
+    });
 
-    // Процентное положение мыши внутри картинки
-    const percentX = (mouseX - translateX) / (IMG_WIDTH * scale);
-    const percentY = (mouseY - translateY) / (IMG_HEIGHT * scale);
+    // ===== ОТОБРАЖЕНИЕ ЗУМА =====
+    const zoomDisplay = document.getElementById('zoomLevel');
+    const view = map.getView();
 
-    // Новые размеры
-    const newWidth = IMG_WIDTH * newScale;
-    const newHeight = IMG_HEIGHT * newScale;
+    function updateZoomDisplay() {
+        const zoom = view.getZoom();
+        const minZoom = view.getMinZoom();
+        const maxZoom = view.getMaxZoom();
+        const percent = Math.round(((zoom - minZoom) / (maxZoom - minZoom)) * 100);
+        zoomDisplay.textContent = Math.min(Math.max(percent, 0), 100) + '%';
+    }
 
-    // Новое смещение, чтобы точка под мышью осталась на месте
-    translateX = mouseX - percentX * newWidth;
-    translateY = mouseY - percentY * newHeight;
+    view.on('change:resolution', updateZoomDisplay);
+    setTimeout(updateZoomDisplay, 500);
 
-    // Ограничения
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const maxX = wrapperRect.width - newWidth;
-    const maxY = wrapperRect.height - newHeight;
-    translateX = Math.min(Math.max(translateX, maxX), 0);
-    translateY = Math.min(Math.max(translateY, maxY), 0);
+    // ===== ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
+    window.addEventListener('resize', function() {
+        map.updateSize();
+    });
 
-    scale = newScale;
-    updateTransform();
-}, { passive: false });
+    setTimeout(function() {
+        map.updateSize();
+        view.setCenter([0, 0]);
+    }, 1000);
+</script>
+
+</body>
+</html>
