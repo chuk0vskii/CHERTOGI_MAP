@@ -9,35 +9,31 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
+        }
+        .wrapper {
+            width: 100vw;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .wrapper {
-            width: 100vw;
-            height: 100vh;
             overflow: hidden;
-            position: relative;
             cursor: grab;
         }
-
         .wrapper:active {
             cursor: grabbing;
         }
-
         .wrapper img {
             display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform-origin: 0 0;
-            will-change: transform;
+            max-width: none;
+            max-height: none;
+            transform-origin: center center;
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
@@ -55,110 +51,72 @@
         const img = document.getElementById('mapImage');
         const wrapper = document.getElementById('mapWrapper');
 
-        const IMG_W = 5100;
-        const IMG_H = 2500;
-
         let scale = 1;
-        let tx = 0;
-        let ty = 0;
-        let dragging = false;
-        let startX, startY, startTx, startTy;
 
-        function update() {
-            img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-        }
-
-        function center() {
-            const rect = wrapper.getBoundingClientRect();
-            tx = (rect.width - IMG_W) / 2;
-            ty = (rect.height - IMG_H) / 2;
+        // При загрузке и изменении размера окна — картинка в натуральный размер
+        function resetSize() {
+            img.style.width = '';
+            img.style.height = '';
+            img.style.transform = 'scale(1)';
             scale = 1;
-            update();
         }
 
-        // ===== ЗУМ ОТ ЦЕНТРА (ПРОСТОЙ И РАБОЧИЙ) =====
+        // Зум колесиком от центра
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-            const rect = wrapper.getBoundingClientRect();
-
-            // Координаты центра
-            const cx = rect.width / 2;
-            const cy = rect.height / 2;
-
-            // Новый масштаб
-            const delta = e.deltaY > 0 ? -0.08 : 0.08;
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
             let newScale = scale + delta;
             newScale = Math.min(Math.max(newScale, 0.2), 3.0);
 
             if (newScale === scale) return;
 
-            // Координаты точки в центре внутри картинки
-            const px = (cx - tx) / IMG_W;
-            const py = (cy - ty) / IMG_H;
-
-            const newW = IMG_W * newScale;
-            const newH = IMG_H * newScale;
-
-            tx = cx - px * newW;
-            ty = cy - py * newH;
-
-            // Границы
-            const maxX = rect.width - newW;
-            const maxY = rect.height - newH;
-            tx = Math.min(Math.max(tx, maxX), 0);
-            ty = Math.min(Math.max(ty, maxY), 0);
-
+            // Просто меняем scale
+            img.style.transform = `scale(${newScale})`;
             scale = newScale;
-            update();
         }, { passive: false });
 
         // ===== ПЕРЕТАСКИВАНИЕ =====
+        let isDragging = false;
+        let startX, startY, startScrollLeft, startScrollTop;
+
         wrapper.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
-            dragging = true;
+            isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
-            startTx = tx;
-            startTy = ty;
+            startScrollLeft = wrapper.scrollLeft;
+            startScrollTop = wrapper.scrollTop;
             wrapper.style.cursor = 'grabbing';
         });
 
         window.addEventListener('mousemove', function(e) {
-            if (!dragging) return;
-            tx = startTx + (e.clientX - startX);
-            ty = startTy + (e.clientY - startY);
-
-            const rect = wrapper.getBoundingClientRect();
-            const maxX = rect.width - IMG_W * scale;
-            const maxY = rect.height - IMG_H * scale;
-            tx = Math.min(Math.max(tx, maxX), 0);
-            ty = Math.min(Math.max(ty, maxY), 0);
-
-            update();
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            wrapper.scrollLeft = startScrollLeft - dx;
+            wrapper.scrollTop = startScrollTop - dy;
         });
 
         window.addEventListener('mouseup', function() {
-            if (dragging) {
-                dragging = false;
+            if (isDragging) {
+                isDragging = false;
                 wrapper.style.cursor = 'grab';
             }
         });
 
         // ===== ЗАПУСК =====
+        resetSize();
+
+        // Если картинка уже загружена — центрируем
         if (img.complete) {
-            center();
+            resetSize();
         } else {
-            img.addEventListener('load', center);
+            img.addEventListener('load', resetSize);
         }
 
-        setTimeout(center, 500);
-
-        let resizeTimer;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(center, 100);
-        });
+        // При изменении размера окна — возвращаем натуральный размер
+        window.addEventListener('resize', resetSize);
 
     })();
 </script>
