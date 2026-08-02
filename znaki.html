@@ -17,7 +17,6 @@
       min-height: 100vh;
     }
 
-    /* ===== БАННЕР (копия из index.html) ===== */
     .top-banner {
       position: fixed;
       top: 0;
@@ -70,7 +69,6 @@
       border-bottom-color: #ffd700;
     }
 
-    /* ===== КОНТЕНТ СТРАНИЦЫ ===== */
     .container {
       max-width: 900px;
       margin: 0 auto;
@@ -82,20 +80,10 @@
       font-size: 42px;
       color: #ffd700;
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 40px;
       text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
     }
 
-    .subtitle {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 14px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 40px;
-    }
-
-    /* ===== ГЕНЕРАТОР ===== */
     .generator {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -125,8 +113,7 @@
       text-transform: uppercase;
     }
 
-    .generator-controls .field select,
-    .generator-controls .field input {
+    .generator-controls .field select {
       padding: 10px 16px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -138,13 +125,11 @@
       transition: border-color 0.3s;
     }
 
-    .generator-controls .field select:hover,
-    .generator-controls .field input:hover {
+    .generator-controls .field select:hover {
       border-color: rgba(255, 215, 0, 0.4);
     }
 
-    .generator-controls .field select:focus,
-    .generator-controls .field input:focus {
+    .generator-controls .field select:focus {
       outline: none;
       border-color: #ffd700;
     }
@@ -178,7 +163,6 @@
       transform: scale(0.96);
     }
 
-    /* ===== РЕЗУЛЬТАТ ===== */
     .result {
       background: rgba(255, 215, 0, 0.05);
       border: 1px solid rgba(255, 215, 0, 0.15);
@@ -215,19 +199,13 @@
       color: #ccc;
     }
 
-    .result .description em {
-      color: #ffd700;
-      font-style: italic;
-    }
-
     .result-placeholder {
-      color: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.15);
       text-align: center;
       font-size: 18px;
       padding: 20px 0;
     }
 
-    /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .top-banner {
         height: 56px;
@@ -301,7 +279,6 @@
 </head>
 <body>
 
-<!-- ===== БАННЕР ===== -->
 <div class="top-banner">
   <span class="title">Огненные чертоги</span>
   <div class="nav-links">
@@ -311,10 +288,8 @@
   </div>
 </div>
 
-<!-- ===== КОНТЕНТ ===== -->
 <div class="container">
-  <h1>⚜️ Знаки Чертогов</h1>
-  <div class="subtitle">Тяни знак — узнай свою судьбу</div>
+  <h1>⚜️ Фаза Знаки</h1>
 
   <div class="generator">
     <div class="generator-controls">
@@ -334,19 +309,18 @@
           <option value="10">10</option>
         </select>
       </div>
-      <button class="btn-draw" id="drawBtn">🎲 Вытянуть знак</button>
+      <button class="btn-draw" id="drawBtn">🎲 Сделать проверку</button>
     </div>
 
     <div class="result" id="result">
-      <div class="result-placeholder">Нажми «Вытянуть знак», чтобы узнать свой знак</div>
+      <div class="result-placeholder">Нажмите «Сделать проверку», чтобы узнать свой знак</div>
     </div>
   </div>
 </div>
 
 <script>
-  // ===== БАЗА ЗНАКОВ (1–20) =====
   const SIGNS = [
-    null, // индекс 0 пустой, чтобы нумерация совпадала
+    null,
     {
       title: 'Знак Тьмы',
       description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда–либо. Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.'
@@ -429,45 +403,33 @@
     }
   ];
 
-  // ===== ЭЛЕМЕНТЫ =====
   const bonusSelect = document.getElementById('bonus');
   const drawBtn = document.getElementById('drawBtn');
   const resultDiv = document.getElementById('result');
 
-  // ===== ФУНКЦИЯ ГЕНЕРАЦИИ =====
   function drawSign() {
     const bonus = parseInt(bonusSelect.value, 10);
-    const random = Math.floor(Math.random() * 20) + 1; // 1–20
+    const random = Math.floor(Math.random() * 20) + 1;
     let index = random + bonus;
-
-    // Если индекс > 20 — берём 20 (максимум)
     if (index > 20) index = 20;
 
     const sign = SIGNS[index];
-
-    // Проверка на случай, если знак не найден
     if (!sign) {
       resultDiv.innerHTML = `<div class="result-placeholder">⚠️ Знак не найден. Попробуйте снова.</div>`;
       return;
     }
 
-    // Отображаем результат
     resultDiv.innerHTML = `
       <div class="number">
         Выпало: <strong>${random}</strong> 
         ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffd700;font-size:20px;">${index}</strong>` : ''}
-        ${bonus === 0 ? '' : ''}
       </div>
       <div class="title">${sign.title}</div>
       <div class="description">${sign.description}</div>
     `;
   }
 
-  // ===== КНОПКА =====
   drawBtn.addEventListener('click', drawSign);
-
-  // ===== ПЕРВЫЙ ЗАПУСК (показать знак при загрузке) =====
-  drawSign();
 </script>
 
 </body>
