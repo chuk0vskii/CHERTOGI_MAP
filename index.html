@@ -1,10 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Проверка картинки</title>
+    <title>Карта с зумом</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #1a1a2e;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .wrapper {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+        }
+        .wrapper:active {
+            cursor: grabbing;
+        }
+        .wrapper img {
+            display: block;
+            position: absolute;
+            transform-origin: 0 0;
+            will-change: transform;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+    </style>
 </head>
 <body>
-    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта" style="width:100vw;height:100vh;object-fit:contain;">
+
+<div class="wrapper" id="mapWrapper">
+    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта" id="mapImage">
+</div>
+
+<script>
+    (function() {
+        const img = document.getElementById('mapImage');
+        const wrapper = document.getElementById('mapWrapper');
+
+        // Размеры карты
+        const IMG_WIDTH = 5100;
+        const IMG_HEIGHT = 2500;
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+
+        function update() {
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+
+        function center() {
+            const rect = wrapper.getBoundingClientRect();
+            const sx = rect.width / IMG_WIDTH;
+            const sy = rect.height / IMG_HEIGHT;
+            scale = Math.max(sx, sy, 1.0); // Не меньше 1.0
+            translateX = (rect.width - IMG_WIDTH * scale) / 2;
+            translateY = (rect.height - IMG_HEIGHT * scale) / 2;
+            update();
+        }
+
+        // ===== ЗУМ ОТ ЦЕНТРА (ПРОСТОЙ) =====
+        wrapper.addEventListener('wheel', function(e) {
+            e.preventDefault();
+
+            const delta = e.deltaY > 0 ? -0.08 : 0.08;
+            let newScale = scale + delta;
+
+            // НЕ ДАЁМ СТАТЬ МЕНЬШЕ 1.0
+            newScale = Math.min(Math.max(newScale, 1.0), 2.0);
+
+            if (newScale === scale) return;
+
+            // Зумим от центра
+            const rect = wrapper.getBoundingClientRect();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+
+            const percentX = (cx - translateX) / (IMG_WIDTH * scale);
+            const percentY = (cy - translateY) / (IMG_HEIGHT * scale);
+
+            const newWidth = IMG_WIDTH * newScale;
+            const newHeight = IMG_HEIGHT * newScale;
+
+            translateX = cx - percentX * newWidth;
+            translateY = cy - percentY * newHeight;
+
+            const maxX = rect.width - newWidth;
+            const maxY = rect.height - newHeight;
+            translateX = Math.min(Math.max(translateX, maxX), 0);
+            translateY = Math.min(Math.max(translateY, maxY), 0);
+
+            scale = newScale;
+            update();
+        }, { passive: false });
+
+        // ===== ПЕРЕТАСКИВАНИЕ =====
+        let isDragging = false;
+        let startX, startY, startTX, startTY;
+
+        wrapper.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startTX = translateX;
+            startTY = translateY;
+            wrapper.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            translateX = startTX + (e.clientX - startX);
+            translateY = startTY + (e.clientY - startY);
+
+            const rect = wrapper.getBoundingClientRect();
+            const maxX = rect.width - IMG_WIDTH * scale;
+            const maxY = rect.height - IMG_HEIGHT * scale;
+            translateX = Math.min(Math.max(translateX, maxX), 0);
+            translateY = Math.min(Math.max(translateY, maxY), 0);
+
+            update();
+        });
+
+        window.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                wrapper.style.cursor = 'grab';
+            }
+        });
+
+        // ===== ЗАПУСК =====
+        if (img.complete) {
+            center();
+        } else {
+            img.addEventListener('load', center);
+        }
+
+        setTimeout(center, 500);
+
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(center, 100);
+        });
+
+    })();
+</script>
+
 </body>
 </html>
