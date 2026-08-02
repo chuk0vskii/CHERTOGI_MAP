@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Карта</title>
+  <title>Карта с зумом (OpenLayers)</title>
+  
+  <!-- Подключаем OpenLayers -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  
   <style>
     * {
       margin: 0;
@@ -20,38 +25,13 @@
       overflow: hidden;
     }
 
-    .map-wrapper {
+    #map {
       width: 100vw;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
       position: relative;
-      cursor: grab;
     }
 
-    .map-wrapper:active {
-      cursor: grabbing;
-    }
-
-    .map-container {
-      position: relative;
-      transform-origin: center center;
-      transition: transform 0.05s linear;
-      will-change: transform;
-    }
-
-    .map-container img {
-      display: block;
-      width: 5100px;
-      height: 2500px;
-      max-width: none;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
+    /* Информация о зуме */
     .zoom-info {
       position: fixed;
       bottom: 30px;
@@ -66,7 +46,7 @@
       backdrop-filter: blur(4px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       pointer-events: none;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .zoom-info span {
@@ -83,128 +63,74 @@
       font-family: Arial, sans-serif;
       font-size: 14px;
       pointer-events: none;
-      z-index: 100;
+      z-index: 1000;
       text-align: center;
+    }
+
+    /* Стили OpenLayers */
+    .ol-viewport {
+      border-radius: 8px;
+      overflow: hidden;
     }
   </style>
 </head>
 <body>
 
-<div class="map-wrapper" id="mapWrapper">
-  <div class="map-container" id="mapContainer">
-    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg" alt="Карта">
-  </div>
-</div>
+<div id="map"></div>
 
-<div class="zoom-info">Зум: <span id="zoomLevel">100</span>%</div>
+<div class="zoom-info">Зум: <span id="zoomLevel">1</span>x</div>
 <div class="hint">🖱 Колесико мыши — приблизить / отдалить</div>
 
 <script>
   (function() {
     'use strict';
 
-    const wrapper = document.getElementById('mapWrapper');
-    const container = document.getElementById('mapContainer');
+    // ===== 1. СОЗДАЁМ КАРТУ =====
+    const map = new ol.Map({
+      target: 'map', // id элемента, куда вставляем карту
+      layers: [
+        new ol.layer.Image({
+          source: new ol.source.ImageStatic({
+            url: 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/map.jpg',
+            imageSize: [5100, 2500], // РАЗМЕРЫ ТВОЕЙ КАРТЫ
+            projection: 'EPSG:3857'
+          })
+        })
+      ],
+      view: new ol.View({
+        projection: 'EPSG:3857',
+        center: [0, 0],
+        zoom: 0.5,
+        minZoom: 0.3,
+        maxZoom: 2
+      })
+    });
+
+    // ===== 2. ОТОБРАЖЕНИЕ ТЕКУЩЕГО ЗУМА =====
     const zoomDisplay = document.getElementById('zoomLevel');
 
-    // ===== ПАРАМЕТРЫ =====
-    const MIN_SCALE = 0.3;
-    const MAX_SCALE = 1.5;
-    const ZOOM_STEP = 0.08;
-
-    let scale = 1;
-    let translateX = 0;
-    let translateY = 0;
-    let isDragging = false;
-    let startX, startY, startTranslateX, startTranslateY;
-
-    // ===== ОБНОВЛЕНИЕ =====
-    function updateTransform() {
-      container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-      zoomDisplay.textContent = Math.round(scale * 100);
-    }
-
-    // ===== ЦЕНТРИРОВАНИЕ =====
-    function centerMap() {
-      const rect = wrapper.getBoundingClientRect();
-      const w = 5100 * scale;
-      const h = 2500 * scale;
-      translateX = (rect.width - w) / 2;
-      translateY = (rect.height - h) / 2;
-      constrain();
-      updateTransform();
-    }
-
-    // ===== ГРАНИЦЫ =====
-    function constrain() {
-      const rect = wrapper.getBoundingClientRect();
-      const w = 5100 * scale;
-      const h = 2500 * scale;
-
-      const minX = rect.width - w;
-      const maxX = 0;
-      translateX = Math.min(Math.max(translateX, minX), maxX);
-
-      const minY = rect.height - h;
-      const maxY = 0;
-      translateY = Math.min(Math.max(translateY, minY), maxY);
-    }
-
-    // ===== ЗУМ =====
-    wrapper.addEventListener('wheel', function(e) {
-      e.preventDefault();
-
-      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-      const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
-
-      if (newScale === scale) return;
-
-      scale = newScale;
-      centerMap(); // просто центрируем заново
-    }, { passive: false });
-
-    // ===== ПЕРЕТАСКИВАНИЕ =====
-    wrapper.addEventListener('mousedown', function(e) {
-      if (e.button !== 0) return;
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startTranslateX = translateX;
-      startTranslateY = translateY;
-      wrapper.style.cursor = 'grabbing';
+    map.getView().on('change:resolution', function() {
+      const zoom = map.getView().getZoom();
+      // Переводим зум в проценты (условно)
+      const percent = Math.round((zoom / 2) * 100);
+      zoomDisplay.textContent = percent + '%';
     });
 
-    window.addEventListener('mousemove', function(e) {
-      if (!isDragging) return;
-      translateX = startTranslateX + (e.clientX - startX);
-      translateY = startTranslateY + (e.clientY - startY);
-      constrain();
-      updateTransform();
-    });
+    // ===== 3. НАСТРОЙКА КАРТЫ =====
+    // Отключаем все лишние элементы управления (для чистоты)
+    const view = map.getView();
+    view.setCenter([0, 0]);
 
-    window.addEventListener('mouseup', function() {
-      if (isDragging) {
-        isDragging = false;
-        wrapper.style.cursor = 'grab';
-      }
-    });
-
-    // ===== РЕСАЙЗ =====
-    let resizeTimeout;
+    // ===== 4. ПЕРЕСЧЁТ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =====
     window.addEventListener('resize', function() {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(centerMap, 100);
+      map.updateSize();
     });
 
-    // ===== СТАРТ =====
-    const img = container.querySelector('img');
-    if (img.complete) {
-      centerMap();
-    } else {
-      img.addEventListener('load', centerMap);
-    }
-
-    setTimeout(centerMap, 1000);
+    // ===== 5. ДОПОЛНИТЕЛЬНЫЙ КОНТРОЛЬ =====
+    // Если карта не отображается — принудительно обновляем через 1 секунду
+    setTimeout(function() {
+      map.updateSize();
+    }, 1000);
 
   })();
 </script>
