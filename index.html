@@ -37,6 +37,8 @@
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+            /* ===== ПЛАВНОСТЬ ЗУМА ===== */
+            transition: transform 0.08s ease-out;
         }
     </style>
 </head>
@@ -53,7 +55,9 @@
 
         let scale = 1;
 
-        // При загрузке и изменении размера окна — картинка в натуральный размер
+        const MIN_SCALE = 0.2;
+        const MAX_SCALE = 3.0;
+
         function resetSize() {
             img.style.width = '';
             img.style.height = '';
@@ -61,17 +65,17 @@
             scale = 1;
         }
 
-        // Зум колесиком от центра
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
-           const delta = e.deltaY > 0 ? -0.03 : 0.03;
+            // ===== ШАГ ЗУМА (ЧЕМ МЕНЬШЕ — ТЕМ ПЛАВНЕЕ) =====
+            const delta = e.deltaY > 0 ? -0.06 : 0.06;
+
             let newScale = scale + delta;
-            newScale = Math.min(Math.max(newScale, 0.1), 3.0);
+            newScale = Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
 
             if (newScale === scale) return;
 
-            // Просто меняем scale
             img.style.transform = `scale(${newScale})`;
             scale = newScale;
         }, { passive: false });
@@ -108,14 +112,12 @@
         // ===== ЗАПУСК =====
         resetSize();
 
-        // Если картинка уже загружена — центрируем
         if (img.complete) {
             resetSize();
         } else {
             img.addEventListener('load', resetSize);
         }
 
-        // При изменении размера окна — возвращаем натуральный размер
         window.addEventListener('resize', resetSize);
 
     })();
