@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Карта с зумом</title>
+    <title>Карта с зумом под курсором</title>
     <style>
         * {
             margin: 0;
@@ -65,50 +65,56 @@
         let ty = 0;
         let dragging = false;
         let startX, startY, startTx, startTy;
-        let initialScale = 1; // Запоминаем начальный масштаб
 
         // ===== ОБНОВЛЕНИЕ =====
         function update() {
             img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
         }
 
-        // ===== ЦЕНТРИРОВАНИЕ =====
+        // ===== ЦЕНТРИРОВАНИЕ ПРИ ЗАГРУЗКЕ (100% + центрирование) =====
         function center() {
             const rect = wrapper.getBoundingClientRect();
-            const sx = rect.width / IMG_W;
-            const sy = rect.height / IMG_H;
-            initialScale = Math.max(sx, sy, 1.0); // Запоминаем начальный масштаб
-            scale = initialScale;
+
+            // Масштаб = 1.0 (100%)
+            scale = 1.0;
+
+            // Смещаем, чтобы карта была по центру
             tx = (rect.width - IMG_W * scale) / 2;
             ty = (rect.height - IMG_H * scale) / 2;
+
             update();
         }
 
-        // ===== ЗУМ ОТ ЦЕНТРА (С ОГРАНИЧЕНИЕМ НА УМЕНЬШЕНИЕ) =====
+        // ===== ЗУМ ПОД КУРСОРОМ =====
         wrapper.addEventListener('wheel', function(e) {
             e.preventDefault();
 
             const rect = wrapper.getBoundingClientRect();
-            const cx = rect.width / 2;
-            const cy = rect.height / 2;
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
 
+            // Новый масштаб
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             let newScale = scale + delta;
-            
-            // ===== ГЛАВНОЕ: НЕ ДАЁМ СТАТЬ МЕНЬШЕ НАЧАЛЬНОГО МАСШТАБА =====
-            newScale = Math.min(Math.max(newScale, initialScale), 2.0);
+
+            // Ограничения: от 1.0 до 2.0
+            newScale = Math.min(Math.max(newScale, 1.0), 2.0);
 
             if (newScale === scale) return;
 
-            const px = (cx - tx) / (IMG_W * scale);
-            const py = (cy - ty) / (IMG_H * scale);
+            // Процентное положение мыши внутри картинки
+            const percentX = (mouseX - tx) / (IMG_W * scale);
+            const percentY = (mouseY - ty) / (IMG_H * scale);
 
+            // Новые размеры
             const newW = IMG_W * newScale;
             const newH = IMG_H * newScale;
 
-            tx = cx - px * newW;
-            ty = cy - py * newH;
+            // Новое смещение
+            tx = mouseX - percentX * newW;
+            ty = mouseY - percentY * newH;
 
+            // Ограничения (чтобы карта не уезжала за края)
             const maxX = rect.width - newW;
             const maxY = rect.height - newH;
             tx = Math.min(Math.max(tx, maxX), 0);
