@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Карта с зумом</title>
     <style>
-        /* Убираем всё лишнее */
         * {
             margin: 0;
             padding: 0;
@@ -25,6 +24,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            position: relative;
         }
         .wrapper img {
             display: block;
@@ -32,8 +32,8 @@
             height: 100%;
             object-fit: contain;
             cursor: grab;
-            transition: transform 0.1s ease;
-            transform-origin: center center;
+            transform-origin: 0 0;
+            will-change: transform;
         }
         .wrapper img:active {
             cursor: grabbing;
@@ -47,16 +47,137 @@
 </div>
 
 <script>
-    const img = document.getElementById('mapImage');
-    let scale = 1;
+    (function() {
+        const img = document.getElementById('mapImage');
+        const wrapper = document.getElementById('mapWrapper');
 
-    // Зум колесиком
-    document.getElementById('mapWrapper').addEventListener('wheel', function(e) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        scale = Math.min(Math.max(scale + delta, 0.3), 1.5);
-        img.style.transform = `scale(${scale})`;
-    }, { passive: false });
+        // ===== СОСТОЯНИЕ =====
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+
+        // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ =====
+        function updateTransform() {
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+
+        // ===== ЦЕНТРИРОВАНИЕ ПРИ ЗАГРУЗКЕ =====
+        function centerImage() {
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const imgRect = img.getBoundingClientRect();
+
+            // Размеры картинки в пикселях (оригинальные)
+            const imgWidth = img.naturalWidth || 5100;
+            const imgHeight = img.naturalHeight || 2500;
+
+            // Масштабируем до размеров окна
+            const scaleX = wrapperRect.width / imgWidth;
+            const scaleY = wrapperRect.height / imgHeight;
+            const initialScale = Math.min(scaleX, scaleY);
+
+            scale = initialScale;
+
+            // Смещаем, чтобы картинка была по центру
+            translateX = (wrapperRect.width - imgWidth * scale) / 2;
+            translateY = (wrapperRect.height - imgHeight * scale) / 2;
+
+            updateTransform();
+        }
+
+        // ===== ЗУМ КОЛЕСИКОМ (ОТНОСИТЕЛЬНО КУРСОРА) =====
+        wrapper.addEventListener('wheel', function(e) {
+            e.preventDefault();
+
+            // Получаем координаты мыши относительно картинки
+            const rect = img.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Новый масштаб
+            const delta = e.deltaY > 0 ? -0.08 : 0.08;
+            const newScale = Math.min(Math.max(scale + delta, 0.2), 1.5);
+
+            if (newScale === scale) return;
+
+            // Координаты точки под мышью внутри картинки (до зума)
+            const mapX = (mouseX - translateX) / scale;
+            const mapY = (mouseY - translateY) / scale;
+
+            // Применяем новый масштаб
+            scale = newScale;
+
+            // Новое смещение, чтобы точка под мышью осталась на месте
+            translateX = mouseX - mapX * scale;
+            translateY = mouseY - mapY * scale;
+
+            // Не даём картинке уехать за края
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const imgWidth = img.naturalWidth || 5100;
+            const imgHeight = img.naturalHeight || 2500;
+            const maxX = wrapperRect.width - imgWidth * scale;
+            const maxY = wrapperRect.height - imgHeight * scale;
+            translateX = Math.min(Math.max(translateX, maxX), 0);
+            translateY = Math.min(Math.max(translateY, maxY), 0);
+
+            updateTransform();
+        }, { passive: false });
+
+        // ===== ПЕРЕТАСКИВАНИЕ =====
+        let isDragging = false;
+        let startX, startY, startTranslateX, startTranslateY;
+
+        wrapper.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startTranslateX = translateX;
+            startTranslateY = translateY;
+            wrapper.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            translateX = startTranslateX + (e.clientX - startX);
+            translateY = startTranslateY + (e.clientY - startY);
+
+            // Ограничения
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const imgWidth = img.naturalWidth || 5100;
+            const imgHeight = img.naturalHeight || 2500;
+            const maxX = wrapperRect.width - imgWidth * scale;
+            const maxY = wrapperRect.height - imgHeight * scale;
+            translateX = Math.min(Math.max(translateX, maxX), 0);
+            translateY = Math.min(Math.max(translateY, maxY), 0);
+
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                wrapper.style.cursor = 'grab';
+            }
+        });
+
+        // ===== ЗАПУСК =====
+        if (img.complete) {
+            centerImage();
+        } else {
+            img.addEventListener('load', centerImage);
+        }
+
+        // Запасной вариант
+        setTimeout(centerImage, 1000);
+
+        // Пересчёт при изменении размера окна
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(centerImage, 100);
+        });
+
+    })();
 </script>
 
 </body>
