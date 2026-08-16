@@ -68,13 +68,11 @@
 
     #tileContainer {
       display: grid;
-      grid-template-columns: repeat(18, 512px);
-      grid-template-rows: repeat(14, 512px);
+      grid-template-columns: repeat(18, 1fr);
+      grid-template-rows: repeat(14, 1fr);
       gap: 0;
       width: fit-content;
       height: fit-content;
-      transform-origin: center center;
-      transform: scale(0.18);
       background: #1a1a2e;
       border: none;
       margin: 0;
@@ -83,8 +81,8 @@
     }
     #tileContainer img {
       display: block;
-      width: 512px;
-      height: 512px;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       border: none;
       margin: 0;
@@ -104,7 +102,6 @@
       transform-origin: 0 0;
       pointer-events: none;
       z-index: 10;
-      transform: scale(0.18);
     }
     .marker {
       position: absolute;
@@ -195,24 +192,14 @@
     .overlay.active { opacity: 1; pointer-events: auto; }
 
     @media (max-width: 768px) {
-      .top-banner { height: 56px; padding: 0 16px; }
-      .top-banner .title { font-size: 18px; letter-spacing: 2px; }
-      .top-banner .nav-links { gap: 12px; }
-      .top-banner .nav-links a { font-size: 12px; }
+      .top-banner { height: 56px; }
       .map-wrapper { height: calc(100vh - 56px); margin-top: 56px; }
-      #tileContainer { transform: scale(0.12); }
-      .markers-container { transform: scale(0.12); }
       .info-panel { width: 320px; right: -360px; }
       .info-panel-title { font-size: 20px; }
     }
     @media (max-width: 480px) {
-      .top-banner { height: 48px; padding: 0 12px; }
-      .top-banner .title { font-size: 15px; letter-spacing: 1px; }
-      .top-banner .nav-links { gap: 8px; }
-      .top-banner .nav-links a { font-size: 10px; }
+      .top-banner { height: 48px; }
       .map-wrapper { height: calc(100vh - 48px); margin-top: 48px; }
-      #tileContainer { transform: scale(0.08); }
-      .markers-container { transform: scale(0.08); }
       .info-panel { width: 280px; right: -320px; padding: 20px 16px; }
       .info-panel-title { font-size: 18px; }
     }
@@ -276,7 +263,11 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    const totalTiles = 252;
+    const COLS = 18;
+    const ROWS = 14;
+    const totalTiles = COLS * ROWS;
+
+    // Загружаем тайлы
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
@@ -286,6 +277,43 @@
       container.appendChild(img);
     }
 
+    // Автоматический размер тайлов
+    function fitTiles() {
+      const wrapper = document.getElementById('mapWrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const availableW = rect.width;
+      const availableH = rect.height;
+
+      // Размер одного тайла, чтобы влезли все
+      const tileW = Math.floor(availableW / COLS);
+      const tileH = Math.floor(availableH / ROWS);
+      const tileSize = Math.min(tileW, tileH);
+
+      // Применяем размер к каждому тайлу
+      const images = container.querySelectorAll('img');
+      images.forEach(img => {
+        img.style.width = tileSize + 'px';
+        img.style.height = tileSize + 'px';
+      });
+
+      // Меняем размер контейнера
+      container.style.width = (tileSize * COLS) + 'px';
+      container.style.height = (tileSize * ROWS) + 'px';
+
+      // Масштабируем метки
+      const originalW = 9189;
+      const originalH = 7026;
+      const scale = tileSize / 512;
+      markersContainer.style.transform = `scale(${scale})`;
+      markersContainer.style.transformOrigin = '0 0';
+      markersContainer.style.width = originalW * scale + 'px';
+      markersContainer.style.height = originalH * scale + 'px';
+    }
+
+    window.addEventListener('load', fitTiles);
+    window.addEventListener('resize', fitTiles);
+
+    // ===== КЛИК ПО МЕТКЕ =====
     document.querySelectorAll('.marker').forEach(marker => {
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -298,6 +326,7 @@
       });
     });
 
+    // ===== ЗАКРЫТИЕ =====
     function closeInfo() {
       infoPanel.classList.remove('open');
       overlay.classList.remove('active');
