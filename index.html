@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Огненные чертоги</title>
+  <title>Огненные чертоги (тайлы)</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
@@ -33,7 +33,24 @@
     .top-banner .nav-links a:hover { color: #ffd700; }
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
-    #olMap { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+    #tileContainer {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      overflow: auto;
+      background: #1a1a2e;
+      padding: 0;
+      margin: 0;
+    }
+    #tileContainer img {
+      display: block;
+      width: 512px;
+      height: 512px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
 
     .markers-container {
       position: absolute; top: 0; left: 0;
@@ -109,9 +126,6 @@
       .info-panel-title { font-size: 18px; }
     }
   </style>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
-  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </head>
 <body>
 
@@ -125,7 +139,7 @@
 </div>
 
 <div class="wrapper" id="mapWrapper">
-  <div id="olMap"></div>
+  <div id="tileContainer"></div>
 
   <div class="markers-container" id="markersContainer">
     <div class="marker" style="left: 1500px; top: 800px;" 
@@ -163,6 +177,7 @@
 
 <script>
   (function() {
+    const container = document.getElementById('tileContainer');
     const markersContainer = document.getElementById('markersContainer');
     const infoPanel = document.getElementById('infoPanel');
     const infoTitle = document.getElementById('infoTitle');
@@ -170,62 +185,18 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // ===== НАСТРОЙКИ ТАЙЛОВ =====
+    // ===== ЗАГРУЗКА ТАЙЛОВ =====
+    const totalTiles = 252;
     const cols = 18;
-    const rows = 14;
-    const tileSize = 512;
 
-    // ===== ТАЙЛЫ КАК КАРТА =====
-    const tileLayer = new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        tileUrlFunction: function(tileCoord) {
-          const x = tileCoord[1];
-          const y = tileCoord[2];
-          const index = y * cols + x + 1;
-          if (index < 1 || index > 252) return '';
-          const padded = String(index).padStart(2, '0');
-          return `tiles2/tile_${padded}.jpg`;
-        },
-        tileSize: tileSize,
-        crossOrigin: 'anonymous',
-        projection: 'EPSG:3857'
-      })
-    });
-
-    // ===== ЭКСТЕНТ КАРТЫ (границы) =====
-    const extent = [
-      -9189/2,
-      -7026/2,
-      9189/2,
-      7026/2
-    ];
-
-    const map = new ol.Map({
-      target: 'olMap',
-      layers: [tileLayer],
-      view: new ol.View({
-        projection: 'EPSG:3857',
-        center: [0, 0],
-        zoom: 0.2,
-        minZoom: 0.1,
-        maxZoom: 2.5,
-        extent: extent
-      })
-    });
-
-    // ===== МЕТКИ =====
-    const view = map.getView();
-    let initialZoom = view.getZoom();
-
-    function updateMarkers() {
-      const zoom = view.getZoom();
-      const scale = Math.pow(2, zoom - initialZoom);
-      markersContainer.style.transform = `scale(${scale})`;
-      markersContainer.style.transformOrigin = '0 0';
+    for (let i = 1; i <= totalTiles; i++) {
+      const img = document.createElement('img');
+      const padded = String(i).padStart(2, '0');
+      img.src = `tiles2/tile_${padded}.jpg`;
+      img.alt = `tile ${i}`;
+      img.loading = 'lazy';
+      container.appendChild(img);
     }
-
-    view.on('change:resolution', updateMarkers);
-    setTimeout(updateMarkers, 100);
 
     // ===== КЛИК ПО МЕТКЕ =====
     document.querySelectorAll('.marker').forEach(marker => {
@@ -249,10 +220,6 @@
     overlay.addEventListener('click', closeInfo);
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeInfo();
-    });
-
-    window.addEventListener('resize', function() {
-      map.updateSize();
     });
 
     document.querySelector('.ol-viewport')?.style.setProperty('background', '#1a1a2e');
