@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Огненные чертоги (тайлы)</title>
+  <title>Огненные чертоги</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
@@ -34,22 +34,26 @@
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
     #tileContainer {
+      display: grid;
+      grid-template-columns: repeat(18, 512px);
+      grid-template-rows: repeat(14, 512px);
+      gap: 0;
       width: 100%;
       height: 100%;
-      display: flex;
-      flex-wrap: wrap;
       overflow: auto;
       background: #1a1a2e;
-      padding: 0;
-      margin: 0;
+      justify-content: center;
+      align-content: center;
     }
     #tileContainer img {
       display: block;
       width: 512px;
       height: 512px;
       object-fit: cover;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      flex-shrink: 0;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
     }
 
     .markers-container {
@@ -188,6 +192,7 @@
     // ===== ЗАГРУЗКА ТАЙЛОВ =====
     const totalTiles = 252;
     const cols = 18;
+    const rows = 14;
 
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
@@ -221,8 +226,6 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeInfo();
     });
-
-    document.querySelector('.ol-viewport')?.style.setProperty('background', '#1a1a2e');
 
   })();
 </script>
