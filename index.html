@@ -169,10 +169,7 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    const MAP_W = 9189;
-    const MAP_H = 7026;
-
-    // ===== OpenLayers КАРТА (без ol.interaction.defaults) =====
+    // ===== OpenLayers КАРТА КАК ИЗОБРАЖЕНИЕ (без географии) =====
     const tileLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
         tileUrlFunction: function(tileCoord) {
@@ -196,9 +193,13 @@
         center: [0, 0],
         zoom: 0.2,
         minZoom: 0.05,
-        maxZoom: 2.5
+        maxZoom: 2.5,
+        projection: 'EPSG:3857'
       })
     });
+
+    // Убираем географическую привязку — просто показываем тайлы
+    map.getView().setCenter([0, 0]);
 
     // ===== МЕТКИ =====
     const view = map.getView();
