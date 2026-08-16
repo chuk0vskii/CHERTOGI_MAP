@@ -109,6 +109,7 @@
     }
   </style>
 
+  <!-- OpenLayers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
   <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </head>
@@ -169,7 +170,7 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // ===== OpenLayers КАРТА КАК ИЗОБРАЖЕНИЕ (без географии) =====
+    // ===== ТАЙЛЫ =====
     const tileLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
         tileUrlFunction: function(tileCoord) {
@@ -192,14 +193,10 @@
       view: new ol.View({
         center: [0, 0],
         zoom: 0.2,
-        minZoom: 0.05,
-        maxZoom: 2.5,
-        projection: 'EPSG:3857'
+        minZoom: 0.1,
+        maxZoom: 2.5
       })
     });
-
-    // Убираем географическую привязку — просто показываем тайлы
-    map.getView().setCenter([0, 0]);
 
     // ===== МЕТКИ =====
     const view = map.getView();
