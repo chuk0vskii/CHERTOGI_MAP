@@ -9,7 +9,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #1a1a2e;
+      background: #0d0d1a;
     }
     body {
       display: flex;
@@ -63,8 +63,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #1a1a2e;
+      background: #0d0d1a;
+      cursor: grab;
     }
+    .map-wrapper:active { cursor: grabbing; }
 
     #tileContainer {
       display: grid;
@@ -73,11 +75,13 @@
       gap: 0;
       width: fit-content;
       height: fit-content;
-      background: #1a1a2e;
+      background: #0d0d1a;
       border: none;
       margin: 0;
       padding: 0;
       line-height: 0;
+      transition: transform 0.1s ease;
+      will-change: transform;
     }
     #tileContainer img {
       display: block;
@@ -88,7 +92,7 @@
       margin: 0;
       padding: 0;
       image-rendering: pixelated;
-      background: #1a1a2e;
+      background: #0d0d1a;
       outline: none;
       box-shadow: none;
     }
@@ -102,6 +106,8 @@
       transform-origin: 0 0;
       pointer-events: none;
       z-index: 10;
+      transition: transform 0.1s ease;
+      will-change: transform;
     }
     .marker {
       position: absolute;
@@ -257,6 +263,7 @@
   (function() {
     const container = document.getElementById('tileContainer');
     const markersContainer = document.getElementById('markersContainer');
+    const wrapper = document.getElementById('mapWrapper');
     const infoPanel = document.getElementById('infoPanel');
     const infoTitle = document.getElementById('infoTitle');
     const infoDescription = document.getElementById('infoDescription');
@@ -266,8 +273,10 @@
     const COLS = 18;
     const ROWS = 14;
     const totalTiles = COLS * ROWS;
+    const ORIGINAL_W = 9189;
+    const ORIGINAL_H = 7026;
 
-    // Загружаем тайлы
+    // ===== ЗАГРУЗКА ТАЙЛОВ =====
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
@@ -277,39 +286,125 @@
       container.appendChild(img);
     }
 
-    // Автоматический размер тайлов
+    // ===== СОСТОЯНИЕ =====
+    let currentScale = 1;
+    let posX = 0, posY = 0;
+    let isDragging = false;
+    let startX, startY, startPosX, startPosY;
+    let tileSize = 0;
+
+    // ===== ФУНКЦИЯ РАЗМЕРА ТАЙЛОВ =====
     function fitTiles() {
-      const wrapper = document.getElementById('mapWrapper');
       const rect = wrapper.getBoundingClientRect();
       const availableW = rect.width;
       const availableH = rect.height;
 
-      // Размер одного тайла, чтобы влезли все
       const tileW = Math.floor(availableW / COLS);
       const tileH = Math.floor(availableH / ROWS);
-      const tileSize = Math.min(tileW, tileH);
+      tileSize = Math.min(tileW, tileH);
 
-      // Применяем размер к каждому тайлу
       const images = container.querySelectorAll('img');
       images.forEach(img => {
         img.style.width = tileSize + 'px';
         img.style.height = tileSize + 'px';
       });
 
-      // Меняем размер контейнера
       container.style.width = (tileSize * COLS) + 'px';
       container.style.height = (tileSize * ROWS) + 'px';
 
-      // Масштабируем метки
-      const originalW = 9189;
-      const originalH = 7026;
-      const scale = tileSize / 512;
-      markersContainer.style.transform = `scale(${scale})`;
-      markersContainer.style.transformOrigin = '0 0';
-      markersContainer.style.width = originalW * scale + 'px';
-      markersContainer.style.height = originalH * scale + 'px';
+      // Сброс масштаба при ресайзе
+      currentScale = 1;
+      posX = 0;
+      posY = 0;
+      applyTransform();
+
+      // Центрируем
+      const containerRect = container.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+      posX = (wrapperRect.width - containerRect.width) / 2;
+      posY = (wrapperRect.height - containerRect.height) / 2;
+      applyTransform();
     }
 
+    // ===== ПРИМЕНЕНИЕ ТРАНСФОРМА =====
+    function applyTransform() {
+      const scale = currentScale;
+      container.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
+      markersContainer.style.transformOrigin = '0 0';
+    }
+
+    // ===== ЗУМ КОЛЕСИКОМ =====
+    wrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const delta = e.deltaY > 0 ? -0.08 : 0.08;
+      const newScale = Math.min(Math.max(currentScale + delta, 0.3), 2.5);
+
+      if (newScale === currentScale) return;
+
+      // Координаты точки под мышью внутри контейнера
+      const px = (mouseX - posX) / currentScale;
+      const py = (mouseY - posY) / currentScale;
+
+      currentScale = newScale;
+
+      // Новое смещение, чтобы точка под мышью осталась на месте
+      posX = mouseX - px * currentScale;
+      posY = mouseY - py * currentScale;
+
+      // Ограничения
+      constrainPosition();
+
+      applyTransform();
+    }, { passive: false });
+
+    // ===== ОГРАНИЧЕНИЯ =====
+    function constrainPosition() {
+      const containerRect = container.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      const scaledW = containerRect.width * currentScale;
+      const scaledH = containerRect.height * currentScale;
+
+      const maxX = Math.max(0, scaledW - wrapperRect.width);
+      const maxY = Math.max(0, scaledH - wrapperRect.height);
+
+      posX = Math.min(Math.max(posX, -maxX / 2), maxX / 2);
+      posY = Math.min(Math.max(posY, -maxY / 2), maxY / 2);
+    }
+
+    // ===== ПЕРЕТАСКИВАНИЕ =====
+    wrapper.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startPosX = posX;
+      startPosY = posY;
+      wrapper.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      posX = startPosX + (e.clientX - startX);
+      posY = startPosY + (e.clientY - startY);
+      constrainPosition();
+      applyTransform();
+    });
+
+    window.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        wrapper.style.cursor = 'grab';
+      }
+    });
+
+    // ===== ЗАПУСК =====
     window.addEventListener('load', fitTiles);
     window.addEventListener('resize', fitTiles);
 
