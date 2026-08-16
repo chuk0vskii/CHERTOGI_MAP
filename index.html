@@ -74,7 +74,6 @@
       border-bottom-color: #ffd700;
     }
 
-    /* ===== КАРТА (тайлы) ===== */
     #olMap {
       width: 100%;
       height: 100%;
@@ -83,7 +82,6 @@
       left: 0;
     }
 
-    /* ===== МЕТКИ ===== */
     .markers-container {
       position: absolute;
       top: 0;
@@ -133,7 +131,6 @@
       opacity: 1;
     }
 
-    /* ===== ИНФО-ПАНЕЛЬ ===== */
     .info-panel {
       position: fixed;
       top: 0;
@@ -214,51 +211,20 @@
     }
 
     @media (max-width: 768px) {
-      .top-banner {
-        height: 56px;
-        padding: 0 16px;
-      }
-      .top-banner .title {
-        font-size: 18px;
-        letter-spacing: 2px;
-      }
-      .top-banner .nav-links {
-        gap: 12px;
-      }
-      .top-banner .nav-links a {
-        font-size: 12px;
-      }
-      .info-panel {
-        width: 320px;
-        right: -360px;
-      }
-      .info-panel-title {
-        font-size: 20px;
-      }
+      .top-banner { height: 56px; padding: 0 16px; }
+      .top-banner .title { font-size: 18px; letter-spacing: 2px; }
+      .top-banner .nav-links { gap: 12px; }
+      .top-banner .nav-links a { font-size: 12px; }
+      .info-panel { width: 320px; right: -360px; }
+      .info-panel-title { font-size: 20px; }
     }
     @media (max-width: 480px) {
-      .top-banner {
-        height: 48px;
-        padding: 0 12px;
-      }
-      .top-banner .title {
-        font-size: 15px;
-        letter-spacing: 1px;
-      }
-      .top-banner .nav-links {
-        gap: 8px;
-      }
-      .top-banner .nav-links a {
-        font-size: 10px;
-      }
-      .info-panel {
-        width: 280px;
-        right: -320px;
-        padding: 20px 16px;
-      }
-      .info-panel-title {
-        font-size: 18px;
-      }
+      .top-banner { height: 48px; padding: 0 12px; }
+      .top-banner .title { font-size: 15px; letter-spacing: 1px; }
+      .top-banner .nav-links { gap: 8px; }
+      .top-banner .nav-links a { font-size: 10px; }
+      .info-panel { width: 280px; right: -320px; padding: 20px 16px; }
+      .info-panel-title { font-size: 18px; }
     }
   </style>
 
@@ -289,14 +255,12 @@
       <img src="assets/icons/sindicat.png" alt="Синдикат">
       <span class="marker-tooltip">Штаб синдиката</span>
     </div>
-
     <div class="marker" style="left: 2800px; top: 1200px;" 
          data-name="Замок графа"
          data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
       <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок">
       <span class="marker-tooltip">Замок графа</span>
     </div>
-
     <div class="marker" style="left: 3800px; top: 600px;" 
          data-name="Деревня Ольховка"
          data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
@@ -328,33 +292,32 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // Размеры карты (оригинал)
     const MAP_W = 9189;
     const MAP_H = 7026;
 
-    // ===== OpenLayers ТАЙЛЫ (по порядку, 252 шт) =====
-    const cols = 18; // 9189 / 512 ≈ 18
-    const rows = 14; // 7026 / 512 ≈ 14
+    // ===== ПРОСТАЯ ЗАГРУЗКА ТАЙЛОВ =====
+    const tileLayer = new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        tileUrlFunction: function(tileCoord) {
+          const z = tileCoord[0];
+          const x = tileCoord[1];
+          const y = tileCoord[2];
 
-    const tileUrlFunction = function(tileCoord) {
-      const x = tileCoord[1];
-      const y = tileCoord[2];
-      const index = y * cols + x + 1;
-      if (index < 1 || index > 252) return '';
-      return `tiles2/tile_${String(index).padStart(2, '0')}.jpg`;
-    };
+          // Определяем индекс (по порядку)
+          const cols = 18;
+          const index = y * cols + x + 1;
+          if (index < 1 || index > 252) return '';
+          const padded = String(index).padStart(2, '0');
+          return `tiles2/tile_${padded}.jpg`;
+        },
+        tileSize: 512,
+        crossOrigin: 'anonymous'
+      })
+    });
 
     const map = new ol.Map({
       target: 'olMap',
-      layers: [
-        new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            tileUrlFunction: tileUrlFunction,
-            tileSize: 512,
-            crossOrigin: 'anonymous'
-          })
-        })
-      ],
+      layers: [tileLayer],
       view: new ol.View({
         center: [0, 0],
         zoom: 0.2,
@@ -364,7 +327,7 @@
       interactions: ol.interaction.defaults({ dragPan: true, mouseWheelZoom: true })
     });
 
-    // ===== СИНХРОНИЗАЦИЯ МЕТОК С ЗУМОМ =====
+    // ===== МЕТКИ =====
     const view = map.getView();
     let initialZoom = view.getZoom();
 
@@ -383,15 +346,15 @@
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
         const name = this.dataset.name || 'Без названия';
-        const description = this.dataset.description || 'Описание отсутствует.';
+        const desc = this.dataset.description || 'Описание отсутствует.';
         infoTitle.textContent = name;
-        infoDescription.textContent = description;
+        infoDescription.textContent = desc;
         infoPanel.classList.add('open');
         overlay.classList.add('active');
       });
     });
 
-    // ===== ЗАКРЫТИЕ ИНФО =====
+    // ===== ЗАКРЫТИЕ =====
     function closeInfo() {
       infoPanel.classList.remove('open');
       overlay.classList.remove('active');
@@ -402,12 +365,10 @@
       if (e.key === 'Escape') closeInfo();
     });
 
-    // ===== ПЕРЕСЧЁТ ПРИ РЕСАЙЗЕ =====
     window.addEventListener('resize', function() {
       map.updateSize();
     });
 
-    // ===== АДАПТАЦИЯ ПОД ТЕМНУЮ ТЕМУ =====
     document.querySelector('.ol-viewport')?.style.setProperty('background', '#1a1a2e');
 
   })();
