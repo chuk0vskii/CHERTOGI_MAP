@@ -109,7 +109,6 @@
     }
   </style>
 
-  <!-- OpenLayers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
   <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </head>
@@ -170,7 +169,7 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // ===== ТАЙЛЫ =====
+    // ===== ТАЙЛЫ С ЭКСТЕНТОМ =====
     const tileLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
         tileUrlFunction: function(tileCoord) {
@@ -187,6 +186,9 @@
       })
     });
 
+    // Экстент — границы карты в пикселях
+    const extent = [-9189/2, -7026/2, 9189/2, 7026/2];
+
     const map = new ol.Map({
       target: 'olMap',
       layers: [tileLayer],
@@ -194,7 +196,8 @@
         center: [0, 0],
         zoom: 0.2,
         minZoom: 0.1,
-        maxZoom: 2.5
+        maxZoom: 2.5,
+        extent: extent
       })
     });
 
