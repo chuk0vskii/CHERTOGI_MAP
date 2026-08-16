@@ -80,7 +80,6 @@
       margin: 0;
       padding: 0;
       line-height: 0;
-      transition: transform 0.1s ease;
       will-change: transform;
     }
     #tileContainer img {
@@ -106,8 +105,6 @@
       transform-origin: 0 0;
       pointer-events: none;
       z-index: 10;
-      transition: transform 0.1s ease;
-      will-change: transform;
     }
     .marker {
       position: absolute;
@@ -288,12 +285,13 @@
 
     // ===== СОСТОЯНИЕ =====
     let currentScale = 1;
+    let tileSize = 0;
+    let containerW = 0, containerH = 0;
     let posX = 0, posY = 0;
     let isDragging = false;
     let startX, startY, startPosX, startPosY;
-    let tileSize = 0;
 
-    // ===== ФУНКЦИЯ РАЗМЕРА ТАЙЛОВ =====
+    // ===== ВЫЧИСЛЕНИЕ РАЗМЕРА ТАЙЛОВ =====
     function fitTiles() {
       const rect = wrapper.getBoundingClientRect();
       const availableW = rect.width;
@@ -309,20 +307,16 @@
         img.style.height = tileSize + 'px';
       });
 
-      container.style.width = (tileSize * COLS) + 'px';
-      container.style.height = (tileSize * ROWS) + 'px';
-
-      // Сброс масштаба при ресайзе
-      currentScale = 1;
-      posX = 0;
-      posY = 0;
-      applyTransform();
+      containerW = tileSize * COLS;
+      containerH = tileSize * ROWS;
+      container.style.width = containerW + 'px';
+      container.style.height = containerH + 'px';
 
       // Центрируем
-      const containerRect = container.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
-      posX = (wrapperRect.width - containerRect.width) / 2;
-      posY = (wrapperRect.height - containerRect.height) / 2;
+      posX = (wrapperRect.width - containerW) / 2;
+      posY = (wrapperRect.height - containerH) / 2;
+      currentScale = 1;
       applyTransform();
     }
 
@@ -334,49 +328,30 @@
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ КОЛЕСИКОМ =====
+    // ===== ЗУМ (от центра экрана) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
-
-      const rect = container.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
 
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
       const newScale = Math.min(Math.max(currentScale + delta, 0.3), 2.5);
 
       if (newScale === currentScale) return;
 
-      // Координаты точки под мышью внутри контейнера
-      const px = (mouseX - posX) / currentScale;
-      const py = (mouseY - posY) / currentScale;
+      // Центр экрана
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const cx = wrapperRect.width / 2;
+      const cy = wrapperRect.height / 2;
+
+      // Точка под центром внутри карты
+      const px = (cx - posX) / currentScale;
+      const py = (cy - posY) / currentScale;
 
       currentScale = newScale;
-
-      // Новое смещение, чтобы точка под мышью осталась на месте
-      posX = mouseX - px * currentScale;
-      posY = mouseY - py * currentScale;
-
-      // Ограничения
-      constrainPosition();
+      posX = cx - px * currentScale;
+      posY = cy - py * currentScale;
 
       applyTransform();
     }, { passive: false });
-
-    // ===== ОГРАНИЧЕНИЯ =====
-    function constrainPosition() {
-      const containerRect = container.getBoundingClientRect();
-      const wrapperRect = wrapper.getBoundingClientRect();
-
-      const scaledW = containerRect.width * currentScale;
-      const scaledH = containerRect.height * currentScale;
-
-      const maxX = Math.max(0, scaledW - wrapperRect.width);
-      const maxY = Math.max(0, scaledH - wrapperRect.height);
-
-      posX = Math.min(Math.max(posX, -maxX / 2), maxX / 2);
-      posY = Math.min(Math.max(posY, -maxY / 2), maxY / 2);
-    }
 
     // ===== ПЕРЕТАСКИВАНИЕ =====
     wrapper.addEventListener('mousedown', function(e) {
@@ -393,7 +368,6 @@
       if (!isDragging) return;
       posX = startPosX + (e.clientX - startX);
       posY = startPosY + (e.clientY - startY);
-      constrainPosition();
       applyTransform();
     });
 
