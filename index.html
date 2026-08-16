@@ -43,7 +43,8 @@
       height: 100vh;
       overflow: hidden;
       position: relative;
-      padding-top: 70px;
+      padding-top: 70px;   /* ← отступ под баннер */
+      padding-bottom: 10px; /* ← отступ снизу (чтобы не упиралось в край) */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -59,7 +60,10 @@
       transform-origin: center center;
       transform: scale(0.18);
       background: #1a1a2e;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: none;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
     }
     #tileContainer img {
       display: block;
@@ -70,6 +74,10 @@
       margin: 0;
       padding: 0;
       image-rendering: pixelated;
+      background: #1a1a2e;
+      /* Убираем любые возможные промежутки */
+      outline: none;
+      box-shadow: none;
     }
 
     .markers-container {
@@ -79,6 +87,7 @@
       pointer-events: none;
       z-index: 10;
       transform: scale(0.18);
+      margin-top: 70px;   /* синхронизируем с padding-top */
     }
     .marker {
       position: absolute; pointer-events: auto; cursor: pointer;
@@ -137,20 +146,24 @@
       .top-banner .title { font-size: 18px; letter-spacing: 2px; }
       .top-banner .nav-links { gap: 12px; }
       .top-banner .nav-links a { font-size: 12px; }
-      .info-panel { width: 320px; right: -360px; }
-      .info-panel-title { font-size: 20px; }
+      .wrapper { padding-top: 56px; }
+      .markers-container { margin-top: 56px; }
       #tileContainer { transform: scale(0.12); }
       .markers-container { transform: scale(0.12); }
+      .info-panel { width: 320px; right: -360px; }
+      .info-panel-title { font-size: 20px; }
     }
     @media (max-width: 480px) {
       .top-banner { height: 48px; padding: 0 12px; }
       .top-banner .title { font-size: 15px; letter-spacing: 1px; }
       .top-banner .nav-links { gap: 8px; }
       .top-banner .nav-links a { font-size: 10px; }
-      .info-panel { width: 280px; right: -320px; padding: 20px 16px; }
-      .info-panel-title { font-size: 18px; }
+      .wrapper { padding-top: 48px; }
+      .markers-container { margin-top: 48px; }
       #tileContainer { transform: scale(0.08); }
       .markers-container { transform: scale(0.08); }
+      .info-panel { width: 280px; right: -320px; padding: 20px 16px; }
+      .info-panel-title { font-size: 18px; }
     }
   </style>
 </head>
@@ -212,7 +225,6 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // ===== ЗАГРУЗКА ТАЙЛОВ (252 шт) =====
     const totalTiles = 252;
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
@@ -223,7 +235,6 @@
       container.appendChild(img);
     }
 
-    // ===== КЛИК ПО МЕТКЕ =====
     document.querySelectorAll('.marker').forEach(marker => {
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -236,7 +247,6 @@
       });
     });
 
-    // ===== ЗАКРЫТИЕ =====
     function closeInfo() {
       infoPanel.classList.remove('open');
       overlay.classList.remove('active');
