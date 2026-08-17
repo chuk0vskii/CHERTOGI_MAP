@@ -5,8 +5,8 @@
   <title>Тайлы</title>
   <style>
     body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: fit-content; height: fit-content; }
-    .grid img { display: block; width: 100%; height: 100%; }
+    .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: 100%; max-width: 1200px; }
+    .grid img { display: block; width: 100%; height: auto; border: none; }
   </style>
 </head>
 <body>
@@ -16,15 +16,11 @@
     const totalTiles = 252;
     const cols = 18;
 
-    // Считаем размер тайла под экран
-    const tileSize = Math.min(window.innerWidth / cols, window.innerHeight / 14) * 0.9;
-
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
       img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
-      img.style.width = tileSize + 'px';
-      img.style.height = tileSize + 'px';
+      img.alt = `tile ${i}`;
       grid.appendChild(img);
     }
   </script>
