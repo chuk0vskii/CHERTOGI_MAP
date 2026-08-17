@@ -116,177 +116,6 @@ body {
   color: #ffd700;
 }
 
-/* ===== КАРТА (только для index.html) ===== */
-.wrapper {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  cursor: grab;
-}
-
-.wrapper:active {
-  cursor: grabbing;
-}
-
-.wrapper img {
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: 0 0;
-  will-change: transform;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* ===== МЕТКИ ===== */
-.markers-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* width: 9189px;   УБИРАЕМ! */
-  /* height: 7026px;  УБИРАЕМ! */
-  transform-origin: 0 0;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.marker {
-  position: absolute;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  transform: translate(-50%, -50%);
-}
-
-.marker img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 50px;
-  max-height: 50px;
-}
-
-.marker:hover {
-  transform: translate(-50%, -50%) scale(1.3);
-  filter: brightness(1.3);
-}
-
-.marker-tooltip {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #ffd700;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: Arial, sans-serif;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.marker:hover .marker-tooltip {
-  opacity: 1;
-}
-
-/* ===== ИНФО-ПАНЕЛЬ ===== */
-.info-panel {
-  position: fixed;
-  top: 0;
-  right: -450px;
-  width: 400px;
-  height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e, #2d2d44);
-  color: white;
-  padding: 30px 25px;
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.8);
-  transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 1000;
-  font-family: Arial, sans-serif;
-  overflow-y: auto;
-  border-left: 2px solid rgba(255, 215, 0, 0.3);
-}
-
-.info-panel.open {
-  right: 0;
-}
-
-.info-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 15px;
-}
-
-.info-panel-title {
-  font-size: 24px;
-  color: #ffd700;
-  font-weight: bold;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-}
-
-.info-panel-close {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 32px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.info-panel-close:hover {
-  color: #ffd700;
-  transform: rotate(90deg);
-}
-
-.info-panel-content {
-  font-size: 16px;
-  line-height: 1.8;
-  color: #ccc;
-}
-
-.info-panel-content strong {
-  color: #ffd700;
-}
-
-.info-panel-content .description {
-  margin-top: 15px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  border-left: 3px solid #ffd700;
-}
-
-/* ===== ОВЕРЛЕЙ ===== */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-  z-index: 999;
-}
-
-.overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 /* ===== АДАПТАЦИЯ ===== */
 @media (max-width: 768px) {
   .top-banner {
@@ -305,13 +134,6 @@ body {
   .top-banner .nav-links a {
     font-size: 12px;
     padding: 4px 8px;
-  }
-  .info-panel {
-    width: 320px;
-    right: -360px;
-  }
-  .info-panel-title {
-    font-size: 20px;
   }
   .page-content h1 {
     font-size: 32px;
@@ -333,14 +155,6 @@ body {
   .top-banner .nav-links a {
     font-size: 10px;
     padding: 3px 6px;
-  }
-  .info-panel {
-    width: 280px;
-    right: -320px;
-    padding: 20px 16px;
-  }
-  .info-panel-title {
-    font-size: 18px;
   }
   .page-content h1 {
     font-size: 26px;
