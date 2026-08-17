@@ -1,4 +1,3 @@
-
 (function() {
   'use strict';
 
@@ -85,12 +84,12 @@
     applyTransform();
   }, { passive: false });
 
-  // ===== ПЕРЕТАСКИВАНИЕ =====
+  // ===== ПЕРЕТАСКИВАНИЕ (ТОЛЬКО ПРИ ЗАЖАТОЙ КНОПКЕ) =====
   let isDragging = false;
   let startX, startY, startTx, startTy;
 
   wrapper.addEventListener('mousedown', function(e) {
-    if (e.button !== 0) return;
+    if (e.button !== 0) return; // только левая кнопка
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -99,7 +98,7 @@
     wrapper.style.cursor = 'grabbing';
   });
 
-  window.addEventListener('mousemove', function(e) {
+  wrapper.addEventListener('mousemove', function(e) {
     if (!isDragging) return;
     tx = startTx + (e.clientX - startX);
     ty = startTy + (e.clientY - startY);
@@ -107,7 +106,18 @@
     applyTransform();
   });
 
-  window.addEventListener('mouseup', function() {
+  // Отпускаем кнопку — завершаем перетаскивание
+  wrapper.addEventListener('mouseup', function(e) {
+    if (e.button !== 0) return;
+    if (isDragging) {
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+    }
+  });
+
+  // Если мышь ушла за пределы окна — тоже завершаем
+  window.addEventListener('mouseup', function(e) {
+    if (e.button !== 0) return;
     if (isDragging) {
       isDragging = false;
       wrapper.style.cursor = 'grab';
