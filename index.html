@@ -1,54 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Тайлы</title>
+  <title>Огненные чертоги</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
   <style>
-    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .grid {
-      display: grid;
-      gap: 0;
-      width: fit-content;
-      max-width: 98vw;
-      max-height: 98vh;
-    }
-    .grid img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border: none;
-      margin: 0;
-      padding: 0;
-      image-rendering: pixelated;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; overflow: hidden; height: 100vh; }
+    #map { width: 100vw; height: 100vh; background: #1a1a2e; }
   </style>
 </head>
 <body>
-  <div class="grid" id="grid"></div>
+  <div id="map"></div>
   <script>
-    const grid = document.getElementById('grid');
-    const totalTiles = 252;
-    const cols = 18;
-    const rows = Math.ceil(totalTiles / cols);
+    // ===== РАЗМЕРЫ КАРТЫ =====
+    const IMG_W = 9189;
+    const IMG_H = 7026;
 
-    // Считаем размер тайла под экран
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const tileSize = Math.min(vw / cols, vh / rows) * 0.95;
+    // ===== СОЗДАЁМ КАРТУ ЧЕРЕЗ ImageStatic =====
+    const map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Image({
+          source: new ol.source.ImageStatic({
+            url: 'tiles2/tile_01.jpg',
+            imageSize: [IMG_W, IMG_H],
+            projection: 'EPSG:3857',
+            imageExtent: [-IMG_W/2, -IMG_H/2, IMG_W/2, IMG_H/2]
+          })
+        })
+      ],
+      view: new ol.View({
+        projection: 'EPSG:3857',
+        center: [0, 0],
+        zoom: 0.5,
+        minZoom: 0.1,
+        maxZoom: 2.5
+      })
+    });
 
-    grid.style.gridTemplateColumns = `repeat(${cols}, ${tileSize}px)`;
-    grid.style.gridTemplateRows = `repeat(${rows}, ${tileSize}px)`;
-
-    for (let i = 1; i <= totalTiles; i++) {
-      const img = document.createElement('img');
-      const padded = String(i).padStart(2, '0');
-      img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg?t=${Date.now()}`;
-      img.alt = `tile ${i}`;
-      img.style.width = tileSize + 'px';
-      img.style.height = tileSize + 'px';
-      grid.appendChild(img);
-    }
+    // ===== АДАПТАЦИЯ ПОД РАЗМЕР ОКНА =====
+    window.addEventListener('resize', function() {
+      map.updateSize();
+    });
   </script>
 </body>
 </html>
