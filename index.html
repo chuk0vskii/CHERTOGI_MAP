@@ -214,7 +214,6 @@
 
   <div class="wrapper" id="mapWrapper">
     <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" id="mapImage">
-
     <div class="markers-container" id="markersContainer">
       <div class="marker" style="left: 1500px; top: 800px;" 
            data-name="Штаб синдиката"
@@ -254,7 +253,6 @@
       const img = document.getElementById('mapImage');
       const wrapper = document.getElementById('mapWrapper');
       const markersContainer = document.getElementById('markersContainer');
-
       const infoPanel = document.getElementById('infoPanel');
       const infoTitle = document.getElementById('infoTitle');
       const infoDescription = document.getElementById('infoDescription');
@@ -276,7 +274,6 @@
         markersContainer.style.transform = transform;
       }
 
-      // ===== ЦЕНТРИРОВАНИЕ ПО ЦЕНТРУ =====
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
@@ -336,13 +333,11 @@
         if (!isDragging) return;
         tx = startTx + (e.clientX - startX);
         ty = startTy + (e.clientY - startY);
-
         const rect = wrapper.getBoundingClientRect();
         const maxX = rect.width - IMG_W * scale;
         const maxY = rect.height - IMG_H * scale;
         tx = Math.min(Math.max(tx, maxX), 0);
         ty = Math.min(Math.max(ty, maxY), 0);
-
         update();
       });
 
