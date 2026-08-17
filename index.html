@@ -4,9 +4,24 @@
   <meta charset="UTF-8">
   <title>Тайлы</title>
   <style>
-    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: 100%; max-width: 1400px; }
-    .grid img { display: block; width: 100%; height: auto; border: none; margin: 0; image-rendering: pixelated; }
+    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .grid {
+      display: grid;
+      gap: 0;
+      width: fit-content;
+      max-width: 98vw;
+      max-height: 98vh;
+    }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+    }
   </style>
 </head>
 <body>
@@ -15,13 +30,23 @@
     const grid = document.getElementById('grid');
     const totalTiles = 252;
     const cols = 18;
+    const rows = Math.ceil(totalTiles / cols);
+
+    // Считаем размер тайла под экран
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const tileSize = Math.min(vw / cols, vh / rows) * 0.95;
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${tileSize}px)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, ${tileSize}px)`;
 
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
-      // Добавляем ?t=Date.now() чтобы обойти кэш
       img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg?t=${Date.now()}`;
       img.alt = `tile ${i}`;
+      img.style.width = tileSize + 'px';
+      img.style.height = tileSize + 'px';
       grid.appendChild(img);
     }
   </script>
