@@ -76,11 +76,17 @@
       grid-template-rows: repeat(14, 1fr);
       gap: 0;
     }
-    #container img {
-  image-rendering: pixelated;        /* для Chrome, Edge, Firefox */
-  image-rendering: crisp-edges;      /* для Safari */
-  image-rendering: -moz-crisp-edges; /* для старых Firefox */
-  -ms-interpolation-mode: nearest-neighbor; /* для IE */
+   #container img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;        /* ← ДОБАВЬ ЭТО */
+  image-rendering: crisp-edges;      /* ← И ЭТО */
+  background: #0d0d1a;
 }
 
     .markers-container {
