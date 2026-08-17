@@ -266,7 +266,8 @@
       let tx = 0;
       let ty = 0;
       let minScale = 1;
-      const MAX_SCALE = 2.0;
+      const MAX_SCALE = 0.7;
+      const STEP = 0.2;
 
       function update() {
         const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
@@ -292,14 +293,14 @@
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        const delta = e.deltaY > 0 ? -0.08 : 0.08;
+        const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
         newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
         if (newScale === scale) return;
 
-        const px = (mouseX - tx) / (IMG_W * scale);
-        const py = (mouseY - ty) / (IMG_H * scale);
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
 
         const newW = IMG_W * newScale;
         const newH = IMG_H * newScale;
