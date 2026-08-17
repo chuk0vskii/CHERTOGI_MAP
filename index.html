@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>OL тест</title>
+  <title>Огненные чертоги</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
   <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
   <style>
@@ -13,21 +13,38 @@
 <body>
   <div id="map"></div>
   <script>
+    const COLS = 18;
+    const ROWS = 14;
+    const TILE_SIZE = 512;
+
     const map = new ol.Map({
       target: 'map',
       layers: [
         new ol.layer.Tile({
           source: new ol.source.XYZ({
-            url: 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_01.jpg',
-            tileSize: 512,
+            tileUrlFunction: function(tileCoord) {
+              const x = tileCoord[1];
+              const y = tileCoord[2];
+              const index = y * COLS + x + 1;
+              if (index < 1 || index > COLS * ROWS) return '';
+              const padded = String(index).padStart(2, '0');
+              return `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
+            },
+            tileSize: TILE_SIZE,
             crossOrigin: 'anonymous'
           })
         })
       ],
       view: new ol.View({
         center: [0, 0],
-        zoom: 0.5
+        zoom: 0.5,
+        minZoom: 0.1,
+        maxZoom: 2.5
       })
+    });
+
+    window.addEventListener('resize', function() {
+      map.updateSize();
     });
   </script>
 </body>
