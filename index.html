@@ -193,18 +193,18 @@
         markersContainer.style.transform = transform;
       }
 
+      // ===== ЦЕНТРИРОВАНИЕ ПО ЛЕВОМУ КРАЮ =====
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
         const sy = rect.height / IMG_H;
         minScale = Math.min(sx, sy);
         scale = minScale;
-        tx = (rect.width - IMG_W * scale) / 2;
+        tx = 0; // левый край
         ty = (rect.height - IMG_H * scale) / 2;
         update();
       }
 
-      // ===== ЗУМ (из рабочего файла) =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -236,7 +236,6 @@
         update();
       }, { passive: false });
 
-      // ===== ПЕРЕТАСКИВАНИЕ (встроено аккуратно) =====
       let isDragging = false;
       let startX, startY, startTx, startTy;
 
@@ -269,7 +268,6 @@
         }
       });
 
-      // ===== ИНФО-ПАНЕЛЬ =====
       document.querySelectorAll('.marker').forEach(marker => {
         marker.addEventListener('click', function(e) {
           e.stopPropagation();
@@ -292,7 +290,6 @@
         if (e.key === 'Escape') closeInfo();
       });
 
-      // ===== ЗАПУСК =====
       if (img.complete) {
         center();
       } else {
