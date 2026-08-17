@@ -12,7 +12,7 @@
   const infoClose = document.getElementById('infoClose');
   const overlay = document.getElementById('overlay');
 
-  // ===== РАЗМЕРЫ КАРТЫ =====
+  // ===== РАЗМЕРЫ КАРТЫ (ТВОИ) =====
   const IMG_W = 9189;
   const IMG_H = 7026;
 
@@ -21,28 +21,15 @@
   let tx = 0;
   let ty = 0;
   let minScale = 1;
-  const MAX_SCALE = 6.0;
-  const STEP = 0.3;
+  const MAX_SCALE = 0.7;  // ← ТВОЙ МАКСИМАЛЬНЫЙ ЗУМ
+  const STEP = 0.2;       // ← ТВОЯ СКОРОСТЬ ЗУМА
 
-  // ===== ПРИМЕНЕНИЕ ТРАНСФОРМАЦИИ =====
+  // ===== ПРИМЕНЕНИЕ =====
   function applyTransform() {
     const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     container.style.transform = transform;
     markersContainer.style.transform = `scale(${scale})`;
     markersContainer.style.transformOrigin = '0 0';
-  }
-
-  // ===== ОГРАНИЧЕНИЕ ПЕРЕМЕЩЕНИЯ =====
-  function constrain() {
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const imgW = IMG_W * scale;
-    const imgH = IMG_H * scale;
-
-    const maxX = Math.max(0, imgW - wrapperRect.width);
-    const maxY = Math.max(0, imgH - wrapperRect.height);
-
-    tx = Math.min(Math.max(tx, -maxX / 2), maxX / 2);
-    ty = Math.min(Math.max(ty, -maxY / 2), maxY / 2);
   }
 
   // ===== ЦЕНТРИРОВАНИЕ =====
@@ -52,14 +39,12 @@
     const scaleY = wrapperRect.height / IMG_H;
     minScale = Math.min(scaleX, scaleY);
     scale = minScale;
-    tx = 0;
-    ty = 0;
-    applyTransform();
-    constrain();
+    tx = (wrapperRect.width - IMG_W * scale) / 2;
+    ty = (wrapperRect.height - IMG_H * scale) / 2;
     applyTransform();
   }
 
-  // ===== ЗУМ ПОД КУРСОРОМ =====
+  // ===== ЗУМ (ИЗ ТЕСТОВОЙ КАРТЫ) =====
   wrapper.addEventListener('wheel', function(e) {
     e.preventDefault();
 
@@ -73,7 +58,6 @@
 
     if (newScale === scale) return;
 
-    // ТОЧКА ПОД КУРСОРОМ В КООРДИНАТАХ КАРТЫ
     const px = (mouseX - tx) / scale;
     const py = (mouseY - ty) / scale;
 
@@ -81,11 +65,10 @@
     tx = mouseX - px * scale;
     ty = mouseY - py * scale;
 
-    constrain();
     applyTransform();
   }, { passive: false });
 
-  // ===== ПЕРЕТАСКИВАНИЕ (ТОЛЬКО ПРИ ЗАЖАТОЙ КНОПКЕ) =====
+  // ===== ПЕРЕТАСКИВАНИЕ =====
   let isDragging = false;
   let startX, startY, startTx, startTy;
 
@@ -103,7 +86,6 @@
     if (!isDragging) return;
     tx = startTx + (e.clientX - startX);
     ty = startTy + (e.clientY - startY);
-    constrain();
     applyTransform();
   });
 
@@ -149,7 +131,7 @@
     });
   });
 
-  // ===== ЗАКРЫТИЕ ИНФО-ПАНЕЛИ =====
+  // ===== ЗАКРЫТИЕ =====
   function closeInfo() {
     infoPanel.classList.remove('open');
     overlay.classList.remove('active');
