@@ -3,55 +3,409 @@
 <head>
   <meta charset="UTF-8">
   <title>Огненные чертоги</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
-  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
   <style>
-    body { margin: 0; padding: 0; }
-    #map { width: 100vw; height: 100vh; background: #1a1a2e; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .wrapper {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background: #1a1a2e;
+      cursor: grab;
+    }
+    .wrapper:active { cursor: grabbing; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      grid-template-rows: repeat(14, 1fr);
+      gap: 0;
+      width: fit-content;
+      height: fit-content;
+      transform-origin: 0 0;
+      will-change: transform;
+      background: #1a1a2e;
+    }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+      background: #1a1a2e;
+    }
+
+    /* ===== БАННЕР ===== */
+    .top-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      padding: 0 30px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+      user-select: none;
+    }
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      letter-spacing: 4px;
+      font-weight: normal;
+    }
+    .top-banner .nav-links {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+    .top-banner .nav-links a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .top-banner .nav-links a:hover { color: #ffd700; }
+    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
+
+    /* ===== МЕТКИ ===== */
+    .markers-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 9189px;
+      height: 7026px;
+      transform-origin: 0 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .marker {
+      position: absolute;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      transform: translate(-50%, -50%);
+    }
+    .marker img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 50px;
+      max-height: 50px;
+    }
+    .marker:hover {
+      transform: translate(-50%, -50%) scale(1.3);
+      filter: brightness(1.3);
+    }
+    .marker-tooltip {
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffd700;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    .marker:hover .marker-tooltip { opacity: 1; }
+
+    /* ===== ИНФО-ПАНЕЛЬ ===== */
+    .info-panel {
+      position: fixed;
+      top: 0;
+      right: -450px;
+      width: 400px;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+      color: white;
+      padding: 30px 25px;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.8);
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+      overflow-y: auto;
+      border-left: 2px solid rgba(255, 215, 0, 0.3);
+    }
+    .info-panel.open { right: 0; }
+    .info-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 15px;
+    }
+    .info-panel-title { font-size: 24px; color: #ffd700; font-weight: bold; text-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+    .info-panel-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 32px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      line-height: 1;
+      padding: 0 8px;
+    }
+    .info-panel-close:hover { color: #ffd700; transform: rotate(90deg); }
+    .info-panel-content { font-size: 16px; line-height: 1.8; color: #ccc; }
+    .info-panel-content strong { color: #ffd700; }
+    .info-panel-content .description {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border-left: 3px solid #ffd700;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 999;
+    }
+    .overlay.active { opacity: 1; pointer-events: auto; }
   </style>
 </head>
 <body>
-  <div id="map"></div>
+
+  <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">Знаки</a>
+      <a href="put.html">Путь</a>
+    </div>
+  </div>
+
+  <div class="wrapper" id="wrapper">
+    <div class="grid" id="grid"></div>
+    <div class="markers-container" id="markersContainer">
+      <div class="marker" style="left: 1500px; top: 800px;" 
+           data-name="Штаб синдиката"
+           data-description="Здесь находится главный штаб синдиката. Вход строго по пропускам.">
+        <img src="assets/icons/sindicat.png" alt="Синдикат">
+        <span class="marker-tooltip">Штаб синдиката</span>
+      </div>
+      <div class="marker" style="left: 2800px; top: 1200px;" 
+           data-name="Замок графа"
+           data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
+        <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок">
+        <span class="marker-tooltip">Замок графа</span>
+      </div>
+      <div class="marker" style="left: 3800px; top: 600px;" 
+           data-name="Деревня Ольховка"
+           data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
+        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828977.png" alt="Деревня">
+        <span class="marker-tooltip">Деревня Ольховка</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="info-panel" id="infoPanel">
+    <div class="info-panel-header">
+      <span class="info-panel-title" id="infoTitle">Название</span>
+      <button class="info-panel-close" id="infoClose">✕</button>
+    </div>
+    <div class="info-panel-content" id="infoContent">
+      <p><strong>Описание:</strong></p>
+      <div class="description" id="infoDescription">Описание отсутствует.</div>
+    </div>
+  </div>
+
   <script>
-    const COLS = 18;
-    const ROWS = 14;
-    const TILE_SIZE = 512;
+    (function() {
+      const grid = document.getElementById('grid');
+      const wrapper = document.getElementById('wrapper');
+      const markersContainer = document.getElementById('markersContainer');
+      const infoPanel = document.getElementById('infoPanel');
+      const infoTitle = document.getElementById('infoTitle');
+      const infoDescription = document.getElementById('infoDescription');
+      const infoClose = document.getElementById('infoClose');
+      const overlay = document.getElementById('overlay');
 
-    const map = new ol.Map({
-      target: 'map',
-      layers: [
-        new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            tileUrlFunction: function(tileCoord) {
-              const z = tileCoord[0];
-              const x = tileCoord[1];
-              const y = tileCoord[2];
+      const totalTiles = 252;
+      const cols = 18;
+      const rows = 14;
 
-              // Только один уровень зума (z=0)
-              if (z !== 0) return '';
+      // ===== ЗАГРУЗКА ТАЙЛОВ =====
+      function loadTiles() {
+        for (let i = 1; i <= totalTiles; i++) {
+          const img = document.createElement('img');
+          const padded = String(i).padStart(2, '0');
+          img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
+          img.alt = `tile ${i}`;
+          img.loading = 'lazy';
+          grid.appendChild(img);
+        }
+      }
 
-              const index = y * COLS + x + 1;
-              if (index < 1 || index > COLS * ROWS) return '';
-              const padded = String(index).padStart(2, '0');
-              return `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
-            },
-            tileSize: TILE_SIZE,
-            crossOrigin: 'anonymous'
-          })
-        })
-      ],
-      view: new ol.View({
-        center: [0, 0],
-        zoom: 0,
-        minZoom: 0,
-        maxZoom: 0,
-        resolutions: [1]
-      })
-    });
+      // ===== РАЗМЕР ТАЙЛОВ ПОД ЭКРАН =====
+      function fitTiles() {
+        const rect = wrapper.getBoundingClientRect();
+        const tileW = Math.floor(rect.width / cols);
+        const tileH = Math.floor(rect.height / rows);
+        const tileSize = Math.min(tileW, tileH);
 
-    window.addEventListener('resize', function() {
-      map.updateSize();
-    });
+        const images = grid.querySelectorAll('img');
+        images.forEach(img => {
+          img.style.width = tileSize + 'px';
+          img.style.height = tileSize + 'px';
+        });
+      }
+
+      // ===== ЗУМ (КАК В СТАРОЙ КАРТЕ) =====
+      let scale = 1;
+      let tx = 0;
+      let ty = 0;
+      let isDragging = false;
+      let startX, startY, startTx, startTy;
+      let minScale = 1;
+      const MAX_SCALE = 0.7;
+      const STEP = 0.2;
+
+      function updateTransform() {
+        const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        grid.style.transform = transform;
+        markersContainer.style.transform = `scale(${scale})`;
+        markersContainer.style.transformOrigin = '0 0';
+      }
+
+      function centerMap() {
+        const rect = wrapper.getBoundingClientRect();
+        const gridRect = grid.getBoundingClientRect();
+        const sx = rect.width / gridRect.width;
+        const sy = rect.height / gridRect.height;
+        minScale = Math.min(sx, sy);
+        scale = minScale;
+        tx = (rect.width - gridRect.width * scale) / 2;
+        ty = (rect.height - gridRect.height * scale) / 2;
+        updateTransform();
+      }
+
+      wrapper.addEventListener('wheel', function(e) {
+        e.preventDefault();
+
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const delta = e.deltaY > 0 ? -STEP : STEP;
+        let newScale = scale + delta;
+        newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+
+        if (newScale === scale) return;
+
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
+
+        const newW = gridRect.width * newScale;
+        const newH = gridRect.height * newScale;
+
+        tx = mouseX - px * newW;
+        ty = mouseY - py * newH;
+
+        const maxX = rect.width - newW;
+        const maxY = rect.height - newH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+
+        scale = newScale;
+        updateTransform();
+      }, { passive: false });
+
+      wrapper.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startTx = tx;
+        startTy = ty;
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        tx = startTx + (e.clientX - startX);
+        ty = startTy + (e.clientY - startY);
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          wrapper.style.cursor = 'grab';
+        }
+      });
+
+      // ===== ИНФО-ПАНЕЛЬ =====
+      document.querySelectorAll('.marker').forEach(marker => {
+        marker.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const name = this.dataset.name || 'Без названия';
+          const description = this.dataset.description || 'Описание отсутствует.';
+          infoTitle.textContent = name;
+          infoDescription.textContent = description;
+          infoPanel.classList.add('open');
+          overlay.classList.add('active');
+        });
+      });
+
+      function closeInfo() {
+        infoPanel.classList.remove('open');
+        overlay.classList.remove('active');
+      }
+      infoClose.addEventListener('click', closeInfo);
+      overlay.addEventListener('click', closeInfo);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeInfo();
+      });
+
+      // ===== ЗАПУСК =====
+      loadTiles();
+      fitTiles();
+      centerMap();
+
+      window.addEventListener('resize', function() {
+        fitTiles();
+        centerMap();
+      });
+
+      setTimeout(centerMap, 500);
+    })();
   </script>
+
 </body>
 </html>
