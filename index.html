@@ -309,7 +309,6 @@
       container.style.width = containerW + 'px';
       container.style.height = containerH + 'px';
 
-      // Центрируем
       const wrapperRect = wrapper.getBoundingClientRect();
       minScale = Math.min(wrapperRect.width / containerW, wrapperRect.height / containerH);
       scale = minScale;
@@ -326,7 +325,7 @@
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ ПОД КУРСОРОМ (исправленный) =====
+    // ===== ЗУМ (как в тестовой карте) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
@@ -340,16 +339,17 @@
 
       if (newScale === scale) return;
 
-      // Координаты точки под мышью внутри карты (в пикселях исходного размера)
-      const px = (mouseX - tx) / scale;
-      const py = (mouseY - ty) / scale;
+      // Процентное положение мыши внутри карты
+      const px = (mouseX - tx) / (container.offsetWidth * scale);
+      const py = (mouseY - ty) / (container.offsetHeight * scale);
 
-      // Обновляем масштаб
       scale = newScale;
 
-      // Новое смещение
-      tx = mouseX - px * scale;
-      ty = mouseY - py * scale;
+      const newW = container.offsetWidth * scale;
+      const newH = container.offsetHeight * scale;
+
+      tx = mouseX - px * newW;
+      ty = mouseY - py * newH;
 
       // Если карта стала меньше — центрируем
       if (scale <= minScale) {
