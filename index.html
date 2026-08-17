@@ -326,7 +326,7 @@
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ (от центра экрана) =====
+    // ===== ЗУМ ОТ ЦЕНТРА ЭКРАНА =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
@@ -335,29 +335,21 @@
 
       if (newScale === currentScale) return;
 
-      // Получаем размеры
+      // Сохраняем центр экрана в координатах карты
       const wrapperRect = wrapper.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
+      const cx = wrapperRect.width / 2;
+      const cy = wrapperRect.height / 2;
 
-      // Центр экрана
-      const cx = wrapperRect.left + wrapperRect.width / 2;
-      const cy = wrapperRect.top + wrapperRect.height / 2;
-
-      // Координаты центра экрана внутри контейнера (до зума)
-      const px = (cx - containerRect.left) / currentScale;
-      const py = (cy - containerRect.top) / currentScale;
+      // Точка внутри карты, которая сейчас находится в центре экрана
+      const px = (cx - posX) / currentScale;
+      const py = (cy - posY) / currentScale;
 
       // Применяем новый масштаб
       currentScale = newScale;
 
-      // Новое смещение, чтобы центр экрана остался на месте
-      const newContainerRect = container.getBoundingClientRect();
-      const newLeft = cx - px * currentScale;
-      const newTop = cy - py * currentScale;
-
-      // Пересчитываем posX и posY относительно контейнера
-      posX = newLeft - wrapperRect.left;
-      posY = newTop - wrapperRect.top;
+      // Смещаем так, чтобы та же точка осталась в центре
+      posX = cx - px * currentScale;
+      posY = cy - py * currentScale;
 
       applyTransform();
     }, { passive: false });
