@@ -6,7 +6,14 @@
   <style>
     body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
     .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: 100%; max-width: 1200px; }
-    .grid img { display: block; width: 100%; height: auto; border: none; }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: none;
+      margin: -1px; /* убирает зазоры */
+      image-rendering: pixelated;
+    }
   </style>
 </head>
 <body>
