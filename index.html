@@ -85,7 +85,6 @@
       backface-visibility: hidden;
     }
 
-    /* ===== ПРЕЛОАДЕР ===== */
     #loader {
       position: absolute;
       top: 50%;
@@ -237,7 +236,7 @@
 
 <div class="map-wrapper" id="mapWrapper">
   <div id="container">
-    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1" alt="Карта" style="width:9189px; height:7026px;">
+    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" style="width:9189px; height:7026px;">
   </div>
   <div id="loader">
     <div class="spinner"></div>
@@ -291,11 +290,9 @@
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    // ===== РАЗМЕРЫ КАРТЫ =====
     const IMG_W = 9189;
     const IMG_H = 7026;
 
-    // ===== СОСТОЯНИЕ =====
     let scale = 1;
     let tx = 0;
     let ty = 0;
@@ -303,7 +300,6 @@
     const MAX_SCALE = 6.0;
     const STEP = 0.3;
 
-    // ===== ПРИМЕНЕНИЕ =====
     function applyTransform() {
       const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       container.style.transform = transform;
@@ -311,7 +307,6 @@
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЦЕНТРИРОВАНИЕ =====
     function centerMap() {
       const wrapperRect = wrapper.getBoundingClientRect();
       const scaleX = wrapperRect.width / IMG_W;
@@ -323,7 +318,6 @@
       applyTransform();
     }
 
-    // ===== ЗУМ =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
@@ -347,7 +341,6 @@
       applyTransform();
     }, { passive: false });
 
-    // ===== ПЕРЕТАСКИВАНИЕ =====
     let isDragging = false;
     let startX, startY, startTx, startTy;
 
@@ -375,13 +368,11 @@
       }
     });
 
-    // ===== СКРЫВАЕМ ПРЕЛОАДЕР =====
     img.addEventListener('load', function() {
       loader.style.display = 'none';
       centerMap();
     });
 
-    // ===== ЗАПУСК =====
     window.addEventListener('resize', centerMap);
 
     if (img.complete) {
@@ -389,7 +380,6 @@
       centerMap();
     }
 
-    // ===== КЛИК ПО МЕТКЕ =====
     document.querySelectorAll('.marker').forEach(marker => {
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -402,7 +392,6 @@
       });
     });
 
-    // ===== ЗАКРЫТИЕ =====
     function closeInfo() {
       infoPanel.classList.remove('open');
       overlay.classList.remove('active');
