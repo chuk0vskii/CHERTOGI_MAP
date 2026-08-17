@@ -193,24 +193,20 @@
         markersContainer.style.transform = transform;
       }
 
-      // ===== ЦЕНТРИРОВАНИЕ ПО ЛЕВОМУ КРАЮ =====
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
         const sy = rect.height / IMG_H;
         minScale = Math.min(sx, sy);
         scale = minScale;
-        tx = 0; // левый край
+        tx = (rect.width - IMG_W * scale) / 2;
         ty = (rect.height - IMG_H * scale) / 2;
         update();
       }
 
+      // ===== ЗУМ ОТ ЦЕНТРА =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
-
-        const rect = wrapper.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
@@ -218,24 +214,27 @@
 
         if (newScale === scale) return;
 
-        const px = (mouseX - tx) / scale;
-        const py = (mouseY - ty) / scale;
+        const rect = wrapper.getBoundingClientRect();
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
 
-        const newW = IMG_W * newScale;
-        const newH = IMG_H * newScale;
+        const px = (cx - tx) / scale;
+        const py = (cy - ty) / scale;
 
-        tx = mouseX - px * newW;
-        ty = mouseY - py * newH;
+        scale = newScale;
 
-        const maxX = rect.width - newW;
-        const maxY = rect.height - newH;
+        tx = cx - px * IMG_W * scale;
+        ty = cy - py * IMG_H * scale;
+
+        const maxX = rect.width - IMG_W * scale;
+        const maxY = rect.height - IMG_H * scale;
         tx = Math.min(Math.max(tx, maxX), 0);
         ty = Math.min(Math.max(ty, maxY), 0);
 
-        scale = newScale;
         update();
       }, { passive: false });
 
+      // ===== ПЕРЕТАСКИВАНИЕ =====
       let isDragging = false;
       let startX, startY, startTx, startTy;
 
