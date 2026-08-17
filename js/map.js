@@ -73,6 +73,7 @@
 
     if (newScale === scale) return;
 
+    // ТОЧКА ПОД КУРСОРОМ В КООРДИНАТАХ КАРТЫ
     const px = (mouseX - tx) / scale;
     const py = (mouseY - ty) / scale;
 
@@ -89,7 +90,7 @@
   let startX, startY, startTx, startTy;
 
   wrapper.addEventListener('mousedown', function(e) {
-    if (e.button !== 0) return; // только левая кнопка
+    if (e.button !== 0) return;
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -106,7 +107,6 @@
     applyTransform();
   });
 
-  // Отпускаем кнопку — завершаем перетаскивание
   wrapper.addEventListener('mouseup', function(e) {
     if (e.button !== 0) return;
     if (isDragging) {
@@ -115,7 +115,6 @@
     }
   });
 
-  // Если мышь ушла за пределы окна — тоже завершаем
   window.addEventListener('mouseup', function(e) {
     if (e.button !== 0) return;
     if (isDragging) {
