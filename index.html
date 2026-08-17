@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <title>Огненные чертоги</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
-    .wrapper { width: 100vw; height: 100vh; overflow: hidden; position: relative; cursor: grab; }
-    .wrapper:active { cursor: grabbing; }
-    .wrapper img { display: block; position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; user-select: none; -webkit-user-drag: none; }
 
     .top-banner {
       position: fixed;
@@ -32,6 +29,10 @@
     .top-banner .nav-links a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 14px; letter-spacing: 1px; transition: all 0.3s ease; padding: 6px 0; border-bottom: 2px solid transparent; }
     .top-banner .nav-links a:hover { color: #ffd700; }
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
+
+    .wrapper { width: 100vw; height: 100vh; overflow: hidden; position: relative; cursor: grab; }
+    .wrapper:active { cursor: grabbing; }
+    .wrapper img { display: block; position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; user-select: none; -webkit-user-drag: none; }
 
     .markers-container {
       position: absolute;
@@ -146,23 +147,14 @@
   <div class="wrapper" id="mapWrapper">
     <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" id="mapImage">
     <div class="markers-container" id="markersContainer">
-      <div class="marker" style="left: 1500px; top: 800px;" 
-           data-name="Штаб синдиката"
-           data-description="Здесь находится главный штаб синдиката. Вход строго по пропускам.">
-        <img src="assets/icons/sindicat.png" alt="Синдикат">
-        <span class="marker-tooltip">Штаб синдиката</span>
+      <div class="marker" style="left: 1500px; top: 800px;" data-name="Штаб синдиката" data-description="Здесь находится главный штаб синдиката. Вход строго по пропускам.">
+        <img src="assets/icons/sindicat.png" alt="Синдикат"><span class="marker-tooltip">Штаб синдиката</span>
       </div>
-      <div class="marker" style="left: 2800px; top: 1200px;" 
-           data-name="Замок графа"
-           data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
-        <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок">
-        <span class="marker-tooltip">Замок графа</span>
+      <div class="marker" style="left: 2800px; top: 1200px;" data-name="Замок графа" data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
+        <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок"><span class="marker-tooltip">Замок графа</span>
       </div>
-      <div class="marker" style="left: 3800px; top: 600px;" 
-           data-name="Деревня Ольховка"
-           data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
-        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828977.png" alt="Деревня">
-        <span class="marker-tooltip">Деревня Ольховка</span>
+      <div class="marker" style="left: 3800px; top: 600px;" data-name="Деревня Ольховка" data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
+        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828977.png" alt="Деревня"><span class="marker-tooltip">Деревня Ольховка</span>
       </div>
     </div>
   </div>
@@ -184,17 +176,10 @@
       const img = document.getElementById('mapImage');
       const wrapper = document.getElementById('mapWrapper');
       const markersContainer = document.getElementById('markersContainer');
-      const infoPanel = document.getElementById('infoPanel');
-      const infoTitle = document.getElementById('infoTitle');
-      const infoDescription = document.getElementById('infoDescription');
-      const infoClose = document.getElementById('infoClose');
-      const overlay = document.getElementById('overlay');
 
-      // РАЗМЕРЫ КАРТЫ (ТВОИ)
       const IMG_W = 9189;
       const IMG_H = 7026;
 
-      // ПАРАМЕТРЫ ЗУМА
       let scale = 1;
       let tx = 0;
       let ty = 0;
@@ -219,13 +204,9 @@
         update();
       }
 
-      // ЗУМ ПОД КУРСОРОМ
+      // ЗУМ ОТ ЦЕНТРА (без курсора)
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
-
-        const rect = wrapper.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
@@ -233,14 +214,18 @@
 
         if (newScale === scale) return;
 
-        const px = (mouseX - tx) / scale;
-        const py = (mouseY - ty) / scale;
+        const rect = wrapper.getBoundingClientRect();
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+
+        const px = (cx - tx) / scale;
+        const py = (cy - ty) / scale;
 
         const newW = IMG_W * newScale;
         const newH = IMG_H * newScale;
 
-        tx = mouseX - px * newW;
-        ty = mouseY - py * newH;
+        tx = cx - px * newW;
+        ty = cy - py * newH;
 
         const maxX = rect.width - newW;
         const maxY = rect.height - newH;
@@ -284,30 +269,28 @@
         }
       });
 
-      // ИНФО-ПАНЕЛЬ
       document.querySelectorAll('.marker').forEach(marker => {
         marker.addEventListener('click', function(e) {
           e.stopPropagation();
           const name = this.dataset.name || 'Без названия';
           const description = this.dataset.description || 'Описание отсутствует.';
-          infoTitle.textContent = name;
-          infoDescription.textContent = description;
-          infoPanel.classList.add('open');
-          overlay.classList.add('active');
+          document.getElementById('infoTitle').textContent = name;
+          document.getElementById('infoDescription').textContent = description;
+          document.getElementById('infoPanel').classList.add('open');
+          document.getElementById('overlay').classList.add('active');
         });
       });
 
       function closeInfo() {
-        infoPanel.classList.remove('open');
-        overlay.classList.remove('active');
+        document.getElementById('infoPanel').classList.remove('open');
+        document.getElementById('overlay').classList.remove('active');
       }
-      infoClose.addEventListener('click', closeInfo);
-      overlay.addEventListener('click', closeInfo);
+      document.getElementById('infoClose').addEventListener('click', closeInfo);
+      document.getElementById('overlay').addEventListener('click', closeInfo);
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeInfo();
       });
 
-      // ЗАПУСК
       if (img.complete) {
         center();
       } else {
@@ -323,6 +306,5 @@
 
     })();
   </script>
-
 </body>
 </html>
