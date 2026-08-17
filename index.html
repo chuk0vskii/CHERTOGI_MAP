@@ -285,8 +285,8 @@
     // ===== СОСТОЯНИЕ =====
     let scale = 1;
     let tileSize = 0;
-    const MIN_SCALE = 0.3;
-    const MAX_SCALE = 2.0;
+    const MIN_SCALE = 1.0;    // Не меньше 100%
+    const MAX_SCALE = 3.0;    // Можно приблизить до 300%
     const STEP = 0.08;
 
     // ===== ФУНКЦИЯ РАЗМЕРА ТАЙЛОВ =====
@@ -307,8 +307,8 @@
       container.style.width = containerW + 'px';
       container.style.height = containerH + 'px';
 
-      // Сбрасываем масштаб
-      scale = 1;
+      // Сбрасываем масштаб до 1.0 (100%)
+      scale = 1.0;
       container.style.transform = `scale(${scale})`;
       markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
       markersContainer.style.transformOrigin = '0 0';
