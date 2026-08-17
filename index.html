@@ -2,62 +2,159 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Огненные чертоги - Карта</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Карта · зум под курсор</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #1a1a2e;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .wrapper {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+    .wrapper:active {
+      cursor: grabbing;
+    }
+    .wrapper img {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- ===== БАННЕР ===== -->
-  <div class="top-banner">
-    <span class="title">Огненные чертоги</span>
-    <div class="nav-links">
-      <a href="index.html" class="active">Карта</a>
-      <a href="znaki.html">Знаки</a>
-      <a href="put.html">Путь</a>
-    </div>
-  </div>
+<div class="wrapper" id="mapWrapper">
+  <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpg" alt="Карта" id="mapImage">
+</div>
 
-  <!-- ===== КАРТА ===== -->
-  <div class="wrapper" id="mapWrapper">
-    <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" id="mapImage">
+<script>
+  (function() {
+    const img = document.getElementById('mapImage');
+    const wrapper = document.getElementById('mapWrapper');
 
-    <div class="markers-container" id="markersContainer">
-      <div class="marker" style="left: 1500px; top: 800px;"
-           data-name="Штаб синдиката"
-           data-description="Здесь находится главный штаб синдиката. Вход строго по пропускам.">
-        <img src="assets/icons/sindicat.png" alt="Синдикат">
-        <span class="marker-tooltip">Штаб синдиката</span>
-      </div>
-      <div class="marker" style="left: 2800px; top: 1200px;"
-           data-name="Замок графа"
-           data-description="Мрачный замок на скале. Говорят, там водятся призраки.">
-        <img src="https://cdn-icons-png.flaticon.com/512/542/542558.png" alt="Замок">
-        <span class="marker-tooltip">Замок графа</span>
-      </div>
-      <div class="marker" style="left: 3800px; top: 600px;"
-           data-name="Деревня Ольховка"
-           data-description="Мирная деревня, где можно купить провизию и отдохнуть.">
-        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828977.png" alt="Деревня">
-        <span class="marker-tooltip">Деревня Ольховка</span>
-      </div>
-    </div>
-  </div>
+    const IMG_W = 9189;
+    const IMG_H = 7026;
 
-  <!-- ===== ИНФО-ПАНЕЛЬ ===== -->
-  <div class="overlay" id="overlay"></div>
-  <div class="info-panel" id="infoPanel">
-    <div class="info-panel-header">
-      <span class="info-panel-title" id="infoTitle">Название</span>
-      <button class="info-panel-close" id="infoClose">✕</button>
-    </div>
-    <div class="info-panel-content">
-      <p><strong>Описание:</strong></p>
-      <div class="description" id="infoDescription">Описание отсутствует.</div>
-    </div>
-  </div>
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+    let minScale = 1;
+    const MAX_SCALE = 2.0;
 
-  <!-- ===== JS ===== -->
-  <script src="js/map.js"></script>
+    function update() {
+      img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }
+
+    function center() {
+      const rect = wrapper.getBoundingClientRect();
+      const sx = rect.width / IMG_W;
+      const sy = rect.height / IMG_H;
+      minScale = Math.min(sx, sy);
+      scale = minScale;
+      tx = (rect.width - IMG_W * scale) / 2;
+      ty = (rect.height - IMG_H * scale) / 2;
+      update();
+    }
+
+    wrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+
+      const rect = wrapper.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const delta = e.deltaY > 0 ? -0.08 : 0.08;
+      let newScale = scale + delta;
+      newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+
+      if (newScale === scale) return;
+
+      const px = (mouseX - tx) / (IMG_W * scale);
+      const py = (mouseY - ty) / (IMG_H * scale);
+
+      const newW = IMG_W * newScale;
+      const newH = IMG_H * newScale;
+
+      tx = mouseX - px * newW;
+      ty = mouseY - py * newH;
+
+      const maxX = rect.width - newW;
+      const maxY = rect.height - newH;
+      tx = Math.min(Math.max(tx, maxX), 0);
+      ty = Math.min(Math.max(ty, maxY), 0);
+
+      scale = newScale;
+      update();
+    }, { passive: false });
+
+    let isDragging = false;
+    let startX, startY, startTx, startTy;
+
+    wrapper.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startTx = tx;
+      startTy = ty;
+      wrapper.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      tx = startTx + (e.clientX - startX);
+      ty = startTy + (e.clientY - startY);
+
+      const rect = wrapper.getBoundingClientRect();
+      const maxX = rect.width - IMG_W * scale;
+      const maxY = rect.height - IMG_H * scale;
+      tx = Math.min(Math.max(tx, maxX), 0);
+      ty = Math.min(Math.max(ty, maxY), 0);
+
+      update();
+    });
+
+    window.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        wrapper.style.cursor = 'grab';
+      }
+    });
+
+    if (img.complete) {
+      center();
+    } else {
+      img.addEventListener('load', center);
+    }
+    setTimeout(center, 500);
+
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(center, 100);
+    });
+
+  })();
+</script>
 
 </body>
 </html>
