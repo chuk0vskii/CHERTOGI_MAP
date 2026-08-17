@@ -309,7 +309,7 @@
       container.style.width = containerW + 'px';
       container.style.height = containerH + 'px';
 
-      // Центрируем (как в старой карте)
+      // Центрируем
       const wrapperRect = wrapper.getBoundingClientRect();
       minScale = Math.min(wrapperRect.width / containerW, wrapperRect.height / containerH);
       scale = minScale;
@@ -326,7 +326,7 @@
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ ПОД КУРСОРОМ =====
+    // ===== ЗУМ ПОД КУРСОРОМ (исправленный) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
@@ -340,16 +340,25 @@
 
       if (newScale === scale) return;
 
-      // Координаты точки под мышью внутри карты
+      // Координаты точки под мышью внутри карты (в пикселях исходного размера)
       const px = (mouseX - tx) / scale;
       const py = (mouseY - ty) / scale;
 
       // Обновляем масштаб
       scale = newScale;
 
-      // Новое смещение, чтобы точка под мышью осталась на месте
+      // Новое смещение
       tx = mouseX - px * scale;
       ty = mouseY - py * scale;
+
+      // Если карта стала меньше — центрируем
+      if (scale <= minScale) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const containerW = tileSize * COLS;
+        const containerH = tileSize * ROWS;
+        tx = (wrapperRect.width - containerW * scale) / 2;
+        ty = (wrapperRect.height - containerH * scale) / 2;
+      }
 
       applyTransform();
     }, { passive: false });
