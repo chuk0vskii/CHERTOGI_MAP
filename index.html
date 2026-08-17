@@ -62,7 +62,7 @@
       position: relative;
       background: #0d0d1a;
       cursor: grab;
-      touch-action: none; /* ← фикс для мыши */
+      touch-action: none;
     }
     .map-wrapper:active { cursor: grabbing; }
 
@@ -72,28 +72,44 @@
       left: 0;
       transform-origin: 0 0;
       will-change: transform;
-      display: grid;
-      grid-template-columns: repeat(18, 1fr);
-      grid-template-rows: repeat(14, 1fr);
-      gap: 0;
-      backface-visibility: hidden;
-      perspective: 1000;
       image-rendering: auto;
     }
     #container img {
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
       border: none;
       margin: 0;
       padding: 0;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      image-rendering: -moz-crisp-edges;
-      -ms-interpolation-mode: nearest-neighbor;
       background: #0d0d1a;
       backface-visibility: hidden;
+    }
+
+    /* ===== ПРЕЛОАДЕР ===== */
+    #loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.3);
+      font-family: 'Calypso', serif;
+      font-size: 24px;
+      letter-spacing: 4px;
+      z-index: 50;
+      pointer-events: none;
+      text-align: center;
+    }
+    #loader .spinner {
+      width: 48px;
+      height: 48px;
+      margin: 20px auto;
+      border: 4px solid rgba(255, 215, 0, 0.1);
+      border-top-color: #ffd700;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .markers-container {
@@ -220,7 +236,14 @@
 </div>
 
 <div class="map-wrapper" id="mapWrapper">
-  <div id="container"></div>
+  <div id="container">
+    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/mapchertogi" alt="Карта" style="width:9189px; height:7026px;">
+  </div>
+  <div id="loader">
+    <div class="spinner"></div>
+    Загрузка карты...
+  </div>
+
   <div class="markers-container" id="markersContainer">
     <div class="marker" style="left: 1500px; top: 800px;" 
          data-name="Штаб синдиката"
@@ -257,70 +280,47 @@
 
 <script>
   (function() {
+    const img = document.getElementById('mapImage');
     const container = document.getElementById('container');
     const markersContainer = document.getElementById('markersContainer');
     const wrapper = document.getElementById('mapWrapper');
+    const loader = document.getElementById('loader');
     const infoPanel = document.getElementById('infoPanel');
     const infoTitle = document.getElementById('infoTitle');
     const infoDescription = document.getElementById('infoDescription');
     const infoClose = document.getElementById('infoClose');
     const overlay = document.getElementById('overlay');
 
-    const COLS = 18;
-    const ROWS = 14;
-    const totalTiles = COLS * ROWS;
-
-    // ===== ЗАГРУЗКА ТАЙЛОВ =====
-    for (let i = 1; i <= totalTiles; i++) {
-      const img = document.createElement('img');
-      const padded = String(i).padStart(2, '0');
-      img.src = `tiles2/tile_${padded}.jpg`;
-      img.alt = `tile ${i}`;
-      img.loading = 'lazy';
-      container.appendChild(img);
-    }
+    // ===== РАЗМЕРЫ КАРТЫ =====
+    const IMG_W = 9189;
+    const IMG_H = 7026;
 
     // ===== СОСТОЯНИЕ =====
     let scale = 1;
     let tx = 0;
     let ty = 0;
-    let tileSize = 0;
     let minScale = 1;
     const MAX_SCALE = 6.0;
     const STEP = 0.3;
-
-    // ===== РАЗМЕР ТАЙЛОВ =====
-    function fitTiles() {
-      const rect = wrapper.getBoundingClientRect();
-      const tileW = Math.floor(rect.width / COLS);
-      const tileH = Math.floor(rect.height / ROWS);
-      tileSize = Math.min(tileW, tileH);
-
-      const images = container.querySelectorAll('img');
-      images.forEach(img => {
-        img.style.width = tileSize + 'px';
-        img.style.height = tileSize + 'px';
-      });
-
-      const containerW = tileSize * COLS;
-      const containerH = tileSize * ROWS;
-      container.style.width = containerW + 'px';
-      container.style.height = containerH + 'px';
-
-      const wrapperRect = wrapper.getBoundingClientRect();
-      minScale = Math.min(wrapperRect.width / containerW, wrapperRect.height / containerH);
-      scale = minScale;
-      tx = (wrapperRect.width - containerW * scale) / 2;
-      ty = (wrapperRect.height - containerH * scale) / 2;
-      applyTransform();
-    }
 
     // ===== ПРИМЕНЕНИЕ =====
     function applyTransform() {
       const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       container.style.transform = transform;
-      markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
+      markersContainer.style.transform = `scale(${scale})`;
       markersContainer.style.transformOrigin = '0 0';
+    }
+
+    // ===== ЦЕНТРИРОВАНИЕ =====
+    function centerMap() {
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const scaleX = wrapperRect.width / IMG_W;
+      const scaleY = wrapperRect.height / IMG_H;
+      minScale = Math.min(scaleX, scaleY);
+      scale = minScale;
+      tx = (wrapperRect.width - IMG_W * scale) / 2;
+      ty = (wrapperRect.height - IMG_H * scale) / 2;
+      applyTransform();
     }
 
     // ===== ЗУМ =====
@@ -375,9 +375,19 @@
       }
     });
 
+    // ===== СКРЫВАЕМ ПРЕЛОАДЕР =====
+    img.addEventListener('load', function() {
+      loader.style.display = 'none';
+      centerMap();
+    });
+
     // ===== ЗАПУСК =====
-    window.addEventListener('load', fitTiles);
-    window.addEventListener('resize', fitTiles);
+    window.addEventListener('resize', centerMap);
+
+    if (img.complete) {
+      loader.style.display = 'none';
+      centerMap();
+    }
 
     // ===== КЛИК ПО МЕТКЕ =====
     document.querySelectorAll('.marker').forEach(marker => {
