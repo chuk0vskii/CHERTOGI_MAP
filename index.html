@@ -19,7 +19,8 @@
     for (let i = 1; i <= totalTiles; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
-      img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
+      // Добавляем ?t=Date.now() чтобы обойти кэш
+      img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg?t=${Date.now()}`;
       img.alt = `tile ${i}`;
       grid.appendChild(img);
     }
