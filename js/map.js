@@ -12,19 +12,16 @@
   const infoClose = document.getElementById('infoClose');
   const overlay = document.getElementById('overlay');
 
-  // ===== РАЗМЕРЫ КАРТЫ (ТВОИ) =====
   const IMG_W = 9189;
   const IMG_H = 7026;
 
-  // ===== СОСТОЯНИЕ =====
   let scale = 1;
   let tx = 0;
   let ty = 0;
   let minScale = 1;
-  const MAX_SCALE = 0.7;  // ← ТВОЙ МАКСИМАЛЬНЫЙ ЗУМ
-  const STEP = 0.2;       // ← ТВОЯ СКОРОСТЬ ЗУМА
+  const MAX_SCALE = 0.7;
+  const STEP = 0.2;
 
-  // ===== ПРИМЕНЕНИЕ =====
   function applyTransform() {
     const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     container.style.transform = transform;
@@ -32,7 +29,6 @@
     markersContainer.style.transformOrigin = '0 0';
   }
 
-  // ===== ЦЕНТРИРОВАНИЕ =====
   function centerMap() {
     const wrapperRect = wrapper.getBoundingClientRect();
     const scaleX = wrapperRect.width / IMG_W;
@@ -44,7 +40,6 @@
     applyTransform();
   }
 
-  // ===== ЗУМ (ИЗ ТЕСТОВОЙ КАРТЫ) =====
   wrapper.addEventListener('wheel', function(e) {
     e.preventDefault();
 
@@ -68,7 +63,7 @@
     applyTransform();
   }, { passive: false });
 
-  // ===== ПЕРЕТАСКИВАНИЕ =====
+  // ===== ПЕРЕТАСКИВАНИЕ (ИСПРАВЛЕНО) =====
   let isDragging = false;
   let startX, startY, startTx, startTy;
 
@@ -82,30 +77,30 @@
     wrapper.style.cursor = 'grabbing';
   });
 
-  wrapper.addEventListener('mousemove', function(e) {
+  // Двигаем карту только если кнопка зажата
+  window.addEventListener('mousemove', function(e) {
     if (!isDragging) return;
     tx = startTx + (e.clientX - startX);
     ty = startTy + (e.clientY - startY);
     applyTransform();
   });
 
-  wrapper.addEventListener('mouseup', function(e) {
-    if (e.button !== 0) return;
+  // Отпускаем кнопку — останавливаем перетаскивание
+  window.addEventListener('mouseup', function() {
     if (isDragging) {
       isDragging = false;
       wrapper.style.cursor = 'grab';
     }
   });
 
-  window.addEventListener('mouseup', function(e) {
-    if (e.button !== 0) return;
+  // Если мышь ушла за пределы окна — тоже останавливаем
+  window.addEventListener('mouseleave', function() {
     if (isDragging) {
       isDragging = false;
       wrapper.style.cursor = 'grab';
     }
   });
 
-  // ===== ЗАГРУЗКА КАРТЫ =====
   img.addEventListener('load', function() {
     loader.style.display = 'none';
     centerMap();
@@ -118,7 +113,6 @@
     centerMap();
   }
 
-  // ===== КЛИК ПО МЕТКЕ =====
   document.querySelectorAll('.marker').forEach(marker => {
     marker.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -131,7 +125,6 @@
     });
   });
 
-  // ===== ЗАКРЫТИЕ =====
   function closeInfo() {
     infoPanel.classList.remove('open');
     overlay.classList.remove('active');
