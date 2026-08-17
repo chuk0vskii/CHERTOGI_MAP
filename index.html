@@ -4,11 +4,7 @@
   <meta charset="UTF-8">
   <title>Огненные чертоги</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #1a1a2e;
       overflow: hidden;
@@ -18,7 +14,6 @@
       align-items: center;
     }
 
-    /* ===== БАННЕР ===== */
     .top-banner {
       position: fixed;
       top: 0;
@@ -58,13 +53,8 @@
       padding: 6px 0;
       border-bottom: 2px solid transparent;
     }
-    .top-banner .nav-links a:hover {
-      color: #ffd700;
-    }
-    .top-banner .nav-links a.active {
-      color: #ffd700;
-      border-bottom-color: #ffd700;
-    }
+    .top-banner .nav-links a:hover { color: #ffd700; }
+    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
     .wrapper {
       width: 100vw;
@@ -73,9 +63,7 @@
       position: relative;
       cursor: grab;
     }
-    .wrapper:active {
-      cursor: grabbing;
-    }
+    .wrapper:active { cursor: grabbing; }
     .wrapper img {
       display: block;
       position: absolute;
@@ -88,7 +76,6 @@
       -webkit-user-drag: none;
     }
 
-    /* ===== МЕТКИ ===== */
     .markers-container {
       position: absolute;
       top: 0;
@@ -136,7 +123,6 @@
     }
     .marker:hover .marker-tooltip { opacity: 1; }
 
-    /* ===== ИНФО-ПАНЕЛЬ ===== */
     .info-panel {
       position: fixed;
       top: 0;
@@ -217,7 +203,6 @@
 </head>
 <body>
 
-  <!-- ===== БАННЕР ===== -->
   <div class="top-banner">
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
@@ -227,7 +212,6 @@
     </div>
   </div>
 
-  <!-- ===== КАРТА ===== -->
   <div class="wrapper" id="mapWrapper">
     <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" id="mapImage">
 
@@ -253,7 +237,6 @@
     </div>
   </div>
 
-  <!-- ===== ИНФО-ПАНЕЛЬ ===== -->
   <div class="overlay" id="overlay"></div>
   <div class="info-panel" id="infoPanel">
     <div class="info-panel-header">
@@ -278,25 +261,22 @@
       const infoClose = document.getElementById('infoClose');
       const overlay = document.getElementById('overlay');
 
-      // ===== РАЗМЕРЫ КАРТЫ (ТВОИ) =====
       const IMG_W = 9189;
       const IMG_H = 7026;
 
-      // ===== СОСТОЯНИЕ =====
       let scale = 1;
       let tx = 0;
       let ty = 0;
       let minScale = 1;
       const MAX_SCALE = 2.0;
 
-      // ===== ОБНОВЛЕНИЕ =====
       function update() {
         const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
         img.style.transform = transform;
         markersContainer.style.transform = transform;
       }
 
-      // ===== ЦЕНТРИРОВАНИЕ =====
+      // ===== ЦЕНТРИРОВАНИЕ ПО ЦЕНТРУ =====
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
@@ -308,7 +288,6 @@
         update();
       }
 
-      // ===== ЗУМ ПОД КУРСОРОМ =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -340,7 +319,6 @@
         update();
       }, { passive: false });
 
-      // ===== ПЕРЕТАСКИВАНИЕ =====
       let isDragging = false;
       let startX, startY, startTx, startTy;
 
@@ -375,7 +353,6 @@
         }
       });
 
-      // ===== КЛИК ПО МЕТКЕ =====
       document.querySelectorAll('.marker').forEach(marker => {
         marker.addEventListener('click', function(e) {
           e.stopPropagation();
@@ -388,7 +365,6 @@
         });
       });
 
-      // ===== ЗАКРЫТИЕ ИНФО =====
       function closeInfo() {
         infoPanel.classList.remove('open');
         overlay.classList.remove('active');
@@ -399,7 +375,6 @@
         if (e.key === 'Escape') closeInfo();
       });
 
-      // ===== ЗАПУСК =====
       if (img.complete) {
         center();
       } else {
