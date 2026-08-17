@@ -1,48 +1,33 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Огненные чертоги</title>
+  <title>OL тест</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
   <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #1a1a2e; overflow: hidden; height: 100vh; }
+    body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; background: #1a1a2e; }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script>
-    // ===== РАЗМЕРЫ КАРТЫ =====
-    const IMG_W = 9189;
-    const IMG_H = 7026;
-
-    // ===== СОЗДАЁМ КАРТУ ЧЕРЕЗ ImageStatic =====
     const map = new ol.Map({
       target: 'map',
       layers: [
-        new ol.layer.Image({
-          source: new ol.source.ImageStatic({
-            url: 'tiles2/tile_01.jpg',
-            imageSize: [IMG_W, IMG_H],
-            projection: 'EPSG:3857',
-            imageExtent: [-IMG_W/2, -IMG_H/2, IMG_W/2, IMG_H/2]
+        new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: 'https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_01.jpg',
+            tileSize: 512,
+            crossOrigin: 'anonymous'
           })
         })
       ],
       view: new ol.View({
-        projection: 'EPSG:3857',
         center: [0, 0],
-        zoom: 0.5,
-        minZoom: 0.1,
-        maxZoom: 2.5
+        zoom: 0.5
       })
-    });
-
-    // ===== АДАПТАЦИЯ ПОД РАЗМЕР ОКНА =====
-    window.addEventListener('resize', function() {
-      map.updateSize();
     });
   </script>
 </body>
