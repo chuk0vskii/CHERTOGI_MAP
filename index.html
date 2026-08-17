@@ -388,6 +388,7 @@
         update();
       }
 
+      // ===== ЗУМ (работает под курсором) =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -419,7 +420,7 @@
         update();
       }, { passive: false });
 
-      // ===== ПЕРЕТАСКИВАНИЕ (РАБОТАЕТ КАК В ТЕСТОВОЙ КАРТЕ) =====
+      // ===== ПЕРЕТАСКИВАНИЕ (работает) =====
       let isDragging = false;
       let startX, startY, startTx, startTy;
 
@@ -433,7 +434,6 @@
         wrapper.style.cursor = 'grabbing';
       });
 
-      // Двигаем карту только если кнопка зажата
       window.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
         tx = startTx + (e.clientX - startX);
@@ -441,7 +441,6 @@
         update();
       });
 
-      // Отпускаем кнопку — останавливаем перетаскивание
       window.addEventListener('mouseup', function() {
         if (isDragging) {
           isDragging = false;
@@ -449,7 +448,6 @@
         }
       });
 
-      // Если мышь уходит за пределы окна — тоже останавливаем
       window.addEventListener('mouseleave', function() {
         if (isDragging) {
           isDragging = false;
