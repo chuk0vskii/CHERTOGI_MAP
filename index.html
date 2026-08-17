@@ -282,12 +282,12 @@
     }
 
     // ===== СОСТОЯНИЕ =====
-    let currentScale = 1;
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
     let tileSize = 0;
-    let containerW = 0, containerH = 0;
-    let posX = 0, posY = 0;
-    let isDragging = false;
-    let startX, startY, startPosX, startPosY;
+    let minScale = 1;
+    const MAX_SCALE = 2.0;
 
     // ===== ВЫЧИСЛЕНИЕ РАЗМЕРА ТАЙЛОВ =====
     function fitTiles() {
@@ -305,70 +305,75 @@
         img.style.height = tileSize + 'px';
       });
 
-      containerW = tileSize * COLS;
-      containerH = tileSize * ROWS;
+      const containerW = tileSize * COLS;
+      const containerH = tileSize * ROWS;
       container.style.width = containerW + 'px';
       container.style.height = containerH + 'px';
 
-      // Центрируем
+      // Центрируем (как в старой карте)
       const wrapperRect = wrapper.getBoundingClientRect();
-      posX = (wrapperRect.width - containerW) / 2;
-      posY = (wrapperRect.height - containerH) / 2;
-      currentScale = 1;
+      minScale = Math.min(wrapperRect.width / containerW, wrapperRect.height / containerH);
+      scale = minScale;
+      tx = (wrapperRect.width - containerW * scale) / 2;
+      ty = (wrapperRect.height - containerH * scale) / 2;
       applyTransform();
     }
 
-    // ===== ПРИМЕНЕНИЕ ТРАНСФОРМА =====
+    // ===== ПРИМЕНЕНИЕ ТРАНСФОРМА (как в старой карте) =====
     function applyTransform() {
-      const scale = currentScale;
-      container.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      container.style.transform = transform;
       markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ ОТ ЦЕНТРА ЭКРАНА =====
+    // ===== ЗУМ КОЛЕСИКОМ (как в старой карте, но с учётом тайлов) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
+      const rect = wrapper.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      const newScale = Math.min(Math.max(currentScale + delta, 0.3), 2.5);
+      let newScale = scale + delta;
+      newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
-      if (newScale === currentScale) return;
+      if (newScale === scale) return;
 
-      // Сохраняем центр экрана в координатах карты
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const cx = wrapperRect.width / 2;
-      const cy = wrapperRect.height / 2;
+      // Координаты точки под мышью внутри карты (как в старой карте)
+      const containerRect = container.getBoundingClientRect();
+      const px = (mouseX - tx) / (containerRect.width / tileSize * 512 * scale);
+      const py = (mouseY - ty) / (containerRect.height / tileSize * 512 * scale);
 
-      // Точка внутри карты, которая сейчас находится в центре экрана
-      const px = (cx - posX) / currentScale;
-      const py = (cy - posY) / currentScale;
+      const newW = containerRect.width / tileSize * 512 * newScale;
+      const newH = containerRect.height / tileSize * 512 * newScale;
 
-      // Применяем новый масштаб
-      currentScale = newScale;
+      tx = mouseX - px * newW;
+      ty = mouseY - py * newH;
 
-      // Смещаем так, чтобы та же точка осталась в центре
-      posX = cx - px * currentScale;
-      posY = cy - py * currentScale;
-
+      scale = newScale;
       applyTransform();
     }, { passive: false });
 
     // ===== ПЕРЕТАСКИВАНИЕ =====
+    let isDragging = false;
+    let startX, startY, startTx, startTy;
+
     wrapper.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
-      startPosX = posX;
-      startPosY = posY;
+      startTx = tx;
+      startTy = ty;
       wrapper.style.cursor = 'grabbing';
     });
 
     window.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
-      posX = startPosX + (e.clientX - startX);
-      posY = startPosY + (e.clientY - startY);
+      tx = startTx + (e.clientX - startX);
+      ty = startTy + (e.clientY - startY);
       applyTransform();
     });
 
