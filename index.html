@@ -80,6 +80,7 @@
       margin: 0;
       padding: 0;
       line-height: 0;
+      transform-origin: center center;
       will-change: transform;
     }
     #tileContainer img {
@@ -283,20 +284,16 @@
 
     // ===== СОСТОЯНИЕ =====
     let scale = 1;
-    let tx = 0;
-    let ty = 0;
     let tileSize = 0;
-    let minScale = 1;
+    const MIN_SCALE = 0.3;
     const MAX_SCALE = 2.0;
+    const STEP = 0.08;
 
-    // ===== ВЫЧИСЛЕНИЕ РАЗМЕРА ТАЙЛОВ =====
+    // ===== ФУНКЦИЯ РАЗМЕРА ТАЙЛОВ =====
     function fitTiles() {
       const rect = wrapper.getBoundingClientRect();
-      const availableW = rect.width;
-      const availableH = rect.height;
-
-      const tileW = Math.floor(availableW / COLS);
-      const tileH = Math.floor(availableH / ROWS);
+      const tileW = Math.floor(rect.width / COLS);
+      const tileH = Math.floor(rect.height / ROWS);
       tileSize = Math.min(tileW, tileH);
 
       const images = container.querySelectorAll('img');
@@ -310,79 +307,27 @@
       container.style.width = containerW + 'px';
       container.style.height = containerH + 'px';
 
-      // Центрируем (как в старой карте)
-      const wrapperRect = wrapper.getBoundingClientRect();
-      minScale = Math.min(wrapperRect.width / containerW, wrapperRect.height / containerH);
-      scale = minScale;
-      tx = (wrapperRect.width - containerW * scale) / 2;
-      ty = (wrapperRect.height - containerH * scale) / 2;
-      applyTransform();
-    }
-
-    // ===== ПРИМЕНЕНИЕ ТРАНСФОРМА (как в старой карте) =====
-    function applyTransform() {
-      const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-      container.style.transform = transform;
+      // Сбрасываем масштаб
+      scale = 1;
+      container.style.transform = `scale(${scale})`;
       markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
       markersContainer.style.transformOrigin = '0 0';
     }
 
-    // ===== ЗУМ КОЛЕСИКОМ (как в старой карте, но с учётом тайлов) =====
+    // ===== ЗУМ =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
-      const rect = wrapper.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      let newScale = scale + delta;
-      newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+      const delta = e.deltaY > 0 ? -STEP : STEP;
+      const newScale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // Координаты точки под мышью внутри карты (как в старой карте)
-      const containerRect = container.getBoundingClientRect();
-      const px = (mouseX - tx) / (containerRect.width / tileSize * 512 * scale);
-      const py = (mouseY - ty) / (containerRect.height / tileSize * 512 * scale);
-
-      const newW = containerRect.width / tileSize * 512 * newScale;
-      const newH = containerRect.height / tileSize * 512 * newScale;
-
-      tx = mouseX - px * newW;
-      ty = mouseY - py * newH;
-
       scale = newScale;
-      applyTransform();
+      container.style.transform = `scale(${scale})`;
+      markersContainer.style.transform = `scale(${tileSize / 512 * scale})`;
+      markersContainer.style.transformOrigin = '0 0';
     }, { passive: false });
-
-    // ===== ПЕРЕТАСКИВАНИЕ =====
-    let isDragging = false;
-    let startX, startY, startTx, startTy;
-
-    wrapper.addEventListener('mousedown', function(e) {
-      if (e.button !== 0) return;
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startTx = tx;
-      startTy = ty;
-      wrapper.style.cursor = 'grabbing';
-    });
-
-    window.addEventListener('mousemove', function(e) {
-      if (!isDragging) return;
-      tx = startTx + (e.clientX - startX);
-      ty = startTy + (e.clientY - startY);
-      applyTransform();
-    });
-
-    window.addEventListener('mouseup', function() {
-      if (isDragging) {
-        isDragging = false;
-        wrapper.style.cursor = 'grab';
-      }
-    });
 
     // ===== ЗАПУСК =====
     window.addEventListener('load', fitTiles);
