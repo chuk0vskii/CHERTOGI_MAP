@@ -1,16 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Карта · зум под курсор</title>
+  <title>Тест зума</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1a2e;
+      background: #0d0d1a;
       overflow: hidden;
       height: 100vh;
       display: flex;
@@ -22,11 +18,10 @@
       height: 100vh;
       overflow: hidden;
       position: relative;
+      background: #0d0d1a;
       cursor: grab;
     }
-    .wrapper:active {
-      cursor: grabbing;
-    }
+    .wrapper:active { cursor: grabbing; }
     .wrapper img {
       display: block;
       position: absolute;
@@ -42,32 +37,29 @@
 </head>
 <body>
 
-<div class="wrapper" id="mapWrapper">
-  <img src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта" id="mapImage">
+<div class="wrapper" id="wrapper">
+  <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта">
 </div>
 
 <script>
   (function() {
     const img = document.getElementById('mapImage');
-    const wrapper = document.getElementById('mapWrapper');
+    const wrapper = document.getElementById('wrapper');
 
-    // размеры картинки (оригинал)
     const IMG_W = 9189;
     const IMG_H = 7026;
 
-    // состояние
     let scale = 1;
     let tx = 0;
     let ty = 0;
-    let minScale = 1;          // заполнится при центрировании
-    const MAX_SCALE = 2.0;     // максимум 200%
+    let minScale = 1;
+    const MAX_SCALE = 0.7;
+    const STEP = 0.2;
 
-    // обновление трансформации
     function update() {
       img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     }
 
-    // центрирование карты в окне (карта видна целиком)
     function center() {
       const rect = wrapper.getBoundingClientRect();
       const sx = rect.width / IMG_W;
@@ -79,35 +71,28 @@
       update();
     }
 
-    // ===== ЗУМ ПОД КУРСОРОМ (КОЛЕСИКО) =====
     wrapper.addEventListener('wheel', function(e) {
       e.preventDefault();
 
       const rect = wrapper.getBoundingClientRect();
-
-      // координаты мыши относительно wrapper (в пикселях)
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // новый масштаб
-      const delta = e.deltaY > 0 ? -0.08 : 0.08;
+      const delta = e.deltaY > 0 ? -STEP : STEP;
       let newScale = scale + delta;
       newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
       if (newScale === scale) return;
 
-      // считаем, где находится точка под курсором внутри картинки (в долях)
-      const px = (mouseX - tx) / (IMG_W * scale);
-      const py = (mouseY - ty) / (IMG_H * scale);
+      const px = (mouseX - tx) / scale;
+      const py = (mouseY - ty) / scale;
 
       const newW = IMG_W * newScale;
       const newH = IMG_H * newScale;
 
-      // новое смещение — точка под курсором остаётся на месте
       tx = mouseX - px * newW;
       ty = mouseY - py * newH;
 
-      // границы (чтобы карта не уезжала за край)
       const maxX = rect.width - newW;
       const maxY = rect.height - newH;
       tx = Math.min(Math.max(tx, maxX), 0);
@@ -128,27 +113,18 @@
       startY = e.clientY;
       startTx = tx;
       startTy = ty;
-      wrapper.style.cursor = 'grabbing';
     });
 
     window.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
       tx = startTx + (e.clientX - startX);
       ty = startTy + (e.clientY - startY);
-
-      const rect = wrapper.getBoundingClientRect();
-      const maxX = rect.width - IMG_W * scale;
-      const maxY = rect.height - IMG_H * scale;
-      tx = Math.min(Math.max(tx, maxX), 0);
-      ty = Math.min(Math.max(ty, maxY), 0);
-
       update();
     });
 
     window.addEventListener('mouseup', function() {
       if (isDragging) {
         isDragging = false;
-        wrapper.style.cursor = 'grab';
       }
     });
 
@@ -158,13 +134,7 @@
     } else {
       img.addEventListener('load', center);
     }
-    setTimeout(center, 500);
-
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(center, 100);
-    });
+    window.addEventListener('resize', center);
 
   })();
 </script>
