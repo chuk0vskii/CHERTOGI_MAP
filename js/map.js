@@ -40,7 +40,7 @@
     update();
   }
 
-  // ===== ЗУМ =====
+  // ===== ЗУМ (ИСПРАВЛЕННЫЙ) =====
   wrapper.addEventListener('wheel', function(e) {
     e.preventDefault();
 
@@ -48,24 +48,26 @@
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
+    // Определяем направление зума
     const delta = e.deltaY > 0 ? -0.08 : 0.08;
     let newScale = scale + delta;
     newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
     if (newScale === scale) return;
 
-    // Точка под курсором в системе координат карты
+    // Координаты курсора в системе координат карты
+    // НЕ делим на размеры карты!
     const px = (mouseX - tx) / scale;
     const py = (mouseY - ty) / scale;
 
     // Применяем новый масштаб
     scale = newScale;
 
-    // Пересчитываем позицию
+    // Пересчитываем позицию, чтобы точка под курсором осталась на месте
     tx = mouseX - px * scale;
     ty = mouseY - py * scale;
 
-    // Ограничения
+    // Ограничения (чтобы карта не выходила за края)
     const maxX = rect.width - IMG_W * scale;
     const maxY = rect.height - IMG_H * scale;
     tx = Math.min(Math.max(tx, maxX), 0);
@@ -109,7 +111,7 @@
     }
   });
 
-  // ===== МЕТКИ (инфо-панель) =====
+  // ===== МЕТКИ =====
   document.querySelectorAll('.marker').forEach(marker => {
     marker.addEventListener('click', function(e) {
       e.stopPropagation();
