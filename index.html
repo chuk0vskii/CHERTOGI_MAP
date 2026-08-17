@@ -23,8 +23,13 @@
         new ol.layer.Tile({
           source: new ol.source.XYZ({
             tileUrlFunction: function(tileCoord) {
+              const z = tileCoord[0];
               const x = tileCoord[1];
               const y = tileCoord[2];
+
+              // Только один уровень зума (z=0)
+              if (z !== 0) return '';
+
               const index = y * COLS + x + 1;
               if (index < 1 || index > COLS * ROWS) return '';
               const padded = String(index).padStart(2, '0');
@@ -37,9 +42,10 @@
       ],
       view: new ol.View({
         center: [0, 0],
-        zoom: 0.5,
-        minZoom: 0.1,
-        maxZoom: 2.5
+        zoom: 0,
+        minZoom: 0,
+        maxZoom: 0,
+        resolutions: [1]
       })
     });
 
