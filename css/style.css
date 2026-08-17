@@ -146,8 +146,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 9189px;
-  height: 7026px;
+  /* width: 9189px;   УБИРАЕМ! */
+  /* height: 7026px;  УБИРАЕМ! */
   transform-origin: 0 0;
   pointer-events: none;
   z-index: 10;
