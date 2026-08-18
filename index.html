@@ -1,47 +1,239 @@
-// ===== ЗУМ ПОД КУРСОРОМ БЕЗ СМЕЩЕНИЯ ВЛЕВО =====
-wrapper.addEventListener('wheel', function(e) {
-  e.preventDefault();
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Огненные чертоги</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-  const rect = wrapper.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
+    .top-banner {
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255,215,0,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100; padding: 0 30px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px; color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.3);
+      letter-spacing: 4px; font-weight: normal;
+    }
+    .top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
+    .top-banner .nav-links a {
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      font-size: 14px; letter-spacing: 1px;
+      transition: all 0.3s ease; padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .top-banner .nav-links a:hover { color: #ffd700; }
+    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
-  const delta = e.deltaY > 0 ? -STEP : STEP;
-  let newScale = scale + delta;
-  newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+    .wrapper {
+      flex: 1;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background: #1a1a2e;
+      cursor: grab;
+      padding-top: 70px;
+    }
+    .wrapper:active { cursor: grabbing; }
 
-  if (newScale === scale) return;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      grid-template-rows: repeat(14, 1fr);
+      gap: 0;
+      width: fit-content;
+      height: fit-content;
+      transform-origin: 0 0;
+      will-change: transform;
+      background: #1a1a2e;
+    }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #1a1a2e;
+    }
+  </style>
+</head>
+<body>
 
-  // Точка под курсором в системе координат карты (до зума)
-  const px = (mouseX - tx) / scale;
-  const py = (mouseY - ty) / scale;
+  <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">Знаки</a>
+      <a href="put.html">Путь</a>
+    </div>
+  </div>
 
-  // Применяем новый масштаб
-  scale = newScale;
-  fitTiles(scale);
+  <div class="wrapper" id="wrapper">
+    <div class="grid" id="grid"></div>
+  </div>
 
-  // Новое смещение, чтобы точка под курсором осталась на месте
-  const gridW = tileSize * COLS;
-  const gridH = tileSize * ROWS;
-  tx = mouseX - px * gridW;
-  ty = mouseY - py * gridH;
+  <script>
+    (function() {
+      const grid = document.getElementById('grid');
+      const wrapper = document.getElementById('wrapper');
 
-  // === ОГРАНИЧЕНИЯ ===
-  const maxX = rect.width - gridW;
-  const maxY = rect.height - gridH;
+      const COLS = 18;
+      const ROWS = 14;
 
-  // Если карта помещается в экран — центрируем
-  if (gridW <= rect.width) {
-    tx = (rect.width - gridW) / 2;
-  } else {
-    tx = Math.min(Math.max(tx, maxX), 0);
-  }
+      // ===== ЗАГРУЗКА ТАЙЛОВ =====
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 1; col <= COLS; col++) {
+          const img = document.createElement('img');
+          img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles4/tile_${row}_${col}.jpg`;
+          img.alt = `tile_${row}_${col}`;
+          grid.appendChild(img);
+        }
+      }
 
-  if (gridH <= rect.height) {
-    ty = (rect.height - gridH) / 2;
-  } else {
-    ty = Math.min(Math.max(ty, maxY), 0);
-  }
+      // ===== РАЗМЕР ТАЙЛОВ =====
+      let tileSize = 0;
 
-  updateTransform();
-}, { passive: false });
+      function fitTiles(scaleFactor) {
+        const rect = wrapper.getBoundingClientRect();
+        const baseTileW = Math.floor(rect.width / COLS);
+        const baseTileH = Math.floor(rect.height / ROWS);
+        const baseSize = Math.min(baseTileW, baseTileH);
+
+        tileSize = Math.floor(baseSize * scaleFactor);
+
+        const images = grid.querySelectorAll('img');
+        images.forEach(img => {
+          img.style.width = tileSize + 'px';
+          img.style.height = tileSize + 'px';
+        });
+
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        grid.style.width = gridW + 'px';
+        grid.style.height = gridH + 'px';
+      }
+
+      // ===== СОСТОЯНИЕ =====
+      let scale = 1;
+      let tx = 0;
+      let ty = 0;
+      let minScale = 1;
+      const MAX_SCALE = 2.0;
+      const STEP = 0.08;
+
+      function updateTransform() {
+        const transform = `translate(${tx}px, ${ty}px)`;
+        grid.style.transform = transform;
+      }
+
+      function centerMap() {
+        const rect = wrapper.getBoundingClientRect();
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const sx = rect.width / gridW;
+        const sy = rect.height / gridH;
+        minScale = Math.min(sx, sy);
+        scale = minScale;
+        tx = (rect.width - gridW * scale) / 2;
+        ty = (rect.height - gridH * scale) / 2;
+        updateTransform();
+      }
+
+      // ===== ЗУМ ПОД КУРСОРОМ + ОГРАНИЧЕНИЯ =====
+      wrapper.addEventListener('wheel', function(e) {
+        e.preventDefault();
+
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const delta = e.deltaY > 0 ? -STEP : STEP;
+        let newScale = scale + delta;
+        newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+
+        if (newScale === scale) return;
+
+        // Координаты точки под курсором в системе карты (до зума)
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
+
+        // Применяем новый масштаб
+        scale = newScale;
+        fitTiles(scale);
+
+        // Новое смещение, чтобы точка под курсором осталась на месте
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        tx = mouseX - px * gridW;
+        ty = mouseY - py * gridH;
+
+        // === ОГРАНИЧЕНИЯ, ЧТОБЫ КАРТА НЕ УЕЗЖАЛА ЗА КРАЙ ===
+        const maxX = rect.width - gridW;
+        const maxY = rect.height - gridH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+
+        updateTransform();
+      }, { passive: false });
+
+      // ===== ПЕРЕТАСКИВАНИЕ =====
+      let isDragging = false;
+      let startX, startY, startTx, startTy;
+
+      wrapper.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startTx = tx;
+        startTy = ty;
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        tx = startTx + (e.clientX - startX);
+        ty = startTy + (e.clientY - startY);
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const maxX = wrapper.getBoundingClientRect().width - gridW;
+        const maxY = wrapper.getBoundingClientRect().height - gridH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+        updateTransform();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          wrapper.style.cursor = 'grab';
+        }
+      });
+
+      // ===== ЗАПУСК =====
+      fitTiles(1);
+      centerMap();
+
+      window.addEventListener('resize', function() {
+        fitTiles(scale);
+        centerMap();
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
