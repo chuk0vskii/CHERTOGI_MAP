@@ -1,166 +1,94 @@
-/* ===== ОБЩИЕ СТИЛИ ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a1a2e; overflow: hidden; height: 100vh; font-family: Arial, sans-serif; }
 
-body {
-  background: #1a1a2e;
-  color: white;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* ===== ВЕРХНИЙ БАННЕР ===== */
+/* ===== БАННЕР ===== */
 .top-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 70px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
-  z-index: 100;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(255,215,0,0.2);
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 100; padding: 0 30px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
   user-select: none;
 }
-
 .top-banner .title {
   font-family: 'Calypso', 'Times New Roman', serif;
-  font-size: 28px;
-  color: #ffd700;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-  letter-spacing: 4px;
+  font-size: 28px; color: #ffd700;
+  text-shadow: 0 0 20px rgba(255,215,0,0.3);
+  letter-spacing: 4px; font-weight: normal;
 }
-
-.top-banner .nav-links {
-  display: flex;
-  gap: 25px;
-  align-items: center;
-}
-
+.top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
 .top-banner .nav-links a {
-  color: rgba(255, 255, 255, 0.6);
-  text-decoration: none;
-  font-size: 14px;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid transparent;
+  color: rgba(255,255,255,0.5); text-decoration: none;
+  font-size: 14px; letter-spacing: 1px;
+  transition: all 0.3s ease; padding: 6px 0;
+  border-bottom: 2px solid transparent;
 }
+.top-banner .nav-links a:hover { color: #ffd700; }
+.top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
-.top-banner .nav-links a:hover {
-  color: #ffd700;
-  border-color: rgba(255, 215, 0, 0.2);
-  background: rgba(255, 215, 0, 0.05);
-}
-
-.top-banner .nav-links a.active {
-  color: #ffd700;
-  border-color: rgba(255, 215, 0, 0.3);
-  background: rgba(255, 215, 0, 0.08);
-}
-
-/* ===== СТРАНИЦЫ БЕЗ КАРТЫ (контент по центру) ===== */
-.page-content {
+/* ===== КАРТА ===== */
+#map {
   width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  padding: 100px 30px 30px 30px;
-  text-align: center;
-  overflow-y: auto;
+  height: calc(100vh - 70px);
+  margin-top: 70px;
+  background: #1a1a2e;
 }
 
-.page-content h1 {
-  font-family: 'Calypso', 'Times New Roman', serif;
-  font-size: 48px;
-  color: #ffd700;
-  margin-bottom: 20px;
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+/* ===== ИНФО-ПАНЕЛЬ ===== */
+.info-panel {
+  position: fixed; top: 0; right: -450px; width: 400px; height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+  color: white; padding: 30px 25px;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.8);
+  transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1000; overflow-y: auto;
+  border-left: 2px solid rgba(255,215,0,0.3);
+}
+.info-panel.open { right: 0; }
+.info-panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 15px;
+}
+.info-panel-title { font-size: 24px; color: #ffd700; font-weight: bold; text-shadow: 0 0 20px rgba(255,215,0,0.2); }
+.info-panel-close {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  font-size: 32px; cursor: pointer; transition: all 0.3s ease;
+  line-height: 1; padding: 0 8px;
+}
+.info-panel-close:hover { color: #ffd700; transform: rotate(90deg); }
+.info-panel-content { font-size: 16px; line-height: 1.8; color: #ccc; }
+.info-panel-content strong { color: #ffd700; }
+.info-panel-content .description {
+  margin-top: 15px; padding: 15px;
+  background: rgba(255,255,255,0.05); border-radius: 10px;
+  border-left: 3px solid #ffd700;
 }
 
-.page-content .subtitle {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 16px;
-  letter-spacing: 2px;
-  margin-bottom: 40px;
-  text-transform: uppercase;
+.overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease; z-index: 999;
 }
-
-.page-content .description {
-  max-width: 700px;
-  font-size: 18px;
-  line-height: 1.8;
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 30px 40px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.page-content .description strong {
-  color: #ffd700;
-}
+.overlay.active { opacity: 1; pointer-events: auto; }
 
 /* ===== АДАПТАЦИЯ ===== */
 @media (max-width: 768px) {
-  .top-banner {
-    height: 56px;
-    padding: 0 16px;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .top-banner .title {
-    font-size: 18px;
-    letter-spacing: 2px;
-  }
-  .top-banner .nav-links {
-    gap: 8px;
-  }
-  .top-banner .nav-links a {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  .page-content h1 {
-    font-size: 32px;
-  }
-  .page-content .description {
-    font-size: 16px;
-    padding: 20px;
-  }
+  .top-banner { height: 56px; padding: 0 16px; }
+  .top-banner .title { font-size: 18px; letter-spacing: 2px; }
+  .top-banner .nav-links { gap: 12px; }
+  .top-banner .nav-links a { font-size: 12px; }
+  #map { height: calc(100vh - 56px); margin-top: 56px; }
+  .info-panel { width: 320px; right: -360px; }
+  .info-panel-title { font-size: 20px; }
 }
-
 @media (max-width: 480px) {
-  .top-banner {
-    height: 48px;
-    padding: 0 12px;
-  }
-  .top-banner .title {
-    font-size: 15px;
-  }
-  .top-banner .nav-links a {
-    font-size: 10px;
-    padding: 3px 6px;
-  }
-  .page-content h1 {
-    font-size: 26px;
-  }
-  .page-content .description {
-    font-size: 14px;
-    padding: 16px;
-  }
+  .top-banner { height: 48px; padding: 0 12px; }
+  .top-banner .title { font-size: 15px; letter-spacing: 1px; }
+  .top-banner .nav-links { gap: 8px; }
+  .top-banner .nav-links a { font-size: 10px; }
+  #map { height: calc(100vh - 48px); margin-top: 48px; }
+  .info-panel { width: 280px; right: -320px; padding: 20px 16px; }
+  .info-panel-title { font-size: 18px; }
 }
