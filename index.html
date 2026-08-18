@@ -12,22 +12,37 @@
 </head>
 <body>
   <div class="wrapper" id="wrapper">
-    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта">
+    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles4/mapchertogi1.jpeg" alt="Карта">
   </div>
   <script>
     (function() {
       const img = document.getElementById('mapImage');
       const wrapper = document.getElementById('wrapper');
 
+      // ===== РАЗМЕРЫ КАРТИНКИ =====
+      const IMG_W = 9189;
+      const IMG_H = 7026;
+
       let scale = 1;
       let tx = 0;
       let ty = 0;
-      const MIN_SCALE = 0.3;
+      let minScale = 1;
       const MAX_SCALE = 2.0;
       const STEP = 0.08;
 
       function update() {
         img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      }
+
+      function center() {
+        const rect = wrapper.getBoundingClientRect();
+        const sx = rect.width / IMG_W;
+        const sy = rect.height / IMG_H;
+        minScale = Math.min(sx, sy);
+        scale = minScale;
+        tx = (rect.width - IMG_W * scale) / 2;
+        ty = (rect.height - IMG_H * scale) / 2;
+        update();
       }
 
       wrapper.addEventListener('wheel', function(e) {
@@ -39,7 +54,7 @@
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
-        newScale = Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
+        newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
 
         if (newScale === scale) return;
 
@@ -52,6 +67,15 @@
 
         update();
       }, { passive: false });
+
+      // ===== ЗАПУСК =====
+      if (img.complete) {
+        center();
+      } else {
+        img.addEventListener('load', center);
+      }
+      window.addEventListener('resize', center);
+
     })();
   </script>
 </body>
