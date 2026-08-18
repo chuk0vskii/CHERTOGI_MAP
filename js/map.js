@@ -26,22 +26,19 @@
     if (e.key === 'Escape') closeInfo();
   });
 
-  // ===== КАРТА (ОДИН УРОВЕНЬ ЗУМА) =====
+  // ===== КАРТА (ЖЁСТКИЙ ТЕСТ) =====
   const map = new ol.Map({
     target: 'map',
     layers: [
       new ol.layer.Tile({
         source: new ol.source.XYZ({
           tileUrlFunction: function(tileCoord) {
-            const z = tileCoord[0];
             const x = tileCoord[1];
             const y = tileCoord[2];
-
-            // === ГЛАВНОЕ: ТОЛЬКО УРОВЕНЬ 0 ===
-            if (z !== 0) return '';
-
-            if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
-            return `tiles4/tile_${y}_${x}.jpg`;
+            // === ЖЁСТКИЙ ПУТЬ ДЛЯ ТЕСТА (сейчас загружается только один тайл) ===
+            // Вернём tile_0_0.jpg для всех координат, чтобы увидеть, работает ли OpenLayers
+            console.log('Запрос тайла:', x, y);
+            return 'tiles4/tile_0_0.jpg';
           },
           tileSize: 512,
           crossOrigin: 'anonymous'
