@@ -88,7 +88,6 @@
             
             // ПУТЬ К ТАЙЛАМ: папка tiles4 в корне репозитория
             function getTileUrl(row, col) {
-                // row: 0..13, col: 1..18
                 return `tiles4/tile_${row}_${col}.jpg`;
             }
 
@@ -133,7 +132,7 @@
                 renderMode: 'hybrid'
             });
 
-            // ----- КАРТА -----
+            // ----- КАРТА (исправленный синтаксис) -----
             const map = new ol.Map({
                 target: 'map-container',
                 layers: [tileLayer],
@@ -162,10 +161,15 @@
             });
 
             // ----- ЗУМ ОТНОСИТЕЛЬНО КУРСОРА -----
+            // В новой версии OpenLayers MouseWheelZoom уже по умолчанию работает относительно курсора
+            // Но для уверенности проверим
             const interactions = map.getInteractions();
             interactions.forEach(function(interaction) {
                 if (interaction instanceof ol.interaction.MouseWheelZoom) {
-                    interaction.setMouseAnchor('cursor');
+                    // В новых версиях свойство называется anchor
+                    if (interaction.setMouseAnchor) {
+                        interaction.setMouseAnchor('cursor');
+                    }
                 }
             });
 
@@ -192,6 +196,15 @@
             console.log(`📐 Тайлы: ${COLS}×${ROWS} = ${COLS * ROWS} шт.`);
             console.log(`📁 Путь: tiles4/tile_0_1.jpg ... tile_13_18.jpg`);
             console.log(`🔗 Пример URL: ${getTileUrl(0, 1)}`);
+            
+            // Проверка загрузки тайлов
+            setTimeout(() => {
+                console.log('🔄 Проверка загрузки тайлов...');
+                console.log('Если тайлы не отображаются, проверьте:');
+                console.log('1. Папка tiles4 существует рядом с index.html');
+                console.log('2. Файлы называются tile_0_1.jpg, tile_0_2.jpg и т.д.');
+                console.log('3. Откройте вкладку Network в консоли и посмотрите запросы');
+            }, 1000);
         })();
     </script>
 </body>
