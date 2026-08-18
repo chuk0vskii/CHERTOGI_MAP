@@ -92,6 +92,7 @@
 
       const COLS = 18;
       const ROWS = 14;
+      let tileSize = 0;
 
       // ===== ЗАГРУЗКА ТАЙЛОВ =====
       for (let row = 0; row < ROWS; row++) {
@@ -104,13 +105,14 @@
       }
 
       // ===== РАЗМЕР ТАЙЛОВ =====
-      let tileSize = 0;
-
-      function fitTiles() {
+      function fitTiles(scaleFactor) {
         const rect = wrapper.getBoundingClientRect();
-        const tileW = Math.floor(rect.width / COLS);
-        const tileH = Math.floor(rect.height / ROWS);
-        tileSize = Math.min(tileW, tileH);
+        const baseTileW = Math.floor(rect.width / COLS);
+        const baseTileH = Math.floor(rect.height / ROWS);
+        const baseSize = Math.min(baseTileW, baseTileH);
+
+        // Применяем масштаб к размеру тайлов
+        tileSize = Math.floor(baseSize * scaleFactor);
 
         const images = grid.querySelectorAll('img');
         images.forEach(img => {
@@ -123,7 +125,7 @@
         grid.style.width = gridW + 'px';
         grid.style.height = gridH + 'px';
 
-        centerMap();
+        centerMap(tileSize);
       }
 
       // ===== СОСТОЯНИЕ =====
@@ -135,30 +137,25 @@
       const STEP = 0.08;
 
       function updateTransform() {
-        const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        const transform = `translate(${tx}px, ${ty}px)`;
         grid.style.transform = transform;
       }
 
-      function centerMap() {
+      function centerMap(currentTileSize) {
         const rect = wrapper.getBoundingClientRect();
-        const gridW = tileSize * COLS;
-        const gridH = tileSize * ROWS;
+        const gridW = currentTileSize * COLS;
+        const gridH = currentTileSize * ROWS;
         const sx = rect.width / gridW;
         const sy = rect.height / gridH;
         minScale = Math.min(sx, sy);
-        scale = minScale;
-        tx = (rect.width - gridW * scale) / 2;
-        ty = (rect.height - gridH * scale) / 2;
+        tx = (rect.width - gridW * minScale) / 2;
+        ty = (rect.height - gridH * minScale) / 2;
         updateTransform();
       }
 
-      // ===== ЗУМ ПОД КУРСОРОМ =====
+      // ===== ЗУМ =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
-
-        const rect = wrapper.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
@@ -166,20 +163,9 @@
 
         if (newScale === scale) return;
 
-        const px = (mouseX - tx) / scale;
-        const py = (mouseY - ty) / scale;
-
         scale = newScale;
-
-        tx = mouseX - px * scale;
-        ty = mouseY - py * scale;
-
-        const maxX = rect.width - tileSize * COLS * scale;
-        const maxY = rect.height - tileSize * ROWS * scale;
-        tx = Math.min(Math.max(tx, maxX), 0);
-        ty = Math.min(Math.max(ty, maxY), 0);
-
-        updateTransform();
+        fitTiles(scale);
+        centerMap(tileSize);
       }, { passive: false });
 
       // ===== ПЕРЕТАСКИВАНИЕ =====
@@ -211,14 +197,12 @@
       });
 
       // ===== ЗАПУСК =====
-      fitTiles();
+      fitTiles(1);
 
       window.addEventListener('resize', function() {
-        fitTiles();
-        centerMap();
+        fitTiles(scale);
+        centerMap(tileSize);
       });
-
-      setTimeout(centerMap, 500);
 
     })();
   </script>
