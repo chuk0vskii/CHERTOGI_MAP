@@ -152,7 +152,7 @@
         updateTransform();
       }
 
-      // ===== ЗУМ ПОД КУРСОРОМ =====
+      // ===== ЗУМ ПОД КУРСОРОМ + ОГРАНИЧЕНИЯ =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -166,23 +166,21 @@
 
         if (newScale === scale) return;
 
-        // Точка под курсором в координатах карты (до зума)
+        // Координаты точки под курсором в системе карты (до зума)
         const px = (mouseX - tx) / scale;
         const py = (mouseY - ty) / scale;
 
         // Применяем новый масштаб
         scale = newScale;
-
-        // Меняем размер тайлов
         fitTiles(scale);
 
-        // Пересчитываем смещение, чтобы точка под курсором осталась на месте
+        // Новое смещение, чтобы точка под курсором осталась на месте
         const gridW = tileSize * COLS;
         const gridH = tileSize * ROWS;
         tx = mouseX - px * gridW;
         ty = mouseY - py * gridH;
 
-        // Ограничения
+        // === ОГРАНИЧЕНИЯ, ЧТОБЫ КАРТА НЕ УЕЗЖАЛА ЗА КРАЙ ===
         const maxX = rect.width - gridW;
         const maxY = rect.height - gridH;
         tx = Math.min(Math.max(tx, maxX), 0);
