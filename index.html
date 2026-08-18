@@ -1,28 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Тест зума</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Огненные чертоги</title>
   <style>
-    body { margin: 0; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
-    .wrapper { width: 100vw; height: 100vh; overflow: hidden; position: relative; cursor: grab; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+    .top-banner {
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255,215,0,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100; padding: 0 30px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px; color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.3);
+      letter-spacing: 4px; font-weight: normal;
+    }
+    .top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
+    .top-banner .nav-links a {
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      font-size: 14px; letter-spacing: 1px;
+      transition: all 0.3s ease; padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .top-banner .nav-links a:hover { color: #ffd700; }
+    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
+
+    .wrapper {
+      flex: 1;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background: #1a1a2e;
+      cursor: grab;
+      padding-top: 70px;
+    }
     .wrapper:active { cursor: grabbing; }
-    .wrapper img { display: block; position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      grid-template-rows: repeat(14, 1fr);
+      gap: 0;
+      width: fit-content;
+      height: fit-content;
+      transform-origin: 0 0;
+      will-change: transform;
+      background: #1a1a2e;
+    }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #1a1a2e;
+    }
   </style>
 </head>
 <body>
-  <div class="wrapper" id="wrapper">
-    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта">
+
+  <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">Знаки</a>
+      <a href="put.html">Путь</a>
+    </div>
   </div>
+
+  <div class="wrapper" id="wrapper">
+    <div class="grid" id="grid"></div>
+  </div>
+
   <script>
     (function() {
-      const img = document.getElementById('mapImage');
+      const grid = document.getElementById('grid');
       const wrapper = document.getElementById('wrapper');
 
-      // ===== РАЗМЕРЫ КАРТИНКИ =====
-      const IMG_W = 9189;
-      const IMG_H = 7026;
+      const COLS = 18;
+      const ROWS = 14;
 
+      // ===== ЗАГРУЗКА ТАЙЛОВ =====
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 1; col <= COLS; col++) {
+          const img = document.createElement('img');
+          img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles4/tile_${row}_${col}.jpg`;
+          img.alt = `tile_${row}_${col}`;
+          grid.appendChild(img);
+        }
+      }
+
+      // ===== РАЗМЕР ТАЙЛОВ =====
+      let tileSize = 0;
+
+      function fitTiles() {
+        const rect = wrapper.getBoundingClientRect();
+        const tileW = Math.floor(rect.width / COLS);
+        const tileH = Math.floor(rect.height / ROWS);
+        tileSize = Math.min(tileW, tileH);
+
+        const images = grid.querySelectorAll('img');
+        images.forEach(img => {
+          img.style.width = tileSize + 'px';
+          img.style.height = tileSize + 'px';
+        });
+
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        grid.style.width = gridW + 'px';
+        grid.style.height = gridH + 'px';
+      }
+
+      // ===== СОСТОЯНИЕ =====
       let scale = 1;
       let tx = 0;
       let ty = 0;
@@ -30,21 +132,28 @@
       const MAX_SCALE = 2.0;
       const STEP = 0.08;
 
-      function update() {
-        img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      function updateTransform() {
+        const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        grid.style.transform = transform;
       }
 
-      function center() {
+      function centerMap() {
         const rect = wrapper.getBoundingClientRect();
-        const sx = rect.width / IMG_W;
-        const sy = rect.height / IMG_H;
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const sx = rect.width / gridW;
+        const sy = rect.height / gridH;
         minScale = Math.min(sx, sy);
         scale = minScale;
-        tx = (rect.width - IMG_W * scale) / 2;
-        ty = (rect.height - IMG_H * scale) / 2;
-        update();
+
+        // === ПРИМАГНИЧИВАНИЕ К ВЕРХНЕЙ ГРАНИЦЕ ===
+        tx = (rect.width - gridW * scale) / 2;
+        ty = 0; // ← всегда прижат к верху
+
+        updateTransform();
       }
 
+      // ===== ЗУМ (ИЗ ТЕСТА) =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -65,18 +174,70 @@
         tx = mouseX - px * scale;
         ty = mouseY - py * scale;
 
-        update();
+        // === ОГРАНИЧЕНИЯ: НЕ ДАЁМ УЕХАТЬ ЗА КРАЯ, НО ПРИЖИМАЕМ К ВЕРХУ ===
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const maxX = rect.width - gridW * scale;
+        const maxY = rect.height - gridH * scale;
+
+        // По горизонтали — не даём уехать
+        tx = Math.min(Math.max(tx, maxX), 0);
+
+        // По вертикали — прижимаем к верху, если карта меньше экрана
+        if (gridH * scale <= rect.height) {
+          ty = 0;
+        } else {
+          ty = Math.min(Math.max(ty, maxY), 0);
+        }
+
+        updateTransform();
       }, { passive: false });
 
+      // ===== ПЕРЕТАСКИВАНИЕ =====
+      let isDragging = false;
+      let startX, startY, startTx, startTy;
+
+      wrapper.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startTx = tx;
+        startTy = ty;
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        tx = startTx + (e.clientX - startX);
+        ty = startTy + (e.clientY - startY);
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const maxX = wrapper.getBoundingClientRect().width - gridW * scale;
+        const maxY = wrapper.getBoundingClientRect().height - gridH * scale;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+        updateTransform();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          wrapper.style.cursor = 'grab';
+        }
+      });
+
       // ===== ЗАПУСК =====
-      if (img.complete) {
-        center();
-      } else {
-        img.addEventListener('load', center);
-      }
-      window.addEventListener('resize', center);
+      fitTiles();
+      centerMap();
+
+      window.addEventListener('resize', function() {
+        fitTiles();
+        centerMap();
+      });
 
     })();
   </script>
+
 </body>
 </html>
