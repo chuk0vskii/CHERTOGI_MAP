@@ -2,20 +2,18 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Огненные чертоги</title>
+  <title>Карта</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #1a1a2e; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
     .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: 98vw; max-width: 1200px; }
-    .grid img { display: block; width: 100%; height: auto; border: none; image-rendering: pixelated; }
+    .grid img { display: block; width: 100%; height: auto; border: none; }
   </style>
 </head>
 <body>
   <div class="grid" id="grid"></div>
   <script>
     const grid = document.getElementById('grid');
-    const total = 252;
-    for (let i = 1; i <= total; i++) {
+    for (let i = 1; i <= 252; i++) {
       const img = document.createElement('img');
       const padded = String(i).padStart(2, '0');
       img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/tile_${padded}.jpg`;
