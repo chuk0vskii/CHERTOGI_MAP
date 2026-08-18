@@ -7,8 +7,15 @@
       new ol.layer.Tile({
         source: new ol.source.XYZ({
           tileUrlFunction: function(tileCoord) {
-            // === ВСЕГДА ВОЗВРАЩАЕМ ОДИН ТАЙЛ ===
-            return 'tiles4/tile_0_1.jpg';
+            const x = tileCoord[1];
+            const y = tileCoord[2];
+
+            // === ГРАНИЦЫ: 18 СТОЛБЦОВ (0-17), 14 РЯДОВ (0-13) ===
+            if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
+
+            // === ТВОЯ НУМЕРАЦИЯ: РЯДЫ С 0, СТОЛБЦЫ С 1 ===
+            const col = x + 1;
+            return `tiles4/tile_${y}_${col}.jpg`;
           },
           tileSize: 512,
           crossOrigin: 'anonymous'
