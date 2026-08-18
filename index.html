@@ -5,16 +5,29 @@
   <title>Тайлы</title>
   <style>
     body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 0; width: 98vw; max-width: 1200px; }
-    .grid img { display: block; width: 100%; height: auto; border: none; image-rendering: pixelated; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      gap: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+    .grid img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: none;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
   </style>
 </head>
 <body>
   <div class="grid" id="grid"></div>
   <script>
     const grid = document.getElementById('grid');
-    // === ПРАВИЛЬНЫЙ ПУТЬ ДЛЯ ТАЙЛОВ ===
-    // Тайлы называются tile_0_1.jpg, tile_0_2.jpg, ..., tile_13_18.jpg
     for (let row = 0; row < 14; row++) {
       for (let col = 1; col <= 18; col++) {
         const img = document.createElement('img');
