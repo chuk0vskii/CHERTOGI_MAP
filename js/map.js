@@ -26,7 +26,7 @@
     if (e.key === 'Escape') closeInfo();
   });
 
-  // ===== КАРТА (ЖЁСТКИЙ ТЕСТ) =====
+  // ===== КАРТА (14 × 18) =====
   const map = new ol.Map({
     target: 'map',
     layers: [
@@ -35,10 +35,11 @@
           tileUrlFunction: function(tileCoord) {
             const x = tileCoord[1];
             const y = tileCoord[2];
-            // === ЖЁСТКИЙ ПУТЬ ДЛЯ ТЕСТА (сейчас загружается только один тайл) ===
-            // Вернём tile_0_0.jpg для всех координат, чтобы увидеть, работает ли OpenLayers
-            console.log('Запрос тайла:', x, y);
-            return 'tiles4/tile_0_0.jpg';
+
+            // === 18 СТОЛБЦОВ (0-17), 14 РЯДОВ (0-13) ===
+            if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
+
+            return `tiles4/tile_${y}_${x}.jpg`;
           },
           tileSize: 512,
           crossOrigin: 'anonymous'
