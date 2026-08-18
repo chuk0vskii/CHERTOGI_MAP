@@ -48,11 +48,11 @@
       })
     ],
     view: new ol.View({
-      center: [0, 0],
-      zoom: 0.5,
-      minZoom: 0.1,
-      maxZoom: 1.5
-    })
+  center: [0, 0],
+  zoom: 0.3,
+  minZoom: 0.05,
+  maxZoom: 3.0
+})
   });
 
   window.addEventListener('resize', function() {
