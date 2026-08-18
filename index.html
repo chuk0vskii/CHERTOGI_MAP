@@ -1,212 +1,108 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Интерактивная карта</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.2.4/ol.css">
-    <script src="https://cdn.jsdelivr.net/npm/ol@v9.2.4/dist/ol.min.js"></script>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #1a1a1a;
-        }
-        #map-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        .ol-viewport {
-            cursor: grab;
-        }
-        .ol-viewport:active {
-            cursor: grabbing;
-        }
-        #info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: #eee;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 16px;
-            border-radius: 24px;
-            font-size: 14px;
-            pointer-events: none;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.1);
-            z-index: 1000;
-        }
-        #coords {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #aaa;
-            background: rgba(0,0,0,0.5);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            pointer-events: none;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.08);
-            z-index: 1000;
-            font-family: monospace;
-        }
-        #debug {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #0f0;
-            font-size: 12px;
-            font-family: monospace;
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 14px;
-            border-radius: 8px;
-            pointer-events: none;
-            max-width: 400px;
-            line-height: 1.4;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Огненные чертоги</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; overflow: hidden; height: 100vh; }
+    #map { width: 100vw; height: 100vh; background: #1a1a2e; }
+
+    /* ===== БАННЕР ===== */
+    .top-banner {
+      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(255,215,0,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100; padding: 0 30px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+    .top-banner .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 28px; color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.3);
+      letter-spacing: 4px; font-weight: normal;
+    }
+    .top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
+    .top-banner .nav-links a {
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      font-size: 14px; letter-spacing: 1px;
+      transition: all 0.3s ease; padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .top-banner .nav-links a:hover { color: #ffd700; }
+    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
+  </style>
 </head>
 <body>
-    <div id="map-container"></div>
-    <div id="info">🗺️ Интерактивная карта • 18×14 тайлов</div>
-    <div id="coords">зум: 1.00x</div>
-    <div id="debug">⏳ Загрузка...</div>
 
-    <script>
-        (function() {
-            console.log('🚀 Запуск карты...');
-            
-            const COLS = 18;
-            const ROWS = 14;
-            const TILE_SIZE = 256;
-            
-            const WIDTH = COLS * TILE_SIZE;
-            const HEIGHT = ROWS * TILE_SIZE;
-            
-            console.log(`📐 Размер карты: ${WIDTH}×${HEIGHT} пикселей`);
-            
-            // ГЛАВНОЕ ИЗМЕНЕНИЕ: добавляем ?raw=true к URL
-            function getTileUrl(row, col) {
-                return `tiles4/tile_${row}_${col}.jpg?raw=true`;
-            }
+  <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">Знаки</a>
+      <a href="put.html">Путь</a>
+    </div>
+  </div>
 
-            const extent = [0, 0, WIDTH, HEIGHT];
-            
-            const projection = new ol.proj.Projection({
-                code: 'pixel',
-                units: 'pixels',
-                extent: extent
-            });
+  <div id="map"></div>
 
-            const tileGrid = new ol.tilegrid.TileGrid({
-                extent: extent,
-                origin: [0, 0],
-                resolutions: [1],
-                tileSize: TILE_SIZE
-            });
+  <script>
+    (function() {
+      'use strict';
 
-            const tileSource = new ol.source.TileImage({
-                projection: projection,
-                tileGrid: tileGrid,
-                tileUrlFunction: function(tileCoord) {
-                    const z = tileCoord[0];
-                    const x = tileCoord[1];
-                    const y = tileCoord[2];
-                    
-                    console.log(`📦 Запрос: z=${z}, x=${x}, y=${y}`);
-                    
-                    if (z !== 0) {
-                        console.warn(`⚠️ Неподдерживаемый zoom: ${z}`);
-                        return undefined;
-                    }
-                    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) {
-                        console.warn(`⚠️ Тайл вне границ: x=${x}, y=${y}`);
-                        return undefined;
-                    }
-                    
-                    const col = x + 1;
-                    const row = y;
-                    const url = getTileUrl(row, col);
-                    
-                    console.log(`✅ URL: ${url}`);
-                    return url;
-                },
-                crossOrigin: 'anonymous'
-            });
+      const IMG_W = 9189;
+      const IMG_H = 7026;
+      const COLS = 18;
+      const ROWS = 14;
+      const TILE_SIZE = 512;
+      const EXTENT = [0, 0, IMG_W, IMG_H];
 
-            const tileLayer = new ol.layer.Tile({
-                source: tileSource
-            });
+      const map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.XYZ({
+              tileUrlFunction: function(tileCoord) {
+                const x = tileCoord[1];
+                const y = tileCoord[2];
+                if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return '';
+                const col = x + 1;
+                return `tiles4/tile_${y}_${col}.jpg`;
+              },
+              tileSize: TILE_SIZE,
+              crossOrigin: 'anonymous'
+            })
+          })
+        ],
+        view: new ol.View({
+          center: [IMG_W / 2, IMG_H / 2],
+          zoom: 0.5,
+          minZoom: 0.1,
+          maxZoom: 2.5,
+          extent: EXTENT
+        })
+      });
 
-            const map = new ol.Map({
-                target: 'map-container',
-                layers: [tileLayer],
-                view: new ol.View({
-                    projection: projection,
-                    center: [WIDTH / 2, HEIGHT / 2],
-                    zoom: 0,
-                    minZoom: 0,
-                    maxZoom: 3,
-                    extent: extent,
-                    constrainResolution: true,
-                    showFullExtent: true
-                }),
-                controls: [],
-                interactions: ol.interaction.defaults({
-                    dragPan: true,
-                    mouseWheelZoom: true,
-                    pinchRotate: false,
-                    pinchZoom: true,
-                    keyboard: false,
-                    doubleClickZoom: true
-                })
-            });
+      // === АВТОМАТИЧЕСКИЙ ЗУМ, ЧТОБЫ КАРТА ВЛЕЗЛА В ЭКРАН ===
+      map.getView().fit(EXTENT, {
+        padding: [10, 10, 10, 10],
+        maxZoom: 2.5
+      });
 
-            // Зум относительно курсора
-            map.getInteractions().forEach(function(interaction) {
-                if (interaction instanceof ol.interaction.MouseWheelZoom) {
-                    if (interaction.setMouseAnchor) {
-                        interaction.setMouseAnchor('cursor');
-                    }
-                }
-            });
+      window.addEventListener('resize', function() {
+        map.updateSize();
+        map.getView().fit(EXTENT, {
+          padding: [10, 10, 10, 10],
+          maxZoom: 2.5
+        });
+      });
 
-            // Отображение зума
-            const coordsEl = document.getElementById('coords');
-            map.getView().on('change:resolution', function() {
-                const view = map.getView();
-                const zoom = view.getZoom();
-                coordsEl.textContent = `зум: ${zoom.toFixed(2)}x`;
-            });
+    })();
+  </script>
 
-            // Центрирование
-            map.getView().fit(extent, {
-                padding: [0, 0, 0, 0],
-                nearest: true
-            });
-            map.getView().setZoom(0);
-            
-            // Принудительное обновление
-            tileLayer.getSource().refresh();
-
-            document.getElementById('debug').textContent = '✅ Карта загружена';
-            
-            console.log('✅ Карта инициализирована');
-            console.log(`📁 Пример URL: ${getTileUrl(0, 1)}`);
-            
-            // Проверка через 2 секунды
-            setTimeout(() => {
-                console.log('🔍 Проверка: если тайлы не загрузились - проблема в путях');
-                document.getElementById('debug').textContent = `📁 ${getTileUrl(0, 1)}`;
-            }, 1000);
-        })();
-    </script>
 </body>
 </html>
