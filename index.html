@@ -77,29 +77,26 @@
     <div id="map-container"></div>
     <div id="info">🗺️ Интерактивная карта • 18×14 тайлов</div>
     <div id="coords">зум: 1.00x</div>
-    <div id="debug">⏳ Инициализация...</div>
+    <div id="debug">⏳ Загрузка...</div>
 
     <script>
         (function() {
             console.log('🚀 Запуск карты...');
             
-            // ----- ПАРАМЕТРЫ КАРТЫ -----
             const COLS = 18;
             const ROWS = 14;
             const TILE_SIZE = 256;
             
-            // Размеры всей карты в пикселях
-            const WIDTH = COLS * TILE_SIZE;  // 4608
-            const HEIGHT = ROWS * TILE_SIZE; // 3584
+            const WIDTH = COLS * TILE_SIZE;
+            const HEIGHT = ROWS * TILE_SIZE;
             
             console.log(`📐 Размер карты: ${WIDTH}×${HEIGHT} пикселей`);
             
-            // Функция для формирования URL тайла
+            // ГЛАВНОЕ ИЗМЕНЕНИЕ: добавляем ?raw=true к URL
             function getTileUrl(row, col) {
-                return `tiles4/tile_${row}_${col}.jpg`;
+                return `tiles4/tile_${row}_${col}.jpg?raw=true`;
             }
 
-            // ----- СОЗДАЕМ ПРОЕКЦИЮ И ЭКСТЕНТ -----
             const extent = [0, 0, WIDTH, HEIGHT];
             
             const projection = new ol.proj.Projection({
@@ -108,8 +105,6 @@
                 extent: extent
             });
 
-            // ----- СОЗДАЕМ TILE GRID -----
-            // Важно: правильно указать origin (левый верхний угол)
             const tileGrid = new ol.tilegrid.TileGrid({
                 extent: extent,
                 origin: [0, 0],
@@ -117,7 +112,6 @@
                 tileSize: TILE_SIZE
             });
 
-            // ----- ИСТОЧНИК ТАЙЛОВ -----
             const tileSource = new ol.source.TileImage({
                 projection: projection,
                 tileGrid: tileGrid,
@@ -126,10 +120,8 @@
                     const x = tileCoord[1];
                     const y = tileCoord[2];
                     
-                    // Логируем запросы для отладки
                     console.log(`📦 Запрос: z=${z}, x=${x}, y=${y}`);
                     
-                    // Проверяем границы
                     if (z !== 0) {
                         console.warn(`⚠️ Неподдерживаемый zoom: ${z}`);
                         return undefined;
@@ -139,7 +131,6 @@
                         return undefined;
                     }
                     
-                    // Преобразуем: col = x + 1, row = y
                     const col = x + 1;
                     const row = y;
                     const url = getTileUrl(row, col);
@@ -147,16 +138,13 @@
                     console.log(`✅ URL: ${url}`);
                     return url;
                 },
-                // Важно: разрешить кросс-доменные запросы (для GitHub Pages)
                 crossOrigin: 'anonymous'
             });
 
-            // ----- СЛОЙ КАРТЫ -----
             const tileLayer = new ol.layer.Tile({
                 source: tileSource
             });
 
-            // ----- КАРТА -----
             const map = new ol.Map({
                 target: 'map-container',
                 layers: [tileLayer],
@@ -181,7 +169,7 @@
                 })
             });
 
-            // ----- ЗУМ ОТНОСИТЕЛЬНО КУРСОРА -----
+            // Зум относительно курсора
             map.getInteractions().forEach(function(interaction) {
                 if (interaction instanceof ol.interaction.MouseWheelZoom) {
                     if (interaction.setMouseAnchor) {
@@ -190,7 +178,7 @@
                 }
             });
 
-            // ----- ОТОБРАЖЕНИЕ ЗУМА -----
+            // Отображение зума
             const coordsEl = document.getElementById('coords');
             map.getView().on('change:resolution', function() {
                 const view = map.getView();
@@ -198,52 +186,26 @@
                 coordsEl.textContent = `зум: ${zoom.toFixed(2)}x`;
             });
 
-            // ----- ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ КАРТУ -----
+            // Центрирование
             map.getView().fit(extent, {
                 padding: [0, 0, 0, 0],
                 nearest: true
             });
-            
-            // Принудительно устанавливаем zoom = 0
             map.getView().setZoom(0);
             
-            // Принудительно обновляем слой
+            // Принудительное обновление
             tileLayer.getSource().refresh();
 
-            // ----- ИНФОРМАЦИЯ В ИНТЕРФЕЙСЕ -----
             document.getElementById('debug').textContent = '✅ Карта загружена';
             
             console.log('✅ Карта инициализирована');
-            console.log(`📁 Тайлы: tiles4/tile_0_1.jpg ... tile_13_18.jpg`);
-            console.log('🔍 Проверьте вкладку Network - должны появиться запросы к тайлам');
+            console.log(`📁 Пример URL: ${getTileUrl(0, 1)}`);
             
             // Проверка через 2 секунды
             setTimeout(() => {
                 console.log('🔍 Проверка: если тайлы не загрузились - проблема в путях');
-                console.log(`📁 Пример пути: ${getTileUrl(0, 1)}`);
                 document.getElementById('debug').textContent = `📁 ${getTileUrl(0, 1)}`;
             }, 1000);
-            
-            // Дополнительная проверка: пробуем загрузить тайл через fetch
-            setTimeout(() => {
-                const testUrl = getTileUrl(0, 1);
-                console.log(`🔍 Проверяем существование файла: ${testUrl}`);
-                
-                fetch(testUrl, { method: 'HEAD' })
-                    .then(response => {
-                        if (response.ok) {
-                            console.log('✅ Тайл существует!');
-                            document.getElementById('debug').textContent = '✅ Тайлы доступны';
-                        } else {
-                            console.error('❌ Тайл не найден! Код:', response.status);
-                            document.getElementById('debug').textContent = `❌ Ошибка ${response.status}: ${testUrl}`;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('❌ Ошибка проверки:', error);
-                        document.getElementById('debug').textContent = `❌ Ошибка: ${error.message}`;
-                    });
-            }, 2000);
         })();
     </script>
 </body>
