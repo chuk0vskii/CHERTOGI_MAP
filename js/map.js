@@ -26,16 +26,20 @@
     if (e.key === 'Escape') closeInfo();
   });
 
-  // ===== КАРТА =====
+  // ===== КАРТА (ОДИН УРОВЕНЬ ЗУМА) =====
   const map = new ol.Map({
     target: 'map',
     layers: [
       new ol.layer.Tile({
         source: new ol.source.XYZ({
           tileUrlFunction: function(tileCoord) {
+            const z = tileCoord[0];
             const x = tileCoord[1];
             const y = tileCoord[2];
-            // Ограничиваем, чтобы не выходить за 18×14
+
+            // === ГЛАВНОЕ: ТОЛЬКО УРОВЕНЬ 0 ===
+            if (z !== 0) return '';
+
             if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
             return `tiles4/tile_${y}_${x}.jpg`;
           },
@@ -48,7 +52,7 @@
       center: [0, 0],
       zoom: 0.5,
       minZoom: 0.1,
-      maxZoom: 2.5
+      maxZoom: 1.5
     })
   });
 
@@ -57,10 +61,8 @@
   });
 
   // ===== МЕТКИ =====
-  // Проверяем, что массив LOCATIONS существует (из locations.js)
   if (typeof LOCATIONS !== 'undefined') {
     LOCATIONS.forEach(function(loc) {
-      // Создаём контейнер метки
       const marker = document.createElement('div');
       marker.className = 'marker';
       marker.style.cssText = `
@@ -73,13 +75,11 @@
         z-index: 10;
       `;
 
-      // Иконка
       const icon = document.createElement('img');
       icon.src = loc.icon || 'https://cdn-icons-png.flaticon.com/512/1828/1828977.png';
       icon.style.cssText = 'width: 40px; height: 40px;';
       marker.appendChild(icon);
 
-      // Подсказка
       const tooltip = document.createElement('span');
       tooltip.className = 'marker-tooltip';
       tooltip.textContent = loc.name;
@@ -101,7 +101,6 @@
       `;
       marker.appendChild(tooltip);
 
-      // Показ подсказки
       marker.addEventListener('mouseenter', function() {
         tooltip.style.opacity = '1';
       });
@@ -109,13 +108,11 @@
         tooltip.style.opacity = '0';
       });
 
-      // Клик по метке
       marker.addEventListener('click', function(e) {
         e.stopPropagation();
         openInfo(loc.name, loc.description);
       });
 
-      // Добавляем метку на карту
       document.getElementById('map').appendChild(marker);
     });
   }
