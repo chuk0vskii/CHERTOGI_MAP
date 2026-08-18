@@ -26,7 +26,11 @@
     if (e.key === 'Escape') closeInfo();
   });
 
-  // ===== КАРТА =====
+  // ===== РАЗМЕРЫ КАРТЫ =====
+  const IMG_W = 9189;
+  const IMG_H = 7026;
+
+  // ===== КАРТА С ПРАВИЛЬНЫМ ЭКСТЕНТОМ =====
   const map = new ol.Map({
     target: 'map',
     layers: [
@@ -36,9 +40,10 @@
             const x = tileCoord[1];
             const y = tileCoord[2];
 
+            // === 18 СТОЛБЦОВ (0-17), 14 РЯДОВ (0-13) ===
+            // Нумерация столбцов с 1
             if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
 
-            // === НУМЕРАЦИЯ СТОЛБЦОВ С 1 ===
             const col = x + 1;
             return `tiles4/tile_${y}_${col}.jpg`;
           },
@@ -48,15 +53,28 @@
       })
     ],
     view: new ol.View({
-  center: [0, 0],
-  zoom: 0.3,
-  minZoom: 0.05,
-  maxZoom: 3.0
-})
+      center: [0, 0],
+      zoom: 0.5,
+      minZoom: 0.05,
+      maxZoom: 2.5,
+      // === ГЛАВНОЕ: ГРАНИЦЫ КАРТЫ ===
+      extent: [-IMG_W/2, -IMG_H/2, IMG_W/2, IMG_H/2]
+    })
+  });
+
+  // === АВТОМАТИЧЕСКИЙ ЗУМ, ЧТОБЫ КАРТА ВЛЕЗЛА В ЭКРАН ===
+  map.getView().fit([-IMG_W/2, -IMG_H/2, IMG_W/2, IMG_H/2], {
+    padding: [10, 10, 10, 10],
+    maxZoom: 2.5
   });
 
   window.addEventListener('resize', function() {
     map.updateSize();
+    // Пересчитываем зум при изменении размера окна
+    map.getView().fit([-IMG_W/2, -IMG_H/2, IMG_W/2, IMG_H/2], {
+      padding: [10, 10, 10, 10],
+      maxZoom: 2.5
+    });
   });
 
   // ===== МЕТКИ =====
