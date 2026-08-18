@@ -89,6 +89,22 @@
         img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       }
 
+      // ===== ОГРАНИЧЕНИЯ (НЕ ДАЁМ УЕХАТЬ ЗА КРАЯ) =====
+      function constrain() {
+        const rect = wrapper.getBoundingClientRect();
+        const imgW = IMG_W * scale;
+        const imgH = IMG_H * scale;
+
+        // Минимальное и максимальное смещение
+        const minX = rect.width - imgW;
+        const maxX = 0;
+        const minY = rect.height - imgH;
+        const maxY = 0;
+
+        tx = Math.min(Math.max(tx, minX), maxX);
+        ty = Math.min(Math.max(ty, minY), maxY);
+      }
+
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
@@ -100,7 +116,7 @@
         update();
       }
 
-      // ===== ЗУМ (ТОЧНО КАК В ТЕСТЕ) =====
+      // ===== ЗУМ =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -121,6 +137,7 @@
         tx = mouseX - px * scale;
         ty = mouseY - py * scale;
 
+        constrain(); // ← НЕ ДАЁМ УЕХАТЬ ЗА КРАЯ
         update();
       }, { passive: false });
 
@@ -142,6 +159,7 @@
         if (!isDragging) return;
         tx = startTx + (e.clientX - startX);
         ty = startTy + (e.clientY - startY);
+        constrain();
         update();
       });
 
