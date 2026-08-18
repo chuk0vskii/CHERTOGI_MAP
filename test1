@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Тест тайлов</title></head>
+<body>
+  <h1>Проверка тайлов</h1>
+  <img src="tiles2/tile_01.jpg" alt="тайл 1" style="width:256px;height:256px;" />
+  <img src="tiles2/tile_02.jpg" alt="тайл 2" style="width:256px;height:256px;" />
+  <img src="tiles2/tile_18.jpg" alt="тайл 18" style="width:256px;height:256px;" />
+</body>
+</html>
