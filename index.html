@@ -92,7 +92,6 @@
 
       const COLS = 18;
       const ROWS = 14;
-      let tileSize = 0;
 
       // ===== ЗАГРУЗКА ТАЙЛОВ =====
       for (let row = 0; row < ROWS; row++) {
@@ -105,13 +104,14 @@
       }
 
       // ===== РАЗМЕР ТАЙЛОВ =====
+      let tileSize = 0;
+
       function fitTiles(scaleFactor) {
         const rect = wrapper.getBoundingClientRect();
         const baseTileW = Math.floor(rect.width / COLS);
         const baseTileH = Math.floor(rect.height / ROWS);
         const baseSize = Math.min(baseTileW, baseTileH);
 
-        // Применяем масштаб к размеру тайлов
         tileSize = Math.floor(baseSize * scaleFactor);
 
         const images = grid.querySelectorAll('img');
@@ -124,8 +124,6 @@
         const gridH = tileSize * ROWS;
         grid.style.width = gridW + 'px';
         grid.style.height = gridH + 'px';
-
-        centerMap(tileSize);
       }
 
       // ===== СОСТОЯНИЕ =====
@@ -141,21 +139,26 @@
         grid.style.transform = transform;
       }
 
-      function centerMap(currentTileSize) {
+      function centerMap() {
         const rect = wrapper.getBoundingClientRect();
-        const gridW = currentTileSize * COLS;
-        const gridH = currentTileSize * ROWS;
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
         const sx = rect.width / gridW;
         const sy = rect.height / gridH;
         minScale = Math.min(sx, sy);
-        tx = (rect.width - gridW * minScale) / 2;
-        ty = (rect.height - gridH * minScale) / 2;
+        scale = minScale;
+        tx = (rect.width - gridW * scale) / 2;
+        ty = (rect.height - gridH * scale) / 2;
         updateTransform();
       }
 
-      // ===== ЗУМ =====
+      // ===== ЗУМ ПОД КУРСОРОМ =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
+
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
@@ -163,9 +166,29 @@
 
         if (newScale === scale) return;
 
+        // Точка под курсором в координатах карты (до зума)
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
+
+        // Применяем новый масштаб
         scale = newScale;
+
+        // Меняем размер тайлов
         fitTiles(scale);
-        centerMap(tileSize);
+
+        // Пересчитываем смещение, чтобы точка под курсором осталась на месте
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        tx = mouseX - px * gridW;
+        ty = mouseY - py * gridH;
+
+        // Ограничения
+        const maxX = rect.width - gridW;
+        const maxY = rect.height - gridH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+
+        updateTransform();
       }, { passive: false });
 
       // ===== ПЕРЕТАСКИВАНИЕ =====
@@ -186,6 +209,12 @@
         if (!isDragging) return;
         tx = startTx + (e.clientX - startX);
         ty = startTy + (e.clientY - startY);
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const maxX = wrapper.getBoundingClientRect().width - gridW;
+        const maxY = wrapper.getBoundingClientRect().height - gridH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
         updateTransform();
       });
 
@@ -198,10 +227,11 @@
 
       // ===== ЗАПУСК =====
       fitTiles(1);
+      centerMap();
 
       window.addEventListener('resize', function() {
         fitTiles(scale);
-        centerMap(tileSize);
+        centerMap();
       });
 
     })();
