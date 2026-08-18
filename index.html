@@ -4,18 +4,21 @@
   <meta charset="UTF-8">
   <title>Тайлы</title>
   <style>
-    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .grid {
       display: grid;
       grid-template-columns: repeat(18, 1fr);
+      grid-template-rows: repeat(14, 1fr);
       gap: 0;
-      width: 100%;
-      max-width: 100%;
+      width: 98vw;
+      max-width: 1400px;
+      aspect-ratio: 18 / 14;
     }
     .grid img {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
       border: none;
       margin: 0;
       padding: 0;
