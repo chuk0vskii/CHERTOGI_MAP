@@ -103,16 +103,14 @@
         }
       }
 
-      // ===== РАЗМЕР ТАЙЛОВ =====
+      // ===== ФИКСИРОВАННЫЙ РАЗМЕР ТАЙЛОВ =====
       let tileSize = 0;
 
-      function fitTiles(scaleFactor) {
+      function fitTiles() {
         const rect = wrapper.getBoundingClientRect();
-        const baseTileW = Math.floor(rect.width / COLS);
-        const baseTileH = Math.floor(rect.height / ROWS);
-        const baseSize = Math.min(baseTileW, baseTileH);
-
-        tileSize = Math.floor(baseSize * scaleFactor);
+        const tileW = Math.floor(rect.width / COLS);
+        const tileH = Math.floor(rect.height / ROWS);
+        tileSize = Math.min(tileW, tileH);
 
         const images = grid.querySelectorAll('img');
         images.forEach(img => {
@@ -135,7 +133,7 @@
       const STEP = 0.08;
 
       function updateTransform() {
-        const transform = `translate(${tx}px, ${ty}px)`;
+        const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
         grid.style.transform = transform;
       }
 
@@ -152,7 +150,7 @@
         updateTransform();
       }
 
-      // ===== ЗУМ ОТ ЦЕНТРА (БЕЗ СМЕЩЕНИЙ) =====
+      // ===== ЗУМ ОТ ЦЕНТРА =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
 
@@ -163,7 +161,6 @@
         if (newScale === scale) return;
 
         scale = newScale;
-        fitTiles(scale);
         centerMap();
       }, { passive: false });
 
@@ -187,8 +184,8 @@
         ty = startTy + (e.clientY - startY);
         const gridW = tileSize * COLS;
         const gridH = tileSize * ROWS;
-        const maxX = wrapper.getBoundingClientRect().width - gridW;
-        const maxY = wrapper.getBoundingClientRect().height - gridH;
+        const maxX = wrapper.getBoundingClientRect().width - gridW * scale;
+        const maxY = wrapper.getBoundingClientRect().height - gridH * scale;
         tx = Math.min(Math.max(tx, maxX), 0);
         ty = Math.min(Math.max(ty, maxY), 0);
         updateTransform();
@@ -202,11 +199,11 @@
       });
 
       // ===== ЗАПУСК =====
-      fitTiles(1);
+      fitTiles();
       centerMap();
 
       window.addEventListener('resize', function() {
-        fitTiles(scale);
+        fitTiles();
         centerMap();
       });
 
