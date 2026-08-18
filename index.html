@@ -1,185 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Огненные чертоги</title>
-  <style>
-    body { margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; background: #1a1a2e; }
-
-    .top-banner {
-      position: fixed; top: 0; left: 0; width: 100%; height: 70px;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-      border-bottom: 2px solid rgba(255,215,0,0.2);
-      display: flex; align-items: center; justify-content: space-between;
-      z-index: 100; padding: 0 30px;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-      user-select: none;
-    }
-    .top-banner .title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 28px; color: #ffd700;
-      text-shadow: 0 0 20px rgba(255,215,0,0.3);
-      letter-spacing: 4px; font-weight: normal;
-    }
-    .top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
-    .top-banner .nav-links a {
-      color: rgba(255,255,255,0.5); text-decoration: none;
-      font-size: 14px; letter-spacing: 1px;
-      transition: all 0.3s ease; padding: 6px 0;
-      border-bottom: 2px solid transparent;
-    }
-    .top-banner .nav-links a:hover { color: #ffd700; }
-    .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
-
-    .wrapper {
-      flex: 1;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-      cursor: grab;
-      padding-top: 70px;
-      background: #1a1a2e;
-    }
-    .wrapper:active { cursor: grabbing; }
-    .wrapper img {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      transform-origin: 0 0;
-      will-change: transform;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Интерактивная карта</title>
+    <!-- Подключаем OpenLayers -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1a1a1a;
+            font-family: sans-serif;
+        }
+        #map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #2b2b2b;
+        }
+        .ol-viewport {
+            cursor: grab;
+        }
+        .ol-viewport:active {
+            cursor: grabbing;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #eee;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 14px;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+        }
+        #coords {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #aaa;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            pointer-events: none;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.08);
+            z-index: 1000;
+            font-family: monospace;
+        }
+        #debug {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            font-family: monospace;
+            z-index: 1000;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
+    <div id="map-container"></div>
+    <div id="info">🗺️ Интерактивная карта • 18×14 тайлов</div>
+    <div id="coords">зум: 1.00x</div>
+    <div id="debug">📁 tiles4/</div>
 
-  <div class="top-banner">
-    <span class="title">Огненные чертоги</span>
-    <div class="nav-links">
-      <a href="index.html" class="active">Карта</a>
-      <a href="znaki.html">Знаки</a>
-      <a href="put.html">Путь</a>
-    </div>
-  </div>
+    <script>
+        (function() {
+            // ----- ПАРАМЕТРЫ КАРТЫ -----
+            const COLS = 18;          // столбцы 1..18
+            const ROWS = 14;          // ряды 0..13
+            const TILE_SIZE = 256;
+            
+            // ПУТЬ К ТАЙЛАМ: папка tiles4 в корне репозитория
+            function getTileUrl(row, col) {
+                // row: 0..13, col: 1..18
+                return `tiles4/tile_${row}_${col}.jpg`;
+            }
 
-  <div class="wrapper" id="wrapper">
-    <img id="mapImage" src="https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles2/mapchertogi1.jpeg" alt="Карта">
-  </div>
+            // ----- ЭКСТЕНТ КАРТЫ -----
+            const EXTENT = [0, 0, COLS * TILE_SIZE, ROWS * TILE_SIZE];
+            
+            // Проекция
+            const projection = new ol.proj.Projection({
+                code: 'pixel',
+                units: 'pixels',
+                extent: EXTENT
+            });
 
-  <script>
-    (function() {
-      const img = document.getElementById('mapImage');
-      const wrapper = document.getElementById('wrapper');
+            // ----- ИСТОЧНИК ТАЙЛОВ -----
+            const tileSource = new ol.source.TileImage({
+                projection: projection,
+                tileGrid: new ol.tilegrid.TileGrid({
+                    extent: EXTENT,
+                    resolutions: [1],
+                    tileSize: TILE_SIZE,
+                    origin: [0, 0]
+                }),
+                tileUrlFunction: function(tileCoord) {
+                    const z = tileCoord[0];
+                    const x = tileCoord[1];
+                    const y = tileCoord[2];
+                    
+                    if (z !== 0) return undefined;
+                    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return undefined;
+                    
+                    const col = x + 1;
+                    const row = y;
+                    
+                    return getTileUrl(row, col);
+                },
+                transition: 0
+            });
 
-      const IMG_W = 9189;
-      const IMG_H = 7026;
+            // ----- СЛОЙ КАРТЫ -----
+            const tileLayer = new ol.layer.Tile({
+                source: tileSource,
+                renderMode: 'hybrid'
+            });
 
-      let scale = 1;
-      let tx = 0;
-      let ty = 0;
-      let minScale = 1;
-      const MAX_SCALE = 2.0;
-      const STEP = 0.08;
+            // ----- КАРТА -----
+            const map = new ol.Map({
+                target: 'map-container',
+                layers: [tileLayer],
+                view: new ol.View({
+                    projection: projection,
+                    center: [EXTENT[2] / 2, EXTENT[3] / 2],
+                    zoom: 0,
+                    minZoom: 0,
+                    maxZoom: 3,
+                    extent: EXTENT,
+                    constrainOnlyCenter: false,
+                    smoothExtentConstraint: true
+                }),
+                controls: [],
+                interactions: ol.interaction.defaults({
+                    dragPan: true,
+                    mouseWheelZoom: true,
+                    pinchRotate: false,
+                    pinchZoom: true,
+                    keyboard: false,
+                    doubleClickZoom: true,
+                    select: false,
+                    dragZoom: false,
+                    shiftDragZoom: false
+                })
+            });
 
-      function update() {
-        img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-      }
+            // ----- ЗУМ ОТНОСИТЕЛЬНО КУРСОРА -----
+            const interactions = map.getInteractions();
+            interactions.forEach(function(interaction) {
+                if (interaction instanceof ol.interaction.MouseWheelZoom) {
+                    interaction.setMouseAnchor('cursor');
+                }
+            });
 
-      // ===== ОГРАНИЧЕНИЯ (НЕ ДАЁМ УЕХАТЬ ЗА КРАЯ) =====
-      function constrain() {
-        const rect = wrapper.getBoundingClientRect();
-        const imgW = IMG_W * scale;
-        const imgH = IMG_H * scale;
+            // ----- ОТОБРАЖЕНИЕ ЗУМА -----
+            const coordsEl = document.getElementById('coords');
+            map.getView().on('change:resolution', function() {
+                const view = map.getView();
+                const zoom = view.getZoom();
+                coordsEl.textContent = `зум: ${zoom.toFixed(2)}x`;
+            });
 
-        const minX = rect.width - imgW;
-        const maxX = 0;
-        const minY = rect.height - imgH;
-        const maxY = 0;
+            // ----- ЦЕНТРИРОВАНИЕ -----
+            const view = map.getView();
+            view.fit(EXTENT, {
+                padding: [10, 10, 10, 10],
+                nearest: true,
+                minResolution: 1,
+                maxZoom: 0
+            });
+            view.setZoom(0);
+            view.setCenter([EXTENT[2] / 2, EXTENT[3] / 2]);
 
-        tx = Math.min(Math.max(tx, minX), maxX);
-        ty = Math.min(Math.max(ty, minY), maxY);
-      }
-
-      function center() {
-        const rect = wrapper.getBoundingClientRect();
-        const sx = rect.width / IMG_W;
-        const sy = rect.height / IMG_H;
-        minScale = Math.min(sx, sy);
-        scale = minScale;
-        tx = (rect.width - IMG_W * scale) / 2;
-        ty = (rect.height - IMG_H * scale) / 2;
-        update();
-      }
-
-      wrapper.addEventListener('wheel', function(e) {
-        e.preventDefault();
-
-        const rect = wrapper.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        const delta = e.deltaY > 0 ? -STEP : STEP;
-        let newScale = scale + delta;
-        newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
-
-        if (newScale === scale) return;
-
-        // Точка под курсором в системе координат карты (до зума)
-        const px = (mouseX - tx) / scale;
-        const py = (mouseY - ty) / scale;
-
-        scale = newScale;
-
-        // Новое смещение, чтобы точка под курсором осталась на месте
-        tx = mouseX - px * scale;
-        ty = mouseY - py * scale;
-
-        // === ОГРАНИЧИВАЕМ, НО НЕ ДЁРГАЕМ ===
-        constrain();
-        update();
-      }, { passive: false });
-
-      let isDragging = false;
-      let startX, startY, startTx, startTy;
-
-      wrapper.addEventListener('mousedown', function(e) {
-        if (e.button !== 0) return;
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startTx = tx;
-        startTy = ty;
-        wrapper.style.cursor = 'grabbing';
-      });
-
-      document.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
-        tx = startTx + (e.clientX - startX);
-        ty = startTy + (e.clientY - startY);
-        constrain();
-        update();
-      });
-
-      document.addEventListener('mouseup', function() {
-        if (isDragging) {
-          isDragging = false;
-          wrapper.style.cursor = 'grab';
-        }
-      });
-
-      if (img.complete) {
-        center();
-      } else {
-        img.addEventListener('load', center);
-      }
-      window.addEventListener('resize', center);
-
-    })();
-  </script>
-
+            console.log('✅ Карта инициализирована');
+            console.log(`📐 Тайлы: ${COLS}×${ROWS} = ${COLS * ROWS} шт.`);
+            console.log(`📁 Путь: tiles4/tile_0_1.jpg ... tile_13_18.jpg`);
+            console.log(`🔗 Пример URL: ${getTileUrl(0, 1)}`);
+        })();
+    </script>
 </body>
 </html>
