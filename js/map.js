@@ -26,7 +26,7 @@
     if (e.key === 'Escape') closeInfo();
   });
 
-  // ===== КАРТА (14 × 18) =====
+  // ===== КАРТА =====
   const map = new ol.Map({
     target: 'map',
     layers: [
@@ -36,10 +36,11 @@
             const x = tileCoord[1];
             const y = tileCoord[2];
 
-            // === 18 СТОЛБЦОВ (0-17), 14 РЯДОВ (0-13) ===
             if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
 
-            return `tiles4/tile_${y}_${x}.jpg`;
+            // === НУМЕРАЦИЯ СТОЛБЦОВ С 1 ===
+            const col = x + 1;
+            return `tiles4/tile_${y}_${col}.jpg`;
           },
           tileSize: 512,
           crossOrigin: 'anonymous'
