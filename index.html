@@ -35,12 +35,16 @@
 
     .wrapper {
       flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-top: 70px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
       background: #1a1a2e;
+      cursor: grab;
+      padding-top: 70px;
     }
+    .wrapper:active { cursor: grabbing; }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(18, 1fr);
@@ -48,8 +52,9 @@
       gap: 0;
       width: fit-content;
       height: fit-content;
-      max-width: 98vw;
-      max-height: 92vh;
+      transform-origin: 0 0;
+      will-change: transform;
+      background: #1a1a2e;
     }
     .grid img {
       display: block;
@@ -75,52 +80,146 @@
     </div>
   </div>
 
-  <div class="wrapper">
+  <div class="wrapper" id="wrapper">
     <div class="grid" id="grid"></div>
   </div>
 
   <script>
     (function() {
       const grid = document.getElementById('grid');
-      const wrapper = document.querySelector('.wrapper');
+      const wrapper = document.getElementById('wrapper');
 
-      // === РАЗМЕРЫ ===
       const COLS = 18;
       const ROWS = 14;
 
-      // === ЗАГРУЗКА ТАЙЛОВ ===
-      function loadTiles() {
-        grid.innerHTML = '';
-        for (let row = 0; row < ROWS; row++) {
-          for (let col = 1; col <= COLS; col++) {
-            const img = document.createElement('img');
-            img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles4/tile_${row}_${col}.jpg`;
-            img.alt = `tile_${row}_${col}`;
-            grid.appendChild(img);
-          }
+      // ===== ЗАГРУЗКА ТАЙЛОВ =====
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 1; col <= COLS; col++) {
+          const img = document.createElement('img');
+          img.src = `https://raw.githubusercontent.com/chuk0vskii/CHERTOGI_MAP/main/tiles4/tile_${row}_${col}.jpg`;
+          img.alt = `tile_${row}_${col}`;
+          grid.appendChild(img);
         }
       }
 
-      // === РАЗМЕР ТАЙЛОВ ПОД ЭКРАН ===
+      // ===== РАЗМЕР ТАЙЛОВ =====
+      let tileSize = 0;
+
       function fitTiles() {
         const rect = wrapper.getBoundingClientRect();
         const tileW = Math.floor(rect.width / COLS);
         const tileH = Math.floor(rect.height / ROWS);
-        const tileSize = Math.min(tileW, tileH);
+        tileSize = Math.min(tileW, tileH);
 
         const images = grid.querySelectorAll('img');
         images.forEach(img => {
           img.style.width = tileSize + 'px';
           img.style.height = tileSize + 'px';
         });
+
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        grid.style.width = gridW + 'px';
+        grid.style.height = gridH + 'px';
+
+        centerMap();
       }
 
-      loadTiles();
+      // ===== СОСТОЯНИЕ =====
+      let scale = 1;
+      let tx = 0;
+      let ty = 0;
+      let minScale = 1;
+      const MAX_SCALE = 2.0;
+      const STEP = 0.08;
+
+      function updateTransform() {
+        const transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        grid.style.transform = transform;
+      }
+
+      function centerMap() {
+        const rect = wrapper.getBoundingClientRect();
+        const gridW = tileSize * COLS;
+        const gridH = tileSize * ROWS;
+        const sx = rect.width / gridW;
+        const sy = rect.height / gridH;
+        minScale = Math.min(sx, sy);
+        scale = minScale;
+        tx = (rect.width - gridW * scale) / 2;
+        ty = (rect.height - gridH * scale) / 2;
+        updateTransform();
+      }
+
+      // ===== ЗУМ =====
+      wrapper.addEventListener('wheel', function(e) {
+        e.preventDefault();
+
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const delta = e.deltaY > 0 ? -STEP : STEP;
+        let newScale = scale + delta;
+        newScale = Math.min(Math.max(newScale, minScale), MAX_SCALE);
+
+        if (newScale === scale) return;
+
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
+
+        const newW = tileSize * COLS * newScale;
+        const newH = tileSize * ROWS * newScale;
+
+        tx = mouseX - px * newW;
+        ty = mouseY - py * newH;
+
+        const maxX = rect.width - newW;
+        const maxY = rect.height - newH;
+        tx = Math.min(Math.max(tx, maxX), 0);
+        ty = Math.min(Math.max(ty, maxY), 0);
+
+        scale = newScale;
+        updateTransform();
+      }, { passive: false });
+
+      // ===== ПЕРЕТАСКИВАНИЕ =====
+      let isDragging = false;
+      let startX, startY, startTx, startTy;
+
+      wrapper.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startTx = tx;
+        startTy = ty;
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        tx = startTx + (e.clientX - startX);
+        ty = startTy + (e.clientY - startY);
+        updateTransform();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          wrapper.style.cursor = 'grab';
+        }
+      });
+
+      // ===== ЗАПУСК =====
       fitTiles();
 
       window.addEventListener('resize', function() {
         fitTiles();
+        centerMap();
       });
+
+      setTimeout(centerMap, 500);
 
     })();
   </script>
