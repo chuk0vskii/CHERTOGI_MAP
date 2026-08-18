@@ -89,6 +89,21 @@
         img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       }
 
+      // ===== ОГРАНИЧЕНИЯ (НЕ ДАЁМ УЕХАТЬ ЗА КРАЯ) =====
+      function constrain() {
+        const rect = wrapper.getBoundingClientRect();
+        const imgW = IMG_W * scale;
+        const imgH = IMG_H * scale;
+
+        const minX = rect.width - imgW;
+        const maxX = 0;
+        const minY = rect.height - imgH;
+        const maxY = 0;
+
+        tx = Math.min(Math.max(tx, minX), maxX);
+        ty = Math.min(Math.max(ty, minY), maxY);
+      }
+
       function center() {
         const rect = wrapper.getBoundingClientRect();
         const sx = rect.width / IMG_W;
@@ -100,9 +115,12 @@
         update();
       }
 
-      // ===== ЗУМ (ЦЕНТРИРУЕМ КАЖДЫЙ РАЗ) =====
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
+
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
         const delta = e.deltaY > 0 ? -STEP : STEP;
         let newScale = scale + delta;
@@ -110,11 +128,21 @@
 
         if (newScale === scale) return;
 
+        // Точка под курсором в системе координат карты (до зума)
+        const px = (mouseX - tx) / scale;
+        const py = (mouseY - ty) / scale;
+
         scale = newScale;
-        center(); // ← ПРОСТО ПЕРЕСЧИТЫВАЕМ ЦЕНТР
+
+        // Новое смещение, чтобы точка под курсором осталась на месте
+        tx = mouseX - px * scale;
+        ty = mouseY - py * scale;
+
+        // === ОГРАНИЧИВАЕМ, НО НЕ ДЁРГАЕМ ===
+        constrain();
+        update();
       }, { passive: false });
 
-      // ===== ПЕРЕТАСКИВАНИЕ =====
       let isDragging = false;
       let startX, startY, startTx, startTy;
 
@@ -132,6 +160,7 @@
         if (!isDragging) return;
         tx = startTx + (e.clientX - startX);
         ty = startTy + (e.clientY - startY);
+        constrain();
         update();
       });
 
@@ -142,7 +171,6 @@
         }
       });
 
-      // ===== ЗАПУСК =====
       if (img.complete) {
         center();
       } else {
