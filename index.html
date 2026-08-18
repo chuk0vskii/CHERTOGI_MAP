@@ -2,15 +2,30 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Карта 18×14</title>
+  <title>18 на 14</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css" />
   <style>
     * { margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; }
     #map { width: 100%; height: 100%; background: #1a1a1a; }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      z-index: 1000;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
+  <div id="info">18 × 14</div>
   <div id="map"></div>
 
   <script type="importmap">
@@ -28,25 +43,31 @@
     import { get as getProjection } from 'ol/proj';
     import { createXYZ } from 'ol/tilegrid';
 
-    // ===== КОНФИГУРАЦИЯ =====
-    const COLS = 18;              // тайлов по горизонтали
-    const ROWS = 14;              // тайлов по вертикали
-    const TILE_PATH = 'tiles2/';  // папка с тайлами (относительно index.html)
-    const TILE_EXT = '.jpg';      // расширение файлов
+    // ===== НАСТРОЙКИ =====
+    const COLS = 18;
+    const ROWS = 14;
+    const TILE_EXT = '.jpg';
+
+    // ===== ПРАВИЛЬНЫЙ ПУТЬ ДЛЯ GITHUB PAGES =====
+    // Берёт имя репозитория из URL
+    const repoName = window.location.pathname.split('/')[1] || '';
+    const TILE_PATH = repoName ? `/${repoName}/tiles2/` : '/tiles2/';
+
+    console.log('🔍 Тайлы ищутся по адресу:', TILE_PATH);
 
     // ===== КАСТОМНЫЙ ИСТОЧНИК =====
     class FlatTileSource extends TileImage {
       constructor(options) {
         super({
           projection: getProjection('EPSG:3857'),
-          tileGrid: createXYZ({ 
-            minZoom: 6, 
+          tileGrid: createXYZ({
+            minZoom: 6,
             maxZoom: 6,
             tileSize: 256
           }),
           transition: 0,
         });
-        this.baseUrl = options.url || 'tiles2/';
+        this.baseUrl = options.url || TILE_PATH;
       }
 
       getTileUrl(tileCoord) {
@@ -54,28 +75,24 @@
         const x = tileCoord[1];
         const y = tileCoord[2];
 
-        // Работаем только на 6-м зуме
         if (z !== 6) return undefined;
-
-        // Проверяем, что тайл в пределах нашей сетки
         if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return undefined;
 
-        // Плоский номер: 1..252 (с ведущим нулём для 01..09)
         const index = y * COLS + x + 1;
         const paddedIndex = String(index).padStart(2, '0');
 
-        return `${this.baseUrl}tile_${paddedIndex}${TILE_EXT}`;
+        const url = `${this.baseUrl}tile_${paddedIndex}${TILE_EXT}`;
+        console.log('📦 Запрос тайла:', url);
+        return url;
       }
     }
 
-    // ===== СОЗДАЁМ КАРТУ =====
+    // ===== КАРТА =====
     const map = new Map({
       target: 'map',
       layers: [
         new TileLayer({
-          source: new FlatTileSource({
-            url: TILE_PATH,
-          }),
+          source: new FlatTileSource(),
         }),
       ],
       view: new View({
@@ -86,11 +103,7 @@
       }),
     });
 
-    // ===== ОТЛАДКА =====
-    console.log('Сетка: 18×14 = 252 тайла');
-    console.log('Файлы ищутся по пути:', TILE_PATH);
-    console.log('Пример: tile_01.jpg →', TILE_PATH + 'tile_01.jpg');
-    console.log('Открой Network в F12, чтобы увидеть запросы');
+    console.log('✅ Карта создана. Сетка 18×14 = 252 тайла');
   </script>
 </body>
 </html>
