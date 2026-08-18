@@ -1,70 +1,378 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Огненные чертоги</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
-  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #1a1a2e; overflow: hidden; height: 100vh; }
-    #map { width: 100vw; height: 100vh; background: #1a1a2e; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Интерактивная карта CHERTOGI</title>
+    
+    <!-- OpenLayers -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.2.4/ol.css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v9.2.4/dist/ol.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1a1a1a;
+            font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        #map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #2b2b2b;
+        }
+        
+        /* Курсоры для перетаскивания */
+        .ol-viewport {
+            cursor: grab;
+        }
+        .ol-viewport:active {
+            cursor: grabbing;
+        }
+        
+        /* Информационная панель сверху */
+        #top-bar {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            pointer-events: none;
+            color: #ddd;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        
+        #top-bar span {
+            opacity: 0.6;
+        }
+        
+        #top-bar strong {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        /* Информация внизу */
+        #bottom-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            font-family: monospace;
+        }
+        
+        #zoom-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            font-family: monospace;
+        }
+        
+        /* Кнопка сброса вида */
+        #reset-view {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+            pointer-events: all;
+        }
+        
+        #reset-view:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+        
+        /* Индикатор загрузки */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            font-family: monospace;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+    </style>
 </head>
 <body>
-  <div id="map"></div>
-  <script>
-    (function() {
-      'use strict';
+    <div id="map-container">
+        <!-- Индикатор загрузки -->
+        <div id="loading">⏳ Загрузка карты...</div>
+        
+        <!-- Верхняя панель -->
+        <div id="top-bar">
+            <strong>🗺️ CHERTOGI</strong>
+            <span>•</span>
+            <span>18 × 14 тайлов</span>
+            <span>•</span>
+            <span>🖱️ Перетаскивание</span>
+            <span>•</span>
+            <span>🔄 Зум колёсиком</span>
+        </div>
+        
+        <!-- Нижняя информация -->
+        <div id="bottom-info">📁 tiles4/</div>
+        <div id="zoom-info">🔍 1.00×</div>
+        
+        <!-- Кнопка сброса -->
+        <button id="reset-view" title="Сбросить вид">⟲</button>
+    </div>
 
-      const IMG_W = 9189;
-      const IMG_H = 7026;
-      const COLS = 18;
-      const ROWS = 14;
-      const TILE_SIZE = 512;
-      const EXTENT = [0, 0, IMG_W, IMG_H];
-
-      const map = new ol.Map({
-        target: 'map',
-        layers: [
-          new ol.layer.Tile({
-            source: new ol.source.XYZ({
-              tileUrlFunction: function(tileCoord) {
-                const x = tileCoord[1];
-                const y = tileCoord[2];
-                if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return '';
-                const col = x + 1;
-                return `tiles4/tile_${y}_${col}.jpg`;
-              },
-              tileSize: TILE_SIZE,
-              crossOrigin: 'anonymous'
-            })
-          })
-        ],
-        view: new ol.View({
-          center: [IMG_W / 2, IMG_H / 2],
-          zoom: 0.5,
-          minZoom: 0.1,
-          maxZoom: 2.5,
-          extent: EXTENT
-        })
-      });
-
-      // === АВТОМАТИЧЕСКИЙ ЗУМ, ЧТОБЫ КАРТА ВЛЕЗЛА В ЭКРАН ===
-      map.getView().fit(EXTENT, {
-        padding: [10, 10, 10, 10],
-        maxZoom: 2.5
-      });
-
-      window.addEventListener('resize', function() {
-        map.updateSize();
-        map.getView().fit(EXTENT, {
-          padding: [10, 10, 10, 10],
-          maxZoom: 2.5
-        });
-      });
-
-    })();
-  </script>
+    <script>
+        (function() {
+            'use strict';
+            
+            console.log('🚀 CHERTOGI MAP — инициализация...');
+            
+            // ----- ПАРАМЕТРЫ КАРТЫ -----
+            const COLS = 18;
+            const ROWS = 14;
+            const TILE_SIZE = 256;
+            
+            const WIDTH = COLS * TILE_SIZE;   // 4608 px
+            const HEIGHT = ROWS * TILE_SIZE;  // 3584 px
+            
+            console.log(`📐 Размер карты: ${WIDTH}×${HEIGHT} пикселей`);
+            console.log(`🖼️ Всего тайлов: ${COLS * ROWS}`);
+            
+            // ----- ФУНКЦИЯ ФОРМИРОВАНИЯ URL ТАЙЛА -----
+            function getTileUrl(row, col) {
+                // row: 0..13, col: 1..18
+                return `tiles4/tile_${row}_${col}.jpg`;
+            }
+            
+            // ----- ЭКСТЕНТ КАРТЫ -----
+            const extent = [0, 0, WIDTH, HEIGHT];
+            
+            // ----- ПРОЕКЦИЯ (пиксельная) -----
+            const projection = new ol.proj.Projection({
+                code: 'PIXELS',
+                units: 'pixels',
+                extent: extent
+            });
+            
+            // ----- TILE GRID (один уровень зума) -----
+            const tileGrid = new ol.tilegrid.TileGrid({
+                extent: extent,
+                origin: [0, 0],
+                resolutions: [1],
+                tileSize: TILE_SIZE
+            });
+            
+            // ----- ИСТОЧНИК ТАЙЛОВ -----
+            const tileSource = new ol.source.TileImage({
+                projection: projection,
+                tileGrid: tileGrid,
+                tileUrlFunction: function(tileCoord) {
+                    const z = tileCoord[0];
+                    const x = tileCoord[1];
+                    const y = tileCoord[2];
+                    
+                    // Только z=0
+                    if (z !== 0) return undefined;
+                    
+                    // Проверка границ
+                    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return undefined;
+                    
+                    // Преобразование: col = x + 1, row = y
+                    const col = x + 1;
+                    const row = y;
+                    
+                    return getTileUrl(row, col);
+                },
+                crossOrigin: 'anonymous',
+                transition: 0
+            });
+            
+            // ----- СЛОЙ КАРТЫ -----
+            const tileLayer = new ol.layer.Tile({
+                source: tileSource,
+                renderMode: 'hybrid'  // более чёткое масштабирование
+            });
+            
+            // ----- ВЬЮХА -----
+            const view = new ol.View({
+                projection: projection,
+                center: [WIDTH / 2, HEIGHT / 2],
+                zoom: 0,
+                minZoom: 0,
+                maxZoom: 4,
+                extent: extent,
+                constrainOnlyCenter: false,
+                smoothExtentConstraint: true,
+                constrainResolution: true
+            });
+            
+            // ----- КАРТА -----
+            const map = new ol.Map({
+                target: 'map-container',
+                layers: [tileLayer],
+                view: view,
+                controls: [],
+                interactions: ol.interaction.defaults({
+                    dragPan: true,
+                    mouseWheelZoom: true,
+                    pinchRotate: false,
+                    pinchZoom: true,
+                    keyboard: false,
+                    doubleClickZoom: true
+                })
+            });
+            
+            // ----- НАСТРОЙКА ЗУМА ОТНОСИТЕЛЬНО КУРСОРА -----
+            // MouseWheelZoom по умолчанию уже использует курсор как точку зума
+            // Но явно проверим и настроим
+            map.getInteractions().forEach(function(interaction) {
+                if (interaction instanceof ol.interaction.MouseWheelZoom) {
+                    // В новых версиях можно установить anchor
+                    if (typeof interaction.setMouseAnchor === 'function') {
+                        interaction.setMouseAnchor('cursor');
+                    }
+                    console.log('🔄 MouseWheelZoom настроен на зум относительно курсора');
+                }
+            });
+            
+            // ----- ОТОБРАЖЕНИЕ ЗУМА -----
+            const zoomInfo = document.getElementById('zoom-info');
+            view.on('change:resolution', function() {
+                const zoom = view.getZoom();
+                zoomInfo.textContent = `🔍 ${zoom.toFixed(2)}×`;
+            });
+            
+            // ----- КНОПКА СБРОСА ВИДА -----
+            document.getElementById('reset-view').addEventListener('click', function() {
+                view.animate({
+                    center: [WIDTH / 2, HEIGHT / 2],
+                    zoom: 0,
+                    duration: 600
+                });
+            });
+            
+            // ----- СКРЫВАЕМ ИНДИКАТОР ЗАГРУЗКИ -----
+            const loading = document.getElementById('loading');
+            
+            // Ждём, пока загрузится хотя бы один тайл
+            let tilesLoaded = 0;
+            const totalTiles = COLS * ROWS;
+            
+            tileSource.on('tileloadend', function() {
+                tilesLoaded++;
+                if (tilesLoaded >= 10) {  // показываем карту после загрузки 10 тайлов
+                    loading.style.display = 'none';
+                }
+            });
+            
+            // Если через 3 секунды всё ещё грузится — скрываем индикатор
+            setTimeout(function() {
+                loading.style.display = 'none';
+            }, 3000);
+            
+            // ----- ПРОВЕРКА: существует ли папка с тайлами -----
+            // Просто проверяем первый тайл
+            const testUrl = getTileUrl(0, 1);
+            console.log(`🔍 Проверка тайла: ${testUrl}`);
+            
+            fetch(testUrl, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Тайлы доступны!');
+                    } else {
+                        console.warn('⚠️ Тайлы не найдены. Проверьте папку tiles4/');
+                        console.warn(`   Ожидается: ${testUrl}`);
+                    }
+                })
+                .catch(() => {
+                    console.warn('⚠️ Не удалось проверить тайлы. Проверьте папку tiles4/');
+                });
+            
+            // ----- АДАПТАЦИЯ ПОД РАЗМЕР ЭКРАНА -----
+            function fitMap() {
+                const size = map.getSize();
+                if (!size) return;
+                
+                // Вычисляем оптимальный зум, чтобы карта поместилась
+                const ratioX = size[0] / WIDTH;
+                const ratioY = size[1] / HEIGHT;
+                const ratio = Math.min(ratioX, ratioY);
+                
+                // Если карта не помещается, уменьшаем зум
+                if (ratio < 1) {
+                    // Рассчитываем разрешение
+                    const targetResolution = Math.max(WIDTH / size[0], HEIGHT / size[1]);
+                    view.setResolution(targetResolution);
+                } else {
+                    view.setZoom(0);
+                }
+                
+                // Центрируем
+                view.setCenter([WIDTH / 2, HEIGHT / 2]);
+            }
+            
+            // Запускаем адаптацию после загрузки
+            setTimeout(fitMap, 100);
+            
+            // Адаптируемся при изменении размера окна
+            window.addEventListener('resize', fitMap);
+            
+            console.log('✅ Карта инициализирована!');
+            console.log(`📁 Тайлы: tiles4/tile_0_1.jpg ... tile_13_18.jpg`);
+            console.log('🖱️ Перетаскивание: зажать левую кнопку мыши');
+            console.log('🔄 Зум: колёсико мыши (относительно курсора)');
+            console.log('📱 На мобильных: работают жесты');
+            
+        })();
+    </script>
 </body>
 </html>
