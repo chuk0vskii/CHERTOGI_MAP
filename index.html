@@ -39,11 +39,12 @@
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
     #map {
-      flex: 1;
-      width: 100vw;
-      height: 100vh;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: #0d0d1a;
-      padding-top: 70px;
     }
   </style>
   <link rel="stylesheet" href="https://cdn.maptiler.com/ol/v6.12.0/ol.css" type="text/css">
@@ -106,35 +107,24 @@
         })
       });
 
-      // === КАРТА ВЛЕЗАЕТ В ЭКРАН, НЕ ПЕРЕКРЫВАЯ БАНЕР ===
-      function fitMap() {
-        var size = map.getSize();
-        if (!size) return;
-
-        // Высота банера (70px) + небольшой запас
-        var bannerHeight = 80;
-
-        // Сначала подгоняем карту с отступом сверху
+      // Ждём, пока карта отрисуется, и подгоняем с учётом банера
+      setTimeout(function() {
+        map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [bannerHeight, 20, 20, 20],
+          padding: [20, 20, 20, 20],
           maxZoom: 4,
           constrainResolution: true
         });
+      }, 200);
 
-        // Дополнительно смещаем центр вниз на половину высоты банера
-        var currentCenter = map.getView().getCenter();
-        if (currentCenter) {
-          map.getView().setCenter([currentCenter[0], currentCenter[1] - bannerHeight / 2]);
-        }
-      }
-
-      // Вызываем при загрузке
-      setTimeout(fitMap, 100);
-
-      // И при изменении размера окна
+      // При изменении окна — подгоняем заново
       window.addEventListener('resize', function() {
         map.updateSize();
-        fitMap();
+        map.getView().fit(mapExtent, {
+          padding: [20, 20, 20, 20],
+          maxZoom: 4,
+          constrainResolution: true
+        });
       });
 
     })();
