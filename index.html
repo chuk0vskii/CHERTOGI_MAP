@@ -43,7 +43,7 @@
       width: 100vw;
       height: 100vh;
       background: #0d0d1a;
-      padding-top: 70px; /* ← ОТСТУП ПОД БАННЕР */
+      padding-top: 70px;
     }
   </style>
   <link rel="stylesheet" href="https://cdn.maptiler.com/ol/v6.12.0/ol.css" type="text/css">
@@ -106,17 +106,17 @@
         })
       });
 
-      // === УЧИТЫВАЕМ ОТСТУП ПОД БАННЕР ===
+      // === УВЕЛИЧИВАЕМ ОТСТУПЫ, ЧТОБЫ КАРТА ВЛЕЗЛА ===
       map.getView().fit(mapExtent, {
-        padding: [80, 0, 0, 0], // ← ВЕРХНИЙ ОТСТУП 80px (учёт баннера)
-        maxZoom: 5
+        padding: [100, 50, 50, 50], // ← БОЛЬШЕ ОТСТУПОВ
+        maxZoom: 4 // ← ОГРАНИЧИВАЕМ МАКСИМАЛЬНЫЙ ЗУМ ПРИ ЗАГРУЗКЕ
       });
 
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [80, 0, 0, 0],
-          maxZoom: 5
+          padding: [100, 50, 50, 50],
+          maxZoom: 4
         });
       });
 
