@@ -39,7 +39,7 @@
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
     #map {
-      position: absolute;
+      position: fixed;
       top: 70px;
       left: 0;
       right: 0;
@@ -107,22 +107,19 @@
         })
       });
 
-      // Подгоняем карту с отступами, чтобы она влезала под банером
-      setTimeout(function() {
+      // Функция для подгонки карты под размер окна без отступов
+      function fitMap() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [80, 20, 20, 20],
+          padding: [0, 0, 0, 0],
           maxZoom: 4
         });
-      }, 100);
+      }
 
-      window.addEventListener('resize', function() {
-        map.updateSize();
-        map.getView().fit(mapExtent, {
-          padding: [80, 20, 20, 20],
-          maxZoom: 4
-        });
-      });
+      // Запускаем после рендеринга
+      setTimeout(fitMap, 50);
+
+      window.addEventListener('resize', fitMap);
 
     })();
   </script>
