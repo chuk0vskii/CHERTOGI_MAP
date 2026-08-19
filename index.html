@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TILE</title>
+  <title>Огненные чертоги</title>
   <meta charset="utf-8">
   <meta http-equiv="imagetoolbar" content="no"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -66,13 +66,14 @@
 
   <script type="text/javascript">
     (function() {
+      // Расширяем верхнюю границу, чтобы карта могла уезжать вверх
       var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
-var mapMinZoom = 0;
-var mapMaxZoom = 5;
-var mapMaxResolution = 1.00000000;
-var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
-var tileWidth = 512;
-var tileHeight = 512;
+      var mapMinZoom = 0;
+      var mapMaxZoom = 5;
+      var mapMaxResolution = 1.00000000;
+      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+      var tileWidth = 512;
+      var tileHeight = 512;
 
       var mapResolutions = [];
       for (var z = 0; z <= mapMaxZoom; z++) {
@@ -107,21 +108,30 @@ var tileHeight = 512;
         })
       });
 
-      // === КАРТА ЗАГРУЖАЕТСЯ УМЕНЬШЕННОЙ, ЧТОБЫ ВЛЕЗАТЬ ===
+      // === НАСТРОЙКА НАЧАЛЬНОГО ВИДА: КАРТА УМЕНЬШЕНА, ВЛЕЗАЕТ В ЭКРАН ===
       setTimeout(function() {
         map.updateSize();
+
+        // Подгоняем с отступами
         map.getView().fit(mapExtent, {
-          padding: [120, 80, 80, 80], // ← УВЕЛИЧЕННЫЕ ОТСТУПЫ, ЧТОБЫ КАРТА БЫЛА МЕЛЬЧЕ
-          maxZoom: 3.5,               // ← ОГРАНИЧИВАЕМ МАКСИМАЛЬНЫЙ ЗУМ ПРИ ЗАГРУЗКЕ
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
           constrainResolution: true
         });
+
+        // Дополнительно уменьшаем масштаб на 15% (карта становится мельче)
+        var view = map.getView();
+        var res = view.getResolution();
+        view.setResolution(res * 1.15);
+
       }, 200);
 
+      // При изменении размера окна — пересчитываем
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [120, 80, 80, 80],
-          maxZoom: 3.5,
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
           constrainResolution: true
         });
       });
