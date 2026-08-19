@@ -106,16 +106,16 @@
         })
       });
 
-      // === УВЕЛИЧИВАЕМ ОТСТУПЫ, ЧТОБЫ КАРТА ВЛЕЗЛА ===
+      // === КАРТА ВЛЕЗАЕТ В ЭКРАН, НЕ ПЕРЕКРЫВАЯ БАНЕР ===
       map.getView().fit(mapExtent, {
-        padding: [100, 50, 50, 50], // ← БОЛЬШЕ ОТСТУПОВ
-        maxZoom: 4 // ← ОГРАНИЧИВАЕМ МАКСИМАЛЬНЫЙ ЗУМ ПРИ ЗАГРУЗКЕ
+        padding: [80, 20, 20, 20],
+        maxZoom: 4
       });
 
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [100, 50, 50, 50],
+          padding: [80, 20, 20, 20],
           maxZoom: 4
         });
       });
