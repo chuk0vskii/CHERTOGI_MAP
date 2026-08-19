@@ -107,17 +107,34 @@
       });
 
       // === КАРТА ВЛЕЗАЕТ В ЭКРАН, НЕ ПЕРЕКРЫВАЯ БАНЕР ===
-      map.getView().fit(mapExtent, {
-        padding: [80, 20, 20, 20],
-        maxZoom: 4
-      });
+      function fitMap() {
+        var size = map.getSize();
+        if (!size) return;
 
+        // Высота банера (70px) + небольшой запас
+        var bannerHeight = 80;
+
+        // Сначала подгоняем карту с отступом сверху
+        map.getView().fit(mapExtent, {
+          padding: [bannerHeight, 20, 20, 20],
+          maxZoom: 4,
+          constrainResolution: true
+        });
+
+        // Дополнительно смещаем центр вниз на половину высоты банера
+        var currentCenter = map.getView().getCenter();
+        if (currentCenter) {
+          map.getView().setCenter([currentCenter[0], currentCenter[1] - bannerHeight / 2]);
+        }
+      }
+
+      // Вызываем при загрузке
+      setTimeout(fitMap, 100);
+
+      // И при изменении размера окна
       window.addEventListener('resize', function() {
         map.updateSize();
-        map.getView().fit(mapExtent, {
-          padding: [80, 20, 20, 20],
-          maxZoom: 4
-        });
+        fitMap();
       });
 
     })();
