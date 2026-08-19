@@ -66,16 +66,17 @@
 
   <script type="text/javascript">
     (function() {
-      var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
-      var mapMinZoom = 1;  // ← УБРАЛИ 0
+      // Расширяем верхнюю границу, чтобы карта могла уезжать вверх
+      var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+      var mapMinZoom = 0;
       var mapMaxZoom = 5;
       var mapMaxResolution = 1.00000000;
-      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
+      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var tileWidth = 512;
       var tileHeight = 512;
 
       var mapResolutions = [];
-      for (var z = mapMinZoom; z <= mapMaxZoom; z++) {
+      for (var z = 0; z <= mapMaxZoom; z++) {
         mapResolutions.push(Math.pow(2, mapMaxZoom - z) * mapMaxResolution);
       }
 
@@ -103,23 +104,35 @@
           projection: ol.proj.get('PIXELS'),
           extent: mapExtent,
           maxResolution: mapTileGrid.getResolution(mapMinZoom),
-          constrainOnlyCenter: true
+          constrainOnlyCenter: false
         })
       });
 
+      // === НАСТРОЙКА НАЧАЛЬНОГО ВИДА: КАРТА УМЕНЬШЕНА, ВЛЕЗАЕТ В ЭКРАН ===
       setTimeout(function() {
         map.updateSize();
-        map.getView().fit(mapExtent, {
-          padding: [80, 20, 20, 20],
-          maxZoom: 4
-        });
-      }, 100);
 
+        // Подгоняем с отступами
+        map.getView().fit(mapExtent, {
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
+          constrainResolution: true
+        });
+
+        // Дополнительно уменьшаем масштаб на 15% (карта становится мельче)
+        var view = map.getView();
+        var res = view.getResolution();
+        view.setResolution(res * 1.15);
+
+      }, 200);
+
+      // При изменении размера окна — пересчитываем
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [80, 20, 20, 20],
-          maxZoom: 4
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
+          constrainResolution: true
         });
       });
 
