@@ -66,16 +66,14 @@
 
   <script type="text/javascript">
     (function() {
-      // Размеры карты
-      var mapExtent = [0, -7026, 9189, 0];
+      var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
       var mapMinZoom = 0;
       var mapMaxZoom = 5;
-      var mapMaxResolution = 1.0;
-      var tileExtent = [0, -7026, 9189, 0];
+      var mapMaxResolution = 1.00000000;
+      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
       var tileWidth = 512;
       var tileHeight = 512;
 
-      // Resolutions
       var mapResolutions = [];
       for (var z = 0; z <= mapMaxZoom; z++) {
         mapResolutions.push(Math.pow(2, mapMaxZoom - z) * mapMaxResolution);
@@ -93,22 +91,23 @@
           attributions: '<a href="https://www.maptiler.com/engine/">Rendered with MapTiler Engine</a>, non-commercial use only',
           projection: 'PIXELS',
           tileGrid: mapTileGrid,
-          tilePixelRatio: 1.0,
+          tilePixelRatio: 1.00000000,
           url: "TILES/{z}/{x}/{y}.webp",
         })
+      });
+
+      var view = new ol.View({
+        projection: ol.proj.get('PIXELS'),
+        center: [9189 / 2, -7026 / 2],
+        zoom: 2.2,
+        minZoom: 0,
+        maxZoom: 5
       });
 
       var map = new ol.Map({
         target: 'map',
         layers: [layer],
-        view: new ol.View({
-          projection: ol.proj.get('PIXELS'),
-          extent: mapExtent,
-          maxResolution: mapTileGrid.getResolution(mapMinZoom),
-          constrainOnlyCenter: false,
-          center: [9189 / 2, -7026 / 2],
-          zoom: 2.8
-        })
+        view: view
       });
 
       // При изменении размера окна — обновляем карту
