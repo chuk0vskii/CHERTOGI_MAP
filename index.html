@@ -107,22 +107,21 @@
         })
       });
 
-      // Ждём, пока карта отрисуется, и подгоняем с учётом банера
+      // === КАРТА ЗАГРУЖАЕТСЯ УМЕНЬШЕННОЙ, ЧТОБЫ ВЛЕЗАТЬ ===
       setTimeout(function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [20, 20, 20, 20],
-          maxZoom: 4,
+          padding: [120, 80, 80, 80], // ← УВЕЛИЧЕННЫЕ ОТСТУПЫ, ЧТОБЫ КАРТА БЫЛА МЕЛЬЧЕ
+          maxZoom: 3.5,               // ← ОГРАНИЧИВАЕМ МАКСИМАЛЬНЫЙ ЗУМ ПРИ ЗАГРУЗКЕ
           constrainResolution: true
         });
       }, 200);
 
-      // При изменении окна — подгоняем заново
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [20, 20, 20, 20],
-          maxZoom: 4,
+          padding: [120, 80, 80, 80],
+          maxZoom: 3.5,
           constrainResolution: true
         });
       });
