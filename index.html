@@ -16,7 +16,7 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 70px;
       background: #4a0e0e;
       backdrop-filter: blur(8px);
-      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
       display: flex; align-items: center; justify-content: space-between;
       z-index: 100; padding: 0 30px;
       box-shadow: 0 4px 30px rgba(0,0,0,0.5);
@@ -30,7 +30,7 @@
     }
     .top-banner .nav-links { display: flex; gap: 25px; align-items: center; }
     .top-banner .nav-links a {
-      color: rgba(255,255,255,0.5);
+      color: #ffffff; /* ← БЕЛЫЙ */
       text-decoration: none;
       font-size: 14px; letter-spacing: 1px;
       transition: all 0.3s ease; padding: 6px 0;
@@ -45,7 +45,7 @@
       width: 100vw;
       height: 100vh;
       background: #0d0d1a;
-      padding-top: 70px;
+      padding-top: 70px; /* ← ОТСТУП ПОД БАННЕР */
     }
     #slider { display: none; }
   </style>
@@ -107,13 +107,12 @@
           projection: ol.proj.get('PIXELS'),
           extent: mapExtent,
           maxResolution: mapTileGrid.getResolution(mapMinZoom),
-          constrainOnlyCenter: false // ← НЕ ДАЁМ УЕЗЖАТЬ ЗА КРАЯ
+          constrainOnlyCenter: false
         })
       });
 
       map.getView().fit(mapExtent, map.getSize());
 
-      // === ПЕРЕСЧЁТ ПРИ ИЗМЕНЕНИИ РАЗМЕРА ===
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, map.getSize());
