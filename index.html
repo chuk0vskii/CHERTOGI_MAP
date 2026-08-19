@@ -128,37 +128,17 @@
         });
       });
 
-      // ========== ОБЛАКО (синхронно с картой) ==========
-      var cloudFeature = new ol.Feature({
-        geometry: new ol.geom.Point([4550, -3000])
-      });
-
-      var cloudLayer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-          features: [cloudFeature]
+      // ========== ОБЛАКО (статичное изображение на карте) ==========
+      var cloudImageLayer = new ol.layer.Image({
+        source: new ol.source.ImageStatic({
+          url: 'cloud.png',
+          imageExtent: [4300, -3400, 4800, -2600], // ← подбери под свой размер
+          projection: 'PIXELS'
         }),
         zIndex: 10
       });
 
-      function updateCloudStyle() {
-        var view = map.getView();
-        var resolution = view.getResolution();
-        var baseResolution = mapTileGrid.getResolution(0);
-        var scale = 0.03 * (baseResolution / resolution);
-
-        cloudFeature.setStyle(new ol.style.Style({
-          image: new ol.style.Icon({
-            src: 'cloud.png',
-            scale: scale,
-            anchor: [0.5, 0.5],
-            crossOrigin: 'anonymous'
-          })
-        }));
-      }
-
-      map.on('postrender', updateCloudStyle);
-      updateCloudStyle();
-      map.addLayer(cloudLayer);
+      map.addLayer(cloudImageLayer);
 
     })();
   </script>
