@@ -96,23 +96,32 @@
         })
       });
 
-      var view = new ol.View({
-        projection: ol.proj.get('PIXELS'),
-        center: [9189 / 2, -7026 / 2],
-        zoom: 2.2,
-        minZoom: 0,
-        maxZoom: 5
-      });
-
       var map = new ol.Map({
         target: 'map',
         layers: [layer],
-        view: view
+        view: new ol.View({
+          projection: ol.proj.get('PIXELS'),
+          extent: mapExtent,
+          maxResolution: mapTileGrid.getResolution(mapMinZoom),
+          constrainOnlyCenter: true
+        })
       });
 
-      // При изменении размера окна — обновляем карту
+      // Подгоняем карту с отступами, чтобы она влезала под банером
+      setTimeout(function() {
+        map.updateSize();
+        map.getView().fit(mapExtent, {
+          padding: [80, 20, 20, 20],
+          maxZoom: 4
+        });
+      }, 100);
+
       window.addEventListener('resize', function() {
         map.updateSize();
+        map.getView().fit(mapExtent, {
+          padding: [80, 20, 20, 20],
+          maxZoom: 4
+        });
       });
 
     })();
