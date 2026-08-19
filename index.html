@@ -39,7 +39,7 @@
     .top-banner .nav-links a.active { color: #ffd700; border-bottom-color: #ffd700; }
 
     #map {
-      position: fixed;
+      position: absolute;
       top: 70px;
       left: 0;
       right: 0;
@@ -66,11 +66,12 @@
 
   <script type="text/javascript">
     (function() {
-      var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
+      // Расширяем верхнюю границу, чтобы карта могла уезжать вверх
+      var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var mapMinZoom = 0;
       var mapMaxZoom = 5;
       var mapMaxResolution = 1.00000000;
-      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
+      var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var tileWidth = 512;
       var tileHeight = 512;
 
@@ -103,23 +104,37 @@
           projection: ol.proj.get('PIXELS'),
           extent: mapExtent,
           maxResolution: mapTileGrid.getResolution(mapMinZoom),
-          constrainOnlyCenter: true
+          constrainOnlyCenter: false
         })
       });
 
-      // Функция для подгонки карты под размер окна без отступов
-      function fitMap() {
+      // === НАСТРОЙКА НАЧАЛЬНОГО ВИДА: КАРТА УМЕНЬШЕНА, ВЛЕЗАЕТ В ЭКРАН ===
+      setTimeout(function() {
+        map.updateSize();
+
+        // Подгоняем с отступами
+        map.getView().fit(mapExtent, {
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
+          constrainResolution: true
+        });
+
+        // Дополнительно уменьшаем масштаб на 15% (карта становится мельче)
+        var view = map.getView();
+        var res = view.getResolution();
+        view.setResolution(res * 1.15);
+
+      }, 200);
+
+      // При изменении размера окна — пересчитываем
+      window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
-          padding: [0, 0, 0, 0],
-          maxZoom: 4
+          padding: [100, 60, 60, 60],
+          maxZoom: 3.8,
+          constrainResolution: true
         });
-      }
-
-      // Запускаем после рендеринга
-      setTimeout(fitMap, 50);
-
-      window.addEventListener('resize', fitMap);
+      });
 
     })();
   </script>
