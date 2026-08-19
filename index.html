@@ -66,7 +66,6 @@
 
   <script type="text/javascript">
     (function() {
-      // Расширяем верхнюю границу, чтобы карта могла уезжать вверх
       var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var mapMinZoom = 0;
       var mapMaxZoom = 5;
@@ -108,25 +107,18 @@
         })
       });
 
-      // === НАСТРОЙКА НАЧАЛЬНОГО ВИДА: КАРТА УМЕНЬШЕНА, ВЛЕЗАЕТ В ЭКРАН ===
       setTimeout(function() {
         map.updateSize();
-
-        // Подгоняем с отступами
         map.getView().fit(mapExtent, {
           padding: [100, 60, 60, 60],
           maxZoom: 3.8,
           constrainResolution: true
         });
-
-        // Дополнительно уменьшаем масштаб на 15% (карта становится мельче)
         var view = map.getView();
         var res = view.getResolution();
         view.setResolution(res * 1.15);
-
       }, 200);
 
-      // При изменении размера окна — пересчитываем
       window.addEventListener('resize', function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
@@ -135,6 +127,31 @@
           constrainResolution: true
         });
       });
+
+      // ========== ОБЛАКО ==========
+      var cloudFeature = new ol.Feature({
+        geometry: new ol.geom.Point([4000, -3000]) // ← координаты
+      });
+
+      var cloudStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+          src: 'cloud.png',
+          scale: 1.0,
+          anchor: [0.5, 0.5],
+          crossOrigin: 'anonymous'
+        })
+      });
+
+      cloudFeature.setStyle(cloudStyle);
+
+      var cloudLayer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+          features: [cloudFeature]
+        }),
+        zIndex: 10
+      });
+
+      map.addLayer(cloudLayer);
 
     })();
   </script>
