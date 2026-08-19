@@ -128,28 +128,10 @@
         });
       });
 
-      // ========== ОБЛАКО (масштабируется с зумом) ==========
+      // ========== ОБЛАКО (синхронно с картой) ==========
       var cloudFeature = new ol.Feature({
         geometry: new ol.geom.Point([4550, -3000])
       });
-
-      var cloudStyleFunction = function() {
-        var view = map.getView();
-        var resolution = view.getResolution();
-        var baseResolution = mapTileGrid.getResolution(0);
-        var scale = 0.03 * (baseResolution / resolution);
-
-        return new ol.style.Style({
-          image: new ol.style.Icon({
-            src: 'cloud.png',
-            scale: scale,
-            anchor: [0.5, 0.5],
-            crossOrigin: 'anonymous'
-          })
-        });
-      };
-
-      cloudFeature.setStyle(cloudStyleFunction);
 
       var cloudLayer = new ol.layer.Vector({
         source: new ol.source.Vector({
@@ -158,11 +140,25 @@
         zIndex: 10
       });
 
-      map.addLayer(cloudLayer);
+      function updateCloudStyle() {
+        var view = map.getView();
+        var resolution = view.getResolution();
+        var baseResolution = mapTileGrid.getResolution(0);
+        var scale = 0.03 * (baseResolution / resolution);
 
-      map.getView().on('change:resolution', function() {
-        cloudFeature.setStyle(cloudStyleFunction);
-      });
+        cloudFeature.setStyle(new ol.style.Style({
+          image: new ol.style.Icon({
+            src: 'cloud.png',
+            scale: scale,
+            anchor: [0.5, 0.5],
+            crossOrigin: 'anonymous'
+          })
+        }));
+      }
+
+      map.on('postrender', updateCloudStyle);
+      updateCloudStyle();
+      map.addLayer(cloudLayer);
 
     })();
   </script>
