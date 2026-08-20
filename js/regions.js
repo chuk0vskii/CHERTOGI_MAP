@@ -1,5 +1,5 @@
 // ===== СЛОЙ РЕГИОНОВ =====
-const REGION_RADIUS = 200; // ← меняй тут размер
+const REGION_RADIUS = 100; // ← размер круга
 
 let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
@@ -21,7 +21,7 @@ let regionLayer = new ol.layer.Vector({
       new ol.style.Style({
         text: new ol.style.Text({
           text: name,
-          font: 'bold 14px Arial',
+          font: 'bold 12px Arial',
           fill: new ol.style.Fill({ color: '#ffffff' }),
           stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.7)', width: 3 }),
           textAlign: 'center',
