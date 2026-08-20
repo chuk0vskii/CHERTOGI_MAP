@@ -6,11 +6,11 @@ document.getElementById('map').style.opacity = '0';
 
 async function init() {
   try {
-    // Загружаем облака (они должны быть первыми)
-    // if (typeof loadClouds === 'function') {
-    //   await loadClouds();
-    //   console.log('✅ Облака загружены');
-    // }
+    Загружаем облака (они должны быть первыми)
+    if (typeof loadClouds === 'function') {
+      await loadClouds();
+      console.log('✅ Облака загружены');
+    }
     
     // Загружаем маркеры
     if (typeof loadMarkers === 'function') {
