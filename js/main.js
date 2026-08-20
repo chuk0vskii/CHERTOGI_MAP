@@ -25,7 +25,7 @@ async function init() {
     
     // Показываем карту только после загрузки всего
     document.getElementById('map').style.opacity = '1';
-    document.getElementById('map').style.transition = 'opacity 0.5s ease';
+    document.getElementById('map').style.transition = 'none';
     
     console.log('✅ Всё загружено! Карта показана.');
     
