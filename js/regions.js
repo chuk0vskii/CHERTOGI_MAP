@@ -8,8 +8,8 @@ let regionLayer = new ol.layer.Vector({
     const scale = isHover ? baseScale * 1.3 : baseScale;
 
     // Радиус: было 20-25, стало 26-31 (+6)
-    const baseRadius = 26;
-    const hoverRadius = 31;
+    const baseRadius = 35;
+    const hoverRadius = 40;
 
     // Смещение вверх: 10 пикселей
     const offsetY = 10;
