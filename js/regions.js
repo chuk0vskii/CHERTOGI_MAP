@@ -1,4 +1,4 @@
-// ===== РЕГИОНЫ КАК ИКОНКИ =====
+// ===== РЕГИОНЫ КАК ИКОНКИ + НЕВИДИМАЯ ЗОНА ДЛЯ КЛИКА =====
 const REGION_ICON_SIZE = 24;
 
 let regionLayer = new ol.layer.Vector({
@@ -6,19 +6,34 @@ let regionLayer = new ol.layer.Vector({
   zIndex: 5,
   style: function(feature) {
     const isHover = feature.get('hover') || false;
-    // Уменьшаем в 3 раза: 0.65 → 0.22 (0.65 / 3 ≈ 0.22)
     const baseScale = 0.22;
     const scale = isHover ? baseScale * 1.3 : baseScale;
 
-    return new ol.style.Style({
-      image: new ol.style.Icon({
-        src: '/CHERTOGI_MAP/icons/marker3.png',
-        scale: scale,
-        anchor: [0.5, 1],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'fraction'
+    return [
+      // Основная иконка
+      new ol.style.Style({
+        image: new ol.style.Icon({
+          src: '/CHERTOGI_MAP/icons/marker3.png',
+          scale: scale,
+          anchor: [0.5, 1],
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'fraction'
+        })
+      }),
+      // НЕВИДИМЫЙ КРУГ ДЛЯ КЛИКА (поверх иконки)
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: isHover ? 20 : 15,
+          fill: new ol.style.Fill({
+            color: 'rgba(255,255,255,0)' // полностью прозрачный
+          }),
+          stroke: new ol.style.Stroke({
+            color: 'rgba(255,255,255,0)',
+            width: 0
+          })
+        })
       })
-    });
+    ];
   }
 });
 
