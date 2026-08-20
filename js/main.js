@@ -1,8 +1,8 @@
 // ===== ТОЧКА ВХОДА =====
 
-// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ (увеличение иконки) =====
+// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ =====
 let hoveredRegion = null;
-const HOVER_RADIUS = 25; // радиус для наведения (чуть меньше, так как иконка стала меньше)
+const HOVER_RADIUS = 25;
 
 map.on('pointermove', function(event) {
   const coordinate = event.coordinate;
@@ -26,12 +26,10 @@ map.on('pointermove', function(event) {
     }
   }
 
-  // Сбрасываем старый hover
   if (hoveredRegion) {
     hoveredRegion.set('hover', false);
   }
 
-  // Устанавливаем новый
   if (hitFeature) {
     hoveredRegion = hitFeature;
     hoveredRegion.set('hover', true);
@@ -44,7 +42,7 @@ map.on('pointermove', function(event) {
   regionLayer.changed();
 });
 
-// ===== КЛИК ПО РЕГИОНУ (открывает сайдбар) =====
+// ===== КЛИК ПО РЕГИОНУ =====
 map.on('click', function(event) {
   const coordinate = event.coordinate;
   const features = regionLayer.getSource().getFeatures();
