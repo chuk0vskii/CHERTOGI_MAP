@@ -10,7 +10,7 @@ let regionLayer = new ol.layer.Vector({
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        src: '/CHERTOGI_MAP/icons/marker3.png?v=2',
+        src: '/CHERTOGI_MAP/icons/marker3.png', // ← без параметров
         scale: scale,
         anchor: [0.5, 1],
         anchorXUnits: 'fraction',
