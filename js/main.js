@@ -2,7 +2,7 @@
 
 // ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ (увеличение иконки) =====
 let hoveredRegion = null;
-const HOVER_RADIUS = 30; // радиус для наведения
+const HOVER_RADIUS = 40; // радиус для наведения
 
 map.on('pointermove', function(event) {
   const coordinate = event.coordinate;
@@ -41,7 +41,6 @@ map.on('pointermove', function(event) {
     map.getTargetElement().style.cursor = '';
   }
 
-  // Обновляем слой
   regionLayer.changed();
 });
 
