@@ -23,7 +23,7 @@ async function loadClouds() {
 
   data.forEach(region => {
     // Используем cloud_x и cloud_y для облака
-    const cx = region.cloud_x || region.x;  // если нет cloud_x — используем x
+    const cx = region.cloud_x || region.x;  // если нет cloud_x — берём x
     const cy = region.cloud_y || region.y;
 
     const halfWidth = CLOUD_WIDTH / 2;
