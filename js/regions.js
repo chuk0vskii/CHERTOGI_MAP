@@ -8,7 +8,6 @@ let regionLayer = new ol.layer.Vector({
     const name = feature.get('name') || '';
     const isHover = feature.get('hover') || false;
 
-    // Размер иконки при наведении увеличивается на 30%
     const scale = isHover ? 0.85 : 0.65;
 
     return [
@@ -20,15 +19,18 @@ let regionLayer = new ol.layer.Vector({
           anchor: [0.5, 1],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction'
-        }),
+        })
+      }),
+      // Название региона (под иконкой)
+      new ol.style.Style({
         text: new ol.style.Text({
           text: name,
           font: isHover ? 'bold 14px Arial' : 'bold 12px Arial',
           fill: new ol.style.Fill({ color: '#ffffff' }),
           stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.8)', width: 4 }),
           textAlign: 'center',
-          textBaseline: 'bottom',
-          offsetY: isHover ? -16 : -12
+          textBaseline: 'top',
+          offsetY: isHover ? 14 : 10
         })
       })
     ];
