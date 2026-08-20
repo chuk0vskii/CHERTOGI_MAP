@@ -227,6 +227,7 @@ html, body {
 }
 
 /* ===== КНОПКИ-МАРКЕРЫ (как у знакомого) ===== */
+/* ===== КНОПКИ-МАРКЕРЫ (исправленные) ===== */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -236,28 +237,28 @@ html, body {
   transition: transform 0.2s ease;
   user-select: none;
   pointer-events: auto;
-  /* Отключаем стандартный курсор OpenLayers */
   z-index: 10;
 }
 
 .marker-button img {
   width: 24px;
-  height: 24px;
+  height: 24px;           /* ← фиксированная высота, чтобы не сжималось */
   display: block;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+  object-fit: contain;    /* ← сохраняет пропорции */
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)); /* ← убрал свечение */
 }
 
 .marker-button:hover img {
-  transform: scale(1.4);
-  filter: drop-shadow(0 4px 16px rgba(255, 215, 0, 0.4));
+  transform: scale(1.3);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)); /* ← без золотого свечения */
 }
 
 .marker-button .marker-label {
   font-size: 12px;
   font-weight: bold;
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.9);
   margin-top: 4px;
   white-space: nowrap;
   pointer-events: none;
@@ -268,8 +269,8 @@ html, body {
 
 .marker-button:hover .marker-label {
   font-size: 14px;
-  color: #ffd700;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 10px rgba(0, 0, 0, 0.9);
+  color: #ffd700;        /* ← золотой текст оставил, красиво */
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
 }
 
 .marker-button:active img {
