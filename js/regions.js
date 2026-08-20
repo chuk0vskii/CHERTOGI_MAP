@@ -1,36 +1,43 @@
-// ===== РЕГИОНЫ КАК PNG-ИКОНКИ =====
-const REGION_ICON_SIZE = 20; // ← было 48, уменьшили в 2.4 раза (48 / 2.4 = 20)
+// ===== РЕГИОНЫ КАК ИКОНКИ =====
+const REGION_ICON_SIZE = 24;
 
 let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
   zIndex: 5,
   style: function(feature) {
     const name = feature.get('name') || '';
+    const isHover = feature.get('hover') || false;
 
-    return new ol.style.Style({
-      image: new ol.style.Icon({
-        src: '/CHERTOGI_MAP/icons/marker2.png',
-        scale: REGION_ICON_SIZE / 64,
-        anchor: [0.5, 1],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'fraction'
-      }),
-      text: new ol.style.Text({
-        text: name,
-        font: 'bold 12px Arial',
-        fill: new ol.style.Fill({ color: '#ffffff' }),
-        stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.7)', width: 3 }),
-        textAlign: 'center',
-        textBaseline: 'bottom',
-        offsetY: -8
+    // Размер иконки при наведении увеличивается на 30%
+    const scale = isHover ? 0.85 : 0.65;
+
+    return [
+      // Иконка
+      new ol.style.Style({
+        image: new ol.style.Icon({
+          src: '/CHERTOGI_MAP/icons/marker3.png',
+          scale: scale,
+          anchor: [0.5, 1],
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'fraction'
+        }),
+        text: new ol.style.Text({
+          text: name,
+          font: isHover ? 'bold 14px Arial' : 'bold 12px Arial',
+          fill: new ol.style.Fill({ color: '#ffffff' }),
+          stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.8)', width: 4 }),
+          textAlign: 'center',
+          textBaseline: 'bottom',
+          offsetY: isHover ? -16 : -12
+        })
       })
-    });
+    ];
   }
 });
 
 map.addLayer(regionLayer);
 
-// ===== ЗАГРУЗКА РЕГИОНОВ =====
+// ===== ЗАГРУЗКА РЕГИОНОВ ИЗ БАЗЫ =====
 async function loadRegions() {
   const { data, error } = await _supabase
     .from('regions')
@@ -49,12 +56,13 @@ async function loadRegions() {
       geometry: new ol.geom.Point([region.x, region.y]),
       id: region.id,
       name: region.name,
-      description: region.description
+      description: region.description,
+      hover: false
     });
   });
 
   regionLayer.getSource().addFeatures(features);
-  console.log('✅ Регионы добавлены на карту как иконки');
+  console.log('✅ Регионы добавлены на карту');
 }
 
 loadRegions();
