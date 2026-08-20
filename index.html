@@ -46,10 +46,39 @@
       bottom: 0;
       background: #0d0d1a;
     }
+
+    #version-counter {
+      position: fixed;
+      top: 80px;
+      left: 16px;
+      z-index: 200;
+      color: rgba(255, 215, 0, 0.5);
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      user-select: none;
+      pointer-events: none;
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.maptiler.com/ol/v6.12.0/ol.css" type="text/css">
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill" type="text/javascript"></script>
   <script src="https://cdn.maptiler.com/ol/v6.12.0/ol.js" type="text/javascript"></script>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <script>
+    // ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
+    const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase подключён');
+  </script>
 </head>
 <body>
 
@@ -62,10 +91,12 @@
     </div>
   </div>
 
+  <div id="version-counter">⚙️ v1.0</div>
   <div id="map"></div>
 
-  <script type="text/javascript">
+  <script>
     (function() {
+      // ===== КАРТА =====
       var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var mapMinZoom = 0;
       var mapMaxZoom = 5;
@@ -107,6 +138,7 @@
         })
       });
 
+      // ===== НАСТРОЙКА НАЧАЛЬНОГО ВИДА =====
       setTimeout(function() {
         map.updateSize();
         map.getView().fit(mapExtent, {
@@ -128,17 +160,119 @@
         });
       });
 
-      // ========== ОБЛАКО (статичное изображение на карте) ==========
-      var cloudImageLayer = new ol.layer.Image({
-        source: new ol.source.ImageStatic({
-          url: 'cloud.png',
-          imageExtent: [3950, -3590, 5150, -2500], // ← подбери под свой размер
-          projection: 'PIXELS'
-        }),
-        zIndex: 10
+      // ===== ОБЛАКО (если есть) =====
+      // (можно оставить или убрать)
+
+      // ===== СЛОЙ РЕГИОНОВ =====
+      let regionLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        zIndex: 5,
+        style: function(feature) {
+          const name = feature.get('name') || '';
+          const radius = feature.get('radius') || 350;
+          const color = feature.get('color') || 'rgba(255, 215, 0, 0.25)';
+          const borderColor = feature.get('borderColor') || 'rgba(255, 215, 0, 0.6)';
+
+          return [
+            new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: radius,
+                fill: new ol.style.Fill({ color: color }),
+                stroke: new ol.style.Stroke({ color: borderColor, width: 2 })
+              })
+            }),
+            new ol.style.Style({
+              text: new ol.style.Text({
+                text: name,
+                font: 'bold 16px Arial',
+                fill: new ol.style.Fill({ color: '#ffffff' }),
+                stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.7)', width: 3 }),
+                textAlign: 'center',
+                textBaseline: 'middle'
+              })
+            })
+          ];
+        }
       });
 
-      map.addLayer(cloudImageLayer);
+      map.addLayer(regionLayer);
+
+      // ===== ЗАГРУЗКА РЕГИОНОВ ИЗ БАЗЫ =====
+      async function loadRegions() {
+        const { data, error } = await supabase
+          .from('regions')
+          .select('*')
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('❌ Ошибка загрузки регионов:', error);
+          return;
+        }
+
+        console.log(`✅ Загружено ${data.length} регионов`);
+
+        const features = data.map(region => {
+          return new ol.Feature({
+            geometry: new ol.geom.Point([region.x, region.y]),
+            id: region.id,
+            name: region.name,
+            description: region.description,
+            radius: region.radius,
+            color: region.color,
+            borderColor: region.border_color
+          });
+        });
+
+        regionLayer.getSource().addFeatures(features);
+      }
+
+      loadRegions();
+
+      // ===== ВЗАИМОДЕЙСТВИЕ С РЕГИОНАМИ =====
+      let hoveredRegion = null;
+
+      map.on('pointermove', function(event) {
+        const pixel = event.pixel;
+        const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
+          return feature;
+        }, {
+          layerFilter: function(layer) {
+            return layer === regionLayer;
+          }
+        });
+
+        if (hoveredRegion) {
+          hoveredRegion.set('hover', false);
+        }
+
+        if (hit && hit.getGeometry() instanceof ol.geom.Point) {
+          hoveredRegion = hit;
+          hoveredRegion.set('hover', true);
+          map.getTargetElement().style.cursor = 'pointer';
+        } else {
+          hoveredRegion = null;
+          map.getTargetElement().style.cursor = '';
+        }
+
+        regionLayer.changed();
+      });
+
+      map.on('click', function(event) {
+        const pixel = event.pixel;
+        const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
+          return feature;
+        }, {
+          layerFilter: function(layer) {
+            return layer === regionLayer;
+          }
+        });
+
+        if (hit && hit.getGeometry() instanceof ol.geom.Point) {
+          const name = hit.get('name');
+          const desc = hit.get('description') || 'Описание отсутствует';
+          alert(`📍 ${name}\n\n${desc}`);
+        }
+      });
 
     })();
   </script>
