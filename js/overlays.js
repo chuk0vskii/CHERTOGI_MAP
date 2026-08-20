@@ -22,7 +22,12 @@ function createMarkerOverlay(regionId, name, description, x, y) {
   // Обработчик клика (как у обычной кнопки!)
   element.addEventListener('click', function(e) {
     e.stopPropagation();
-    openSidebar(regionId, name, description);
+    if (typeof openSidebar === 'function') {
+      openSidebar(regionId, name, description);
+    } else {
+      console.error('❌ Функция openSidebar не найдена!');
+      alert(`📍 ${name}\n\n${description}`);
+    }
   });
 
   // Добавляем на карту
