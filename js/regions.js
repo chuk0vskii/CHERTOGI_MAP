@@ -7,21 +7,28 @@ let regionLayer = new ol.layer.Vector({
     const baseScale = 0.22;
     const scale = isHover ? baseScale * 1.3 : baseScale;
 
+    // Радиус: было 20-25, стало 26-31 (+6)
+    const baseRadius = 26;
+    const hoverRadius = 31;
+
+    // Смещение вверх: 10 пикселей
+    const offsetY = 10;
+
     return [
       // Иконка
       new ol.style.Style({
         image: new ol.style.Icon({
           src: '/CHERTOGI_MAP/icons/marker3.png',
           scale: scale,
-          anchor: [0.5, 0.5], // ← центр иконки
+          anchor: [0.5, 0.5],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction'
         })
       }),
-      // НЕВИДИМЫЙ КРУГ ДЛЯ КЛИКА (поднят выше)
+      // НЕВИДИМЫЙ КРУГ ДЛЯ КЛИКА (увеличен на 6, поднят на 10)
       new ol.style.Style({
         image: new ol.style.Circle({
-          radius: isHover ? 25 : 20,
+          radius: isHover ? hoverRadius : baseRadius,
           fill: new ol.style.Fill({
             color: 'rgba(255,255,255,0)'
           }),
@@ -30,11 +37,9 @@ let regionLayer = new ol.layer.Vector({
             width: 0
           })
         }),
-        // Смещаем круг вверх на 1.5 размера иконки
         geometry: function(feature) {
           const coords = feature.getGeometry().getCoordinates();
-          // Смещение вверх: 1.5 * размер иконки * масштаб
-          const offsetY = 1.5 * 24 * baseScale; // 24 - исходный размер иконки
+          // Смещаем круг вверх на 10 пикселей
           return new ol.geom.Point([coords[0], coords[1] + offsetY]);
         }
       })
