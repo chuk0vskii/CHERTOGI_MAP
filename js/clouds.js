@@ -2,8 +2,8 @@
 const cloudLayers = [];
 
 // ===== НАСТРОЙКИ РАЗМЕРА ОБЛАКА =====
-const CLOUD_WIDTH = 600;
-const CLOUD_HEIGHT = 400;
+const CLOUD_WIDTH = 1200;
+const CLOUD_HEIGHT = 1200;
 
 async function loadClouds() {
   // Удаляем старые облака
