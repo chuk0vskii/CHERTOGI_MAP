@@ -26,7 +26,7 @@ var layer = new ol.layer.Tile({
     tileGrid: mapTileGrid,
     tilePixelRatio: 1.00000000,
     url: "TILES/{z}/{x}/{y}.webp",
-    interpolate: true  // ← явно включаем интерполяцию
+    interpolate: true
   })
 });
 
@@ -37,30 +37,17 @@ var map = new ol.Map({
     projection: ol.proj.get('PIXELS'),
     extent: mapExtent,
     maxResolution: mapTileGrid.getResolution(mapMinZoom),
-    constrainOnlyCenter: false
+    constrainOnlyCenter: false,
+    center: [9189 / 2, -7026 / 2],  // ← центр карты
+    zoom: 2.2                       // ← начальный зум (чем меньше число, тем дальше)
   })
 });
 
-// ===== НАСТРОЙКА НАЧАЛЬНОГО ВИДА =====
+// ===== АДАПТАЦИЯ ПОД РАЗМЕР ЭКРАНА =====
 setTimeout(function() {
   map.updateSize();
-  map.getView().fit(mapExtent, {
-    padding: [100, 60, 60, 60],
-    maxZoom: 3.8,
-    constrainResolution: true
-  });
-  var view = map.getView();
-  var res = view.getResolution();
-  view.setResolution(res * 1.0);
 }, 200);
 
 window.addEventListener('resize', function() {
   map.updateSize();
- map.getView().fit(mapExtent, {
-  padding: [100, 60, 60, 60],
-  maxZoom: 5,  // ← было 3.8, стало 5
-  constrainResolution: true
 });
-});
-
-
