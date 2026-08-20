@@ -62,13 +62,4 @@ window.addEventListener('resize', function() {
   });
 });
 
-// ===== ОБЛАКО =====
-var cloudImageLayer = new ol.layer.Image({
-  source: new ol.source.ImageStatic({
-    url: 'cloud.png',
-    imageExtent: [3950, -3590, 5150, -2500],
-    projection: 'PIXELS'
-  }),
-  zIndex: 10
-});
-map.addLayer(cloudImageLayer);
+
