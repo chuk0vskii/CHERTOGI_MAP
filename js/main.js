@@ -13,8 +13,8 @@ map.on('click', function(event) {
       const dy = coordinate[1] - geom.getCoordinates()[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // зона клика = размер иконки + запас
-      const clickRadius = REGION_ICON_SIZE / 2 + 10;
+      // зона клика = новый размер (20px) + запас 8px
+      const clickRadius = 20 + 8;
 
       if (dist <= clickRadius && dist < minDist) {
         minDist = dist;
