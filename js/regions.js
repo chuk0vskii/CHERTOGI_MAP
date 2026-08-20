@@ -6,11 +6,13 @@ let regionLayer = new ol.layer.Vector({
   zIndex: 5,
   style: function(feature) {
     const isHover = feature.get('hover') || false;
-    const scale = isHover ? 0.85 : 0.65;
+    // Уменьшаем в 3 раза: 0.65 → 0.22 (0.65 / 3 ≈ 0.22)
+    const baseScale = 0.22;
+    const scale = isHover ? baseScale * 1.3 : baseScale;
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        src: '/CHERTOGI_MAP/icons/marker3.png', // ← без параметров
+        src: '/CHERTOGI_MAP/icons/marker3.png',
         scale: scale,
         anchor: [0.5, 1],
         anchorXUnits: 'fraction',
