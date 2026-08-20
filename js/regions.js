@@ -1,5 +1,5 @@
 // ===== РЕГИОНЫ КАК PNG-ИКОНКИ =====
-const REGION_ICON_SIZE = 48; // фиксированный размер
+const REGION_ICON_SIZE = 48;
 
 let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
@@ -9,8 +9,8 @@ let regionLayer = new ol.layer.Vector({
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        src: 'METKAKRAYA.png',     // ← твоя иконка
-        scale: REGION_ICON_SIZE / 64, // подгоняем размер (если PNG 64x64)
+        src: 'icons/METKAKRAYA.png',     // ← правильный путь
+        scale: REGION_ICON_SIZE / 64,
         anchor: [0.5, 1],
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction'
