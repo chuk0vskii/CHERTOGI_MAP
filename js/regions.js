@@ -14,14 +14,14 @@ let regionLayer = new ol.layer.Vector({
       // Иконка
       new ol.style.Style({
         image: new ol.style.Icon({
-          src: '/CHERTOGI_MAP/icons/marker3.png',
+          src: '/CHERTOGI_MAP/icons/marker3.png?v=2', // ← добавил ?v=2
           scale: scale,
           anchor: [0.5, 1],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction'
         })
       }),
-      // Название региона (под иконкой)
+      // Название региона
       new ol.style.Style({
         text: new ol.style.Text({
           text: name,
@@ -39,7 +39,7 @@ let regionLayer = new ol.layer.Vector({
 
 map.addLayer(regionLayer);
 
-// ===== ЗАГРУЗКА РЕГИОНОВ ИЗ БАЗЫ =====
+// ===== ЗАГРУЗКА РЕГИОНОВ =====
 async function loadRegions() {
   const { data, error } = await _supabase
     .from('regions')
