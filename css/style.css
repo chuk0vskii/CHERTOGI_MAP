@@ -4,6 +4,8 @@ html, body {
   padding: 0;
   background: #0d0d1a;
 }
+/* ===== ПОДКЛЮЧЕНИЕ ШРИФТА PHILOSOPHER ===== */
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&display=swap');
 
 .top-banner {
   position: fixed;
