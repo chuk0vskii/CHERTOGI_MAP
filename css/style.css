@@ -226,8 +226,7 @@ html, body {
   pointer-events: none;
 }
 
-/* ===== КНОПКИ-МАРКЕРЫ (как у знакомого) ===== */
-/* ===== КНОПКИ-МАРКЕРЫ (исправленные) ===== */
+/* ===== КНОПКИ-МАРКЕРЫ ===== */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -240,39 +239,62 @@ html, body {
   z-index: 10;
 }
 
+/* Иконка: чуть шире, чуть больше */
 .marker-button img {
-  width: 24px;
-  height: 24px;           /* ← фиксированная высота, чтобы не сжималось */
+  width: 28px;            /* было 24 → 28 (+4) */
+  height: 28px;           /* было 24 → 28 (+4) */
   display: block;
-  object-fit: contain;    /* ← сохраняет пропорции */
+  object-fit: contain;
   transition: transform 0.2s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)); /* ← убрал свечение */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .marker-button:hover img {
-  transform: scale(1.3);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)); /* ← без золотого свечения */
+  transform: scale(1.2);  /* было 1.3 → 1.2 (увеличение на 20%) */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
-.marker-button .marker-label {
-  font-size: 12px;
-  font-weight: bold;
+/* ===== ТУЛТИП (всплывающая подсказка) ===== */
+.marker-button .marker-tooltip {
+  position: absolute;
+  bottom: 100%;           /* поднимаем над иконкой */
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: rgba(0, 0, 0, 0.85);
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.9);
-  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: 'Arial', sans-serif;
   white-space: nowrap;
   pointer-events: none;
-  transition: all 0.2s ease;
-  font-family: 'Arial', sans-serif;
-  letter-spacing: 0.5px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.marker-button:hover .marker-label {
-  font-size: 14px;
-  color: #ffd700;        /* ← золотой текст оставил, красиво */
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+/* Стрелочка внизу тултипа */
+.marker-button .marker-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.85);
 }
 
+/* Показываем тултип при наведении */
+.marker-button:hover .marker-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+/* Эффект нажатия */
 .marker-button:active img {
   transform: scale(0.9);
 }
