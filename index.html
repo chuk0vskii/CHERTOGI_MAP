@@ -95,6 +95,23 @@
     </div>
   </div>
 
+  <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ОТЧЁТА -->
+  <div id="report-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #1e1428; padding: 32px; border-radius: 16px; max-width: 520px; width: 90%; border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 20px 60px rgba(0,0,0,0.8);">
+      <h3 style="color: #ffd700; margin-bottom: 8px;">📝 Новый отчёт</h3>
+      <p id="modal-region-name" style="color: #888; font-size: 13px; margin-bottom: 16px;">Регион: Лесной край</p>
+      
+      <input id="report-author" type="text" placeholder="Ваше имя (опционально)" style="width: 100%; padding: 10px; background: #2a1a3a; border: 1px solid #4a2a5a; border-radius: 8px; color: #e0d5c0; font-size: 14px; margin-bottom: 12px; outline: none;">
+      
+      <textarea id="report-content" style="width: 100%; height: 150px; background: #2a1a3a; border: 1px solid #4a2a5a; border-radius: 8px; padding: 12px; color: #e0d5c0; font-size: 14px; resize: vertical; font-family: inherit; outline: none;" placeholder="Опишите события, которые произошли в этом регионе..."></textarea>
+      
+      <div style="display: flex; gap: 12px; margin-top: 16px;">
+        <button id="submit-report-btn" style="flex: 1; padding: 12px; background: #ffd700; border: none; border-radius: 8px; color: #1a0a1a; font-weight: bold; cursor: pointer; transition: 0.2s;">Отправить</button>
+        <button id="cancel-report-btn" style="flex: 1; padding: 12px; background: #3a2a3a; border: none; border-radius: 8px; color: #aaa; cursor: pointer;">Отмена</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function() {
       // ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
@@ -275,7 +292,7 @@
         regionLayer.changed();
       });
 
-      // ===== КЛИК ПО РЕГИОНУ (открывает боковую панель) =====
+      // ===== КЛИК ПО РЕГИОНУ =====
       map.on('click', function(event) {
         const pixel = event.pixel;
         const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
@@ -349,10 +366,57 @@
         `).join('');
       }
 
-      // ===== КНОПКА «СОСТАВИТЬ ОТЧЁТ» (пока просто заглушка) =====
+      // ===== МОДАЛЬНОЕ ОКНО ДЛЯ ОТЧЁТА =====
+      const modal = document.getElementById('report-modal');
+      const modalRegionName = document.getElementById('modal-region-name');
+      const reportAuthor = document.getElementById('report-author');
+      const reportContent = document.getElementById('report-content');
+
       document.getElementById('report-btn').addEventListener('click', function() {
         if (!currentRegionId) return;
-        alert('Форма отчёта будет здесь позже!');
+        const regionName = sidebarTitle.textContent;
+        modalRegionName.textContent = `📍 Регион: ${regionName}`;
+        reportAuthor.value = '';
+        reportContent.value = '';
+        modal.style.display = 'flex';
+      });
+
+      function closeModal() {
+        modal.style.display = 'none';
+      }
+
+      document.getElementById('cancel-report-btn').addEventListener('click', closeModal);
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+
+      // ===== ОТПРАВКА ОТЧЁТА =====
+      document.getElementById('submit-report-btn').addEventListener('click', async function() {
+        const content = reportContent.value.trim();
+        const author = reportAuthor.value.trim() || 'Аноним';
+
+        if (!content) {
+          alert('Напишите текст отчёта');
+          return;
+        }
+
+        const { data, error } = await _supabase
+          .from('game_reports')
+          .insert([{
+            region_id: currentRegionId,
+            user_name: author,
+            content: content,
+            game_date: new Date().toISOString().split('T')[0]
+          }]);
+
+        if (error) {
+          alert('❌ Ошибка: ' + error.message);
+          return;
+        }
+
+        alert('✅ Отчёт сохранён!');
+        closeModal();
+        loadReports(currentRegionId);
       });
 
     })();
