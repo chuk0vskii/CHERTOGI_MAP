@@ -56,11 +56,11 @@ setTimeout(function() {
 
 window.addEventListener('resize', function() {
   map.updateSize();
-  map.getView().fit(mapExtent, {
-    padding: [100, 60, 60, 60],
-    maxZoom: 3.8,
-    constrainResolution: true
-  });
+ map.getView().fit(mapExtent, {
+  padding: [100, 60, 60, 60],
+  maxZoom: 5,  // ← было 3.8, стало 5
+  constrainResolution: true
+});
 });
 
 
