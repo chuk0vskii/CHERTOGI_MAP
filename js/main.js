@@ -1,7 +1,6 @@
 // ===== ТОЧКА ВХОДА =====
-// ВСЕ ФУНКЦИИ УЖЕ ОПРЕДЕЛЕНЫ В ФАЙЛАХ ВЫШЕ
 
-// ===== ВЗАИМОДЕЙСТВИЕ С РЕГИОНАМИ =====
+// ===== ВЗАИМОДЕЙСТВИЕ С РЕГИОНАМИ (подсветка при наведении) =====
 let hoveredRegion = null;
 
 map.on('pointermove', function(event) {
@@ -34,18 +33,20 @@ map.on('pointermove', function(event) {
 map.on('click', function(event) {
   const coordinate = event.coordinate;
 
-  // Проверяем, попал ли клик в какой-либо регион (с учётом радиуса)
   let hitFeature = null;
   let minDist = Infinity;
 
   const features = regionLayer.getSource().getFeatures();
+
   for (const feature of features) {
     const geom = feature.getGeometry();
     if (geom instanceof ol.geom.Point) {
-      const dx = coordinate[0] - geom.getCoordinates()[0];
-      const dy = coordinate[1] - geom.getCoordinates()[1];
+      const geomCoords = geom.getCoordinates();
+      const dx = coordinate[0] - geomCoords[0];
+      const dy = coordinate[1] - geomCoords[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const radius = feature.get('radius') || REGION_RADIUS;
+      const radius = feature.get('radius') || 200;
+
       if (dist <= radius && dist < minDist) {
         minDist = dist;
         hitFeature = feature;
