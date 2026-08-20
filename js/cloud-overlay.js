@@ -1,24 +1,23 @@
-// ===== ОБЛАКО-ОВЕРЛЕЙ С ТУЛТИПОМ =====
+// ===== ОБЛАКО-ОВЕРЛЕЙ (картинка + невидимая зона) =====
 (function() {
   const cloudExtent = [3950, -3590, 5150, -2500];
   const centerX = (cloudExtent[0] + cloudExtent[2]) / 2;
   const centerY = (cloudExtent[1] + cloudExtent[3]) / 2;
   
-  // Ждём, пока карта загрузится
   const checkMap = setInterval(() => {
     if (typeof map !== 'undefined' && map.getTargetElement()) {
       clearInterval(checkMap);
       
-      // Создаём элемент-контейнер
-      const element = document.createElement('div');
-      element.style.position = 'absolute';
-      element.style.width = '400px';      // ширина облака
-      element.style.height = '300px';     // высота облака
-      element.style.pointerEvents = 'auto';
-      element.style.cursor = 'default';
-      element.style.background = 'rgba(0,0,0,0)'; // полностью прозрачный
+      // ===== 1. НЕВИДИМАЯ ЗОНА ДЛЯ КЛИКА =====
+      const clickElement = document.createElement('div');
+      clickElement.style.position = 'absolute';
+      clickElement.style.width = '1200px';   // ширина облака (подбери под свою картинку)
+      clickElement.style.height = '1100px';  // высота облака
+      clickElement.style.pointerEvents = 'auto';
+      clickElement.style.cursor = 'default';
+      clickElement.style.background = 'rgba(0,0,0,0)';
       
-      // Создаём тултип (подсказка)
+      // Тултип при наведении
       const tooltip = document.createElement('div');
       tooltip.textContent = '🌫️ Край еще не открыт';
       tooltip.style.position = 'absolute';
@@ -40,37 +39,38 @@
       tooltip.style.visibility = 'hidden';
       tooltip.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
       
-      // Добавляем тултип в элемент
-      element.appendChild(tooltip);
+      clickElement.appendChild(tooltip);
       
-      // При наведении — показываем тултип
-      element.addEventListener('mouseenter', function() {
+      clickElement.addEventListener('mouseenter', function() {
         tooltip.style.opacity = '1';
         tooltip.style.visibility = 'visible';
         map.getTargetElement().style.cursor = 'default';
       });
       
-      element.addEventListener('mouseleave', function() {
+      clickElement.addEventListener('mouseleave', function() {
         tooltip.style.opacity = '0';
         tooltip.style.visibility = 'hidden';
       });
       
-      // При клике — ничего не происходит (или можно оставить сообщение)
-      element.addEventListener('click', function(e) {
+      clickElement.addEventListener('click', function(e) {
         e.stopPropagation();
-        // Ничего не делаем, просто тултип
+        // Ничего не делаем
       });
       
-      // Создаём Overlay
-      const overlay = new ol.Overlay({
-        element: element,
+      // ===== 2. ОВЕРЛЕЙ С КЛИКАБЕЛЬНОЙ ЗОНОЙ =====
+      const clickOverlay = new ol.Overlay({
+        element: clickElement,
         position: [centerX, centerY],
         positioning: 'center-center',
         offset: [0, 0],
-        stopEvent: true // перехватывает клики
+        stopEvent: true // ← перехватывает клики у меток под облаком
       });
       
-      map.addOverlay(overlay);
+      map.addOverlay(clickOverlay);
+      
+      // ===== 3. САМА КАРТИНКА ОБЛАКА (уже есть в map.js) =====
+      // Она остаётся как есть, просто добавляем поверх меток
+      
       console.log('✅ Облако-оверлей с тултипом добавлено');
     }
   }, 500);
