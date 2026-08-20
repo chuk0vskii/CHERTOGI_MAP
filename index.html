@@ -67,18 +67,7 @@
   <link rel="stylesheet" href="https://cdn.maptiler.com/ol/v6.12.0/ol.css" type="text/css">
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill" type="text/javascript"></script>
   <script src="https://cdn.maptiler.com/ol/v6.12.0/ol.js" type="text/javascript"></script>
-
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-  <script>
-    // ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
-    const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('✅ Supabase подключён');
-  </script>
 </head>
 <body>
 
@@ -96,6 +85,13 @@
 
   <script>
     (function() {
+      // ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
+      const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('✅ Supabase подключён');
+
       // ===== КАРТА =====
       var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
       var mapMinZoom = 0;
@@ -232,6 +228,7 @@
         });
 
         regionLayer.getSource().addFeatures(features);
+        console.log('✅ Регионы добавлены на карту');
       }
 
       loadRegions();
