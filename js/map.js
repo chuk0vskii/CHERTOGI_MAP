@@ -1,37 +1,74 @@
-(function() {
-  'use strict';
+// ===== КАРТА =====
+var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+var mapMinZoom = 0;
+var mapMaxZoom = 5;
+var mapMaxResolution = 1.00000000;
+var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+var tileWidth = 512;
+var tileHeight = 512;
 
-  const map = new ol.Map({
-    target: 'map',
-    layers: [
-      new ol.layer.Tile({
-        source: new ol.source.XYZ({
-          tileUrlFunction: function(tileCoord) {
-            const x = tileCoord[1];
-            const y = tileCoord[2];
+var mapResolutions = [];
+for (var z = 0; z <= mapMaxZoom; z++) {
+  mapResolutions.push(Math.pow(2, mapMaxZoom - z) * mapMaxResolution);
+}
 
-            // === ГРАНИЦЫ: 18 СТОЛБЦОВ (0-17), 14 РЯДОВ (0-13) ===
-            if (x < 0 || x >= 18 || y < 0 || y >= 14) return '';
+var mapTileGrid = new ol.tilegrid.TileGrid({
+  tileSize: [tileWidth, tileHeight],
+  extent: tileExtent,
+  minZoom: mapMinZoom,
+  resolutions: mapResolutions
+});
 
-            // === ТВОЯ НУМЕРАЦИЯ: РЯДЫ С 0, СТОЛБЦЫ С 1 ===
-            const col = x + 1;
-            return `tiles4/tile_${y}_${col}.jpg`;
-          },
-          tileSize: 512,
-          crossOrigin: 'anonymous'
-        })
-      })
-    ],
-    view: new ol.View({
-      center: [0, 0],
-      zoom: 0.5,
-      minZoom: 0.1,
-      maxZoom: 2.5
-    })
+var layer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    attributions: '<a href="https://www.maptiler.com/engine/">Rendered with MapTiler Engine</a>, non-commercial use only',
+    projection: 'PIXELS',
+    tileGrid: mapTileGrid,
+    tilePixelRatio: 1.00000000,
+    url: "TILES/{z}/{x}/{y}.webp",
+  })
+});
+
+var map = new ol.Map({
+  target: 'map',
+  layers: [layer],
+  view: new ol.View({
+    projection: ol.proj.get('PIXELS'),
+    extent: mapExtent,
+    maxResolution: mapTileGrid.getResolution(mapMinZoom),
+    constrainOnlyCenter: false
+  })
+});
+
+// ===== НАСТРОЙКА НАЧАЛЬНОГО ВИДА =====
+setTimeout(function() {
+  map.updateSize();
+  map.getView().fit(mapExtent, {
+    padding: [100, 60, 60, 60],
+    maxZoom: 3.8,
+    constrainResolution: true
   });
+  var view = map.getView();
+  var res = view.getResolution();
+  view.setResolution(res * 1.15);
+}, 200);
 
-  window.addEventListener('resize', function() {
-    map.updateSize();
+window.addEventListener('resize', function() {
+  map.updateSize();
+  map.getView().fit(mapExtent, {
+    padding: [100, 60, 60, 60],
+    maxZoom: 3.8,
+    constrainResolution: true
   });
+});
 
-})();
+// ===== ОБЛАКО =====
+var cloudImageLayer = new ol.layer.Image({
+  source: new ol.source.ImageStatic({
+    url: 'cloud.png',
+    imageExtent: [3950, -3590, 5150, -2500],
+    projection: 'PIXELS'
+  }),
+  zIndex: 10
+});
+map.addLayer(cloudImageLayer);
