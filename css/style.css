@@ -225,3 +225,53 @@ html, body {
   user-select: none;
   pointer-events: none;
 }
+
+/* ===== КНОПКИ-МАРКЕРЫ (как у знакомого) ===== */
+.marker-button {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+  user-select: none;
+  pointer-events: auto;
+  /* Отключаем стандартный курсор OpenLayers */
+  z-index: 10;
+}
+
+.marker-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.marker-button:hover img {
+  transform: scale(1.4);
+  filter: drop-shadow(0 4px 16px rgba(255, 215, 0, 0.4));
+}
+
+.marker-button .marker-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-top: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  font-family: 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.marker-button:hover .marker-label {
+  font-size: 14px;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+.marker-button:active img {
+  transform: scale(0.9);
+}
