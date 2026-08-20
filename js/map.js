@@ -49,9 +49,9 @@ setTimeout(function() {
     maxZoom: 3.8,
     constrainResolution: true
   });
-  var view = map.getView();
-  var res = view.getResolution();
-  view.setResolution(res * 1.15);
+  // var view = map.getView();
+  // var res = view.getResolution();
+  // view.setResolution(res * 1.15);
 }, 200);
 
 window.addEventListener('resize', function() {
