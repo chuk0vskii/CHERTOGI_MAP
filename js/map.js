@@ -26,6 +26,7 @@ var layer = new ol.layer.Tile({
     tileGrid: mapTileGrid,
     tilePixelRatio: 1.00000000,
     url: "TILES/{z}/{x}/{y}.webp",
+    interpolate: true  // ← явно включаем интерполяцию
   })
 });
 
