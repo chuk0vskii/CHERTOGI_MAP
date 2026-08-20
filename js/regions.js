@@ -5,35 +5,18 @@ let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
   zIndex: 5,
   style: function(feature) {
-    const name = feature.get('name') || '';
     const isHover = feature.get('hover') || false;
-
     const scale = isHover ? 0.85 : 0.65;
 
-    return [
-      // Иконка
-      new ol.style.Style({
-        image: new ol.style.Icon({
-          src: '/CHERTOGI_MAP/icons/marker3.png?v=2', // ← добавил ?v=2
-          scale: scale,
-          anchor: [0.5, 1],
-          anchorXUnits: 'fraction',
-          anchorYUnits: 'fraction'
-        })
-      }),
-      // Название региона
-      new ol.style.Style({
-        text: new ol.style.Text({
-          text: name,
-          font: isHover ? 'bold 14px Arial' : 'bold 12px Arial',
-          fill: new ol.style.Fill({ color: '#ffffff' }),
-          stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.8)', width: 4 }),
-          textAlign: 'center',
-          textBaseline: 'top',
-          offsetY: isHover ? 14 : 10
-        })
+    return new ol.style.Style({
+      image: new ol.style.Icon({
+        src: '/CHERTOGI_MAP/icons/marker3.png?v=2',
+        scale: scale,
+        anchor: [0.5, 1],
+        anchorXUnits: 'fraction',
+        anchorYUnits: 'fraction'
       })
-    ];
+    });
   }
 });
 
