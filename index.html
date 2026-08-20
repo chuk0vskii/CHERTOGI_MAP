@@ -86,10 +86,11 @@
   <script>
     (function() {
       // ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
-      const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { createClient } = supabase;
+      const _supabase = createClient(
+        'https://djieimjwhgjgsjcysceh.supabase.co',
+        'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi'
+      );
       console.log('✅ Supabase подключён');
 
       // ===== КАРТА =====
@@ -203,7 +204,7 @@
 
       // ===== ЗАГРУЗКА РЕГИОНОВ ИЗ БАЗЫ =====
       async function loadRegions() {
-        const { data, error } = await supabase
+        const { data, error } = await _supabase
           .from('regions')
           .select('*')
           .eq('is_active', true);
