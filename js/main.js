@@ -1,6 +1,6 @@
 // ===== ТОЧКА ВХОДА =====
 
-// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ =====
+// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ (увеличение иконки) =====
 let hoveredRegion = null;
 
 map.on('pointermove', function(event) {
@@ -13,10 +13,12 @@ map.on('pointermove', function(event) {
     }
   });
 
+  // Сбрасываем старый hover
   if (hoveredRegion) {
     hoveredRegion.set('hover', false);
   }
 
+  // Устанавливаем новый
   if (hit && hit.getGeometry() instanceof ol.geom.Point) {
     hoveredRegion = hit;
     hoveredRegion.set('hover', true);
@@ -26,6 +28,7 @@ map.on('pointermove', function(event) {
     map.getTargetElement().style.cursor = '';
   }
 
+  // Обновляем слой
   regionLayer.changed();
 });
 
@@ -45,27 +48,23 @@ map.on('click', function(event) {
     const name = hit.get('name');
     const desc = hit.get('description');
     
-    // Проверяем, что функция openSidebar существует
     if (typeof openSidebar === 'function') {
       openSidebar(regionId, name, desc);
     } else {
-      console.error('❌ Функция openSidebar не найдена! Проверьте sidebar.js');
-      // Запасной вариант: alert
+      console.error('❌ Функция openSidebar не найдена!');
       alert(`📍 ${name}\n\n${desc}`);
     }
   }
 });
 
-// ===== ДОПОЛНИТЕЛЬНО: КЛИК ПО ИКОНКЕ (для надёжности) =====
-// Некоторые браузеры могут не срабатывать на клик по иконке через forEachFeatureAtPixel
-// Добавляем альтернативный обработчик через координаты
+// ===== ДОПОЛНИТЕЛЬНЫЙ ОБРАБОТЧИК (по координатам, для надёжности) =====
 map.on('click', function(event) {
   const coordinate = event.coordinate;
   const features = regionLayer.getSource().getFeatures();
 
   let hitFeature = null;
   let minDist = Infinity;
-  const clickRadius = 30; // радиус клика вокруг иконки
+  const clickRadius = 30;
 
   for (const feature of features) {
     const geom = feature.getGeometry();
@@ -82,7 +81,6 @@ map.on('click', function(event) {
     }
   }
 
-  // Если предыдущий обработчик не сработал, но hitFeature найден
   if (hitFeature && typeof openSidebar === 'function') {
     const regionId = hitFeature.get('id');
     const name = hitFeature.get('name');
