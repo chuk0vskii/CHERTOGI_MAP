@@ -1,4 +1,4 @@
-// ===== КНОПКИ-ОВЕРЛЕИ (как у знакомого) =====
+// ===== КНОПКИ-ОВЕРЛЕИ =====
 const markerOverlays = [];
 
 function createMarkerOverlay(regionId, name, description, x, y) {
@@ -7,7 +7,7 @@ function createMarkerOverlay(regionId, name, description, x, y) {
   element.className = 'marker-button';
   element.innerHTML = `
     <img src="/CHERTOGI_MAP/icons/marker3.png" alt="${name}">
-    <span class="marker-label">${name}</span>
+    <span class="marker-tooltip">${name}</span>
   `;
 
   // Создаём Overlay
@@ -15,11 +15,11 @@ function createMarkerOverlay(regionId, name, description, x, y) {
     element: element,
     position: [x, y],
     positioning: 'bottom-center',
-    offset: [0, -10],
+    offset: [0, -8],
     stopEvent: false
   });
 
-  // Обработчик клика (как у обычной кнопки!)
+  // Обработчик клика
   element.addEventListener('click', function(e) {
     e.stopPropagation();
     if (typeof openSidebar === 'function') {
@@ -35,7 +35,7 @@ function createMarkerOverlay(regionId, name, description, x, y) {
   markerOverlays.push(overlay);
 }
 
-// ===== ЗАГРУЗКА РЕГИОНОВ В ОВЕРЛЕИ =====
+// ===== ЗАГРУЗКА РЕГИОНОВ =====
 async function loadMarkers() {
   const { data, error } = await _supabase
     .from('regions')
@@ -47,11 +47,9 @@ async function loadMarkers() {
     return;
   }
 
-  // Удаляем старые оверлеи
   markerOverlays.forEach(overlay => map.removeOverlay(overlay));
   markerOverlays.length = 0;
 
-  // Создаём новые
   data.forEach(region => {
     createMarkerOverlay(
       region.id,
