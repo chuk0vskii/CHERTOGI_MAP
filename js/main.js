@@ -1,53 +1,22 @@
-// ===== ТОЧКА ВХОДА =====
-
-// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ =====
-let hoveredRegion = null;
-
-map.on('pointermove', function(event) {
-  const pixel = event.pixel;
-  const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
-    return feature;
-  }, {
-    layerFilter: function(layer) {
-      return layer === regionLayer;
-    }
-  });
-
-  if (hoveredRegion) {
-    hoveredRegion.set('hover', false);
-  }
-
-  if (hit && hit.getGeometry() instanceof ol.geom.Point) {
-    hoveredRegion = hit;
-    hoveredRegion.set('hover', true);
-    map.getTargetElement().style.cursor = 'pointer';
-  } else {
-    hoveredRegion = null;
-    map.getTargetElement().style.cursor = '';
-  }
-
-  regionLayer.changed();
-});
-
-// ===== КЛИК (с проверкой попадания в круг) =====
+// ===== КЛИК ПО ИКОНКЕ =====
 map.on('click', function(event) {
   const coordinate = event.coordinate;
+  const features = regionLayer.getSource().getFeatures();
 
   let hitFeature = null;
   let minDist = Infinity;
 
-  const features = regionLayer.getSource().getFeatures();
-
   for (const feature of features) {
     const geom = feature.getGeometry();
     if (geom instanceof ol.geom.Point) {
-      const geomCoords = geom.getCoordinates();
-      const dx = coordinate[0] - geomCoords[0];
-      const dy = coordinate[1] - geomCoords[1];
+      const dx = coordinate[0] - geom.getCoordinates()[0];
+      const dy = coordinate[1] - geom.getCoordinates()[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const radius = feature.get('radius') || 100;
 
-      if (dist <= radius && dist < minDist) {
+      // зона клика = размер иконки + запас
+      const clickRadius = REGION_ICON_SIZE / 2 + 10;
+
+      if (dist <= clickRadius && dist < minDist) {
         minDist = dist;
         hitFeature = feature;
       }
