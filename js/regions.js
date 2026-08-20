@@ -1,11 +1,12 @@
-
 // ===== СЛОЙ РЕГИОНОВ =====
+const REGION_RADIUS = 200; // ← меняй тут размер
+
 let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
   zIndex: 5,
   style: function(feature) {
     const name = feature.get('name') || '';
-    const radius = feature.get('radius') || 350;
+    const radius = feature.get('radius') || REGION_RADIUS;
     const color = feature.get('color') || 'rgba(255, 215, 0, 0.25)';
     const borderColor = feature.get('borderColor') || 'rgba(255, 215, 0, 0.6)';
 
@@ -20,7 +21,7 @@ let regionLayer = new ol.layer.Vector({
       new ol.style.Style({
         text: new ol.style.Text({
           text: name,
-          font: 'bold 16px Arial',
+          font: 'bold 14px Arial',
           fill: new ol.style.Fill({ color: '#ffffff' }),
           stroke: new ol.style.Stroke({ color: 'rgba(0,0,0,0.7)', width: 3 }),
           textAlign: 'center',
@@ -33,7 +34,7 @@ let regionLayer = new ol.layer.Vector({
 
 map.addLayer(regionLayer);
 
-// ===== ЗАГРУЗКА РЕГИОНОВ ИЗ БАЗЫ =====
+// ===== ЗАГРУЗКА РЕГИОНОВ =====
 async function loadRegions() {
   const { data, error } = await _supabase
     .from('regions')
@@ -53,7 +54,7 @@ async function loadRegions() {
       id: region.id,
       name: region.name,
       description: region.description,
-      radius: region.radius,
+      radius: region.radius || REGION_RADIUS,
       color: region.color,
       borderColor: region.border_color
     });
