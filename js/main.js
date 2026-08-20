@@ -1,6 +1,6 @@
 // ===== ТОЧКА ВХОДА =====
 
-// ===== ВЗАИМОДЕЙСТВИЕ С РЕГИОНАМИ (подсветка при наведении) =====
+// ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ =====
 let hoveredRegion = null;
 
 map.on('pointermove', function(event) {
@@ -29,7 +29,7 @@ map.on('pointermove', function(event) {
   regionLayer.changed();
 });
 
-// ===== КЛИК ПО РЕГИОНУ (с проверкой попадания в круг) =====
+// ===== КЛИК (с проверкой попадания в круг) =====
 map.on('click', function(event) {
   const coordinate = event.coordinate;
 
@@ -45,7 +45,7 @@ map.on('click', function(event) {
       const dx = coordinate[0] - geomCoords[0];
       const dy = coordinate[1] - geomCoords[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const radius = feature.get('radius') || 200;
+      const radius = feature.get('radius') || 100;
 
       if (dist <= radius && dist < minDist) {
         minDist = dist;
