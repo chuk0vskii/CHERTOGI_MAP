@@ -68,6 +68,32 @@
   <script src="js/sidebar.js"></script>
   <script src="js/reports.js"></script>
   <script src="js/main.js"></script>
+<!-- ОТЛАДОЧНАЯ КНОПКА -->
+<button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+  🎯 Координаты
+</button>
 
+<script>
+  document.getElementById('get-coords-btn').addEventListener('click', function() {
+    // Включаем режим выбора координат
+    alert('Кликни на карту в нужное место');
+    
+    const handler = function(e) {
+      const coords = e.coordinate;
+      alert(`Координаты:\nX: ${coords[0]}\nY: ${coords[1]}`);
+      
+      // Копируем в буфер обмена
+      const text = `${coords[0]}, ${coords[1]}`;
+      navigator.clipboard.writeText(text).then(() => {
+        console.log('✅ Скопировано:', text);
+      });
+      
+      // Отключаем обработчик после первого клика
+      map.un('click', handler);
+    };
+    
+    map.on('click', handler);
+  });
+</script>
 </body>
 </html>
