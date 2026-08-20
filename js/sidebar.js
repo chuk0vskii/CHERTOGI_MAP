@@ -1,4 +1,3 @@
-
 // ===== БОКОВАЯ ПАНЕЛЬ =====
 let currentRegionId = null;
 const sidebar = document.getElementById('region-sidebar');
