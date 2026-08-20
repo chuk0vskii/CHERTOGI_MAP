@@ -2,7 +2,7 @@
 
 // ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ (увеличение иконки) =====
 let hoveredRegion = null;
-const HOVER_RADIUS = 40; // радиус для наведения
+const HOVER_RADIUS = 25; // радиус для наведения (чуть меньше, так как иконка стала меньше)
 
 map.on('pointermove', function(event) {
   const coordinate = event.coordinate;
