@@ -9,7 +9,7 @@ let regionLayer = new ol.layer.Vector({
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        src: 'icons/METKAKRAYA.png',     // ← правильный путь
+        src: '/CHERTOGI_MAP/icons/marker2.png', // ← ИСПРАВЛЕННЫЙ ПУТЬ
         scale: REGION_ICON_SIZE / 64,
         anchor: [0.5, 1],
         anchorXUnits: 'fraction',
