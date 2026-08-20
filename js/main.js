@@ -2,7 +2,7 @@
 
 // ===== ПОДСВЕТКА ПРИ НАВЕДЕНИИ =====
 let hoveredRegion = null;
-const HOVER_RADIUS = 25;
+const CLICK_RADIUS = 35; // ← увеличен радиус
 
 map.on('pointermove', function(event) {
   const coordinate = event.coordinate;
@@ -19,7 +19,7 @@ map.on('pointermove', function(event) {
       const dy = coordinate[1] - geomCoords[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist <= HOVER_RADIUS && dist < minDist) {
+      if (dist <= CLICK_RADIUS && dist < minDist) {
         minDist = dist;
         hitFeature = feature;
       }
@@ -58,7 +58,8 @@ map.on('click', function(event) {
       const dy = coordinate[1] - geomCoords[1];
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist <= HOVER_RADIUS && dist < minDist) {
+      // ← увеличен радиус до 50 для клика
+      if (dist <= 50 && dist < minDist) {
         minDist = dist;
         hitFeature = feature;
       }
