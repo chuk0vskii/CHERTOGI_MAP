@@ -1,10 +1,44 @@
 // ===== ТОЧКА ВХОДА =====
 console.log('✅ Карта и маркеры загружены');
 
-// Загружаем маркеры и облака
+// Скрываем карту при загрузке (чтобы не было видно подгрузки)
+document.getElementById('map').style.opacity = '0';
+
 async function init() {
-  await loadMarkers();
-  await loadClouds();
+  try {
+    // Загружаем облака (они должны быть первыми)
+    if (typeof loadClouds === 'function') {
+      await loadClouds();
+      console.log('✅ Облака загружены');
+    }
+    
+    // Загружаем маркеры
+    if (typeof loadMarkers === 'function') {
+      await loadMarkers();
+      console.log('✅ Маркеры загружены');
+    }
+    
+    // Загружаем админку
+    if (typeof loadAdminRegions === 'function') {
+      await loadAdminRegions();
+    }
+    
+    // Показываем карту только после загрузки всего
+    document.getElementById('map').style.opacity = '1';
+    document.getElementById('map').style.transition = 'opacity 0.5s ease';
+    
+    console.log('✅ Всё загружено! Карта показана.');
+    
+  } catch (error) {
+    console.error('❌ Ошибка загрузки:', error);
+    // Всё равно показываем карту, даже если ошибка
+    document.getElementById('map').style.opacity = '1';
+  }
 }
 
-init();
+// Запускаем после загрузки страницы
+if (document.readyState === 'complete') {
+  init();
+} else {
+  window.addEventListener('load', init);
+}
