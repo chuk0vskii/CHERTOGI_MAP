@@ -1,5 +1,5 @@
 // ===== РЕГИОНЫ КАК PNG-ИКОНКИ =====
-const REGION_ICON_SIZE = 48;
+const REGION_ICON_SIZE = 20; // ← было 48, уменьшили в 2.4 раза (48 / 2.4 = 20)
 
 let regionLayer = new ol.layer.Vector({
   source: new ol.source.Vector(),
@@ -9,7 +9,7 @@ let regionLayer = new ol.layer.Vector({
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        src: '/CHERTOGI_MAP/icons/marker2.png', // ← ИСПРАВЛЕННЫЙ ПУТЬ
+        src: '/CHERTOGI_MAP/icons/marker2.png',
         scale: REGION_ICON_SIZE / 64,
         anchor: [0.5, 1],
         anchorXUnits: 'fraction',
