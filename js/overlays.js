@@ -1,8 +1,24 @@
 // ===== КНОПКИ-ОВЕРЛЕИ =====
 const markerOverlays = [];
 
+// ===== КООРДИНАТЫ ОБЛАКА =====
+const CLOUD_EXTENT = [3950, -3590, 5150, -2500];
+
+// ===== ФУНКЦИЯ ПРОВЕРКИ: находится ли точка под облаком =====
+function isUnderCloud(x, y) {
+  return x >= CLOUD_EXTENT[0] && 
+         x <= CLOUD_EXTENT[2] && 
+         y >= CLOUD_EXTENT[1] && 
+         y <= CLOUD_EXTENT[3];
+}
+
 function createMarkerOverlay(regionId, name, description, x, y) {
-  // Создаём HTML-элемент кнопки
+  // Если метка под облаком — НЕ СОЗДАЁМ её
+  if (isUnderCloud(x, y)) {
+    console.log(`🌫️ Метка "${name}" скрыта облаком`);
+    return;
+  }
+
   const element = document.createElement('div');
   element.className = 'marker-button';
   element.innerHTML = `
@@ -10,7 +26,6 @@ function createMarkerOverlay(regionId, name, description, x, y) {
     <span class="marker-tooltip">${name}</span>
   `;
 
-  // Создаём Overlay
   const overlay = new ol.Overlay({
     element: element,
     position: [x, y],
@@ -19,7 +34,6 @@ function createMarkerOverlay(regionId, name, description, x, y) {
     stopEvent: false
   });
 
-  // Обработчик клика
   element.addEventListener('click', function(e) {
     e.stopPropagation();
     if (typeof openSidebar === 'function') {
@@ -30,12 +44,10 @@ function createMarkerOverlay(regionId, name, description, x, y) {
     }
   });
 
-  // Добавляем на карту
   map.addOverlay(overlay);
   markerOverlays.push(overlay);
 }
 
-// ===== ЗАГРУЗКА РЕГИОНОВ =====
 async function loadMarkers() {
   const { data, error } = await _supabase
     .from('regions')
@@ -47,9 +59,11 @@ async function loadMarkers() {
     return;
   }
 
+  // Очищаем старые оверлеи
   markerOverlays.forEach(overlay => map.removeOverlay(overlay));
   markerOverlays.length = 0;
 
+  // Создаём метки только для регионов вне облака
   data.forEach(region => {
     createMarkerOverlay(
       region.id,
@@ -60,5 +74,5 @@ async function loadMarkers() {
     );
   });
 
-  console.log(`✅ Загружено ${data.length} маркеров как оверлеи`);
+  console.log(`✅ Загружено ${markerOverlays.length} маркеров (${data.length - markerOverlays.length} скрыто облаком)`);
 }
