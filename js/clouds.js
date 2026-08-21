@@ -22,8 +22,7 @@ async function loadClouds() {
   }
 
   data.forEach(region => {
-    // Используем cloud_x и cloud_y для облака
-    const cx = region.cloud_x || region.x;  // если нет cloud_x — берём x
+    const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
     const halfWidth = CLOUD_WIDTH / 2;
@@ -31,7 +30,7 @@ async function loadClouds() {
 
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud.png?v=2',
+        url: '/CHERTOGI_MAP/cloud2.png?v=1', // ← НОВОЕ НАЗВАНИЕ
         imageExtent: [
           cx - halfWidth,
           cy - halfHeight,
@@ -48,5 +47,5 @@ async function loadClouds() {
     cloudLayers.push(cloudLayer);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков для закрытых регионов (cloud2.png)`);
 }
