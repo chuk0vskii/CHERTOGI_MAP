@@ -1,9 +1,9 @@
 // ===== КАРТА =====
-var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+var mapExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
 var mapMinZoom = 0;
 var mapMaxZoom = 5;
 var mapMaxResolution = 1.00000000;
-var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, -400.00000000];
+var tileExtent = [0.00000000, -7026.00000000, 9189.00000000, 0.00000000];
 var tileWidth = 512;
 var tileHeight = 512;
 
@@ -38,8 +38,8 @@ var map = new ol.Map({
     extent: mapExtent,
     maxResolution: mapTileGrid.getResolution(mapMinZoom),
     constrainOnlyCenter: false,
-    center: [9189 / 2, -7026 / 2],  // ← центр карты
-    zoom: 2.2                       // ← начальный зум (чем меньше число, тем дальше)
+    center: [9189 / 2, -7026 / 2],
+    zoom: 2.2
   })
 });
 
