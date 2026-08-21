@@ -1,12 +1,12 @@
-// ===== ОБЛАКА ДЛЯ ЗАКРЫТЫХ РЕГИОНОВ =====
+// Clouds for closed regions
 const cloudLayers = [];
 
-// ===== НАСТРОЙКИ РАЗМЕРА ОБЛАКА =====
+// Cloud size settings
 const CLOUD_WIDTH = 1200;
 const CLOUD_HEIGHT = 1200;
 
 async function loadClouds() {
-  // Удаляем старые облака
+  // Remove old clouds
   cloudLayers.forEach(layer => map.removeLayer(layer));
   cloudLayers.length = 0;
 
@@ -17,7 +17,7 @@ async function loadClouds() {
     .eq('is_open', false);
 
   if (error) {
-    console.error('❌ Ошибка загрузки закрытых регионов:', error);
+    console.error('Error loading closed regions:', error);
     return;
   }
 
@@ -47,5 +47,5 @@ async function loadClouds() {
     cloudLayers.push(cloudLayer);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков для закрытых регионов (cloud2.png)`);
+  console.log(`Added ${data.length} clouds for closed regions (cloud2.png)`);
 }
