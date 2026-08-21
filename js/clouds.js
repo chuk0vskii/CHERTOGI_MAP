@@ -47,5 +47,5 @@ async function loadClouds() {
     cloudLayers.push(cloudLayer);
   });
 
-  console.log(`Added ${data.length} clouds for closed regions (cloud2.png)`);
+  console.log(`Added ${data.length} clouds for closed regions (cloud3.png)`);
 }
