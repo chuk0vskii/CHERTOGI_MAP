@@ -2,7 +2,7 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
-const CLOUD_SIZE = 160; // ← 240 / 1.5 = 160
+const CLOUD_SIZE = 190; // ← 240 / 1.5 = 160
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
