@@ -22,16 +22,24 @@ function openSidebar(regionId, name, description, imageUrl) {
   }
 
   sidebar.style.display = 'block';
-  setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
+  sidebar.classList.add('open'); // ← добавляем класс для анимации
+  
+  setTimeout(() => { 
+    sidebar.style.transform = 'translateX(0)'; 
+  }, 10);
+  
   loadReports(regionId);
 }
 
 function closeSidebar() {
+  sidebar.classList.remove('open'); // ← убираем класс
   sidebar.style.transform = 'translateX(100%)';
-  setTimeout(() => { sidebar.style.display = 'none'; }, 300);
+  setTimeout(() => { 
+    sidebar.style.display = 'none'; 
+  }, 300);
 }
 
-// Закрытие по крестику (SVG)
+// Закрытие по крестику
 document.getElementById('close-icon').addEventListener('click', function(e) {
   e.stopPropagation();
   closeSidebar();
