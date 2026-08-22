@@ -2,8 +2,7 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
-// ===== СТАРЫЙ РАЗМЕР (как у меток) =====
-const CLOUD_SIZE = 24; // ← был 1200, стал 24
+const CLOUD_SIZE = 120; // ← увеличен в 5 раз
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
@@ -27,7 +26,6 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    // ===== ЭЛЕМЕНТ КАК У МАРКЕРОВ =====
     const element = document.createElement('div');
     element.className = 'marker-button';
     element.style.position = 'absolute';
@@ -36,7 +34,6 @@ async function loadClouds() {
     element.style.transform = 'translate(-50%, -50%)';
     element.style.zIndex = '15';
     
-    // Картинка облака (маленькая)
     const img = document.createElement('img');
     img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
     img.style.width = CLOUD_SIZE + 'px';
@@ -45,12 +42,10 @@ async function loadClouds() {
     img.style.pointerEvents = 'auto';
     img.style.userSelect = 'none';
     img.draggable = false;
-    // ← УБИРАЕМ УВЕЛИЧЕНИЕ ПРИ НАВЕДЕНИИ
-    img.style.transition = 'none'; 
+    img.style.transition = 'none'; // ← убираем анимацию
     
     element.appendChild(img);
 
-    // ===== ТУЛТИП =====
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
@@ -63,10 +58,11 @@ async function loadClouds() {
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease';
     tooltip.style.whiteSpace = 'nowrap';
     tooltip.style.pointerEvents = 'none';
+    tooltip.style.display = 'inline-block';
+    tooltip.style.maxWidth = 'none';
     
     element.appendChild(tooltip);
 
-    // ===== НАВЕДЕНИЕ (без увеличения) =====
     element.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
@@ -77,12 +73,10 @@ async function loadClouds() {
       tooltip.style.visibility = 'hidden';
     });
 
-    // ===== КЛИК (блокируем) =====
     element.addEventListener('click', function(e) {
       e.stopPropagation();
     });
 
-    // ===== ОВЕРЛЕЙ =====
     const overlay = new ol.Overlay({
       element: element,
       position: [cx, cy],
@@ -96,5 +90,5 @@ async function loadClouds() {
     cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков как оверлеи (размер ${CLOUD_SIZE}px)`);
+  console.log(`✅ Добавлено ${data.length} облаков (размер ${CLOUD_SIZE}px)`);
 }
