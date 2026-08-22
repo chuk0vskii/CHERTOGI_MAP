@@ -4,7 +4,7 @@ const cloudOverlays = [];
 
 const CLOUD_WIDTH = 1200;
 const CLOUD_HEIGHT = 1200;
-const HIT_ZONE_PADDING = 300; // ← добавляем 300 пикселей к зоне активации
+
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
