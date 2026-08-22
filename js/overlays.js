@@ -5,18 +5,27 @@ function createMarkerOverlay(regionId, name, description, x, y) {
   const element = document.createElement('div');
   element.className = 'marker-button';
   element.innerHTML = `
-    <img src="/CHERTOGI_MAP/icons/marker3.png" alt="${name}">
+    <img src="/CHERTOGI_MAP/icons/marker3.png" alt="${name}" width="24" height="24">
     <span class="marker-tooltip">${name}</span>
   `;
 
-  const overlay = new ol.Overlay({
-    element: element,
-    position: [x, y],
-    positioning: 'bottom-center',
-    offset: [0, -8],
-    stopEvent: false
+  // ===== УВЕЛИЧЕНИЕ ПРИ НАВЕДЕНИИ =====
+  element.addEventListener('mouseenter', function() {
+    const img = this.querySelector('img');
+    if (img) {
+      img.style.transform = 'scale(1.2)';
+      img.style.transition = 'transform 0.2s ease';
+    }
   });
 
+  element.addEventListener('mouseleave', function() {
+    const img = this.querySelector('img');
+    if (img) {
+      img.style.transform = 'scale(1)';
+    }
+  });
+
+  // ===== КЛИК =====
   element.addEventListener('click', function(e) {
     e.stopPropagation();
     if (typeof openSidebar === 'function') {
@@ -25,6 +34,14 @@ function createMarkerOverlay(regionId, name, description, x, y) {
       console.error('❌ Функция openSidebar не найдена!');
       alert(`📍 ${name}\n\n${description}`);
     }
+  });
+
+  const overlay = new ol.Overlay({
+    element: element,
+    position: [x, y],
+    positioning: 'bottom-center',
+    offset: [0, -8],
+    stopEvent: false
   });
 
   map.addOverlay(overlay);
@@ -36,7 +53,7 @@ async function loadMarkers() {
     .from('regions')
     .select('*')
     .eq('is_active', true)
-    .eq('is_open', true); // ← ТОЛЬКО ОТКРЫТЫЕ
+    .eq('is_open', true);
 
   if (error) {
     console.error('❌ Ошибка загрузки регионов:', error);
