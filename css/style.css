@@ -4,7 +4,7 @@
 /* ===== Calypso — локальный шрифт ===== */
 @font-face {
   font-family: 'Calypso';
-  src: url('/fonts/Calypso.ttf') format('truetype');
+src: url('/CHERTOGI_MAP/fonts/Calypso.ttf?v=1') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
