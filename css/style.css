@@ -317,3 +317,13 @@ html, body {
 #report-modal {
   display: none !important;
 }
+
+/* ===== ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ ===== */
+.cloud-marker img {
+  transition: none !important;
+  transform: none !important;
+}
+
+.cloud-marker:hover img {
+  transform: none !important;
+}
