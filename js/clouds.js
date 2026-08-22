@@ -1,7 +1,7 @@
 // Clouds for closed regions
 const cloudLayers = [];
 
-const CLOUD_SIZE = 600;
+const CLOUD_SIZE = 1200;
 const OFFSET_Y = -150; // ← поднятие вверх (отрицательное значение)
 
 async function loadClouds() {
