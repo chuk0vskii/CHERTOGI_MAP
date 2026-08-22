@@ -1,7 +1,7 @@
 // ===== КНОПКИ-ОВЕРЛЕИ =====
 const markerOverlays = [];
 
-function createMarkerOverlay(regionId, name, description, x, y) {
+function createMarkerOverlay(regionId, name, description, x, y, difficulty) {
   const element = document.createElement('div');
   element.className = 'marker-button';
   element.innerHTML = `
@@ -29,7 +29,7 @@ function createMarkerOverlay(regionId, name, description, x, y) {
   element.addEventListener('click', function(e) {
     e.stopPropagation();
     if (typeof openSidebar === 'function') {
-      openSidebar(regionId, name, description);
+      openSidebar(regionId, name, description, difficulty); // ← ПЕРЕДАЁМ СЛОЖНОСТЬ
     } else {
       console.error('❌ Функция openSidebar не найдена!');
       alert(`📍 ${name}\n\n${description}`);
@@ -69,7 +69,8 @@ async function loadMarkers() {
       region.name,
       region.description,
       region.x,
-      region.y
+      region.y,
+      region.difficulty // ← ПЕРЕДАЁМ
     );
   });
 
