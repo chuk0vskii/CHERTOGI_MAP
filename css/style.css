@@ -105,7 +105,7 @@ html, body {
 #region-image-placeholder {
   width: 100%;
   height: 200px;
-  background: #1a1a1a;
+  background: #2a2a2a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,11 +114,12 @@ html, body {
   font-family: 'Philosopher', sans-serif;
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 20px;
 }
 
 /* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
-  padding: 20px 24px 24px 24px;
+  padding: 0 40px 40px 40px;
 }
 
 /* ===== ЗАКРЫТИЕ ===== */
@@ -140,7 +141,7 @@ html, body {
 /* ===== ЗАГОЛОВОК ===== */
 #sidebar-title {
   color: #ffffff;
-  font-size: 28px;
+  font-size: 21px;
   margin-bottom: 6px;
   font-family: 'Calypso', serif !important;
   font-weight: normal;
