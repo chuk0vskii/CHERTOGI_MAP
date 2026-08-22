@@ -2,7 +2,7 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
-const CLOUD_SIZE = 240; // ← увеличен в 2 раза (было 120)
+const CLOUD_SIZE = 160; // ← 240 / 1.5 = 160
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
@@ -27,7 +27,7 @@ async function loadClouds() {
     const cy = region.cloud_y || region.y;
 
     const element = document.createElement('div');
-    element.className = 'cloud-marker'; // ← новый класс
+    element.className = 'cloud-marker';
     element.style.position = 'absolute';
     element.style.pointerEvents = 'auto';
     element.style.cursor = 'default';
@@ -45,6 +45,7 @@ async function loadClouds() {
     
     element.appendChild(img);
 
+    // ===== ТУЛТИП КАК У МЕТОК =====
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
@@ -52,13 +53,31 @@ async function loadClouds() {
     tooltip.style.top = '50%';
     tooltip.style.left = '50%';
     tooltip.style.transform = 'translate(-50%, -50%)';
+    tooltip.style.background = 'rgba(0, 0, 0, 0.85)';
+    tooltip.style.color = '#ffffff';
+    tooltip.style.padding = '6px 16px';
+    tooltip.style.borderRadius = '6px';
+    tooltip.style.fontSize = '14px';
+    tooltip.style.fontWeight = '700';
+    tooltip.style.fontFamily = "'Philosopher', 'Arial', sans-serif";
+    tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.border = '1px solid rgba(255, 215, 0, 0.15)';
+    tooltip.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease';
-    tooltip.style.whiteSpace = 'nowrap';
-    tooltip.style.pointerEvents = 'none';
-    tooltip.style.display = 'inline-block';
-    tooltip.style.maxWidth = 'none';
+    tooltip.style.letterSpacing = '0.5px';
+    
+    // Стрелочка
+    const arrow = document.createElement('div');
+    arrow.style.position = 'absolute';
+    arrow.style.top = '100%';
+    arrow.style.left = '50%';
+    arrow.style.transform = 'translateX(-50%)';
+    arrow.style.border = '6px solid transparent';
+    arrow.style.borderTopColor = 'rgba(0, 0, 0, 0.85)';
+    tooltip.appendChild(arrow);
     
     element.appendChild(tooltip);
 
