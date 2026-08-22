@@ -125,12 +125,10 @@ html, body {
   margin: 0;
   padding: 0;
 }
-
-/* ===== КРЕСТИК (абсолютно поверх заглушки) ===== */
+/* ===== КРЕСТИК (плавное появление) ===== */
 #close-icon-container {
-  position: absolute;
+  position: sticky;
   top: 0;
-  right: 0;
   z-index: 20;
   display: flex;
   justify-content: flex-end;
@@ -142,13 +140,17 @@ html, body {
 #close-icon {
   pointer-events: auto;
   cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  opacity: 0.7;
+  opacity: 0; /* ← изначально прозрачный */
+  transition: opacity 0.6s ease-in-out; /* ← плавное появление */
+}
+
+/* ===== КОГДА ПАНЕЛЬ ОТКРЫТА — КРЕСТИК ВИДЕН ===== */
+#region-sidebar.open #close-icon {
+  opacity: 1; /* ← становится видимым */
 }
 
 #close-icon:hover {
-  transform: scale(1.15);
-  opacity: 1;
+  opacity: 0.8; /* ← при наведении чуть бледнеет (или можно убрать) */
 }
 
 /* ===== ЗАГЛУШКА (без отступов) ===== */
