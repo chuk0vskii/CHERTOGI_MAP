@@ -96,13 +96,13 @@ async function loadClouds() {
     });
 
     const overlay = new ol.Overlay({
-      element: element,
-      position: [cx, cy],
-      positioning: 'center-center',
-      offset: [0, 0],
-      stopEvent: true,
-      zIndex: 15
-    });
+  element: element,
+  position: [cx, cy],
+  positioning: 'center-center',
+  offset: [0, -80], // ← отрицательное значение поднимает вверх
+  stopEvent: true,
+  zIndex: 15
+});
 
     map.addOverlay(overlay);
     cloudOverlays.push(overlay);
