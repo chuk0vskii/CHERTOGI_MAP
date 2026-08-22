@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.maptiler.com/ol/v6.12.0/ol.css">
   <link rel="icon" type="image/png" href="favicon.png">
+  
   <!-- ПОЛИФИЛЛЫ -->
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 </head>
@@ -26,20 +27,28 @@
     </div>
   </div>
 
-  <div id="version-counter">⚙️ v1.0</div>
+  <div id="version-counter">v1.0</div>
   <div id="map"></div>
 
   <!-- КОНТЕЙНЕР ДЛЯ ОВЕРЛЕЕВ -->
   <div id="marker-container"></div>
 
-  <!-- БОКОВАЯ ПАНЕЛЬ -->
+  <!-- БОКОВАЯ ПАНЕЛЬ (ОБНОВЛЕННАЯ) -->
   <div id="region-sidebar">
     <button id="close-sidebar">✕</button>
-    <h2 id="sidebar-title">Название региона</h2>
-    <p id="sidebar-description">Описание региона</p>
-    <button id="report-btn">📝 Составить отчёт</button>
-    <div>
-      <h4>📋 Отчёты игроков</h4>
+    
+    <!-- КРАСНАЯ ЗАГЛУШКА ВМЕСТО КАРТИНКИ -->
+    <div id="region-image-placeholder">
+      Изображение региона
+    </div>
+    
+    <div class="panel-content">
+      <h2 id="sidebar-title">Название региона</h2>
+      <p id="sidebar-description">Описание региона</p>
+      
+      <button id="report-btn">Составить отчёт</button>
+      
+      <h4 id="reports-title">Отчёты игроков</h4>
       <div id="reports-list"><p>Загрузка...</p></div>
     </div>
   </div>
@@ -47,7 +56,7 @@
   <!-- МОДАЛЬНОЕ ОКНО -->
   <div id="report-modal">
     <div>
-      <h3>📝 Новый отчёт</h3>
+      <h3>Новый отчёт</h3>
       <p id="modal-region-name">Регион: Лесной край</p>
       <input id="report-author" type="text" placeholder="Ваше имя (опционально)">
       <textarea id="report-content" placeholder="Опишите события..."></textarea>
@@ -62,50 +71,50 @@
   <script src="https://cdn.maptiler.com/ol/v6.12.0/ol.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   
-<script src="js/config.js"></script>
-<script src="js/map.js"></script>
-<script src="js/clouds.js"></script>
-<script src="js/overlays.js"></script>
-<script src="js/sidebar.js"></script>
-<script src="js/reports.js"></script>
-<script src="js/admin.js"></script>
-<script src="js/main.js"></script>
-<!-- ОТЛАДОЧНАЯ КНОПКА -->
-<button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-  🎯 Координаты
-</button>
+  <script src="js/config.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/clouds.js"></script>
+  <script src="js/overlays.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/main.js"></script>
 
-<script>
-  document.getElementById('get-coords-btn').addEventListener('click', function() {
-    // Включаем режим выбора координат
-    alert('Кликни на карту в нужное место');
-    
-    const handler = function(e) {
-      const coords = e.coordinate;
-      alert(`Координаты:\nX: ${coords[0]}\nY: ${coords[1]}`);
-      
-      // Копируем в буфер обмена
-      const text = `${coords[0]}, ${coords[1]}`;
-      navigator.clipboard.writeText(text).then(() => {
-        console.log('✅ Скопировано:', text);
-      });
-      
-      // Отключаем обработчик после первого клика
-      map.un('click', handler);
-    };
-    
-    map.on('click', handler);
-  });
-</script>
-  <!-- ===== АДМИН-ПАНЕЛЬ ===== -->
-<button id="admin-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-  ⚙️ Админ
-</button>
+  <!-- ОТЛАДОЧНАЯ КНОПКА КООРДИНАТ -->
+  <button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    Координаты
+  </button>
 
-<div id="admin-panel" style="display: none; position: fixed; bottom: 80px; right: 20px; z-index: 9999; background: rgba(20, 15, 30, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 20px; max-height: 400px; overflow-y: auto; min-width: 250px; color: #e0d5c0; box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
-  <h3 style="color: #ffd700; margin-top: 0; font-family: 'Philosopher', serif;">🔐 Управление краями</h3>
-  <div id="admin-regions-list"></div>
-  <button id="admin-close-btn" style="margin-top: 12px; padding: 6px 16px; background: #4a0e0e; border: 1px solid #ffd700; border-radius: 6px; color: #ffd700; cursor: pointer;">Закрыть</button>
-</div>
+  <script>
+    document.getElementById('get-coords-btn').addEventListener('click', function() {
+      alert('Кликни на карту в нужное место');
+      
+      const handler = function(e) {
+        const coords = e.coordinate;
+        alert(`Координаты:\nX: ${coords[0]}\nY: ${coords[1]}`);
+        
+        const text = `${coords[0]}, ${coords[1]}`;
+        navigator.clipboard.writeText(text).then(() => {
+          console.log('Скопировано:', text);
+        });
+        
+        map.un('click', handler);
+      };
+      
+      map.on('click', handler);
+    });
+  </script>
+
+  <!-- АДМИН-ПАНЕЛЬ -->
+  <button id="admin-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    Админ
+  </button>
+
+  <div id="admin-panel" style="display: none; position: fixed; bottom: 80px; right: 20px; z-index: 9999; background: rgba(20, 15, 30, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 20px; max-height: 400px; overflow-y: auto; min-width: 250px; color: #e0d5c0; box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
+    <h3 style="color: #ffd700; margin-top: 0; font-family: 'Philosopher', serif;">Управление краями</h3>
+    <div id="admin-regions-list"></div>
+    <button id="admin-close-btn" style="margin-top: 12px; padding: 6px 16px; background: #4a0e0e; border: 1px solid #ffd700; border-radius: 6px; color: #ffd700; cursor: pointer;">Закрыть</button>
+  </div>
+
 </body>
 </html>
