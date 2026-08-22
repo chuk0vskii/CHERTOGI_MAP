@@ -22,8 +22,9 @@
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
       <a href="index.html" class="active">Карта</a>
-      <a href="znaki.html">Знаки</a>
-      <a href="put.html">Путь</a>
+      <a href="put.html">В путь</a>
+      <a href="bestiary.html">Бестиарий</a>
+      <a href="tree.html">Древо смерти</a>
     </div>
   </div>
 
@@ -35,14 +36,12 @@
 
   <!-- БОКОВАЯ ПАНЕЛЬ -->
   <div id="region-sidebar">
-    <!-- КРЕСТИК СВЕРХУ -->
     <div id="close-icon-container">
       <svg id="close-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
     
-    <!-- КРАСНАЯ ЗАГЛУШКА -->
     <div id="region-image-placeholder">
       Изображение региона
     </div>
@@ -50,12 +49,8 @@
     <div class="panel-content">
       <h2 id="sidebar-title">Название региона</h2>
       <p id="sidebar-description">Описание региона</p>
-      
-      <!-- СЛОЖНОСТЬ ПУТИ -->
       <div id="region-difficulty"></div>
-      
       <button id="report-btn">Составить отчёт</button>
-      
       <h4 id="reports-title">Отчёты игроков</h4>
       <div id="reports-list"><p>Загрузка...</p></div>
     </div>
@@ -96,19 +91,15 @@
   <script>
     document.getElementById('get-coords-btn').addEventListener('click', function() {
       alert('Кликни на карту в нужное место');
-      
       const handler = function(e) {
         const coords = e.coordinate;
         alert(`Координаты:\nX: ${coords[0]}\nY: ${coords[1]}`);
-        
         const text = `${coords[0]}, ${coords[1]}`;
         navigator.clipboard.writeText(text).then(() => {
           console.log('Скопировано:', text);
         });
-        
         map.un('click', handler);
       };
-      
       map.on('click', handler);
     });
   </script>
