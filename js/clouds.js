@@ -2,8 +2,10 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
+// ===== СТАРЫЙ РАЗМЕР (как у меток) =====
+const CLOUD_SIZE = 24; // ← был 1200, стал 24
+
 async function loadClouds() {
-  // Удаляем старые облака
   cloudLayers.forEach(layer => map.removeLayer(layer));
   cloudLayers.length = 0;
   
@@ -25,7 +27,7 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    // ===== СОЗДАЁМ ЭЛЕМЕНТ КАК У МАРКЕРОВ =====
+    // ===== ЭЛЕМЕНТ КАК У МАРКЕРОВ =====
     const element = document.createElement('div');
     element.className = 'marker-button';
     element.style.position = 'absolute';
@@ -34,19 +36,21 @@ async function loadClouds() {
     element.style.transform = 'translate(-50%, -50%)';
     element.style.zIndex = '15';
     
-    // Картинка облака (как иконка)
+    // Картинка облака (маленькая)
     const img = document.createElement('img');
     img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
-    img.style.width = '1200px';
-    img.style.height = '1200px';
+    img.style.width = CLOUD_SIZE + 'px';
+    img.style.height = CLOUD_SIZE + 'px';
     img.style.display = 'block';
     img.style.pointerEvents = 'auto';
     img.style.userSelect = 'none';
     img.draggable = false;
+    // ← УБИРАЕМ УВЕЛИЧЕНИЕ ПРИ НАВЕДЕНИИ
+    img.style.transition = 'none'; 
     
     element.appendChild(img);
 
-    // ===== ТУЛТИП (как у маркеров) =====
+    // ===== ТУЛТИП =====
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
@@ -62,7 +66,7 @@ async function loadClouds() {
     
     element.appendChild(tooltip);
 
-    // ===== НАВЕДЕНИЕ (как у маркеров) =====
+    // ===== НАВЕДЕНИЕ (без увеличения) =====
     element.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
@@ -78,7 +82,7 @@ async function loadClouds() {
       e.stopPropagation();
     });
 
-    // ===== ДОБАВЛЯЕМ ОВЕРЛЕЙ =====
+    // ===== ОВЕРЛЕЙ =====
     const overlay = new ol.Overlay({
       element: element,
       position: [cx, cy],
@@ -92,5 +96,5 @@ async function loadClouds() {
     cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков как оверлеи с тултипами`);
+  console.log(`✅ Добавлено ${data.length} облаков как оверлеи (размер ${CLOUD_SIZE}px)`);
 }
