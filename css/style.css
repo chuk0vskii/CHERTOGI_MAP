@@ -101,7 +101,7 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== КРЕСТИК (поверх заглушки) ===== */
+/* ===== КРЕСТИК ===== */
 #close-icon-container {
   position: sticky;
   top: 0;
@@ -110,6 +110,7 @@ html, body {
   justify-content: flex-end;
   padding: 12px 16px;
   pointer-events: none;
+  background: transparent;
 }
 
 #close-icon {
@@ -124,7 +125,7 @@ html, body {
   opacity: 1;
 }
 
-/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
+/* ===== ЗАГЛУШКА (без отступов) ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
@@ -137,7 +138,8 @@ html, body {
   font-family: 'Philosopher', sans-serif;
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  margin-top: -44px;
+  margin: 0;
+  padding: 0;
 }
 
 /* ===== КОНТЕНТ ПАНЕЛИ ===== */
@@ -167,7 +169,7 @@ html, body {
   text-align: left;
 }
 
-/* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
+/* ===== КНОПКА ===== */
 #report-btn {
   width: 100%;
   padding: 14px;
@@ -189,7 +191,7 @@ html, body {
   color: #ffffff;
 }
 
-/* ===== ЗАГОЛОВОК "ОТЧЁТЫ ИГРОКОВ" ===== */
+/* ===== ЗАГОЛОВОК ОТЧЁТОВ ===== */
 #reports-title {
   color: #ffffff;
   font-size: 20px;
