@@ -1,11 +1,10 @@
 /* ===== ПОДКЛЮЧЕНИЕ ШРИФТОВ ===== */
 @import url('https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&display=swap');
 
-/* ===== Calypso — загружаем локально, если есть ===== */
+/* ===== Calypso — локальный шрифт ===== */
 @font-face {
   font-family: 'Calypso';
-  src: url('/fonts/Calypso.woff2') format('woff2'),
-       url('/fonts/Calypso.woff') format('woff');
+  src: url('/fonts/Calypso.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -102,20 +101,6 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== ВСЕ ЗАГОЛОВКИ — CALYPSO ===== */
-#region-sidebar h2,
-#region-sidebar h3,
-#region-sidebar h4,
-#sidebar-title,
-#sidebar-title h1,
-#sidebar-title h2,
-#sidebar-title h3,
-#sidebar-title h4,
-#report-modal h3,
-#modal-region-name {
-  font-family: 'Calypso', serif !important;
-}
-
 #close-sidebar {
   position: sticky;
   top: 0;
@@ -128,6 +113,13 @@ html, body {
   padding: 0 8px;
   z-index: 10;
   font-family: 'Philosopher', sans-serif;
+}
+
+#sidebar-title {
+  color: #ffd700;
+  font-size: 28px;
+  margin-bottom: 6px;
+  font-family: 'Calypso', serif !important;
 }
 
 #sidebar-description {
@@ -155,6 +147,13 @@ html, body {
 
 #report-btn:hover {
   background: rgba(255, 215, 0, 0.15);
+}
+
+#region-sidebar h2,
+#region-sidebar h3,
+#region-sidebar h4,
+#region-sidebar .calypso {
+  font-family: 'Calypso', serif !important;
 }
 
 /* Список отчётов */
@@ -185,6 +184,19 @@ html, body {
   width: 90%;
   border: 1px solid rgba(255, 215, 0, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+#report-modal h3 {
+  color: #ffd700;
+  margin-bottom: 8px;
+  font-family: 'Calypso', serif !important;
+}
+
+#modal-region-name {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-family: 'Philosopher', sans-serif;
 }
 
 #report-author {
