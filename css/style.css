@@ -101,7 +101,7 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
+/* ===== КРАСНАЯ ЗАГЛУШКА (без отступа сверху) ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
@@ -114,32 +114,16 @@ html, body {
   font-family: 'Philosopher', sans-serif;
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  margin-bottom: 20px;
+  margin: 0; /* ← убрал отступ */
 }
 
 /* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
-  padding: 0 40px 40px 40px;
-  text-align: center;
+  padding: 20px 40px 40px 40px;
+  text-align: left; /* ← выравнивание по левому краю */
 }
 
-/* ===== ЗАКРЫТИЕ ===== */
-#close-sidebar {
-  position: sticky;
-  top: 0;
-  float: right;
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 28px;
-  cursor: pointer;
-  padding: 8px 16px;
-  z-index: 10;
-  font-family: 'Philosopher', sans-serif;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-/* ===== ЗАГОЛОВОК ===== */
+/* ===== ЗАГОЛОВОК (оставлен по центру) ===== */
 #sidebar-title {
   color: #ffffff;
   font-size: 21px;
@@ -147,7 +131,7 @@ html, body {
   font-family: 'Calypso', serif !important;
   font-weight: normal;
   letter-spacing: 4px;
-  text-align: center;
+  text-align: center; /* ← по центру */
 }
 
 /* ===== ОПИСАНИЕ ===== */
@@ -157,7 +141,7 @@ html, body {
   margin-bottom: 20px;
   color: #cccccc;
   font-family: 'Philosopher', sans-serif;
-  text-align: center;
+  text-align: left; /* ← по левому краю */
 }
 
 /* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
@@ -174,6 +158,7 @@ html, body {
   transition: all 0.3s;
   margin-bottom: 24px;
   font-family: 'Philosopher', sans-serif;
+  text-align: center;
 }
 
 #report-btn:hover {
@@ -191,14 +176,14 @@ html, body {
   border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 8px;
   margin-bottom: 12px;
-  text-align: center;
+  text-align: left; /* ← по левому краю */
 }
 
 /* ===== СПИСОК ОТЧЁТОВ ===== */
 #reports-list {
   font-family: 'Philosopher', sans-serif;
   color: #cccccc;
-  text-align: center;
+  text-align: left; /* ← по левому краю */
 }
 
 #reports-list p {
