@@ -2,6 +2,7 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
+// Размер облака в пикселях (будет масштабироваться при зуме)
 const CLOUD_SIZE = 200;
 
 async function loadClouds() {
@@ -27,40 +28,30 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    const halfSize = CLOUD_SIZE / 2;
+    // ===== СОЗДАЁМ ЭЛЕМЕНТ КАК У МАРКЕРОВ =====
+    const element = document.createElement('div');
+    element.className = 'cloud-marker';
+    element.style.position = 'absolute';
+    element.style.pointerEvents = 'auto';
+    element.style.cursor = 'default';
+    element.style.transform = 'translate(-50%, -50%)';
+    element.style.zIndex = '15';
+    
+    // Картинка облака
+    const img = document.createElement('img');
+    img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
+    img.style.width = CLOUD_SIZE + 'px';
+    img.style.height = CLOUD_SIZE + 'px';
+    img.style.display = 'block';
+    img.style.pointerEvents = 'auto';
+    img.style.userSelect = 'none';
+    img.draggable = false;
+    
+    element.appendChild(img);
 
-    // ===== 1. ОБЛАКО КАК СЛОЙ (масштабируется) =====
-    const cloudLayer = new ol.layer.Image({
-      source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
-        imageExtent: [
-          cx - halfSize,
-          cy - halfSize,
-          cx + halfSize,
-          cy + halfSize
-        ],
-        projection: 'PIXELS'
-      }),
-      zIndex: 15,
-      opacity: 1.0
-    });
-
-    map.addLayer(cloudLayer);
-    cloudLayers.push(cloudLayer);
-
-    // ===== 2. НЕВИДИМЫЙ ОВЕРЛЕЙ ДЛЯ ТУЛТИПА (НЕ БЛОКИРУЕТ КЛИКИ) =====
-    const overlayElement = document.createElement('div');
-    overlayElement.style.position = 'absolute';
-    overlayElement.style.width = CLOUD_SIZE + 'px';
-    overlayElement.style.height = CLOUD_SIZE + 'px';
-    overlayElement.style.pointerEvents = 'auto';
-    overlayElement.style.cursor = 'default';
-    overlayElement.style.background = 'rgba(0,0,0,0)';
-    overlayElement.style.transform = 'translate(-50%, -50%)';
-    overlayElement.style.zIndex = '20';
-
-    // Тултип
-    const tooltip = document.createElement('div');
+    // ===== ТУЛТИП =====
+    const tooltip = document.createElement('span');
+    tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край не исследован';
     tooltip.style.position = 'absolute';
     tooltip.style.top = '50%';
@@ -80,9 +71,8 @@ async function loadClouds() {
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease';
-    tooltip.style.zIndex = '20';
     tooltip.style.letterSpacing = '0.5px';
-
+    
     // Стрелочка
     const arrow = document.createElement('div');
     arrow.style.position = 'absolute';
@@ -92,39 +82,38 @@ async function loadClouds() {
     arrow.style.border = '6px solid transparent';
     arrow.style.borderTopColor = 'rgba(0, 0, 0, 0.85)';
     tooltip.appendChild(arrow);
-    overlayElement.appendChild(tooltip);
+    
+    element.appendChild(tooltip);
 
-    // Показываем тултип при наведении
-    overlayElement.addEventListener('mouseenter', function() {
+    // ===== НАВЕДЕНИЕ =====
+    element.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
-      tooltip.style.transform = 'translate(-50%, -50%) translateY(-8px)';
     });
 
-    overlayElement.addEventListener('mouseleave', function() {
+    element.addEventListener('mouseleave', function() {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
-      tooltip.style.transform = 'translate(-50%, -50%)';
     });
 
-    // НЕ БЛОКИРУЕМ КЛИКИ!
-    overlayElement.addEventListener('click', function(e) {
+    // ===== КЛИК НЕ БЛОКИРУЕМ (карта работает) =====
+    element.addEventListener('click', function(e) {
       // Ничего не делаем — клик проходит дальше
     });
 
-    // Добавляем оверлей (без stopEvent)
+    // ===== ДОБАВЛЯЕМ ОВЕРЛЕЙ (stopEvent: false) =====
     const overlay = new ol.Overlay({
-      element: overlayElement,
+      element: element,
       position: [cx, cy],
       positioning: 'center-center',
-      offset: [0, 0],
-      stopEvent: false, // ← НЕ БЛОКИРУЕМ КЛИКИ
-      zIndex: 20
+      offset: [0, -65],
+      stopEvent: false, // ← КЛИКИ ПРОХОДЯТ СКВОЗЬ
+      zIndex: 15
     });
 
     map.addOverlay(overlay);
     cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков (масштабируются, с тултипом)`);
+  console.log(`✅ Добавлено ${data.length} облаков (размер ${CLOUD_SIZE}px, клики проходят)`);
 }
