@@ -35,7 +35,7 @@ async function loadClouds() {
     // ===== САМО ОБЛАКО (картинка) =====
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud2.png?v=2',
+        url: '/CHERTOGI_MAP/cloud3.png?v=2',
         imageExtent: [
           cx - halfWidth,
           cy - halfHeight,
