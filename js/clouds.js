@@ -99,7 +99,7 @@ async function loadClouds() {
   element: element,
   position: [cx, cy],
   positioning: 'center-center',
-  offset: [0, -80], // ← отрицательное значение поднимает вверх
+  offset: [0, -40], // ← отрицательное значение поднимает вверх
   stopEvent: true,
   zIndex: 15
 });
