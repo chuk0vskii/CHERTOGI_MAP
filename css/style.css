@@ -101,15 +101,15 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== КАРТИНКА-ЗАГЛУШКА ===== */
+/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
-  background: #2a2a2a;
+  background: #4a0e0e;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: rgba(255, 255, 255, 0.3);
   font-size: 14px;
   font-family: 'Philosopher', sans-serif;
   letter-spacing: 1px;
@@ -120,6 +120,7 @@ html, body {
 /* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
   padding: 0 40px 40px 40px;
+  text-align: center;
 }
 
 /* ===== ЗАКРЫТИЕ ===== */
@@ -146,6 +147,7 @@ html, body {
   font-family: 'Calypso', serif !important;
   font-weight: normal;
   letter-spacing: 4px;
+  text-align: center;
 }
 
 /* ===== ОПИСАНИЕ ===== */
@@ -155,6 +157,7 @@ html, body {
   margin-bottom: 20px;
   color: #cccccc;
   font-family: 'Philosopher', sans-serif;
+  text-align: center;
 }
 
 /* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
@@ -188,12 +191,14 @@ html, body {
   border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 8px;
   margin-bottom: 12px;
+  text-align: center;
 }
 
 /* ===== СПИСОК ОТЧЁТОВ ===== */
 #reports-list {
   font-family: 'Philosopher', sans-serif;
   color: #cccccc;
+  text-align: center;
 }
 
 #reports-list p {
