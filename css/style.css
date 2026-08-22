@@ -129,17 +129,19 @@ html, body {
   overflow: hidden;
 }
 
-/* ===== КРЕСТИК (всегда сверху) ===== */
+/* ===== КРЕСТИК (без отступа, всегда сверху) ===== */
 #close-icon-container {
   position: sticky;
   top: 0;
   z-index: 30;
   display: flex;
   justify-content: flex-end;
-  padding: 12px 16px;
+  padding: 0;
   pointer-events: none;
   background: transparent;
   margin: 0;
+  height: 0;
+  overflow: visible;
 }
 
 #close-icon {
@@ -149,6 +151,8 @@ html, body {
   opacity: 0.7;
   width: 28px;
   height: 28px;
+  margin-top: 12px;
+  margin-right: 16px;
 }
 
 #close-icon:hover {
