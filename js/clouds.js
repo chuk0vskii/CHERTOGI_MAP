@@ -49,27 +49,30 @@ async function loadClouds() {
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-    // ===== ТУЛТИП ДЛЯ ОБЛАКА (как у маркеров) =====
+        // ===== ТУЛТИП ДЛЯ ОБЛАКА (с размерами) =====
     const tooltipElement = document.createElement('div');
-    tooltipElement.className = 'marker-button'; // ← тот же класс, что у маркеров
+    tooltipElement.className = 'marker-button';
     tooltipElement.style.position = 'absolute';
     tooltipElement.style.pointerEvents = 'auto';
     tooltipElement.style.cursor = 'default';
     tooltipElement.style.transform = 'translate(-50%, -50%)';
+    tooltipElement.style.width = '1200px';
+    tooltipElement.style.height = '1200px';
+    tooltipElement.style.background = 'rgba(0,0,0,0)'; // полностью прозрачный
     
     // Сам тултип
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
-    tooltip.style.position = 'relative';
-    tooltip.style.top = '0';
-    tooltip.style.left = '0';
-    tooltip.style.transform = 'none';
+    tooltip.style.position = 'absolute';
+    tooltip.style.top = '50%';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translate(-50%, -50%)';
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease';
-    tooltip.style.display = 'block';
     tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.pointerEvents = 'none';
     
     tooltipElement.appendChild(tooltip);
 
@@ -100,7 +103,6 @@ async function loadClouds() {
 
     map.addOverlay(tooltipOverlay);
     cloudOverlays.push(tooltipOverlay);
-  });
 
   console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
 }
