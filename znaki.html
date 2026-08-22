@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Огненные чертоги — В путь</title>
+  <link rel="stylesheet" href="css/style.css">
   <style>
+    /* стили только для контента (не для баннера) */
     * {
       margin: 0;
       padding: 0;
@@ -16,68 +18,11 @@
       font-family: 'Philosopher', 'Arial', sans-serif;
       min-height: 100vh;
     }
-
-    /* ===== БАННЕР ===== */
-    .top-banner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 70px;
-      background: #4a0e0e;
-      backdrop-filter: blur(8px);
-      border-bottom: 2px solid transparent;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 100;
-      padding: 0 30px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-      user-select: none;
-    }
-
-    .top-banner .title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 28px;
-      color: #ffffff;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-      letter-spacing: 4px;
-      font-weight: normal;
-    }
-
-    .top-banner .nav-links {
-      display: flex;
-      gap: 25px;
-      align-items: center;
-    }
-
-    .top-banner .nav-links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 14px;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
-      padding: 6px 0;
-      border-bottom: 2px solid transparent;
-      font-family: 'Philosopher', sans-serif;
-    }
-
-    .top-banner .nav-links a:hover {
-      color: #ffd700;
-    }
-
-    .top-banner .nav-links a.active {
-      color: #ffd700;
-      border-bottom-color: #ffd700;
-    }
-
-    /* ===== КОНТЕЙНЕР ===== */
     .container {
       max-width: 1000px;
       margin: 0 auto;
       padding: 100px 20px 40px;
     }
-
     h1 {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 42px;
@@ -86,7 +31,6 @@
       margin-bottom: 10px;
       letter-spacing: 2px;
     }
-
     .subtitle {
       text-align: center;
       color: rgba(255, 255, 255, 0.3);
@@ -95,8 +39,6 @@
       text-transform: uppercase;
       margin-bottom: 40px;
     }
-
-    /* ===== ГЕНЕРАТОР ЗНАКОВ ===== */
     .sign-section {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -104,7 +46,6 @@
       padding: 30px;
       margin-bottom: 30px;
     }
-
     .sign-controls {
       display: flex;
       flex-wrap: wrap;
@@ -112,20 +53,17 @@
       align-items: flex-end;
       margin-bottom: 20px;
     }
-
     .sign-controls .field {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
     .sign-controls .field label {
       font-size: 13px;
       color: rgba(255, 255, 255, 0.5);
       letter-spacing: 1px;
       text-transform: uppercase;
     }
-
     .sign-controls .field select {
       padding: 10px 16px;
       border-radius: 8px;
@@ -137,21 +75,17 @@
       cursor: pointer;
       transition: border-color 0.3s;
     }
-
     .sign-controls .field select:hover {
       border-color: #4a0e0e;
     }
-
     .sign-controls .field select:focus {
       outline: none;
       border-color: #4a0e0e;
     }
-
     .sign-controls .field select option {
       background: #0d0d1a;
       color: #e0d5c0;
     }
-
     .btn-draw {
       padding: 12px 40px;
       background: #4a0e0e;
@@ -166,17 +100,14 @@
       margin-left: auto;
       font-family: 'Philosopher', sans-serif;
     }
-
     .btn-draw:hover {
       background: transparent;
       color: #ffffff;
       border-color: #4a0e0e;
     }
-
     .btn-draw:active {
       transform: scale(0.96);
     }
-
     .sign-result {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -188,38 +119,31 @@
       gap: 10px;
       transition: all 0.4s ease;
     }
-
     .sign-result .title {
       font-size: 20px;
       color: #ffffff;
       font-weight: bold;
       font-family: 'Calypso', 'Times New Roman', serif;
     }
-
     .sign-result .description {
       font-size: 15px;
       line-height: 1.6;
       color: #ccc;
     }
-
     .sign-result .meta {
       font-size: 13px;
       color: rgba(255, 255, 255, 0.3);
       letter-spacing: 1px;
     }
-
     .sign-result .meta strong {
       color: #ffffff;
     }
-
     .sign-result-placeholder {
       color: rgba(255, 255, 255, 0.15);
       text-align: center;
       font-size: 16px;
       padding: 15px 0;
     }
-
-    /* ===== КАЛЬКУЛЯТОР СЛОЖНОСТИ ===== */
     .calculator {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -227,7 +151,6 @@
       padding: 30px;
       margin-top: 30px;
     }
-
     .calculator h2 {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 28px;
@@ -236,14 +159,12 @@
       margin-bottom: 25px;
       letter-spacing: 2px;
     }
-
     .calc-table {
       display: flex;
       flex-direction: column;
       gap: 15px;
       margin-bottom: 25px;
     }
-
     .calc-row {
       display: flex;
       flex-wrap: wrap;
@@ -254,14 +175,12 @@
       border-radius: 10px;
       border-left: 3px solid #4a0e0e;
     }
-
     .calc-row .label {
       font-size: 14px;
       font-weight: bold;
       color: #ffffff;
       min-width: 170px;
     }
-
     .calc-row .label .examples {
       font-weight: normal;
       font-size: 11px;
@@ -269,7 +188,6 @@
       display: block;
       margin-top: 2px;
     }
-
     .calc-row select {
       padding: 8px 14px;
       border-radius: 8px;
@@ -284,21 +202,17 @@
       max-width: 260px;
       font-family: 'Philosopher', sans-serif;
     }
-
     .calc-row select:hover {
       border-color: #4a0e0e;
     }
-
     .calc-row select:focus {
       outline: none;
       border-color: #4a0e0e;
     }
-
     .calc-row select option {
       background: #0d0d1a;
       color: #e0d5c0;
     }
-
     .calc-row .value {
       font-size: 18px;
       font-weight: bold;
@@ -306,7 +220,6 @@
       min-width: 40px;
       text-align: center;
     }
-
     .total-difficulty {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid #4a0e0e;
@@ -318,97 +231,43 @@
       flex-wrap: wrap;
       gap: 15px;
     }
-
     .total-difficulty .label {
       font-size: 18px;
       color: rgba(255, 255, 255, 0.6);
       letter-spacing: 1px;
     }
-
     .total-difficulty .value {
       font-size: 32px;
       font-weight: bold;
       color: #ffffff;
     }
-
     .total-difficulty .value .modifier {
       font-size: 18px;
       color: rgba(255, 255, 255, 0.3);
       font-weight: normal;
     }
-
-    /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
-      .top-banner {
-        height: 56px;
-        padding: 0 16px;
-      }
-      .top-banner .title {
-        font-size: 18px;
-        letter-spacing: 2px;
-      }
-      .top-banner .nav-links {
-        gap: 12px;
-      }
-      .top-banner .nav-links a {
-        font-size: 12px;
-      }
-      .container {
-        padding: 80px 16px 30px;
-      }
-      h1 {
-        font-size: 30px;
-      }
-      .calc-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .calc-row .label {
-        min-width: auto;
-      }
-      .calc-row select {
-        max-width: none;
-        width: 100%;
-      }
-      .total-difficulty {
-        flex-direction: column;
-        text-align: center;
-      }
-      .sign-controls {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .btn-draw {
-        margin-left: 0;
-        width: 100%;
-        justify-content: center;
-      }
+      .top-banner { height: 56px; padding: 0 16px; }
+      .top-banner .title { font-size: 18px; letter-spacing: 2px; }
+      .top-banner .nav-links { gap: 12px; }
+      .top-banner .nav-links a { font-size: 12px; }
+      .container { padding: 80px 16px 30px; }
+      h1 { font-size: 30px; }
+      .calc-row { flex-direction: column; align-items: stretch; }
+      .calc-row .label { min-width: auto; }
+      .calc-row select { max-width: none; width: 100%; }
+      .total-difficulty { flex-direction: column; text-align: center; }
+      .sign-controls { flex-direction: column; align-items: stretch; }
+      .btn-draw { margin-left: 0; width: 100%; justify-content: center; }
     }
-
     @media (max-width: 480px) {
-      .top-banner {
-        height: 48px;
-        padding: 0 12px;
-      }
-      .top-banner .title {
-        font-size: 15px;
-        letter-spacing: 1px;
-      }
-      .top-banner .nav-links {
-        gap: 8px;
-      }
-      .top-banner .nav-links a {
-        font-size: 10px;
-      }
-      .container {
-        padding: 70px 12px 20px;
-      }
-      h1 {
-        font-size: 24px;
-      }
-      .total-difficulty .value {
-        font-size: 26px;
-      }
+      .top-banner { height: 48px; padding: 0 12px; }
+      .top-banner .title { font-size: 15px; letter-spacing: 1px; }
+      .top-banner .nav-links { gap: 8px; }
+      .top-banner .nav-links a { font-size: 10px; }
+      .container { padding: 70px 12px 20px; }
+      h1 { font-size: 24px; }
+      .total-difficulty .value { font-size: 26px; }
     }
   </style>
 </head>
@@ -428,7 +287,6 @@
   <h1>Фаза Знаки</h1>
   <div class="subtitle">Судьба определяет твой путь</div>
 
-  <!-- ===== ГЕНЕРАТОР ЗНАКОВ ===== -->
   <div class="sign-section">
     <div class="sign-controls">
       <div class="field">
@@ -449,22 +307,16 @@
       </div>
       <button class="btn-draw" id="drawSignBtn">Сделать проверку</button>
     </div>
-
     <div class="sign-result" id="signResult">
       <div class="sign-result-placeholder">Нажмите «Сделать проверку», чтобы узнать свой знак</div>
     </div>
   </div>
 
-  <!-- ===== КАЛЬКУЛЯТОР СЛОЖНОСТИ ===== -->
   <div class="calculator">
     <h2>Сложность Пути</h2>
-
     <div class="calc-table">
       <div class="calc-row">
-        <div class="label">
-          Длительность
-          <span class="examples">Короткое, Среднее, Длительное, Экспедиция</span>
-        </div>
+        <div class="label">Длительность <span class="examples">Короткое, Среднее, Длительное, Экспедиция</span></div>
         <select id="duration">
           <option value="0">Выберите</option>
           <option value="1">Короткое +1</option>
@@ -474,12 +326,8 @@
         </select>
         <span class="value" id="durationValue">+0</span>
       </div>
-
       <div class="calc-row">
-        <div class="label">
-          Проходимость Местности
-          <span class="examples">Легкая, Средняя, Тяжелая, Смертельная</span>
-        </div>
+        <div class="label">Проходимость Местности <span class="examples">Легкая, Средняя, Тяжелая, Смертельная</span></div>
         <select id="terrain">
           <option value="0">Выберите</option>
           <option value="1">Легкая сложность +1</option>
@@ -489,12 +337,8 @@
         </select>
         <span class="value" id="terrainValue">+0</span>
       </div>
-
       <div class="calc-row">
-        <div class="label">
-          Опасности
-          <span class="examples">Сверх Опасно, Смертельно, Готовься к концу, Встреча с судьбой</span>
-        </div>
+        <div class="label">Опасности <span class="examples">Сверх Опасно, Смертельно, Готовься к концу, Встреча с судьбой</span></div>
         <select id="danger">
           <option value="0">Выберите</option>
           <option value="1">Сверх Опасно +1</option>
@@ -505,7 +349,6 @@
         <span class="value" id="dangerValue">+0</span>
       </div>
     </div>
-
     <div class="total-difficulty">
       <span class="label">Сложность Пути</span>
       <span class="value">
@@ -517,7 +360,6 @@
 </div>
 
 <script>
-  // ===== БАЗА ЗНАКОВ (1–20) =====
   const SIGNS = [
     null,
     { title: 'Знак Тьмы', description: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.', mod: 2 },
@@ -542,11 +384,9 @@
     { title: 'Знак Очага', description: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.', mod: -3 }
   ];
 
-  // ===== ЭЛЕМЕНТЫ =====
   const signBonusSelect = document.getElementById('signBonus');
   const drawSignBtn = document.getElementById('drawSignBtn');
   const signResultDiv = document.getElementById('signResult');
-
   const durationSelect = document.getElementById('duration');
   const terrainSelect = document.getElementById('terrain');
   const dangerSelect = document.getElementById('danger');
@@ -611,11 +451,9 @@
   }
 
   drawSignBtn.addEventListener('click', drawSign);
-
   durationSelect.addEventListener('change', updateDifficulty);
   terrainSelect.addEventListener('change', updateDifficulty);
   dangerSelect.addEventListener('change', updateDifficulty);
-
   updateDifficulty();
 </script>
 
