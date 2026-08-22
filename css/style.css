@@ -152,8 +152,10 @@ html, body {
 #region-sidebar h2,
 #region-sidebar h3,
 #region-sidebar h4,
-#region-sidebar .calypso {
+#sidebar-title,
+#report-modal h3 {
   font-family: 'Calypso', serif !important;
+  letter-spacing: 3px; /* ← регулируй под свой вкус */
 }
 
 /* Список отчётов */
