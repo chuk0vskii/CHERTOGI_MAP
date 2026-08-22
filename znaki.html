@@ -11,21 +11,22 @@
       box-sizing: border-box;
     }
     body {
-      background: #1a1a2e;
-      color: white;
-      font-family: Arial, sans-serif;
+      background: #0d0d1a;
+      color: #e0d5c0;
+      font-family: 'Philosopher', 'Arial', sans-serif;
       min-height: 100vh;
     }
 
+    /* ===== БАННЕР (как на карте) ===== */
     .top-banner {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 70px;
-      background: rgba(0, 0, 0, 0.85);
+      background: #4a0e0e;
       backdrop-filter: blur(8px);
-      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      border-bottom: 2px solid transparent;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -38,8 +39,8 @@
     .top-banner .title {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 28px;
-      color: #ffd700;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
       letter-spacing: 4px;
       font-weight: normal;
     }
@@ -51,13 +52,14 @@
     }
 
     .top-banner .nav-links a {
-      color: rgba(255, 255, 255, 0.5);
+      color: #ffffff;
       text-decoration: none;
       font-size: 14px;
       letter-spacing: 1px;
       transition: all 0.3s ease;
       padding: 6px 0;
       border-bottom: 2px solid transparent;
+      font-family: 'Philosopher', sans-serif;
     }
 
     .top-banner .nav-links a:hover {
@@ -69,6 +71,7 @@
       border-bottom-color: #ffd700;
     }
 
+    /* ===== КОНТЕЙНЕР ===== */
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -78,10 +81,10 @@
     h1 {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 42px;
-      color: #ffd700;
+      color: #ffffff;
       text-align: center;
       margin-bottom: 10px;
-      text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+      letter-spacing: 2px;
     }
 
     .subtitle {
@@ -128,7 +131,7 @@
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       background: rgba(255, 255, 255, 0.05);
-      color: white;
+      color: #e0d5c0;
       font-size: 16px;
       min-width: 80px;
       cursor: pointer;
@@ -136,37 +139,38 @@
     }
 
     .sign-controls .field select:hover {
-      border-color: rgba(255, 215, 0, 0.4);
+      border-color: #4a0e0e;
     }
 
     .sign-controls .field select:focus {
       outline: none;
-      border-color: #ffd700;
+      border-color: #4a0e0e;
     }
 
     .sign-controls .field select option {
-      background: #1a1a2e;
-      color: white;
+      background: #0d0d1a;
+      color: #e0d5c0;
     }
 
     .btn-draw {
       padding: 12px 40px;
-      background: linear-gradient(135deg, #ffd700, #f0c000);
-      color: #1a1a2e;
-      border: none;
+      background: #4a0e0e;
+      color: #ffffff;
+      border: 2px solid #4a0e0e;
       border-radius: 10px;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
       letter-spacing: 1px;
-      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
       margin-left: auto;
+      font-family: 'Philosopher', sans-serif;
     }
 
     .btn-draw:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 30px rgba(255, 215, 0, 0.35);
+      background: transparent;
+      color: #ffffff;
+      border-color: #4a0e0e;
     }
 
     .btn-draw:active {
@@ -174,8 +178,8 @@
     }
 
     .sign-result {
-      background: rgba(255, 215, 0, 0.05);
-      border: 1px solid rgba(255, 215, 0, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       padding: 20px 25px;
       min-height: 80px;
@@ -187,7 +191,7 @@
 
     .sign-result .title {
       font-size: 20px;
-      color: #ffd700;
+      color: #ffffff;
       font-weight: bold;
       font-family: 'Calypso', 'Times New Roman', serif;
     }
@@ -205,7 +209,7 @@
     }
 
     .sign-result .meta strong {
-      color: #ffd700;
+      color: #ffffff;
     }
 
     .sign-result-placeholder {
@@ -227,9 +231,10 @@
     .calculator h2 {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 28px;
-      color: #ffd700;
+      color: #ffffff;
       text-align: center;
       margin-bottom: 25px;
+      letter-spacing: 2px;
     }
 
     .calc-table {
@@ -247,13 +252,13 @@
       padding: 12px 18px;
       background: rgba(255, 255, 255, 0.03);
       border-radius: 10px;
-      border-left: 3px solid rgba(255, 215, 0, 0.2);
+      border-left: 3px solid #4a0e0e;
     }
 
     .calc-row .label {
       font-size: 14px;
       font-weight: bold;
-      color: #ffd700;
+      color: #ffffff;
       min-width: 170px;
     }
 
@@ -270,40 +275,41 @@
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       background: rgba(255, 255, 255, 0.05);
-      color: white;
+      color: #e0d5c0;
       font-size: 14px;
       min-width: 160px;
       cursor: pointer;
       transition: border-color 0.3s;
       flex: 1;
       max-width: 260px;
+      font-family: 'Philosopher', sans-serif;
     }
 
     .calc-row select:hover {
-      border-color: rgba(255, 215, 0, 0.4);
+      border-color: #4a0e0e;
     }
 
     .calc-row select:focus {
       outline: none;
-      border-color: #ffd700;
+      border-color: #4a0e0e;
     }
 
     .calc-row select option {
-      background: #1a1a2e;
-      color: white;
+      background: #0d0d1a;
+      color: #e0d5c0;
     }
 
     .calc-row .value {
       font-size: 18px;
       font-weight: bold;
-      color: #ffd700;
+      color: #ffffff;
       min-width: 40px;
       text-align: center;
     }
 
     .total-difficulty {
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.02));
-      border: 2px solid rgba(255, 215, 0, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #4a0e0e;
       border-radius: 12px;
       padding: 18px 25px;
       display: flex;
@@ -322,8 +328,7 @@
     .total-difficulty .value {
       font-size: 32px;
       font-weight: bold;
-      color: #ffd700;
-      text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+      color: #ffffff;
     }
 
     .total-difficulty .value .modifier {
@@ -433,12 +438,14 @@
   <div class="nav-links">
     <a href="index.html">Карта</a>
     <a href="znaki.html" class="active">Знаки</a>
-    <a href="put.html">Путь</a>
+    <a href="put.html">В путь</a>
+    <a href="bestiary.html">Бестиарий</a>
+    <a href="tree.html">Древо смерти</a>
   </div>
 </div>
 
 <div class="container">
-  <h1>⚜️ Фаза Знаки</h1>
+  <h1>Фаза Знаки</h1>
   <div class="subtitle">Судьба определяет твой путь</div>
 
   <!-- ===== ГЕНЕРАТОР ЗНАКОВ ===== -->
@@ -460,7 +467,7 @@
           <option value="10">10</option>
         </select>
       </div>
-      <button class="btn-draw" id="drawSignBtn">🎲 Сделать проверку</button>
+      <button class="btn-draw" id="drawSignBtn">Сделать проверку</button>
     </div>
 
     <div class="sign-result" id="signResult">
@@ -470,10 +477,9 @@
 
   <!-- ===== КАЛЬКУЛЯТОР СЛОЖНОСТИ ===== -->
   <div class="calculator">
-    <h2>⚔️ Сложность Пути</h2>
+    <h2>Сложность Пути</h2>
 
     <div class="calc-table">
-      <!-- Длительность -->
       <div class="calc-row">
         <div class="label">
           Длительность
@@ -489,7 +495,6 @@
         <span class="value" id="durationValue">+0</span>
       </div>
 
-      <!-- Проходимость Местности -->
       <div class="calc-row">
         <div class="label">
           Проходимость Местности
@@ -505,7 +510,6 @@
         <span class="value" id="terrainValue">+0</span>
       </div>
 
-      <!-- Опасности -->
       <div class="calc-row">
         <div class="label">
           Опасности
@@ -522,9 +526,8 @@
       </div>
     </div>
 
-    <!-- ИТОГОВАЯ СЛОЖНОСТЬ -->
     <div class="total-difficulty">
-      <span class="label">⚔️ Сложность Пути</span>
+      <span class="label">Сложность Пути</span>
       <span class="value">
         <span id="totalDifficulty">0</span>
         <span class="modifier" id="signModifier"></span>
@@ -559,12 +562,11 @@
     { title: 'Знак Очага', description: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.', mod: -3 }
   ];
 
-  // ===== ЭЛЕМЕНТЫ ГЕНЕРАТОРА =====
+  // ===== ЭЛЕМЕНТЫ =====
   const signBonusSelect = document.getElementById('signBonus');
   const drawSignBtn = document.getElementById('drawSignBtn');
   const signResultDiv = document.getElementById('signResult');
 
-  // ===== ЭЛЕМЕНТЫ КАЛЬКУЛЯТОРА =====
   const durationSelect = document.getElementById('duration');
   const terrainSelect = document.getElementById('terrain');
   const dangerSelect = document.getElementById('danger');
@@ -574,10 +576,8 @@
   const totalDisplay = document.getElementById('totalDifficulty');
   const signModifierDisplay = document.getElementById('signModifier');
 
-  // ===== СОСТОЯНИЕ =====
   let currentSignMod = 0;
 
-  // ===== ОБНОВЛЕНИЕ СЛОЖНОСТИ =====
   function updateDifficulty() {
     const duration = parseInt(durationSelect.value, 10) || 0;
     const terrain = parseInt(terrainSelect.value, 10) || 0;
@@ -603,7 +603,6 @@
     }
   }
 
-  // ===== ГЕНЕРАЦИЯ ЗНАКА =====
   function drawSign() {
     const bonus = parseInt(signBonusSelect.value, 10);
     const random = Math.floor(Math.random() * 20) + 1;
@@ -612,17 +611,16 @@
 
     const sign = SIGNS[index];
     if (!sign) {
-      signResultDiv.innerHTML = `<div class="sign-result-placeholder">⚠️ Знак не найден. Попробуйте снова.</div>`;
+      signResultDiv.innerHTML = `<div class="sign-result-placeholder">Знак не найден. Попробуйте снова.</div>`;
       return;
     }
 
-    // Обновляем модификатор сложности
     currentSignMod = sign.mod || 0;
 
     signResultDiv.innerHTML = `
       <div class="meta">
         Выпало: <strong>${random}</strong> 
-        ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffd700;font-size:18px;">${index}</strong>` : ''}
+        ${bonus > 0 ? `+ бонус <strong>${bonus}</strong> = <strong style="color:#ffffff;font-size:18px;">${index}</strong>` : ''}
         ${sign.mod !== 0 ? ` | Изменение сложности: <strong style="color:${sign.mod > 0 ? '#ff6b6b' : '#51cf66'}">${sign.mod > 0 ? '+' : ''}${sign.mod}</strong>` : ''}
       </div>
       <div class="title">${sign.title}</div>
@@ -632,14 +630,12 @@
     updateDifficulty();
   }
 
-  // ===== ОБРАБОТЧИКИ =====
   drawSignBtn.addEventListener('click', drawSign);
 
   durationSelect.addEventListener('change', updateDifficulty);
   terrainSelect.addEventListener('change', updateDifficulty);
   dangerSelect.addEventListener('change', updateDifficulty);
 
-  // ===== ПЕРВЫЙ ЗАПУСК =====
   updateDifficulty();
 </script>
 
