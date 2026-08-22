@@ -1,13 +1,11 @@
-// ===== ОБЛАКА ДЛЯ ЗАКРЫТЫХ РЕГИОНОВ =====
+// Clouds for closed regions
 const cloudLayers = [];
 const cloudOverlays = [];
 
-// ===== НАСТРОЙКИ РАЗМЕРА ОБЛАКА =====
 const CLOUD_WIDTH = 1200;
 const CLOUD_HEIGHT = 1200;
 
 async function loadClouds() {
-  // Удаляем старые облака и оверлеи
   cloudLayers.forEach(layer => map.removeLayer(layer));
   cloudLayers.length = 0;
   
@@ -29,13 +27,14 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
+    console.log(`Облако: ${region.name} → (${cx}, ${cy})`); // ← лог для проверки
+
     const halfWidth = CLOUD_WIDTH / 2;
     const halfHeight = CLOUD_HEIGHT / 2;
 
-    // ===== САМО ОБЛАКО (картинка) =====
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=2',
+        url: '/CHERTOGI_MAP/cloud3.png?v=2',  // ← новая версия
         imageExtent: [
           cx - halfWidth,
           cy - halfHeight,
@@ -51,7 +50,7 @@ async function loadClouds() {
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-    // ===== НЕВИДИМАЯ ЗОНА ДЛЯ ТУЛТИПА =====
+    // ===== ТУЛТИП =====
     const tooltipElement = document.createElement('div');
     tooltipElement.style.position = 'absolute';
     tooltipElement.style.width = '100%';
@@ -60,7 +59,6 @@ async function loadClouds() {
     tooltipElement.style.cursor = 'default';
     tooltipElement.style.background = 'rgba(0,0,0,0)';
 
-    // Тултип (как у меток)
     const tooltip = document.createElement('div');
     tooltip.textContent = '🌫️ Край еще не исследован';
     tooltip.style.position = 'absolute';
@@ -81,10 +79,7 @@ async function loadClouds() {
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease';
-    tooltip.style.letterSpacing = '0.5px';
-    tooltip.style.zIndex = '20';
 
-    // Стрелочка
     const arrow = document.createElement('div');
     arrow.style.position = 'absolute';
     arrow.style.top = '100%';
@@ -93,15 +88,12 @@ async function loadClouds() {
     arrow.style.border = '6px solid transparent';
     arrow.style.borderTopColor = 'rgba(0, 0, 0, 0.85)';
     tooltip.appendChild(arrow);
-
     tooltipElement.appendChild(tooltip);
 
-    // Показываем тултип при наведении
     tooltipElement.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
       tooltip.style.transform = 'translate(-50%, -50%) translateY(-8px)';
-      map.getTargetElement().style.cursor = 'default';
     });
 
     tooltipElement.addEventListener('mouseleave', function() {
@@ -110,12 +102,10 @@ async function loadClouds() {
       tooltip.style.transform = 'translate(-50%, -50%)';
     });
 
-    // Блокируем клики (чтобы не открывались метки под облаком)
     tooltipElement.addEventListener('click', function(e) {
       e.stopPropagation();
     });
 
-    // Добавляем оверлей
     const tooltipOverlay = new ol.Overlay({
       element: tooltipElement,
       position: [cx, cy],
@@ -128,5 +118,5 @@ async function loadClouds() {
     cloudOverlays.push(tooltipOverlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков (cloud3.png) для закрытых регионов`);
 }
