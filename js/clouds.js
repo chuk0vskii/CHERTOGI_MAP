@@ -44,7 +44,7 @@ async function loadClouds() {
         projection: 'PIXELS'
       }),
       zIndex: 15,
-      opacity: 0.9
+      opacity: 1
     });
 
     map.addLayer(cloudLayer);
