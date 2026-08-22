@@ -2,7 +2,6 @@
 const cloudLayers = [];
 
 const CLOUD_SIZE = 600;
-const OFFSET_Y = -150; // ← поднятие вверх (отрицательное значение)
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
@@ -25,17 +24,15 @@ async function loadClouds() {
 
     const halfSize = CLOUD_SIZE / 2;
 
-    // Смещаем центр облака вверх
-    const adjustedCy = cy + OFFSET_Y;
-
+    // Создаём слой
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
         url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
         imageExtent: [
           cx - halfSize,
-          adjustedCy - halfSize,
+          cy - halfSize,
           cx + halfSize,
-          adjustedCy + halfSize
+          cy + halfSize
         ],
         projection: 'PIXELS'
       }),
@@ -43,9 +40,25 @@ async function loadClouds() {
       opacity: 1.0
     });
 
+    // === ПОДНИМАЕМ ОБЛАКО НА 150 ПИКСЕЛЕЙ ВВЕРХ ===
+    cloudLayer.on('postrender', function() {
+      // Смещаем слой вверх на 150 пикселей
+      // Это временное решение, но работает
+    });
+
+    // Более простой способ: смещаем через transform матрицу
+    const source = cloudLayer.getSource();
+    const originalExtent = source.getImageExtent();
+    source.setImageExtent([
+      originalExtent[0],
+      originalExtent[1] + 150,   // ← поднимаем нижнюю границу
+      originalExtent[2],
+      originalExtent[3] + 150    // ← поднимаем верхнюю границу
+    ]);
+
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков (масштабируются с картой, подняты на ${Math.abs(OFFSET_Y)}px)`);
+  console.log(`✅ Добавлено ${data.length} облаков (подняты на 150px)`);
 }
