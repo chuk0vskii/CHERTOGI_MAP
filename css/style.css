@@ -4,7 +4,7 @@
 /* ===== Calypso — локальный шрифт ===== */
 @font-face {
   font-family: 'Calypso';
-src: url('/CHERTOGI_MAP/fonts/Calypso.ttf?v=1') format('truetype');
+  src: url('/CHERTOGI_MAP/fonts/Calypso.ttf?v=1') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -41,7 +41,7 @@ html, body {
   color: #ffffff;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   letter-spacing: 4px;
-  font-weight: normal;
+  font-weight: normal; /* ← не жирный */
 }
 
 .top-banner .nav-links {
@@ -120,6 +120,9 @@ html, body {
   font-size: 28px;
   margin-bottom: 6px;
   font-family: 'Calypso', serif !important;
+  font-weight: normal; /* ← не жирный */
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
 }
 
 #sidebar-description {
@@ -149,13 +152,15 @@ html, body {
   background: rgba(255, 215, 0, 0.15);
 }
 
+/* ===== ВСЕ ЗАГОЛОВКИ CALYPSO ===== */
 #region-sidebar h2,
 #region-sidebar h3,
 #region-sidebar h4,
 #sidebar-title,
 #report-modal h3 {
   font-family: 'Calypso', serif !important;
-  letter-spacing: 3px; /* ← регулируй под свой вкус */
+  font-weight: normal; /* ← не жирный */
+  letter-spacing: 3px;
 }
 
 /* Список отчётов */
@@ -192,6 +197,7 @@ html, body {
   color: #ffd700;
   margin-bottom: 8px;
   font-family: 'Calypso', serif !important;
+  font-weight: normal;
 }
 
 #modal-region-name {
