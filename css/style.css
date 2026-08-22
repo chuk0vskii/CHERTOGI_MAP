@@ -101,7 +101,30 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== КРАСНАЯ ЗАГЛУШКА (без отступа сверху) ===== */
+/* ===== КРЕСТИК (поверх заглушки) ===== */
+#close-icon-container {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  pointer-events: none;
+}
+
+#close-icon {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.7;
+}
+
+#close-icon:hover {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
@@ -114,16 +137,16 @@ html, body {
   font-family: 'Philosopher', sans-serif;
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  margin: 0; /* ← убрал отступ */
+  margin-top: -44px;
 }
 
 /* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
   padding: 20px 40px 40px 40px;
-  text-align: left; /* ← выравнивание по левому краю */
+  text-align: left;
 }
 
-/* ===== ЗАГОЛОВОК (оставлен по центру) ===== */
+/* ===== ЗАГОЛОВОК ===== */
 #sidebar-title {
   color: #ffffff;
   font-size: 21px;
@@ -131,7 +154,7 @@ html, body {
   font-family: 'Calypso', serif !important;
   font-weight: normal;
   letter-spacing: 4px;
-  text-align: center; /* ← по центру */
+  text-align: center;
 }
 
 /* ===== ОПИСАНИЕ ===== */
@@ -141,7 +164,7 @@ html, body {
   margin-bottom: 20px;
   color: #cccccc;
   font-family: 'Philosopher', sans-serif;
-  text-align: left; /* ← по левому краю */
+  text-align: left;
 }
 
 /* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
@@ -176,14 +199,14 @@ html, body {
   border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 8px;
   margin-bottom: 12px;
-  text-align: left; /* ← по левому краю */
+  text-align: left;
 }
 
 /* ===== СПИСОК ОТЧЁТОВ ===== */
 #reports-list {
   font-family: 'Philosopher', sans-serif;
   color: #cccccc;
-  text-align: left; /* ← по левому краю */
+  text-align: left;
 }
 
 #reports-list p {
