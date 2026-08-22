@@ -22,7 +22,7 @@ function openSidebar(regionId, name, description, imageUrl) {
   }
 
   sidebar.style.display = 'block';
-  sidebar.classList.add('open'); // ← добавляем класс для анимации
+  sidebar.classList.add('open');
   
   setTimeout(() => { 
     sidebar.style.transform = 'translateX(0)'; 
@@ -32,7 +32,7 @@ function openSidebar(regionId, name, description, imageUrl) {
 }
 
 function closeSidebar() {
-  sidebar.classList.remove('open'); // ← убираем класс
+  sidebar.classList.remove('open');
   sidebar.style.transform = 'translateX(100%)';
   setTimeout(() => { 
     sidebar.style.display = 'none'; 
@@ -45,13 +45,20 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
   closeSidebar();
 });
 
-// Закрытие при клике на карту
+// ===== ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ (НО НЕ ПО МЕТКЕ) =====
 function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
     map.on('click', function(event) {
-      const sidebar = document.getElementById('region-sidebar');
-      if (sidebar && sidebar.style.display === 'block') {
-        closeSidebar();
+      const pixel = event.pixel;
+      const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
+        return feature;
+      });
+      
+      if (!hit) {
+        const sidebar = document.getElementById('region-sidebar');
+        if (sidebar && sidebar.style.display === 'block') {
+          closeSidebar();
+        }
       }
     });
   }
