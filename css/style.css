@@ -313,3 +313,7 @@ html, body {
 .marker-button:active img {
   transform: scale(0.9);
 }
+/* ===== СКРЫВАЕМ МОДАЛКУ ПРИ ЗАГРУЗКЕ ===== */
+#report-modal {
+  display: none !important;
+}
