@@ -1,7 +1,8 @@
 // Clouds for closed regions
 const cloudLayers = [];
 
-const CLOUD_SIZE = 600; // ← размер в пикселях карты (НЕ экрана)
+const CLOUD_SIZE = 600;
+const OFFSET_Y = -150; // ← поднятие вверх (отрицательное значение)
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
@@ -24,14 +25,17 @@ async function loadClouds() {
 
     const halfSize = CLOUD_SIZE / 2;
 
+    // Смещаем центр облака вверх
+    const adjustedCy = cy + OFFSET_Y;
+
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
         url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
         imageExtent: [
           cx - halfSize,
-          cy - halfSize,
+          adjustedCy - halfSize,
           cx + halfSize,
-          cy + halfSize
+          adjustedCy + halfSize
         ],
         projection: 'PIXELS'
       }),
@@ -43,5 +47,5 @@ async function loadClouds() {
     cloudLayers.push(cloudLayer);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков (масштабируются с картой)`);
+  console.log(`✅ Добавлено ${data.length} облаков (масштабируются с картой, подняты на ${Math.abs(OFFSET_Y)}px)`);
 }
