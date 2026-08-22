@@ -24,15 +24,13 @@ async function loadClouds() {
   }
 
   data.forEach(region => {
-    // ===== БЕРЁМ КООРДИНАТЫ ОБЛАКА =====
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
-
-    console.log(`☁️ ${region.name} → центр облака: (${cx}, ${cy})`); // ← проверка
 
     const halfWidth = CLOUD_WIDTH / 2;
     const halfHeight = CLOUD_HEIGHT / 2;
 
+    // ===== ОБЛАКО =====
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
         url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
@@ -44,13 +42,14 @@ async function loadClouds() {
         ],
         projection: 'PIXELS'
       }),
-      zIndex: 15
+      zIndex: 15,
+      opacity: 1.0
     });
 
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-    // ===== ТУЛТИП =====
+    // ===== ТУЛТИП ДЛЯ ОБЛАКА =====
     const tooltipElement = document.createElement('div');
     tooltipElement.style.position = 'absolute';
     tooltipElement.style.width = '100%';
@@ -60,7 +59,7 @@ async function loadClouds() {
     tooltipElement.style.background = 'rgba(0,0,0,0)';
 
     const tooltip = document.createElement('div');
-    tooltip.textContent = '🌫️ Край еще не исследован';
+    tooltip.textContent = 'Край еще не исследован';
     tooltip.style.position = 'absolute';
     tooltip.style.top = '50%';
     tooltip.style.left = '50%';
@@ -79,6 +78,7 @@ async function loadClouds() {
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease';
+    tooltip.style.letterSpacing = '0.5px';
 
     const arrow = document.createElement('div');
     arrow.style.position = 'absolute';
@@ -118,5 +118,5 @@ async function loadClouds() {
     cloudOverlays.push(tooltipOverlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
 }
