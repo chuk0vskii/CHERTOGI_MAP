@@ -30,7 +30,7 @@ async function loadClouds() {
     const halfWidth = CLOUD_WIDTH / 2;
     const halfHeight = CLOUD_HEIGHT / 2;
 
-    // ===== ОБЛАКО =====
+    // ===== ОБЛАКО (картинка) =====
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
         url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
@@ -49,58 +49,82 @@ async function loadClouds() {
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-    // ===== ТУЛТИП ДЛЯ ОБЛАКА (как у маркеров) =====
-    const tooltipElement = document.createElement('div');
-    tooltipElement.className = 'marker-button'; // ← тот же класс, что у маркеров
-    tooltipElement.style.position = 'absolute';
-    tooltipElement.style.pointerEvents = 'auto';
-    tooltipElement.style.cursor = 'default';
-    tooltipElement.style.transform = 'translate(-50%, -50%)';
+    // ===== НЕВИДИМАЯ ЗОНА ДЛЯ НАВЕДЕНИЯ =====
+    // Создаём элемент, который полностью перекрывает облако
+    const overlayElement = document.createElement('div');
+    overlayElement.style.position = 'absolute';
+    overlayElement.style.width = CLOUD_WIDTH + 'px';  // ширина облака
+    overlayElement.style.height = CLOUD_HEIGHT + 'px'; // высота облака
+    overlayElement.style.pointerEvents = 'auto';
+    overlayElement.style.cursor = 'default';
+    overlayElement.style.background = 'rgba(0,0,0,0)'; // прозрачный
+    overlayElement.style.transform = 'translate(-50%, -50%)';
     
-    // Сам тултип
-    const tooltip = document.createElement('span');
-    tooltip.className = 'marker-tooltip';
+    // Тултип (как у маркеров)
+    const tooltip = document.createElement('div');
     tooltip.textContent = 'Край еще не исследован';
-    tooltip.style.position = 'relative';
-    tooltip.style.top = '0';
-    tooltip.style.left = '0';
-    tooltip.style.transform = 'none';
+    tooltip.style.position = 'absolute';
+    tooltip.style.top = '50%';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translate(-50%, -50%)';
+    tooltip.style.background = 'rgba(0, 0, 0, 0.85)';
+    tooltip.style.color = '#ffffff';
+    tooltip.style.padding = '6px 16px';
+    tooltip.style.borderRadius = '6px';
+    tooltip.style.fontSize = '14px';
+    tooltip.style.fontWeight = '700';
+    tooltip.style.fontFamily = "'Philosopher', 'Arial', sans-serif";
+    tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.border = '1px solid rgba(255, 215, 0, 0.15)';
+    tooltip.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
     tooltip.style.opacity = '0';
     tooltip.style.visibility = 'hidden';
-    tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease';
-    tooltip.style.display = 'block';
-    tooltip.style.whiteSpace = 'nowrap';
-    
-    tooltipElement.appendChild(tooltip);
+    tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease';
+    tooltip.style.zIndex = '20';
+    tooltip.style.letterSpacing = '0.5px';
 
-    // Показываем тултип при наведении
-    tooltipElement.addEventListener('mouseenter', function() {
+    // Стрелочка
+    const arrow = document.createElement('div');
+    arrow.style.position = 'absolute';
+    arrow.style.top = '100%';
+    arrow.style.left = '50%';
+    arrow.style.transform = 'translateX(-50%)';
+    arrow.style.border = '6px solid transparent';
+    arrow.style.borderTopColor = 'rgba(0, 0, 0, 0.85)';
+    tooltip.appendChild(arrow);
+    overlayElement.appendChild(tooltip);
+
+    // Показываем тултип при наведении на любую часть облака
+    overlayElement.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
+      tooltip.style.transform = 'translate(-50%, -50%) translateY(-8px)';
     });
 
-    tooltipElement.addEventListener('mouseleave', function() {
+    overlayElement.addEventListener('mouseleave', function() {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
+      tooltip.style.transform = 'translate(-50%, -50%)';
     });
 
-    tooltipElement.addEventListener('click', function(e) {
+    overlayElement.addEventListener('click', function(e) {
       e.stopPropagation();
     });
 
-    // Добавляем оверлей
-    const tooltipOverlay = new ol.Overlay({
-      element: tooltipElement,
+    // Добавляем оверлей поверх облака
+    const overlay = new ol.Overlay({
+      element: overlayElement,
       position: [cx, cy],
       positioning: 'center-center',
-      offset: [0, -30],
+      offset: [0, 0],
       stopEvent: true,
       zIndex: 20
     });
 
-    map.addOverlay(tooltipOverlay);
-    cloudOverlays.push(tooltipOverlay);
+    map.addOverlay(overlay);
+    cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков с интерактивной зоной`);
 }
