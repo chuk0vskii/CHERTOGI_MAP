@@ -5,7 +5,6 @@ const cloudOverlays = [];
 const CLOUD_WIDTH = 1200;
 const CLOUD_HEIGHT = 1200;
 
-
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
   cloudLayers.length = 0;
@@ -50,21 +49,18 @@ async function loadClouds() {
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-    // ===== НЕВИДИМАЯ ЗОНА ДЛЯ НАВЕДЕНИЯ (увеличенная) =====
-    const hitZoneWidth = CLOUD_WIDTH + HIT_ZONE_PADDING * 2;
-    const hitZoneHeight = CLOUD_HEIGHT + HIT_ZONE_PADDING * 2;
-
+    // ===== НЕВИДИМАЯ ЗОНА ДЛЯ НАВЕДЕНИЯ (ровно по размеру облака) =====
     const overlayElement = document.createElement('div');
     overlayElement.style.position = 'absolute';
-    overlayElement.style.width = hitZoneWidth + 'px';
-    overlayElement.style.height = hitZoneHeight + 'px';
+    overlayElement.style.width = CLOUD_WIDTH + 'px';
+    overlayElement.style.height = CLOUD_HEIGHT + 'px';
     overlayElement.style.pointerEvents = 'auto';
     overlayElement.style.cursor = 'default';
-    overlayElement.style.background = 'rgba(0,0,0,0)'; // полностью прозрачный
+    overlayElement.style.background = 'rgba(0,0,0,0)';
     overlayElement.style.transform = 'translate(-50%, -50%)';
     overlayElement.style.zIndex = '20';
     
-    // Тултип (как у маркеров)
+    // Тултип
     const tooltip = document.createElement('div');
     tooltip.textContent = 'Край еще не исследован';
     tooltip.style.position = 'absolute';
@@ -88,7 +84,6 @@ async function loadClouds() {
     tooltip.style.zIndex = '20';
     tooltip.style.letterSpacing = '0.5px';
 
-    // Стрелочка
     const arrow = document.createElement('div');
     arrow.style.position = 'absolute';
     arrow.style.top = '100%';
@@ -99,7 +94,6 @@ async function loadClouds() {
     tooltip.appendChild(arrow);
     overlayElement.appendChild(tooltip);
 
-    // Показываем тултип при наведении на увеличенную зону
     overlayElement.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
@@ -116,7 +110,6 @@ async function loadClouds() {
       e.stopPropagation();
     });
 
-    // Добавляем оверлей с увеличенной зоной
     const overlay = new ol.Overlay({
       element: overlayElement,
       position: [cx, cy],
@@ -130,5 +123,5 @@ async function loadClouds() {
     cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков с зоной активации +${HIT_ZONE_PADDING}px`);
+  console.log(`✅ Добавлено ${data.length} облаков с зоной активации по размеру`);
 }
