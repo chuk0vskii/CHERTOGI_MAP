@@ -27,40 +27,27 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    const halfWidth = CLOUD_WIDTH / 2;
-    const halfHeight = CLOUD_HEIGHT / 2;
-
-    // ===== ОБЛАКО (картинка) =====
-    const cloudLayer = new ol.layer.Image({
-      source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
-        imageExtent: [
-          cx - halfWidth,
-          cy - halfHeight,
-          cx + halfWidth,
-          cy + halfHeight
-        ],
-        projection: 'PIXELS'
-      }),
-      zIndex: 15,
-      opacity: 1.0
-    });
-
-    map.addLayer(cloudLayer);
-    cloudLayers.push(cloudLayer);
-
-    // ===== НЕВИДИМАЯ ЗОНА ДЛЯ НАВЕДЕНИЯ =====
-    // Создаём элемент, который полностью перекрывает облако
-    const overlayElement = document.createElement('div');
-    overlayElement.style.position = 'absolute';
-    overlayElement.style.width = CLOUD_WIDTH + 'px';  // ширина облака
-    overlayElement.style.height = CLOUD_HEIGHT + 'px'; // высота облака
-    overlayElement.style.pointerEvents = 'auto';
-    overlayElement.style.cursor = 'default';
-    overlayElement.style.background = 'rgba(0,0,0,0)'; // прозрачный
-    overlayElement.style.transform = 'translate(-50%, -50%)';
+    // ===== ОБЛАКО КАК ОВЕРЛЕЙ (как иконки) =====
+    const element = document.createElement('div');
+    element.style.position = 'absolute';
+    element.style.pointerEvents = 'auto';
+    element.style.cursor = 'default';
+    element.style.transform = 'translate(-50%, -50%)';
+    element.style.zIndex = '15';
     
-    // Тултип (как у маркеров)
+    // Сама картинка облака
+    const img = document.createElement('img');
+    img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
+    img.style.width = CLOUD_WIDTH + 'px';
+    img.style.height = CLOUD_HEIGHT + 'px';
+    img.style.display = 'block';
+    img.style.pointerEvents = 'auto'; // ← чтобы картинка ловила события
+    img.style.userSelect = 'none';
+    img.draggable = false;
+    
+    element.appendChild(img);
+
+    // ===== ТУЛТИП (как у маркеров) =====
     const tooltip = document.createElement('div');
     tooltip.textContent = 'Край еще не исследован';
     tooltip.style.position = 'absolute';
@@ -93,38 +80,39 @@ async function loadClouds() {
     arrow.style.border = '6px solid transparent';
     arrow.style.borderTopColor = 'rgba(0, 0, 0, 0.85)';
     tooltip.appendChild(arrow);
-    overlayElement.appendChild(tooltip);
+    element.appendChild(tooltip);
 
-    // Показываем тултип при наведении на любую часть облака
-    overlayElement.addEventListener('mouseenter', function() {
+    // ===== СОБЫТИЯ НАВЕДЕНИЯ (на картинку) =====
+    img.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
       tooltip.style.transform = 'translate(-50%, -50%) translateY(-8px)';
     });
 
-    overlayElement.addEventListener('mouseleave', function() {
+    img.addEventListener('mouseleave', function() {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
       tooltip.style.transform = 'translate(-50%, -50%)';
     });
 
-    overlayElement.addEventListener('click', function(e) {
+    img.addEventListener('click', function(e) {
       e.stopPropagation();
+      // Можно добавить действие, если нужно
     });
 
-    // Добавляем оверлей поверх облака
+    // ===== ДОБАВЛЯЕМ ОВЕРЛЕЙ =====
     const overlay = new ol.Overlay({
-      element: overlayElement,
+      element: element,
       position: [cx, cy],
       positioning: 'center-center',
       offset: [0, 0],
       stopEvent: true,
-      zIndex: 20
+      zIndex: 15
     });
 
     map.addOverlay(overlay);
     cloudOverlays.push(overlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков с интерактивной зоной`);
+  console.log(`✅ Добавлено ${data.length} облаков как оверлеи с тултипами`);
 }
