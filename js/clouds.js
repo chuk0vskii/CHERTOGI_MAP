@@ -2,10 +2,8 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
-const CLOUD_WIDTH = 1200;
-const CLOUD_HEIGHT = 1200;
-
 async function loadClouds() {
+  // Удаляем старые облака
   cloudLayers.forEach(layer => map.removeLayer(layer));
   cloudLayers.length = 0;
   
@@ -27,39 +25,28 @@ async function loadClouds() {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    const halfWidth = CLOUD_WIDTH / 2;
-    const halfHeight = CLOUD_HEIGHT / 2;
-
-    // ===== ОБЛАКО =====
-    const cloudLayer = new ol.layer.Image({
-      source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
-        imageExtent: [
-          cx - halfWidth,
-          cy - halfHeight,
-          cx + halfWidth,
-          cy + halfHeight
-        ],
-        projection: 'PIXELS'
-      }),
-      zIndex: 15,
-      opacity: 1.0
-    });
-
-    map.addLayer(cloudLayer);
-    cloudLayers.push(cloudLayer);
-
-    // ===== ТУЛТИП ДЛЯ ОБЛАКА =====
-    const tooltipElement = document.createElement('div');
-    tooltipElement.className = 'marker-button';
-    tooltipElement.style.position = 'absolute';
-    tooltipElement.style.pointerEvents = 'auto';
-    tooltipElement.style.cursor = 'default';
-    tooltipElement.style.transform = 'translate(-50%, -50%)';
-    tooltipElement.style.width = '1200px';
-    tooltipElement.style.height = '1200px';
-    tooltipElement.style.background = 'rgba(0,0,0,0)';
+    // ===== СОЗДАЁМ ЭЛЕМЕНТ КАК У МАРКЕРОВ =====
+    const element = document.createElement('div');
+    element.className = 'marker-button';
+    element.style.position = 'absolute';
+    element.style.pointerEvents = 'auto';
+    element.style.cursor = 'default';
+    element.style.transform = 'translate(-50%, -50%)';
+    element.style.zIndex = '15';
     
+    // Картинка облака (как иконка)
+    const img = document.createElement('img');
+    img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
+    img.style.width = '1200px';
+    img.style.height = '1200px';
+    img.style.display = 'block';
+    img.style.pointerEvents = 'auto';
+    img.style.userSelect = 'none';
+    img.draggable = false;
+    
+    element.appendChild(img);
+
+    // ===== ТУЛТИП (как у маркеров) =====
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
@@ -73,36 +60,37 @@ async function loadClouds() {
     tooltip.style.whiteSpace = 'nowrap';
     tooltip.style.pointerEvents = 'none';
     
-    tooltipElement.appendChild(tooltip);
+    element.appendChild(tooltip);
 
-    tooltipElement.addEventListener('mouseenter', function() {
+    // ===== НАВЕДЕНИЕ (как у маркеров) =====
+    element.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
     });
 
-    tooltipElement.addEventListener('mouseleave', function() {
+    element.addEventListener('mouseleave', function() {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
     });
 
-    tooltipElement.addEventListener('click', function(e) {
+    // ===== КЛИК (блокируем) =====
+    element.addEventListener('click', function(e) {
       e.stopPropagation();
     });
 
-    const tooltipOverlay = new ol.Overlay({
-      element: tooltipElement,
+    // ===== ДОБАВЛЯЕМ ОВЕРЛЕЙ =====
+    const overlay = new ol.Overlay({
+      element: element,
       position: [cx, cy],
       positioning: 'center-center',
-      offset: [0, -30],
+      offset: [0, 0],
       stopEvent: true,
-      zIndex: 20
+      zIndex: 15
     });
 
-    map.addOverlay(tooltipOverlay);
-    cloudOverlays.push(tooltipOverlay);
+    map.addOverlay(overlay);
+    cloudOverlays.push(overlay);
+  });
 
-  }); // ← ЗАКРЫВАЕМ ЦИКЛ
-
-  // ← ЛОГ ВНЕ ЦИКЛА
-  console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков как оверлеи с тултипами`);
 }
