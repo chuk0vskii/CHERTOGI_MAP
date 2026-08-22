@@ -24,17 +24,18 @@ async function loadClouds() {
   }
 
   data.forEach(region => {
+    // ===== БЕРЁМ КООРДИНАТЫ ОБЛАКА =====
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
 
-    console.log(`Облако: ${region.name} → (${cx}, ${cy})`); // ← лог для проверки
+    console.log(`☁️ ${region.name} → центр облака: (${cx}, ${cy})`); // ← проверка
 
     const halfWidth = CLOUD_WIDTH / 2;
     const halfHeight = CLOUD_HEIGHT / 2;
 
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=2',  // ← новая версия
+        url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
         imageExtent: [
           cx - halfWidth,
           cy - halfHeight,
@@ -43,8 +44,7 @@ async function loadClouds() {
         ],
         projection: 'PIXELS'
       }),
-      zIndex: 15,
-      opacity: 1
+      zIndex: 15
     });
 
     map.addLayer(cloudLayer);
@@ -118,5 +118,5 @@ async function loadClouds() {
     cloudOverlays.push(tooltipOverlay);
   });
 
-  console.log(`✅ Добавлено ${data.length} облаков (cloud3.png) для закрытых регионов`);
+  console.log(`✅ Добавлено ${data.length} облаков для закрытых регионов`);
 }
