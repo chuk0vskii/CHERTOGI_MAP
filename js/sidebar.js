@@ -11,7 +11,6 @@ function openSidebar(regionId, name, description, difficulty) {
   sidebarTitle.textContent = name;
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
-  // ===== СЛОЖНОСТЬ ПУТИ =====
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
       difficultyContainer.innerHTML = `
@@ -48,14 +47,16 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
   closeSidebar();
 });
 
+// ===== ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ (НО НЕ ПО ОВЕРЛЕЮ) =====
 function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
     map.on('click', function(event) {
-      const pixel = event.pixel;
-      const hit = map.forEachFeatureAtPixel(pixel, function(feature) {
-        return feature;
-      });
-      if (!hit) {
+      // Проверяем, не был ли клик по оверлею (маркеру)
+      const target = event.originalEvent.target;
+      const isOverlay = target.closest('.ol-overlay-container') !== null;
+      
+      // Если клик не по оверлею — закрываем панель
+      if (!isOverlay) {
         const sidebar = document.getElementById('region-sidebar');
         if (sidebar && sidebar.style.display === 'block') {
           closeSidebar();
