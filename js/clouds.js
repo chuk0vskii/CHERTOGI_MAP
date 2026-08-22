@@ -49,7 +49,7 @@ async function loadClouds() {
     map.addLayer(cloudLayer);
     cloudLayers.push(cloudLayer);
 
-        // ===== ТУЛТИП ДЛЯ ОБЛАКА (с размерами) =====
+    // ===== ТУЛТИП ДЛЯ ОБЛАКА =====
     const tooltipElement = document.createElement('div');
     tooltipElement.className = 'marker-button';
     tooltipElement.style.position = 'absolute';
@@ -58,9 +58,8 @@ async function loadClouds() {
     tooltipElement.style.transform = 'translate(-50%, -50%)';
     tooltipElement.style.width = '1200px';
     tooltipElement.style.height = '1200px';
-    tooltipElement.style.background = 'rgba(0,0,0,0)'; // полностью прозрачный
+    tooltipElement.style.background = 'rgba(0,0,0,0)';
     
-    // Сам тултип
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
     tooltip.textContent = 'Край еще не исследован';
@@ -76,7 +75,6 @@ async function loadClouds() {
     
     tooltipElement.appendChild(tooltip);
 
-    // Показываем тултип при наведении
     tooltipElement.addEventListener('mouseenter', function() {
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
@@ -91,7 +89,6 @@ async function loadClouds() {
       e.stopPropagation();
     });
 
-    // Добавляем оверлей
     const tooltipOverlay = new ol.Overlay({
       element: tooltipElement,
       position: [cx, cy],
@@ -104,5 +101,8 @@ async function loadClouds() {
     map.addOverlay(tooltipOverlay);
     cloudOverlays.push(tooltipOverlay);
 
+  }); // ← ЗАКРЫВАЕМ ЦИКЛ
+
+  // ← ЛОГ ВНЕ ЦИКЛА
   console.log(`✅ Добавлено ${data.length} облаков с тултипами для закрытых регионов`);
 }
