@@ -57,6 +57,7 @@ async function loadClouds() {
     tooltipElement.style.pointerEvents = 'auto';
     tooltipElement.style.cursor = 'default';
     tooltipElement.style.background = 'rgba(0,0,0,0)';
+    tooltipElement.style.zIndex = '9999'; // ← добавляем
 
     const tooltip = document.createElement('div');
     tooltip.textContent = 'Край еще не исследован';
@@ -79,6 +80,7 @@ async function loadClouds() {
     tooltip.style.visibility = 'hidden';
     tooltip.style.transition = 'opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease';
     tooltip.style.letterSpacing = '0.5px';
+    tooltip.style.zIndex = '9999'; // ← добавляем
 
     const arrow = document.createElement('div');
     arrow.style.position = 'absolute';
@@ -91,6 +93,7 @@ async function loadClouds() {
     tooltipElement.appendChild(tooltip);
 
     tooltipElement.addEventListener('mouseenter', function() {
+      console.log('Наведение на облако'); // ← проверка
       tooltip.style.opacity = '1';
       tooltip.style.visibility = 'visible';
       tooltip.style.transform = 'translate(-50%, -50%) translateY(-8px)';
@@ -111,7 +114,8 @@ async function loadClouds() {
       position: [cx, cy],
       positioning: 'center-center',
       offset: [0, 0],
-      stopEvent: true
+      stopEvent: true,
+      zIndex: 20 // ← добавляем
     });
 
     map.addOverlay(tooltipOverlay);
