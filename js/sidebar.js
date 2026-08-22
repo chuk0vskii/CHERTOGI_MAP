@@ -5,10 +5,22 @@ const sidebarTitle = document.getElementById('sidebar-title');
 const sidebarDesc = document.getElementById('sidebar-description');
 const reportsList = document.getElementById('reports-list');
 
-function openSidebar(regionId, name, description) {
+function openSidebar(regionId, name, description, imageUrl) {
   currentRegionId = regionId;
   sidebarTitle.textContent = name;
   sidebarDesc.textContent = description || 'Описание отсутствует';
+
+  const img = document.getElementById('region-image-placeholder');
+  if (imageUrl) {
+    img.style.backgroundImage = `url(${imageUrl})`;
+    img.style.backgroundSize = 'cover';
+    img.style.backgroundPosition = 'center';
+    img.textContent = '';
+  } else {
+    img.style.backgroundImage = 'none';
+    img.textContent = 'Изображение региона';
+  }
+
   sidebar.style.display = 'block';
   setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
   loadReports(regionId);
@@ -19,4 +31,22 @@ function closeSidebar() {
   setTimeout(() => { sidebar.style.display = 'none'; }, 300);
 }
 
-document.getElementById('close-sidebar').addEventListener('click', closeSidebar);
+// Закрытие по крестику (SVG)
+document.getElementById('close-icon').addEventListener('click', function(e) {
+  e.stopPropagation();
+  closeSidebar();
+});
+
+// Закрытие при клике на карту
+function closeSidebarOnMapClick() {
+  if (typeof map !== 'undefined') {
+    map.on('click', function(event) {
+      const sidebar = document.getElementById('region-sidebar');
+      if (sidebar && sidebar.style.display === 'block') {
+        closeSidebar();
+      }
+    });
+  }
+}
+
+setTimeout(closeSidebarOnMapClick, 1000);
