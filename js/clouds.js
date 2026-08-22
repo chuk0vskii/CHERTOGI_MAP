@@ -48,7 +48,7 @@ async function loadClouds() {
     // ===== ТУЛТИП КАК У МЕТОК =====
     const tooltip = document.createElement('span');
     tooltip.className = 'marker-tooltip';
-    tooltip.textContent = 'Край еще не исследован';
+    tooltip.textContent = 'Край не исследован';
     tooltip.style.position = 'absolute';
     tooltip.style.top = '50%';
     tooltip.style.left = '50%';
@@ -57,7 +57,7 @@ async function loadClouds() {
     tooltip.style.color = '#ffffff';
     tooltip.style.padding = '6px 16px';
     tooltip.style.borderRadius = '6px';
-    tooltip.style.fontSize = '14px';
+    tooltip.style.fontSize = '12px';
     tooltip.style.fontWeight = '700';
     tooltip.style.fontFamily = "'Philosopher', 'Arial', sans-serif";
     tooltip.style.whiteSpace = 'nowrap';
