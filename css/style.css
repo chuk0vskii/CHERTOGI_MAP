@@ -1,5 +1,15 @@
 /* ===== ПОДКЛЮЧЕНИЕ ШРИФТОВ ===== */
-@import url('https://fonts.googleapis.com/css2?family=Calypso&family=Philosopher:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&display=swap');
+
+/* ===== Calypso — загружаем локально, если есть ===== */
+@font-face {
+  font-family: 'Calypso';
+  src: url('/fonts/Calypso.woff2') format('woff2'),
+       url('/fonts/Calypso.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 html, body {
   margin: 0;
@@ -16,7 +26,7 @@ html, body {
   height: 70px;
   background: #4a0e0e;
   backdrop-filter: blur(8px);
-  border-bottom: 2px solid transparent; /* ← убрал жёлтую подводку */
+  border-bottom: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -29,7 +39,7 @@ html, body {
 .top-banner .title {
   font-family: 'Calypso', serif;
   font-size: 28px;
-  color: #ffffff; /* ← белый */
+  color: #ffffff;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   letter-spacing: 4px;
   font-weight: normal;
@@ -79,7 +89,7 @@ html, body {
   top: 70px;
   width: 420px;
   height: calc(100vh - 70px);
-  background: #4a0e0e; /* ← красный как банер */
+  background: #4a0e0e;
   backdrop-filter: blur(12px);
   border-left: 2px solid rgba(255, 215, 0, 0.2);
   z-index: 1000;
@@ -90,6 +100,20 @@ html, body {
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   font-family: 'Philosopher', sans-serif;
+}
+
+/* ===== ВСЕ ЗАГОЛОВКИ — CALYPSO ===== */
+#region-sidebar h2,
+#region-sidebar h3,
+#region-sidebar h4,
+#sidebar-title,
+#sidebar-title h1,
+#sidebar-title h2,
+#sidebar-title h3,
+#sidebar-title h4,
+#report-modal h3,
+#modal-region-name {
+  font-family: 'Calypso', serif !important;
 }
 
 #close-sidebar {
@@ -104,13 +128,6 @@ html, body {
   padding: 0 8px;
   z-index: 10;
   font-family: 'Philosopher', sans-serif;
-}
-
-#sidebar-title {
-  color: #ffd700;
-  font-size: 28px;
-  margin-bottom: 6px;
-  font-family: 'Calypso', serif; /* ← Calypso для заголовков */
 }
 
 #sidebar-description {
@@ -138,13 +155,6 @@ html, body {
 
 #report-btn:hover {
   background: rgba(255, 215, 0, 0.15);
-}
-
-/* Заголовки внутри панели */
-#region-sidebar h2,
-#region-sidebar h3,
-#region-sidebar h4 {
-  font-family: 'Calypso', serif;
 }
 
 /* Список отчётов */
@@ -175,19 +185,6 @@ html, body {
   width: 90%;
   border: 1px solid rgba(255, 215, 0, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-}
-
-#report-modal h3 {
-  color: #ffd700;
-  margin-bottom: 8px;
-  font-family: 'Calypso', serif;
-}
-
-#modal-region-name {
-  color: #888;
-  font-size: 13px;
-  margin-bottom: 16px;
-  font-family: 'Philosopher', sans-serif;
 }
 
 #report-author {
@@ -258,7 +255,8 @@ html, body {
   user-select: none;
   pointer-events: none;
 }
-/* ===== КНОПКИ-МАРКЕРЫ (размер иконок) ===== */
+
+/* ===== КНОПКИ-МАРКЕРЫ ===== */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -271,7 +269,7 @@ html, body {
 }
 
 .marker-button img {
-  width: 24px;            /* ← размер иконки */
+  width: 24px;
   height: 24px;
   display: block;
   object-fit: contain;
