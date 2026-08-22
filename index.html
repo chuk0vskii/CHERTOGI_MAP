@@ -33,26 +33,21 @@
   <!-- КОНТЕЙНЕР ДЛЯ ОВЕРЛЕЕВ -->
   <div id="marker-container"></div>
 
-  <!-- БОКОВАЯ ПАНЕЛЬ (ИСПРАВЛЕННАЯ) -->
+  <!-- БОКОВАЯ ПАНЕЛЬ -->
   <div id="region-sidebar">
-    <!-- КОНТЕЙНЕР: ЗАГЛУШКА + КРЕСТИК -->
-    <div id="image-container">
-      <!-- КРАСНАЯ ЗАГЛУШКА -->
-      <div id="region-image-placeholder">
-        Изображение региона
-      </div>
-      
-      <!-- КРЕСТИК ПОВЕРХ ЗАГЛУШКИ -->
-      <div id="close-icon-container">
-        <svg id="close-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+    <button id="close-sidebar">✕</button>
+    
+    <!-- КРАСНАЯ ЗАГЛУШКА -->
+    <div id="region-image-placeholder">
+      Изображение региона
     </div>
     
     <div class="panel-content">
       <h2 id="sidebar-title">Название региона</h2>
       <p id="sidebar-description">Описание региона</p>
+      
+      <!-- СЛОЖНОСТЬ ПУТИ -->
+      <div id="region-difficulty"></div>
       
       <button id="report-btn">Составить отчёт</button>
       
