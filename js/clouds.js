@@ -2,7 +2,7 @@
 const cloudLayers = [];
 const cloudOverlays = [];
 
-const CLOUD_SIZE = 120; // ← увеличен в 5 раз
+const CLOUD_SIZE = 240; // ← увеличен в 2 раза (было 120)
 
 async function loadClouds() {
   cloudLayers.forEach(layer => map.removeLayer(layer));
@@ -27,7 +27,7 @@ async function loadClouds() {
     const cy = region.cloud_y || region.y;
 
     const element = document.createElement('div');
-    element.className = 'marker-button';
+    element.className = 'cloud-marker'; // ← новый класс
     element.style.position = 'absolute';
     element.style.pointerEvents = 'auto';
     element.style.cursor = 'default';
@@ -42,7 +42,6 @@ async function loadClouds() {
     img.style.pointerEvents = 'auto';
     img.style.userSelect = 'none';
     img.draggable = false;
-    img.style.transition = 'none'; // ← убираем анимацию
     
     element.appendChild(img);
 
