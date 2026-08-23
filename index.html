@@ -138,9 +138,8 @@
   <script src="js/main.js"></script>
 
   <script>
-    // ===== ФУНКЦИЯ ПОКАЗА КАРТЫ =====
-    window.showMap = function() {
-      console.log('✅ Показываем карту');
+    // ===== ПОКАЗЫВАЕМ КАРТУ =====
+    function showMap() {
       const mapEl = document.getElementById('map');
       if (mapEl) {
         mapEl.classList.add('visible');
@@ -152,34 +151,10 @@
           preloader.style.display = 'none';
         }, 800);
       }
-    };
-
-    // ===== ЖДЁМ КАРТУ, ПОТОМ ЗАГРУЖАЕМ ОБЛАКА =====
-    function waitForMap() {
-      if (typeof map !== 'undefined' && map) {
-        console.log('✅ Карта готова, загружаем облака');
-        if (typeof loadClouds === 'function') {
-          loadClouds();
-        } else {
-          window.showMap();
-        }
-      } else {
-        console.log('⏳ Ждём инициализацию карты...');
-        setTimeout(waitForMap, 100);
-      }
     }
 
-    // Ждём 500ms перед проверкой (даём время map.js загрузиться)
-    setTimeout(waitForMap, 500);
-
-    // ===== ЗАПАСНОЙ ВАРИАНТ: через 8 секунд показываем в любом случае =====
-    setTimeout(function() {
-      const mapEl = document.getElementById('map');
-      if (mapEl && !mapEl.classList.contains('visible')) {
-        console.log('⏰ Запасной таймер: показываем карту');
-        window.showMap();
-      }
-    }, 8000);
+    // Ждём 2 секунды и показываем (за это время всё загрузится)
+    setTimeout(showMap, 2000);
   </script>
 
   <!-- КНОПКА КООРДИНАТ -->
