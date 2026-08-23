@@ -406,7 +406,7 @@
   // ===== ВЫБОР РЕГИОНА =====
   regionSelect.addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];
-    if (this.value) {
+    if (this.value && this.value !== '') {
       currentRegionId = parseInt(this.value);
       baseDifficulty = parseInt(selected.dataset.difficulty) || 0;
       currentSignMod = 0;
@@ -428,7 +428,10 @@
 
   // ===== ПОЛУЧЕНИЕ ЗНАКА =====
   function drawSign() {
-    if (!currentRegionId) {
+    // Проверяем, выбран ли регион (учитываем, что id может быть 0)
+    const selectedOption = regionSelect.options[regionSelect.selectedIndex];
+    
+    if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
       alert('Сначала выберите край!');
       return;
     }
