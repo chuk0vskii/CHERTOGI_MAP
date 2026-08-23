@@ -13,9 +13,69 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
-  <!-- УБИРАЕМ ВСЕ ПЕРЕОПРЕДЕЛЕНИЯ БАННЕРА -->
+  <style>
+    /* ===== ПРЕЛОАДЕР ===== */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0d0d1a;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      transition: opacity 0.8s ease;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #preloader .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 215, 0, 0.1);
+      border-top: 3px solid #ffd700;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    #preloader .text {
+      color: rgba(255, 215, 0, 0.6);
+      font-family: 'Philosopher', sans-serif;
+      font-size: 16px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ===== КАРТА СКРЫТА ДО ЗАГРУЗКИ ===== */
+    #map {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #map.visible {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- ===== ПРЕЛОАДЕР ===== -->
+  <div id="preloader">
+    <div class="spinner"></div>
+    <div class="text">Загрузка карты...</div>
+  </div>
 
   <!-- БАННЕР (одинаковый на всех страницах) -->
   <div class="top-banner">
@@ -75,6 +135,40 @@
   <script src="js/reports.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/main.js"></script>
+
+  <script>
+    // ===== ПОКАЗЫВАЕМ КАРТУ ПОСЛЕ ЗАГРУЗКИ =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Ждём загрузку облаков (они загружаются в clouds.js)
+      // Проверяем каждые 500ms, загрузились ли облака
+      let checkInterval = setInterval(function() {
+        if (window.cloudsLoaded) {
+          clearInterval(checkInterval);
+          showMap();
+        }
+      }, 200);
+
+      // Запасной вариант — через 3 секунды показываем в любом случае
+      setTimeout(function() {
+        clearInterval(checkInterval);
+        showMap();
+      }, 3000);
+
+      function showMap() {
+        const mapEl = document.getElementById('map');
+        if (mapEl) {
+          mapEl.classList.add('visible');
+        }
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+          preloader.classList.add('hidden');
+          setTimeout(function() {
+            preloader.style.display = 'none';
+          }, 800);
+        }
+      }
+    });
+  </script>
 
   <button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
     Координаты
