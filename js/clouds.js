@@ -9,20 +9,16 @@ async function loadClouds() {
   cloudLayers.forEach(layer => {
     try {
       map.removeLayer(layer);
-    } catch(e) {
-      // игнорируем
-    }
+    } catch(e) {}
   });
   cloudLayers.length = 0;
 
   console.log('☁️ Загрузка облаков...');
 
-  // Проверяем, что карта существует
+  // Проверяем карту
   if (typeof map === 'undefined' || !map) {
     console.error('❌ Карта не инициализирована');
-    if (typeof window.showMap === 'function') {
-      window.showMap();
-    }
+    if (typeof window.showMap === 'function') window.showMap();
     return;
   }
 
@@ -34,28 +30,27 @@ async function loadClouds() {
 
   if (error) {
     console.error('❌ Ошибка загрузки облаков:', error);
-    if (typeof window.showMap === 'function') {
-      window.showMap();
-    }
+    if (typeof window.showMap === 'function') window.showMap();
     return;
   }
 
   if (!data || data.length === 0) {
     console.log('✅ Нет закрытых регионов');
-    if (typeof window.showMap === 'function') {
-      window.showMap();
-    }
+    if (typeof window.showMap === 'function') window.showMap();
     return;
   }
 
-  // Добавляем облака
-  data.forEach((region, index) => {
-    try {
+  // ===== ПРЕДЗАГРУЗКА ВСЕХ ИЗОБРАЖЕНИЙ =====
+  console.log(`🔄 Предзагрузка ${data.length} облаков...`);
+  
+  const loadPromises = data.map((region, index) => {
+    return new Promise((resolve) => {
       const cx = Number(region.cloud_x || region.x || 0);
       const cy = Number(region.cloud_y || region.y || 0);
 
       if (isNaN(cx) || isNaN(cy)) {
-        console.warn(`⚠️ Некорректные координаты для региона ${region.name || index}`);
+        console.warn(`⚠️ Некорректные координаты для ${region.name || index}`);
+        resolve();
         return;
       }
 
@@ -69,9 +64,10 @@ async function loadClouds() {
         adjustedCy + halfSize
       ];
 
+      // Создаём слой
       const cloudLayer = new ol.layer.Image({
         source: new ol.source.ImageStatic({
-          url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now() + '&' + index,
+          url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
           imageExtent: imageExtent,
           projection: 'PIXELS'
         }),
@@ -79,30 +75,52 @@ async function loadClouds() {
         opacity: 1.0
       });
 
-      map.addLayer(cloudLayer);
-      cloudLayers.push(cloudLayer);
-
-    } catch(e) {
-      console.warn(`⚠️ Ошибка создания облака для ${region.name || index}:`, e.message);
-    }
+      // Ждём загрузки изображения
+      const image = cloudLayer.getSource().getImage();
+      if (image) {
+        image.onload = function() {
+          console.log(`✅ Облако ${index + 1}/${data.length} загружено`);
+          // Добавляем слой только после загрузки
+          map.addLayer(cloudLayer);
+          cloudLayers.push(cloudLayer);
+          resolve();
+        };
+        image.onerror = function() {
+          console.warn(`⚠️ Ошибка загрузки облака ${index + 1}/${data.length}`);
+          // Всё равно добавляем
+          map.addLayer(cloudLayer);
+          cloudLayers.push(cloudLayer);
+          resolve();
+        };
+        
+        // Если изображение уже загружено (кэш)
+        if (image.complete) {
+          console.log(`✅ Облако ${index + 1}/${data.length} из кэша`);
+          map.addLayer(cloudLayer);
+          cloudLayers.push(cloudLayer);
+          resolve();
+        }
+      } else {
+        resolve();
+      }
+    });
   });
 
-  console.log(`✅ Добавлено ${cloudLayers.length} облаков`);
+  // Ждём загрузки ВСЕХ облаков
+  await Promise.all(loadPromises);
 
-  // Показываем карту через 300ms
-  setTimeout(function() {
-    if (typeof window.showMap === 'function') {
-      window.showMap();
-    }
-  }, 300);
+  console.log(`✅ Загружено ${cloudLayers.length} облаков`);
+
+  // ===== ПОКАЗЫВАЕМ КАРТУ ТОЛЬКО ПОСЛЕ ЗАГРУЗКИ ВСЕХ ОБЛАКОВ =====
+  if (typeof window.showMap === 'function') {
+    window.showMap();
+  }
 }
 
-// Запускаем загрузку (но только если карта уже создана)
+// Запускаем загрузку
 if (typeof map !== 'undefined' && map) {
   loadClouds();
 } else {
-  console.warn('⚠️ Карта ещё не создана, облака загрузятся позже');
-  // Ждём карту
   let checkMap = setInterval(function() {
     if (typeof map !== 'undefined' && map) {
       clearInterval(checkMap);
