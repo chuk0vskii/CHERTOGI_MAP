@@ -30,7 +30,7 @@ html, body {
   align-items: center;
   justify-content: space-between; /* ← название слева, кнопки справа */
   z-index: 100;
-  padding: 0 40px; /* ← отступ от правого края (меняй это число) */
+  padding: 0 40px; /* ← отступ от правого края */
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   user-select: none;
 }
@@ -72,10 +72,9 @@ html, body {
   border-bottom-color: #ffd700;
 }
 
-/* ===== АДАПТАЦИЯ БАННЕРА ДЛЯ МОБИЛЬНЫХ ===== */
+/* ===== АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ===== */
 @media (max-width: 768px) {
   .top-banner {
-    height: 56px;
     padding: 0 16px;
   }
   .top-banner .title {
@@ -92,8 +91,7 @@ html, body {
 
 @media (max-width: 480px) {
   .top-banner {
-    height: 48px;
-    padding: 0 12px;
+    padding: 0 10px;
   }
   .top-banner .title {
     font-size: 15px;
@@ -107,7 +105,7 @@ html, body {
   }
 }
 
-/* ===== ОСТАЛЬНЫЕ СТИЛИ (КАРТА, ПАНЕЛЬ, МАРКЕРЫ) ===== */
+/* ===== КАРТА ===== */
 #map {
   position: absolute;
   top: 70px;
@@ -117,6 +115,7 @@ html, body {
   background: #0d0d1a;
 }
 
+/* ===== БОКОВАЯ ПАНЕЛЬ ===== */
 #region-sidebar {
   display: none;
   position: fixed;
@@ -137,6 +136,15 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
+/* ===== КОНТЕЙНЕР ДЛЯ ЗАГЛУШКИ И КРЕСТИКА ===== */
+#image-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
@@ -156,6 +164,7 @@ html, body {
   overflow: hidden;
 }
 
+/* ===== КРЕСТИК ===== */
 #close-icon-container {
   position: sticky;
   top: 0;
@@ -186,11 +195,13 @@ html, body {
   transform: scale(1.1);
 }
 
+/* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
   padding: 20px 40px 40px 40px;
   text-align: left;
 }
 
+/* ===== ЗАГОЛОВОК ===== */
 #sidebar-title {
   color: #ffffff;
   font-size: 21px;
@@ -201,6 +212,7 @@ html, body {
   text-align: center;
 }
 
+/* ===== ОПИСАНИЕ ===== */
 #sidebar-description {
   font-size: 15px;
   line-height: 1.6;
@@ -210,10 +222,12 @@ html, body {
   text-align: left;
 }
 
+/* ===== СЛОЖНОСТЬ ===== */
 #region-difficulty {
   margin: 12px 0 16px 0;
 }
 
+/* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
 #report-btn {
   width: 100%;
   padding: 14px;
@@ -235,6 +249,7 @@ html, body {
   color: #ffffff;
 }
 
+/* ===== ЗАГОЛОВОК "ОТЧЁТЫ ИГРОКОВ" ===== */
 #reports-title {
   color: #ffffff;
   font-size: 20px;
@@ -247,6 +262,7 @@ html, body {
   text-align: left;
 }
 
+/* ===== СПИСОК ОТЧЁТОВ ===== */
 #reports-list {
   font-family: 'Philosopher', sans-serif;
   color: #cccccc;
@@ -258,6 +274,7 @@ html, body {
   font-size: 14px;
 }
 
+/* ===== ВЕРСИЯ ===== */
 #version-counter {
   position: fixed;
   top: 80px;
@@ -275,6 +292,7 @@ html, body {
   pointer-events: none;
 }
 
+/* ===== КНОПКИ-МАРКЕРЫ ===== */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -342,10 +360,12 @@ html, body {
   transform: scale(0.9);
 }
 
+/* ===== СКРЫВАЕМ МОДАЛКУ ===== */
 #report-modal {
   display: none !important;
 }
 
+/* ===== ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ ===== */
 .cloud-marker img {
   transition: none !important;
   transform: none !important;
