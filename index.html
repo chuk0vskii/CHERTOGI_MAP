@@ -13,83 +13,11 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
-  <!-- ===== ЕДИНЫЙ СТИЛЬ ДЛЯ БАННЕРА ===== -->
-  <style>
-    /* ===== ПЕРЕОПРЕДЕЛЯЕМ БАННЕР ===== */
-    .top-banner {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      padding: 0 80px !important;
-      box-sizing: border-box !important;
-    }
-
-    .top-banner .title {
-      flex-shrink: 0 !important;
-    }
-
-    .nav-links {
-      display: flex !important;
-      gap: 20px !important;
-      align-items: center !important;
-      flex-shrink: 0 !important;
-    }
-
-    .nav-links a {
-      color: #ffffff !important;
-      text-decoration: none !important;
-      font-size: 14px !important;
-      letter-spacing: 1px !important;
-      padding: 6px 0 !important;
-      border-bottom: 2px solid transparent !important;
-      font-family: 'Philosopher', sans-serif !important;
-      white-space: nowrap !important;
-    }
-
-    .nav-links a:hover {
-      color: #ffd700 !important;
-    }
-
-    .nav-links a.active {
-      color: #ffd700 !important;
-      border-bottom-color: #ffd700 !important;
-    }
-
-    /* ===== АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ===== */
-    @media (max-width: 768px) {
-      .top-banner {
-        padding: 0 16px !important;
-      }
-      .top-banner .title {
-        font-size: 18px !important;
-      }
-      .nav-links {
-        gap: 12px !important;
-      }
-      .nav-links a {
-        font-size: 12px !important;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .top-banner {
-        padding: 0 10px !important;
-      }
-      .top-banner .title {
-        font-size: 15px !important;
-      }
-      .nav-links {
-        gap: 8px !important;
-      }
-      .nav-links a {
-        font-size: 10px !important;
-      }
-    }
-  </style>
+  <!-- УБИРАЕМ ВСЕ ПЕРЕОПРЕДЕЛЕНИЯ БАННЕРА -->
 </head>
 <body>
 
-  <!-- БАННЕР -->
+  <!-- БАННЕР (одинаковый на всех страницах) -->
   <div class="top-banner">
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
