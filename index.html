@@ -14,11 +14,106 @@
 
   <!-- ПОЛИФИЛЛЫ -->
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
+
+  <style>
+    /* ===== БАННЕР ДЛЯ МОБИЛЬНЫХ (поверх карты) ===== */
+    .top-banner-mobile {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+      background: #4a0e0e;
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid transparent;
+      z-index: 100;
+      padding: 0 10px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .top-banner-mobile .title {
+      font-family: 'Calypso', serif;
+      font-size: 14px;
+      color: #ffffff;
+      letter-spacing: 1px;
+      font-weight: normal;
+    }
+
+    .top-banner-mobile .nav-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .top-banner-mobile .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+      font-family: 'Philosopher', sans-serif;
+      white-space: nowrap;
+    }
+
+    .top-banner-mobile .nav-links a:hover {
+      color: #ffd700;
+    }
+
+    .top-banner-mobile .nav-links a.active {
+      color: #ffd700;
+      border-bottom-color: #ffd700;
+    }
+
+    /* ===== ПОКАЗЫВАЕМ МОБИЛЬНЫЙ БАННЕР НА МАЛЕНЬКИХ ЭКРАНАХ ===== */
+    @media (max-width: 600px) {
+      .top-banner {
+        display: none !important;
+      }
+      .top-banner-mobile {
+        display: flex !important;
+      }
+      #map {
+        top: 48px !important;
+      }
+      #region-sidebar {
+        top: 48px !important;
+        height: calc(100vh - 48px) !important;
+      }
+      #version-counter {
+        top: 56px !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .top-banner-mobile .title {
+        font-size: 12px;
+      }
+      .top-banner-mobile .nav-links a {
+        font-size: 8px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- БАННЕР (ТОЧНО КАК В znaki.html) -->
+  <!-- ОСНОВНОЙ БАННЕР (для десктопа) -->
   <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">В путь</a>
+      <a href="bestiary.html">Бестиарий</a>
+      <a href="tree.html">Древо смерти</a>
+    </div>
+  </div>
+
+  <!-- МОБИЛЬНЫЙ БАННЕР (для экранов ≤ 600px) -->
+  <div class="top-banner-mobile">
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
       <a href="index.html" class="active">Карта</a>
