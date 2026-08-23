@@ -13,17 +13,12 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
-<style>
-  /* ===== ПЕРЕОПРЕДЕЛЯЕМ ВСЁ ===== */
-  .top-banner {
-    padding: 0 500px 0 30px !important; /* ← 500px — отступ от правого края */
-  }
-
-  .nav-links {
-    margin-right: 0 !important;
-    padding-right: 0 !important;
-  }
-</style>
+  <!-- ТОЛЬКО ОДИН СТИЛЬ ДЛЯ ОТСТУПА (если нужно переопределить) -->
+  <style>
+    .top-banner {
+      padding: 0 120px !important; /* ← меняй это число, чтобы сдвигать кнопки */
+    }
+  </style>
 </head>
 <body>
 
@@ -40,7 +35,7 @@
   <div id="version-counter">v1.0</div>
   <div id="map"></div>
 
-  <!-- ===== ВСЁ ОСТАЛЬНОЕ (карта, панель, скрипты) ===== -->
+  <!-- ===== ВСЁ ОСТАЛЬНОЕ ===== -->
   <div id="marker-container"></div>
 
   <div id="region-sidebar">
