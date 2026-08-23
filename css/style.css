@@ -16,7 +16,7 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БАННЕР ===== */
+/* ===== БАННЕР (кнопки справа, с отступом) ===== */
 .top-banner {
   position: fixed;
   top: 0;
@@ -28,9 +28,9 @@ html, body {
   border-bottom: 2px solid transparent;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* ← название слева, кнопки справа */
   z-index: 100;
-  padding: 0 30px;
+  padding: 0 40px; /* ← отступ от правого края (меняй это число) */
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   user-select: none;
 }
@@ -42,11 +42,12 @@ html, body {
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   letter-spacing: 4px;
   font-weight: normal;
+  flex-shrink: 0; /* не сжимается */
 }
 
 .nav-links {
   display: flex;
-  gap: 25px;
+  gap: 25px; /* ← расстояние между кнопками */
   align-items: center;
 }
 
