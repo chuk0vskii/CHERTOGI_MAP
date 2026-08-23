@@ -80,14 +80,12 @@ async function loadClouds() {
       if (image) {
         image.onload = function() {
           console.log(`✅ Облако ${index + 1}/${data.length} загружено`);
-          // Добавляем слой только после загрузки
           map.addLayer(cloudLayer);
           cloudLayers.push(cloudLayer);
           resolve();
         };
         image.onerror = function() {
           console.warn(`⚠️ Ошибка загрузки облака ${index + 1}/${data.length}`);
-          // Всё равно добавляем
           map.addLayer(cloudLayer);
           cloudLayers.push(cloudLayer);
           resolve();
