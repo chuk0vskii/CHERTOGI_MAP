@@ -348,6 +348,19 @@
       color: #ccc;
       padding: 10px 0;
     }
+    .event-card .event-text .sub-roll {
+      display: block;
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: rgba(255, 215, 0, 0.05);
+      border-radius: 6px;
+      border-left: 2px solid rgba(255, 215, 0, 0.3);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .event-card .event-text .sub-roll strong {
+      color: #ffd700;
+    }
     .event-card .event-check-row {
       display: flex;
       flex-wrap: wrap;
@@ -476,6 +489,23 @@
       font-size: 16px;
     }
 
+    /* ===== КНОПКА РАНДОМИЗАЦИИ ===== */
+    .btn-reroll {
+      padding: 4px 14px;
+      background: rgba(255, 215, 0, 0.1);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Philosopher', sans-serif;
+      margin-left: 8px;
+    }
+    .btn-reroll:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
@@ -577,7 +607,7 @@
 
 <script>
   // ============================================================
-  //  ДАННЫЕ ЗНАКОВ (обновлённые описания)
+  //  ДАННЫЕ ЗНАКОВ
   // ============================================================
 
   const SIGNS = [ null,
@@ -703,10 +733,46 @@
     }
   ];
 
-  // ===== СПИСОК РОЛЕЙ =====
-  const ROLES = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
+  // ============================================================
+  //  ТАБЛИЦА РУИН (12x3)
+  // ============================================================
 
-  // ===== ОБЩИЕ СОБЫТИЯ (1d6) =====
+  const RUINS_TABLE = [
+    // [Тип руин, Как пройти, Что хранят]
+    ['Магии', 'Активировать 1к4 рычага', 'Ответы на вопросы'],
+    ['Лабиринта', 'Передвинуть правильно 1к6 статуй', 'Историю что пытались скрыть'],
+    ['Королей', 'Уничтожить одного сильного стража', 'Сокровища'],
+    ['Морхоров', 'Уничтожить 3к4 мелких стражей', 'Запертое существо'],
+    ['Вуали', 'Восстановить цепь лучей света', 'Артефакт'],
+    ['Меридиров', 'Пройти испытание Искры', 'Знания веков'],
+    ['Эхорнуров', 'Пройти испытание Кремня', 'Забытых детей'],
+    ['Улунгуров', 'Пролить кровь', 'Чьи-то останки'],
+    ['Солнц и Лун', 'Спеть песню на языке архитекторов', 'Имена'],
+    ['Звезд', 'Отдать что-то в дар/вернуть предмет на место', 'Опасную магию'],
+    ['Глубин', 'Сломать/починить то, что не дает пройти', 'Ключ к другой двери'],
+    ['Великанов', 'Произнести нужные слова/звуки/музыку', 'Фрески/пророчество/сказание']
+  ];
+
+  // ============================================================
+  //  ТАБЛИЦА ОАЗИСОВ (8x2)
+  // ============================================================
+
+  const OASIS_TABLE = [
+    // [Оазис, Загадка]
+    ['Горячие источники Шамаса, снимающая 1 метку Тьмы.', 'Время от времени вода прилипает к чаше не выливаясь.'],
+    ['Горячие источники Улы, восстанавливающие Искру', 'Нет никогда ветра, как будто Нарар тут не летает.'],
+    ['Ледяная купель Азрака, восстанавливающая Кремень', 'Вся соленая еда сладкая и наоборот.'],
+    ['Ледяная купель Ману, снимающая проклятье.', 'Иногда слова, которые говорят твои товарищи, как будто звучат в обратную сторону.'],
+    ['Заросли фруктов, пополняющие кости провизии', 'Сны о будущем снятся тем, кто тут отдыхает.'],
+    ['Оазис близ источника пресной воды, где можно пополнить кости провизии', 'Дым странными узорами поднимается от костра.'],
+    ['Соленая купель, лечащие немагические болезни', 'Время здесь идет в два раза медленнее'],
+    ['Озерцо с целебной глиной, восстанавливающей все хиты', 'Здесь нет никаких знаков судьбы']
+  ];
+
+  // ============================================================
+  //  ОБЩИЕ СОБЫТИЯ
+  // ============================================================
+
   const COMMON_EVENTS = [
     { 
       id: 1, 
@@ -733,7 +799,9 @@
     { 
       id: 3, 
       title: 'Древние Руины', 
-      description: 'Группа набредает на древнее строение. Все совершают Проверку Искры.',
+      description: 'Группа набредает на древнее строение.',
+      hasSubRoll: true,
+      subRollType: 'ruins',
       effects: {
         success: 'Группа вдохновляется и получает +1 на Прибытие.',
         fail: 'Мораль падает, группа получает -1 на Прибытие.',
@@ -755,7 +823,9 @@
     { 
       id: 5, 
       title: 'Невероятный Оазис', 
-      description: 'Группа прибывает в безопасный на вид оазис. Все совершают проверку Искры.',
+      description: 'Группа прибывает в безопасный на вид оазис.',
+      hasSubRoll: true,
+      subRollType: 'oasis',
       effects: {
         success: 'Группа может сделать длинный отдых и каждый получает 1 Кость Удачи.',
         fail: 'Место кажется опасным. Помеха на проверки Интеллекта до конца фазы Путь.',
@@ -776,7 +846,12 @@
     }
   ];
 
-  // ===== СОБЫТИЯ ПО РОЛЯМ =====
+  // ============================================================
+  //  СПИСОК РОЛЕЙ И ИХ СОБЫТИЙ
+  // ============================================================
+
+  const ROLES = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
+
   const ROLE_EVENTS = {
     'Чтец_Знаков': [
       { 
@@ -1127,8 +1202,8 @@
   let currentRegionId = null;
   let baseDifficulty = 0;
   let totalDifficulty = 0;
-  let currentSignMod = 0; // накопленный модификатор от всех знаков
-  let signHistory = []; // история выпавших знаков
+  let currentSignMod = 0;
+  let signHistory = [];
 
   const regionSelect = document.getElementById('regionSelect');
   const difficultyDisplay = document.getElementById('difficultyValue');
@@ -1188,19 +1263,43 @@
   }
 
   // ============================================================
-  //  ОБНОВЛЕНИЕ СЛОЖНОСТИ (ГЛАВНОЕ)
+  //  ГЕНЕРАЦИЯ ПОД-БРОСКОВ
+  // ============================================================
+
+  function generateRuins() {
+    const index = getRandomInt(0, RUINS_TABLE.length - 1);
+    const ruins = RUINS_TABLE[index];
+    return {
+      roll: index + 1,
+      type: ruins[0],
+      pass: ruins[1],
+      reward: ruins[2],
+      fullText: `Тип руин: ${ruins[0]} | Как пройти: ${ruins[1]} | Что хранят: ${ruins[2]}`
+    };
+  }
+
+  function generateOasis() {
+    const index = getRandomInt(0, OASIS_TABLE.length - 1);
+    const oasis = OASIS_TABLE[index];
+    return {
+      roll: index + 1,
+      type: oasis[0],
+      mystery: oasis[1],
+      fullText: `Оазис: ${oasis[0]} | Загадка: ${oasis[1]}`
+    };
+  }
+
+  // ============================================================
+  //  ОБНОВЛЕНИЕ СЛОЖНОСТИ
   // ============================================================
 
   function updateDifficulty() {
-    // totalDifficulty = базовая сложность региона + накопленный модификатор от знаков
     totalDifficulty = baseDifficulty + currentSignMod;
     if (totalDifficulty < 0) totalDifficulty = 0;
     
-    // Обновляем везде
     difficultyDisplay.textContent = totalDifficulty;
     pathDifficultyDisplay.textContent = totalDifficulty;
     
-    // Цвет в зависимости от модификатора
     if (currentSignMod > 0) {
       difficultyDisplay.style.color = '#ff6b6b';
       pathDifficultyDisplay.style.color = '#ff6b6b';
@@ -1249,14 +1348,11 @@
   //  ФАЗА ЗНАКИ
   // ============================================================
 
-  // Выбор региона
   regionSelect.addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];
     if (this.value && this.value !== '') {
       currentRegionId = parseInt(this.value);
       baseDifficulty = parseInt(selected.dataset.difficulty) || 0;
-      
-      // Сбрасываем эффекты знаков при смене региона
       currentSignMod = 0;
       signHistory = [];
       updateDifficulty();
@@ -1293,7 +1389,6 @@
     }
   });
 
-  // Бросок знака
   function drawSign() {
     const selectedOption = regionSelect.options[regionSelect.selectedIndex];
     
@@ -1317,12 +1412,10 @@
       return;
     }
 
-    // ДОБАВЛЯЕМ модификатор к накопленному (а не заменяем!)
     currentSignMod += sign.mod;
     signHistory.push({ index: index, title: sign.title, mod: sign.mod });
     updateDifficulty();
 
-    // Показываем результат
     signTitle.textContent = sign.title;
     signDescription.textContent = sign.description;
 
@@ -1334,7 +1427,6 @@
     }
     metaHtml += `<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ${currentSignMod > 0 ? '+' : ''}${currentSignMod}</span>`;
     
-    // Добавляем эффект знака
     if (sign.effect) {
       metaHtml += `<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">${sign.effect}</span>`;
     }
@@ -1359,7 +1451,6 @@
     if (e.key === 'Enter') drawSign();
   });
 
-  // Сброс эффектов знаков
   resetSignsBtn.addEventListener('click', function() {
     if (currentRegionId === null) {
       alert('Сначала выберите край');
@@ -1372,7 +1463,6 @@
     signResult.classList.remove('visible');
     signPlaceholder.style.display = 'block';
     
-    // Показываем уведомление
     const meta = document.getElementById('signMeta');
     meta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
     signResult.classList.add('visible');
@@ -1422,14 +1512,33 @@
 
     for (let i = 0; i < commonCount; i++) {
       const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
-      events.push({
+      const eventData = COMMON_EVENTS[roll];
+      
+      // Создаём копию события с под-бросками
+      const eventCopy = {
         type: 'Общее',
-        data: COMMON_EVENTS[roll],
+        data: { ...eventData },
         roll: roll + 1,
         isCommon: true,
         checked: false,
-        result: null
-      });
+        result: null,
+        subRoll: null
+      };
+      
+      // Если это Древние Руины — генерируем под-бросок
+      if (eventData.hasSubRoll && eventData.subRollType === 'ruins') {
+        eventCopy.subRoll = generateRuins();
+        // Добавляем информацию о под-броске в описание
+        eventCopy.data.description += `<br><span style="color: #ffd700;">🏛️ ${eventCopy.subRoll.fullText}</span>`;
+      }
+      
+      // Если это Невероятный Оазис — генерируем под-бросок
+      if (eventData.hasSubRoll && eventData.subRollType === 'oasis') {
+        eventCopy.subRoll = generateOasis();
+        eventCopy.data.description += `<br><span style="color: #51cf66;">🌴 ${eventCopy.subRoll.fullText}</span>`;
+      }
+      
+      events.push(eventCopy);
     }
 
     for (let i = 0; i < roleCount; i++) {
@@ -1443,7 +1552,8 @@
         roll: roll + 1,
         isCommon: false,
         checked: false,
-        result: null
+        result: null,
+        subRoll: null
       });
     }
 
@@ -1551,7 +1661,6 @@
       effectDiv.innerHTML = `<span class="${effectClass}">⚡ ${effectText}</span>`;
       effectDiv.className = 'event-effect visible';
       
-      // Проверяем, есть ли изменение сложности в эффекте
       const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
       if (diffMatch) {
         const sign = diffMatch[1] === '+' ? 1 : -1;
