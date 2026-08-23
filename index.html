@@ -15,10 +15,25 @@
 
   <!-- ТОЛЬКО ОДИН СТИЛЬ ДЛЯ ОТСТУПА (если нужно переопределить) -->
   <style>
-    .top-banner {
-      padding: 0 120px !important; /* ← меняй это число, чтобы сдвигать кнопки */
-    }
-  </style>
+  .top-banner {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 120px !important; /* ← меняй это число — отступ от правого края */
+    justify-content: flex-start !important; /* ← всё слева */
+  }
+
+  .top-banner .title {
+    flex-shrink: 0 !important;
+    margin-right: auto !important; /* ← раздвигает название и кнопки */
+  }
+
+  .nav-links {
+    display: flex !important;
+    gap: 25px !important;
+    align-items: center !important;
+    margin-right: 0 !important;
+  }
+</style>
 </head>
 <body>
 
