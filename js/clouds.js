@@ -10,15 +10,15 @@ async function loadClouds() {
     try {
       map.removeLayer(layer);
     } catch(e) {
-      console.warn('⚠️ Ошибка при удалении слоя:', e);
+      // игнорируем
     }
   });
   cloudLayers.length = 0;
 
   console.log('☁️ Загрузка облаков...');
 
-  // Проверяем, что карта инициализирована
-  if (!map || typeof map.addLayer !== 'function') {
+  // Проверяем, что карта существует
+  if (typeof map === 'undefined' || !map) {
     console.error('❌ Карта не инициализирована');
     if (typeof window.showMap === 'function') {
       window.showMap();
@@ -40,24 +40,21 @@ async function loadClouds() {
     return;
   }
 
-  // Если нет закрытых регионов — сразу показываем карту
   if (!data || data.length === 0) {
-    console.log('✅ Нет закрытых регионов, облака не нужны');
+    console.log('✅ Нет закрытых регионов');
     if (typeof window.showMap === 'function') {
       window.showMap();
     }
     return;
   }
 
-  // Добавляем облака на карту
+  // Добавляем облака
   data.forEach((region, index) => {
     try {
-      // Проверяем координаты
-      const cx = region.cloud_x || region.x || 0;
-      const cy = region.cloud_y || region.y || 0;
+      const cx = Number(region.cloud_x || region.x || 0);
+      const cy = Number(region.cloud_y || region.y || 0);
 
-      // Проверяем, что координаты - числа
-      if (typeof cx !== 'number' || typeof cy !== 'number') {
+      if (isNaN(cx) || isNaN(cy)) {
         console.warn(`⚠️ Некорректные координаты для региона ${region.name || index}`);
         return;
       }
@@ -65,24 +62,12 @@ async function loadClouds() {
       const halfSize = CLOUD_SIZE / 2;
       const adjustedCy = cy + OFFSET_Y;
 
-      // Проверяем, что все значения корректны
-      if (isNaN(cx) || isNaN(adjustedCy) || isNaN(halfSize)) {
-        console.warn(`⚠️ Некорректные вычисления для региона ${region.name || index}`);
-        return;
-      }
-
       const imageExtent = [
         cx - halfSize,
         adjustedCy - halfSize,
         cx + halfSize,
         adjustedCy + halfSize
       ];
-
-      // Проверяем, что extent корректен
-      if (imageExtent.some(isNaN)) {
-        console.warn(`⚠️ Некорректный extent для региона ${region.name || index}`);
-        return;
-      }
 
       const cloudLayer = new ol.layer.Image({
         source: new ol.source.ImageStatic({
@@ -96,15 +81,15 @@ async function loadClouds() {
 
       map.addLayer(cloudLayer);
       cloudLayers.push(cloudLayer);
-      
+
     } catch(e) {
-      console.warn(`⚠️ Ошибка при создании облака для ${region.name || index}:`, e);
+      console.warn(`⚠️ Ошибка создания облака для ${region.name || index}:`, e.message);
     }
   });
 
-  console.log(`✅ Добавлено ${cloudLayers.length} облаков из ${data.length} регионов`);
+  console.log(`✅ Добавлено ${cloudLayers.length} облаков`);
 
-  // ===== ПОКАЗЫВАЕМ КАРТУ ЧЕРЕЗ НЕБОЛЬШУЮ ЗАДЕРЖКУ =====
+  // Показываем карту через 300ms
   setTimeout(function() {
     if (typeof window.showMap === 'function') {
       window.showMap();
@@ -112,5 +97,16 @@ async function loadClouds() {
   }, 300);
 }
 
-// Запускаем загрузку облаков
-loadClouds();
+// Запускаем загрузку (но только если карта уже создана)
+if (typeof map !== 'undefined' && map) {
+  loadClouds();
+} else {
+  console.warn('⚠️ Карта ещё не создана, облака загрузятся позже');
+  // Ждём карту
+  let checkMap = setInterval(function() {
+    if (typeof map !== 'undefined' && map) {
+      clearInterval(checkMap);
+      loadClouds();
+    }
+  }, 100);
+}
