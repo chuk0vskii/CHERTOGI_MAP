@@ -16,7 +16,7 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БАННЕР (единый для всех страниц) ===== */
+/* ===== БАННЕР ===== */
 .top-banner {
   position: fixed;
   top: 0;
@@ -106,7 +106,7 @@ html, body {
   }
 }
 
-/* ===== КАРТА ===== */
+/* ===== ОСТАЛЬНЫЕ СТИЛИ (КАРТА, ПАНЕЛЬ, МАРКЕРЫ) ===== */
 #map {
   position: absolute;
   top: 70px;
@@ -116,7 +116,6 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БОКОВАЯ ПАНЕЛЬ ===== */
 #region-sidebar {
   display: none;
   position: fixed;
@@ -137,15 +136,6 @@ html, body {
   font-family: 'Philosopher', sans-serif;
 }
 
-/* ===== КОНТЕЙНЕР ДЛЯ ЗАГЛУШКИ И КРЕСТИКА ===== */
-#image-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-/* ===== КРАСНАЯ ЗАГЛУШКА (фиксированный размер) ===== */
 #region-image-placeholder {
   width: 100%;
   height: 200px;
@@ -165,7 +155,6 @@ html, body {
   overflow: hidden;
 }
 
-/* ===== КРЕСТИК (без отступа, всегда сверху) ===== */
 #close-icon-container {
   position: sticky;
   top: 0;
@@ -196,13 +185,11 @@ html, body {
   transform: scale(1.1);
 }
 
-/* ===== КОНТЕНТ ПАНЕЛИ ===== */
 .panel-content {
   padding: 20px 40px 40px 40px;
   text-align: left;
 }
 
-/* ===== ЗАГОЛОВОК ===== */
 #sidebar-title {
   color: #ffffff;
   font-size: 21px;
@@ -213,7 +200,6 @@ html, body {
   text-align: center;
 }
 
-/* ===== ОПИСАНИЕ ===== */
 #sidebar-description {
   font-size: 15px;
   line-height: 1.6;
@@ -223,12 +209,10 @@ html, body {
   text-align: left;
 }
 
-/* ===== СЛОЖНОСТЬ ===== */
 #region-difficulty {
   margin: 12px 0 16px 0;
 }
 
-/* ===== КНОПКА "СОСТАВИТЬ ОТЧЁТ" ===== */
 #report-btn {
   width: 100%;
   padding: 14px;
@@ -250,7 +234,6 @@ html, body {
   color: #ffffff;
 }
 
-/* ===== ЗАГОЛОВОК "ОТЧЁТЫ ИГРОКОВ" ===== */
 #reports-title {
   color: #ffffff;
   font-size: 20px;
@@ -263,7 +246,6 @@ html, body {
   text-align: left;
 }
 
-/* ===== СПИСОК ОТЧЁТОВ ===== */
 #reports-list {
   font-family: 'Philosopher', sans-serif;
   color: #cccccc;
@@ -275,7 +257,6 @@ html, body {
   font-size: 14px;
 }
 
-/* ===== ВЕРСИЯ ===== */
 #version-counter {
   position: fixed;
   top: 80px;
@@ -293,7 +274,6 @@ html, body {
   pointer-events: none;
 }
 
-/* ===== КНОПКИ-МАРКЕРЫ ===== */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -361,12 +341,10 @@ html, body {
   transform: scale(0.9);
 }
 
-/* ===== СКРЫВАЕМ МОДАЛКУ ===== */
 #report-modal {
   display: none !important;
 }
 
-/* ===== ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ ===== */
 .cloud-marker img {
   transition: none !important;
   transform: none !important;
