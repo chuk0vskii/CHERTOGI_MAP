@@ -16,7 +16,7 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БАННЕР ===== */
+/* ===== БАННЕР (единый для всех страниц) ===== */
 .top-banner {
   position: fixed;
   top: 0;
@@ -48,8 +48,6 @@ html, body {
   display: flex;
   gap: 25px;
   align-items: center;
-  justify-content: flex-end;
-  flex-wrap: nowrap;
 }
 
 .nav-links a {
@@ -71,6 +69,41 @@ html, body {
 .nav-links a.active {
   color: #ffd700;
   border-bottom-color: #ffd700;
+}
+
+/* ===== АДАПТАЦИЯ БАННЕРА ДЛЯ МОБИЛЬНЫХ ===== */
+@media (max-width: 768px) {
+  .top-banner {
+    height: 56px;
+    padding: 0 16px;
+  }
+  .top-banner .title {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .nav-links {
+    gap: 12px;
+  }
+  .nav-links a {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-banner {
+    height: 48px;
+    padding: 0 12px;
+  }
+  .top-banner .title {
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  .nav-links {
+    gap: 8px;
+  }
+  .nav-links a {
+    font-size: 10px;
+  }
 }
 
 /* ===== КАРТА ===== */
