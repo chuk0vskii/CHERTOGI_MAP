@@ -13,24 +13,26 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
+  <!-- ===== ЕДИНЫЙ СТИЛЬ ДЛЯ БАННЕРА ===== -->
   <style>
-    /* ===== ПЕРЕОПРЕДЕЛЯЕМ ТОЛЬКО БАННЕР ===== */
+    /* ===== ПЕРЕОПРЕДЕЛЯЕМ БАННЕР ===== */
     .top-banner {
       display: flex !important;
       align-items: center !important;
-      justify-content: flex-start !important;
-      padding: 0 80px !important; /* ← меняй это число — отступ от правого края */
+      justify-content: space-between !important;
+      padding: 0 80px !important;
+      box-sizing: border-box !important;
     }
 
     .top-banner .title {
       flex-shrink: 0 !important;
-      margin-right: auto !important;
     }
 
     .nav-links {
       display: flex !important;
       gap: 20px !important;
       align-items: center !important;
+      flex-shrink: 0 !important;
     }
 
     .nav-links a {
@@ -52,6 +54,37 @@
       color: #ffd700 !important;
       border-bottom-color: #ffd700 !important;
     }
+
+    /* ===== АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ===== */
+    @media (max-width: 768px) {
+      .top-banner {
+        padding: 0 16px !important;
+      }
+      .top-banner .title {
+        font-size: 18px !important;
+      }
+      .nav-links {
+        gap: 12px !important;
+      }
+      .nav-links a {
+        font-size: 12px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-banner {
+        padding: 0 10px !important;
+      }
+      .top-banner .title {
+        font-size: 15px !important;
+      }
+      .nav-links {
+        gap: 8px !important;
+      }
+      .nav-links a {
+        font-size: 10px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -70,9 +103,9 @@
   <div id="version-counter">v1.0</div>
   <div id="map"></div>
 
-  <!-- ===== ВСЁ ОСТАЛЬНОЕ (карта, панель, скрипты) ===== -->
   <div id="marker-container"></div>
 
+  <!-- ОСТАЛЬНОЙ КОНТЕНТ... -->
   <div id="region-sidebar">
     <div id="close-icon-container">
       <svg id="close-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
