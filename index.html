@@ -13,50 +13,26 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
-  <style>
-    /* ===== ПЕРЕОПРЕДЕЛЯЕМ БАННЕР ТОЛЬКО ДЛЯ КАРТЫ ===== */
-    .top-banner {
-      justify-content: flex-start !important; /* ← кнопки слева */
-      gap: 20px;
-    }
+ <style>
+  /* ===== БАННЕР (кнопки справа, название слева) ===== */
+  .top-banner {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 40px !important;
+  }
 
-    .top-banner .title {
-      margin-right: 30px;
-    }
+  .top-banner .title {
+    flex-shrink: 0 !important;
+  }
 
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ (как в znaki.html) ===== */
-    @media (max-width: 768px) {
-      .top-banner .title {
-        font-size: 18px;
-        margin-right: 15px;
-      }
-      .nav-links {
-        gap: 12px;
-      }
-      .nav-links a {
-        font-size: 12px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .top-banner .title {
-        font-size: 14px;
-        margin-right: 10px;
-      }
-      .nav-links {
-        gap: 8px;
-      }
-      .nav-links a {
-        font-size: 10px;
-      }
-    }
-  </style>
+  .nav-links {
+    display: flex !important;
+    gap: 25px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+</style>
 </head>
 <body>
 
