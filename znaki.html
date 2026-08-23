@@ -7,75 +7,77 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     /* ===== ЕДИНЫЙ СТИЛЬ ДЛЯ БАННЕРА ===== */
-    .top-banner {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      padding: 0 80px !important;
-      box-sizing: border-box !important;
-    }
+.top-banner {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 80px !important;
+  box-sizing: border-box !important;
+}
 
-    .top-banner .title {
-      flex-shrink: 0 !important;
-    }
+.top-banner .title {
+  flex-shrink: 0 !important;
+}
 
-    .nav-links {
-      display: flex !important;
-      gap: 20px !important;
-      align-items: center !important;
-      flex-shrink: 0 !important;
-    }
+.nav-links {
+  display: flex !important;
+  gap: 20px !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  margin-right: 20px !important; /* ← СМЕЩАЕМ КНОПКИ ВЛЕВО НА 20px */
+}
 
-    .nav-links a {
-      color: #ffffff !important;
-      text-decoration: none !important;
-      font-size: 14px !important;
-      letter-spacing: 1px !important;
-      padding: 6px 0 !important;
-      border-bottom: 2px solid transparent !important;
-      font-family: 'Philosopher', sans-serif !important;
-      white-space: nowrap !important;
-    }
+.nav-links a {
+  color: #ffffff !important;
+  text-decoration: none !important;
+  font-size: 14px !important;
+  letter-spacing: 1px !important;
+  padding: 6px 0 !important;
+  border-bottom: 2px solid transparent !important;
+  font-family: 'Philosopher', sans-serif !important;
+  white-space: nowrap !important;
+}
 
-    .nav-links a:hover {
-      color: #ffd700 !important;
-    }
+.nav-links a:hover {
+  color: #ffd700 !important;
+}
 
-    .nav-links a.active {
-      color: #ffd700 !important;
-      border-bottom-color: #ffd700 !important;
-    }
+.nav-links a.active {
+  color: #ffd700 !important;
+  border-bottom-color: #ffd700 !important;
+}
 
-    @media (max-width: 768px) {
-      .top-banner {
-        padding: 0 16px !important;
-      }
-      .top-banner .title {
-        font-size: 18px !important;
-      }
-      .nav-links {
-        gap: 12px !important;
-      }
-      .nav-links a {
-        font-size: 12px !important;
-      }
-    }
+@media (max-width: 768px) {
+  .top-banner {
+    padding: 0 16px !important;
+  }
+  .top-banner .title {
+    font-size: 18px !important;
+  }
+  .nav-links {
+    gap: 12px !important;
+    margin-right: 0 !important; /* на мобилках убираем смещение */
+  }
+  .nav-links a {
+    font-size: 12px !important;
+  }
+}
 
-    @media (max-width: 480px) {
-      .top-banner {
-        padding: 0 10px !important;
-      }
-      .top-banner .title {
-        font-size: 15px !important;
-      }
-      .nav-links {
-        gap: 8px !important;
-      }
-      .nav-links a {
-        font-size: 10px !important;
-      }
-    }
-
+@media (max-width: 480px) {
+  .top-banner {
+    padding: 0 10px !important;
+  }
+  .top-banner .title {
+    font-size: 15px !important;
+  }
+  .nav-links {
+    gap: 8px !important;
+    margin-right: 0 !important; /* на мобилках убираем смещение */
+  }
+  .nav-links a {
+    font-size: 10px !important;
+  }
+}
     /* ===== СТИЛИ ДЛЯ КОНТЕНТА ===== */
     * {
       margin: 0;
