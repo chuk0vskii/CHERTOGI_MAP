@@ -16,7 +16,7 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БАННЕР (кнопки справа, с отступом 120px) ===== */
+/* ===== БАННЕР (единый для всех страниц) ===== */
 .top-banner {
   position: fixed;
   top: 0;
@@ -30,9 +30,10 @@ html, body {
   align-items: center;
   justify-content: space-between;
   z-index: 100;
-  padding: 0 120px; /* ← отступ от правого края 120px */
+  padding: 0 80px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   user-select: none;
+  box-sizing: border-box;
 }
 
 .top-banner .title {
@@ -49,6 +50,7 @@ html, body {
   display: flex;
   gap: 25px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .nav-links a {
@@ -72,7 +74,7 @@ html, body {
   border-bottom-color: #ffd700;
 }
 
-/* ===== АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ===== */
+/* ===== АДАПТАЦИЯ БАННЕРА ДЛЯ МОБИЛЬНЫХ ===== */
 @media (max-width: 768px) {
   .top-banner {
     padding: 0 16px;
@@ -134,6 +136,10 @@ html, body {
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   font-family: 'Philosopher', sans-serif;
+}
+
+#region-sidebar.open {
+  transform: translateX(0);
 }
 
 /* ===== КОНТЕЙНЕР ДЛЯ ЗАГЛУШКИ И КРЕСТИКА ===== */
@@ -256,7 +262,7 @@ html, body {
   font-family: 'Philosopher', sans-serif;
   font-weight: 700;
   letter-spacing: 1px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;
   margin-bottom: 12px;
   text-align: left;
@@ -360,9 +366,98 @@ html, body {
   transform: scale(0.9);
 }
 
-/* ===== СКРЫВАЕМ МОДАЛКУ ===== */
+/* ===== МОДАЛЬНОЕ ОКНО ===== */
 #report-modal {
   display: none !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+
+#report-modal > div {
+  background: #1a0a1a;
+  border: 1px solid #4a0e0e;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  color: #ffffff;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+}
+
+#report-modal h3 {
+  font-family: 'Philosopher', sans-serif;
+  color: #ffd700;
+  margin-top: 0;
+  text-align: center;
+}
+
+#report-modal #modal-region-name {
+  color: #aaa;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+#report-modal input,
+#report-modal textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #4a0e0e;
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: 'Philosopher', sans-serif;
+  box-sizing: border-box;
+}
+
+#report-modal textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+#report-modal input:focus,
+#report-modal textarea:focus {
+  outline: none;
+  border-color: #ffd700;
+}
+
+#report-modal button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Philosopher', sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#submit-report-btn {
+  background: #4a0e0e;
+  color: #ffd700;
+}
+
+#submit-report-btn:hover {
+  background: #6a1a1a;
+}
+
+#cancel-report-btn {
+  background: transparent;
+  color: #888;
+  border: 1px solid #555;
+  margin-left: 8px;
+}
+
+#cancel-report-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ===== ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ ===== */
