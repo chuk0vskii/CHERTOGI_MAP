@@ -87,6 +87,9 @@ html, body {
   .nav-links a {
     font-size: 12px;
   }
+  .nav-links {
+  margin-right: 100px; /* ← добавляет отступ справа от кнопок */
+}
 }
 
 @media (max-width: 480px) {
