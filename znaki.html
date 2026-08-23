@@ -169,6 +169,22 @@
     .btn-draw:active {
       transform: scale(0.96);
     }
+    .btn-reset-signs {
+      padding: 8px 20px;
+      background: rgba(74, 14, 14, 0.3);
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Philosopher', sans-serif;
+    }
+    .btn-reset-signs:hover {
+      background: rgba(74, 14, 14, 0.6);
+      color: #ffffff;
+      border-color: #4a0e0e;
+    }
 
     /* ===== РЕЗУЛЬТАТ ЗНАКА ===== */
     .sign-result {
@@ -235,6 +251,9 @@
     }
     .sign-result .info .sign-meta .mod-negative {
       color: #51cf66;
+    }
+    .sign-result .info .sign-meta .mod-neutral {
+      color: #ffd700;
     }
 
     .sign-placeholder {
@@ -426,6 +445,7 @@
       border-left-color: #ff4444;
       background: rgba(255, 68, 68, 0.15);
     }
+
     .event-card .event-effect {
       font-size: 13px;
       color: rgba(255, 255, 255, 0.5);
@@ -514,6 +534,7 @@
         <input type="number" id="signInput" min="1" max="30" value="1">
       </div>
       <button class="btn-draw" id="drawSignBtn">Узнать знак</button>
+      <button class="btn-reset-signs" id="resetSignsBtn">Сбросить эффекты знаков</button>
     </div>
 
     <div class="sign-result" id="signResult">
@@ -556,31 +577,130 @@
 
 <script>
   // ============================================================
-  //  ДАННЫЕ
+  //  ДАННЫЕ ЗНАКОВ (обновлённые описания)
   // ============================================================
 
-  // ===== ЗНАКИ =====
   const SIGNS = [ null,
-    { title: 'Знак Тьмы', description: 'Сложность пути повышена на 2. События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.', mod: 2 },
-    { title: 'Знак Рока', description: 'До первой успешной проверки, все проверки группы совершаются с помехой.', mod: 0 },
-    { title: 'Знак Зверя', description: 'Группа не может избежать встреч с опасными существами в фазе Путь.', mod: 0 },
-    { title: 'Знак Красного Ветра', description: 'Сложность пути повышена на 1. В фазе Путь обязательно будет событие Смертельная погода.', mod: 1 },
-    { title: 'Знак Ай\'анги', description: 'Сложность пути повышена на 1. В фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.', mod: 1 },
-    { title: 'Знак Червя', description: 'Сложность пути повышается на 1. При первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.', mod: 1 },
-    { title: 'Знак Золотого Плода', description: 'Сложность пути понижается на 1. При первом отдыхе и осмотре провизии, её размер выше на 1 категорию.', mod: -1 },
-    { title: 'Знак Вдохновения', description: 'Первый бросок для избежания усталости, группа делает с преимуществом.', mod: 0 },
-    { title: 'Знак Нарара', description: 'Сложность пути понижается на 1. В фазе Путь на 1 событие меньше (на выбор Хранителя узлов).', mod: -1 },
-    { title: 'Знак Шамаса', description: 'Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.', mod: 0 },
-    { title: 'Знак Шептуна', description: 'Все в группе получают 1 кость удачи на фазу Путь.', mod: 0 },
-    { title: 'Знак Звёзд', description: 'Сложность пути понижается на 2.', mod: -2 },
-    { title: 'Знак Голода', description: 'Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.', mod: 0 },
-    { title: 'Знак Золотой Нити', description: 'В фазе Путь все проверки ролей делаются с преимуществом.', mod: 0 },
-    { title: 'Знак Закрытого Ока', description: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.', mod: 0 },
-    { title: 'Знак Прибытия', description: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.', mod: 0 },
-    { title: 'Знак Пути', description: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.', mod: 0 },
-    { title: 'Знак Конца', description: 'Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.', mod: 0 },
-    { title: 'Знак Черного Треугольника', description: 'При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.', mod: 0 },
-    { title: 'Знак Очага', description: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.', mod: -3 }
+    { 
+      title: 'Знак Тьмы', 
+      description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда-либо.',
+      mod: 2,
+      effect: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.'
+    },
+    { 
+      title: 'Знак Рока', 
+      description: 'Знак влечет ощущение неминуемого конца и мысли о том, что это путешествие - плохая идея.',
+      mod: 0,
+      effect: 'До первой успешной проверки, все проверки группы совершаются с помехой.'
+    },
+    { 
+      title: 'Знак Зверя', 
+      description: 'Знак означает, что что-то охотится в Чертогах, и оно знает, что вы отправляетесь в путь.',
+      mod: 0,
+      effect: 'Группа не может избежать встреч с опасными существами в фазе Путь.'
+    },
+    { 
+      title: 'Знак Красного Ветра', 
+      description: 'Это знак вражды Акрепы и Нарара, что означает бушующий ветер и изменение песков.',
+      mod: 1,
+      effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.'
+    },
+    { 
+      title: 'Знак Ай\'анги', 
+      description: 'Этот знак означает, что Ай\'aнга недоволен, предвидятся буря.',
+      mod: 1,
+      effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.'
+    },
+    { 
+      title: 'Знак Червя', 
+      description: 'Знак предвещает беду с провизией и едой.',
+      mod: 1,
+      effect: 'Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.'
+    },
+    { 
+      title: 'Знак Золотого Плода', 
+      description: 'Предвещает невероятный пир и то, что еда будет вкусна, словно нектар богов.',
+      mod: -1,
+      effect: 'Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.'
+    },
+    { 
+      title: 'Знак Вдохновения', 
+      description: 'Знак предвещает невероятные виды и хорошую погоду, которая вдохновляет группу.',
+      mod: 0,
+      effect: 'Первый бросок для избежания усталости, группа делает с преимуществом.'
+    },
+    { 
+      title: 'Знак Нарара', 
+      description: 'Знак означает благословение северного ветра, который поможет в пути группе.',
+      mod: -1,
+      effect: 'Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).'
+    },
+    { 
+      title: 'Знак Шамаса', 
+      description: 'Знак предвещает, что лучи Шамаса не позволят опасности скрыться от ваших глаз.',
+      mod: 0,
+      effect: 'Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.'
+    },
+    { 
+      title: 'Знак Шептуна', 
+      description: 'Знак означает невероятное вдохновение на приключение и предчувствие удачи.',
+      mod: 0,
+      effect: 'Все в группе получают 1 кость удачи на фазу Путь.'
+    },
+    { 
+      title: 'Знак Звёзд', 
+      description: 'Знак высшего оберега, звезды следят за вами и надеются на поступки, которые долетят до Тингира.',
+      mod: -2,
+      effect: 'Сложность пути понижается на 2.'
+    },
+    { 
+      title: 'Знак Голода', 
+      description: 'Знак предвещает встречу с голодными духами, которые хотят, чтобы и вы познали их голод.',
+      mod: 0,
+      effect: 'Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.'
+    },
+    { 
+      title: 'Знак Золотой Нити', 
+      description: 'Знак означает невероятную удачу и поддержку судьбы.',
+      mod: 0,
+      effect: 'В фазе Путь все проверки ролей делаются с преимуществом.'
+    },
+    { 
+      title: 'Знак Закрытого Ока', 
+      description: 'Знак предвещает трудную видимость под дозором Ману.',
+      mod: 0,
+      effect: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.'
+    },
+    { 
+      title: 'Знак Прибытия', 
+      description: 'Знак предвещает тяжелый путь, но легкое прибытие к цели.',
+      mod: 0,
+      effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.'
+    },
+    { 
+      title: 'Знак Пути', 
+      description: 'Знак предвещает легкий путь, но тяжелое прибытие к цели.',
+      mod: 0,
+      effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.'
+    },
+    { 
+      title: 'Знак Конца', 
+      description: 'Знак означает смерть, двуглавые совы бдят, чтобы обрезать нить судьбы искателя.',
+      mod: 0,
+      effect: 'Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.'
+    },
+    { 
+      title: 'Знак Черного Треугольника', 
+      description: 'Знак показывает дребезжание в нитях судьбы, и Вуаль это слышит.',
+      mod: 0,
+      effect: 'При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.'
+    },
+    { 
+      title: 'Знак Очага', 
+      description: 'Знак предвещает легкое возвращение домой.',
+      mod: -3,
+      effect: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.'
+    }
   ];
 
   // ===== СПИСОК РОЛЕЙ =====
@@ -1006,13 +1126,15 @@
 
   let currentRegionId = null;
   let baseDifficulty = 0;
-  let currentDifficulty = 0;
-  let currentSignMod = 0;
+  let totalDifficulty = 0;
+  let currentSignMod = 0; // накопленный модификатор от всех знаков
+  let signHistory = []; // история выпавших знаков
 
   const regionSelect = document.getElementById('regionSelect');
   const difficultyDisplay = document.getElementById('difficultyValue');
   const signInput = document.getElementById('signInput');
   const drawBtn = document.getElementById('drawSignBtn');
+  const resetSignsBtn = document.getElementById('resetSignsBtn');
   const signResult = document.getElementById('signResult');
   const signPlaceholder = document.getElementById('signPlaceholder');
   const signTitle = document.getElementById('signTitle');
@@ -1066,6 +1188,32 @@
   }
 
   // ============================================================
+  //  ОБНОВЛЕНИЕ СЛОЖНОСТИ (ГЛАВНОЕ)
+  // ============================================================
+
+  function updateDifficulty() {
+    // totalDifficulty = базовая сложность региона + накопленный модификатор от знаков
+    totalDifficulty = baseDifficulty + currentSignMod;
+    if (totalDifficulty < 0) totalDifficulty = 0;
+    
+    // Обновляем везде
+    difficultyDisplay.textContent = totalDifficulty;
+    pathDifficultyDisplay.textContent = totalDifficulty;
+    
+    // Цвет в зависимости от модификатора
+    if (currentSignMod > 0) {
+      difficultyDisplay.style.color = '#ff6b6b';
+      pathDifficultyDisplay.style.color = '#ff6b6b';
+    } else if (currentSignMod < 0) {
+      difficultyDisplay.style.color = '#51cf66';
+      pathDifficultyDisplay.style.color = '#51cf66';
+    } else {
+      difficultyDisplay.style.color = '#ffd700';
+      pathDifficultyDisplay.style.color = '#ffd700';
+    }
+  }
+
+  // ============================================================
   //  ЗАГРУЗКА РЕГИОНОВ
   // ============================================================
 
@@ -1101,28 +1249,16 @@
   //  ФАЗА ЗНАКИ
   // ============================================================
 
-  function updateDifficulty() {
-    const total = baseDifficulty + currentSignMod;
-    currentDifficulty = total < 0 ? 0 : total;
-    difficultyDisplay.textContent = currentDifficulty;
-    
-    if (currentSignMod > 0) {
-      difficultyDisplay.style.color = '#ff6b6b';
-    } else if (currentSignMod < 0) {
-      difficultyDisplay.style.color = '#51cf66';
-    } else {
-      difficultyDisplay.style.color = '#ffd700';
-    }
-
-    pathDifficultyDisplay.textContent = currentDifficulty;
-  }
-
+  // Выбор региона
   regionSelect.addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];
     if (this.value && this.value !== '') {
       currentRegionId = parseInt(this.value);
       baseDifficulty = parseInt(selected.dataset.difficulty) || 0;
+      
+      // Сбрасываем эффекты знаков при смене региона
       currentSignMod = 0;
+      signHistory = [];
       updateDifficulty();
       
       signResult.classList.remove('visible');
@@ -1140,6 +1276,9 @@
       currentRegionId = null;
       baseDifficulty = 0;
       currentSignMod = 0;
+      signHistory = [];
+      updateDifficulty();
+      
       difficultyDisplay.textContent = '—';
       difficultyDisplay.style.color = '#ffd700';
       pathDifficultyDisplay.textContent = '—';
@@ -1154,6 +1293,7 @@
     }
   });
 
+  // Бросок знака
   function drawSign() {
     const selectedOption = regionSelect.options[regionSelect.selectedIndex];
     
@@ -1177,17 +1317,28 @@
       return;
     }
 
-    currentSignMod = sign.mod || 0;
+    // ДОБАВЛЯЕМ модификатор к накопленному (а не заменяем!)
+    currentSignMod += sign.mod;
+    signHistory.push({ index: index, title: sign.title, mod: sign.mod });
     updateDifficulty();
 
+    // Показываем результат
     signTitle.textContent = sign.title;
     signDescription.textContent = sign.description;
 
     let metaHtml = `Выпало: <strong>${value}</strong>`;
     if (sign.mod !== 0) {
       const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
-      metaHtml += ` | Изменение сложности: <strong class="${modClass}">${sign.mod > 0 ? '+' : ''}${sign.mod}</strong>`;
+      const modText = sign.mod > 0 ? `+${sign.mod}` : `${sign.mod}`;
+      metaHtml += ` | Изменение сложности: <strong class="${modClass}">${modText}</strong>`;
     }
+    metaHtml += `<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ${currentSignMod > 0 ? '+' : ''}${currentSignMod}</span>`;
+    
+    // Добавляем эффект знака
+    if (sign.effect) {
+      metaHtml += `<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">${sign.effect}</span>`;
+    }
+    
     signMeta.innerHTML = metaHtml;
 
     signImage.innerHTML = '500×500<br>заглушка';
@@ -1208,8 +1359,33 @@
     if (e.key === 'Enter') drawSign();
   });
 
+  // Сброс эффектов знаков
+  resetSignsBtn.addEventListener('click', function() {
+    if (currentRegionId === null) {
+      alert('Сначала выберите край');
+      return;
+    }
+    currentSignMod = 0;
+    signHistory = [];
+    updateDifficulty();
+    
+    signResult.classList.remove('visible');
+    signPlaceholder.style.display = 'block';
+    
+    // Показываем уведомление
+    const meta = document.getElementById('signMeta');
+    meta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
+    signResult.classList.add('visible');
+    signPlaceholder.style.display = 'none';
+    
+    setTimeout(() => {
+      signResult.classList.remove('visible');
+      signPlaceholder.style.display = 'block';
+    }, 2000);
+  });
+
   // ============================================================
-  //  ФАЗА ПУТЬ - ГЕНЕРАЦИЯ СОБЫТИЙ
+  //  ФАЗА ПУТЬ
   // ============================================================
 
   function generatePathEvents() {
@@ -1345,11 +1521,9 @@
     const resultDiv = document.getElementById(`result-${index}`);
     const effectDiv = document.getElementById(`effect-${index}`);
 
-    // Показываем результат
     resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
     resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
-    // Показываем эффект
     const effects = event.data.effects;
     if (effects) {
       let effectText = '';
@@ -1385,10 +1559,9 @@
         currentSignMod += sign * amount;
         updateDifficulty();
         
-        // Добавляем уведомление
         const notif = document.createElement('div');
         notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #ffd700;';
-        notif.textContent = `🔄 Сложность пути изменена: ${currentDifficulty}`;
+        notif.textContent = `🔄 Сложность пути изменена: ${totalDifficulty}`;
         effectDiv.appendChild(notif);
       }
     }
