@@ -423,6 +423,23 @@
     .btn-check:active {
       transform: scale(0.95);
     }
+    .btn-check-second {
+      padding: 8px 24px;
+      background: rgba(255, 215, 0, 0.1);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Philosopher', sans-serif;
+    }
+    .btn-check-second:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+    .btn-check-second:active {
+      transform: scale(0.95);
+    }
     .btn-generate-events {
       padding: 10px 30px;
       background: #4a0e0e;
@@ -494,6 +511,12 @@
     }
     .event-card .event-effect .effect-crit {
       color: #ffd700;
+    }
+
+    .event-card .second-check-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 215, 0, 0.1);
     }
 
     .no-events {
@@ -765,7 +788,7 @@
   ];
 
   // ============================================================
-  //  ОБЩИЕ СОБЫТИЯ
+  //  ОБЩИЕ СОБЫТИЯ (исправленное — без дублирования)
   // ============================================================
 
   const COMMON_EVENTS = [
@@ -785,7 +808,7 @@
       id: 2, 
       title: 'Ловушка', 
       description: 'Что-то здесь не так. Вся группа должна совершить бросок роли, выбирая наименьший показатель из своих навыков.',
-      checkInfo: 'Вся группа совершает бросок роли, выбирая наименьший показатель из своих навыков.',
+      checkInfo: '🔍 Вся группа совершает бросок роли, выбирая наименьший показатель из своих навыков.',
       effects: {
         success: 'Группа может разрядить ловушку или напасть с сюрпризом.',
         fail: 'Ловушка сработает.',
@@ -796,15 +819,23 @@
     { 
       id: 3, 
       title: 'Древние Руины', 
-      description: 'Группа набредает на древнее строение. Все в группе совершают Проверку Искры.',
-      checkInfo: '🔍 Все в группе совершают Проверку Искры.\n🏛️ Тень Нарара может совершить проверку Ловкости рук, чтобы быстро исследовать руины.',
+      description: 'Группа набредает на древнее строение.',
+      checkInfo: '🔍 Все в группе совершают Проверку Искры.',
       hasSubRoll: true,
       subRollType: 'ruins',
+      hasSecondCheck: true,
+      secondCheckInfo: '🔍 Тень Нарара может совершить проверку Ловкости рук, чтобы быстро исследовать руины.',
       effects: {
         success: 'Группа вдохновляется невероятными строениями древней цивилизации и получает +1 на Прибытие.',
         fail: 'Мораль группы начинает разваливаться, они получают -1 на Прибытие.',
         crit_success: 'Все в группе преуспели! Группа вдохновляется и получает +1 на Прибытие.',
-        crit_fail: 'Что за кошмары могут обитать в этой местности. Группа в удвоенном темпе сбегает с места. Если группа решит исследовать руины, они считаются Испуганы.'
+        crit_fail: 'Что за кошмары могут обитать в этой местности. Группа в удвоенном темпе сбегает с места.'
+      },
+      secondEffects: {
+        success: 'Тень находит магический предмет редкостью редкий или ниже и будет знать что это за предмет.',
+        fail: 'Группа задерживается и ей приходится совершать отдых у руин, получая эффект Сравнения Искры повторно.',
+        crit_success: 'Группа находит ценный артефакт (бросок по табл. Ж).',
+        crit_fail: 'Тень Нарара задерживается среди руин, а группа привлекает внимание жителей местности. Киньте по таблице Опасных Существ Зоны.'
       }
     },
     { 
@@ -822,8 +853,8 @@
     { 
       id: 5, 
       title: 'Невероятный Оазис', 
-      description: 'Группа прибывает в безопасный на вид оазис. Все в группе совершают проверку Искры.',
-      checkInfo: '🔍 Все в группе совершают Проверку Искры.\n🌴 Сделайте бросок 1к6 по таблице Загадок Оазисов.',
+      description: 'Группа прибывает в безопасный на вид оазис.',
+      checkInfo: '🔍 Все в группе совершают Проверку Искры.',
       hasSubRoll: true,
       subRollType: 'oasis',
       effects: {
@@ -1552,21 +1583,25 @@
         isCommon: true,
         checked: false,
         result: null,
-        subRoll: null
+        subRoll: null,
+        secondChecked: false,
+        secondResult: null
       };
       
-      // Добавляем информацию о проверке в описание
+      // Добавляем информацию о проверке (только один раз!)
       if (eventData.checkInfo) {
-        eventCopy.data.description += `<br><span class="check-info">🔍 ${eventData.checkInfo.replace(/\n/g, '<br>🔍 ')}</span>`;
+        eventCopy.data.description += `<br><span class="check-info">${eventData.checkInfo}</span>`;
+      }
+      
+      // Если есть вторая проверка
+      if (eventData.hasSecondCheck && eventData.secondCheckInfo) {
+        eventCopy.data.description += `<br><span class="check-info">${eventData.secondCheckInfo}</span>`;
       }
       
       // Если это Древние Руины — генерируем под-бросок
       if (eventData.hasSubRoll && eventData.subRollType === 'ruins') {
         eventCopy.subRoll = generateRuins();
         eventCopy.data.description += `<br><span class="sub-roll">🏛️ ${eventCopy.subRoll.fullText}</span>`;
-        
-        // Добавляем дополнительную информацию для Тени Нарара
-        eventCopy.data.description += `<br><span class="check-info">🔍 Тень Нарара может совершить проверку Ловкости рук, чтобы быстро исследовать руины.</span>`;
       }
       
       // Если это Невероятный Оазис — генерируем под-бросок
@@ -1592,12 +1627,13 @@
         isCommon: false,
         checked: false,
         result: null,
-        subRoll: null
+        subRoll: null,
+        secondChecked: false,
+        secondResult: null
       };
       
-      // Добавляем информацию о проверке
       if (eventData.checkInfo) {
-        eventCopy.data.description += `<br><span class="check-info">🔍 ${eventData.checkInfo}</span>`;
+        eventCopy.data.description += `<br><span class="check-info">${eventData.checkInfo}</span>`;
       }
       
       events.push(eventCopy);
@@ -1621,48 +1657,96 @@
       return;
     }
 
-    eventsContainer.innerHTML = events.map((event, index) => `
-      <div class="event-card" data-index="${index}">
-        <div class="event-header">
-          <span class="event-type">${event.type}</span>
-          <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
+    eventsContainer.innerHTML = events.map((event, index) => {
+      let secondCheckHTML = '';
+      if (event.data.hasSecondCheck) {
+        secondCheckHTML = `
+          <div class="second-check-section">
+            <div class="event-check-row">
+              <label for="second-check-${index}" style="color: rgba(255,215,0,0.6);">Значение проверки (Тень Нарара):</label>
+              <input type="number" id="second-check-${index}" min="1" max="30" value="10" class="check-input second-check">
+              <button class="btn-check-second" data-index="${index}">Проверить</button>
+            </div>
+            <div class="event-result" id="second-result-${index}"></div>
+            <div class="event-effect" id="second-effect-${index}"></div>
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="event-card" data-index="${index}">
+          <div class="event-header">
+            <span class="event-type">${event.type}</span>
+            <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
+          </div>
+          <div class="event-text">
+            <strong>${event.data.title}</strong><br>
+            ${event.data.description}
+          </div>
+          <div class="event-check-row">
+            <label for="check-${index}">Значение проверки:</label>
+            <input type="number" id="check-${index}" min="1" max="30" value="10" class="check-input">
+            <button class="btn-check" data-index="${index}">Проверить</button>
+          </div>
+          <div class="event-result" id="result-${index}"></div>
+          <div class="event-effect" id="effect-${index}"></div>
+          ${secondCheckHTML}
         </div>
-        <div class="event-text">
-          <strong>${event.data.title}</strong><br>
-          ${event.data.description}
-        </div>
-        <div class="event-check-row">
-          <label for="check-${index}">Значение проверки:</label>
-          <input type="number" id="check-${index}" min="1" max="30" value="10" class="check-input">
-          <button class="btn-check" data-index="${index}">Проверить</button>
-        </div>
-        <div class="event-result" id="result-${index}"></div>
-        <div class="event-effect" id="effect-${index}"></div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
+    // Обработчики для основных проверок
     eventsContainer.querySelectorAll('.btn-check').forEach(btn => {
       btn.addEventListener('click', function() {
         const index = parseInt(this.dataset.index);
-        handleCheck(index);
+        handleCheck(index, 'main');
       });
     });
 
-    eventsContainer.querySelectorAll('.check-input').forEach(input => {
+    // Обработчики для вторых проверок (Тень Нарара)
+    eventsContainer.querySelectorAll('.btn-check-second').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const index = parseInt(this.dataset.index);
+        handleCheck(index, 'second');
+      });
+    });
+
+    // Обработчики Enter для основных проверок
+    eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(input => {
       input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           const index = parseInt(this.id.split('-')[1]);
-          handleCheck(index);
+          handleCheck(index, 'main');
+        }
+      });
+    });
+
+    // Обработчики Enter для вторых проверок
+    eventsContainer.querySelectorAll('.second-check').forEach(input => {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const index = parseInt(this.id.split('-')[2]);
+          handleCheck(index, 'second');
         }
       });
     });
   }
 
-  function handleCheck(index) {
+  function handleCheck(index, type) {
     const event = currentEvents[index];
     if (!event) return;
 
-    const input = document.getElementById(`check-${index}`);
+    const isSecond = type === 'second';
+    const inputId = isSecond ? `second-check-${index}` : `check-${index}`;
+    const resultId = isSecond ? `second-result-${index}` : `result-${index}`;
+    const effectId = isSecond ? `second-effect-${index}` : `effect-${index}`;
+
+    const input = document.getElementById(inputId);
+    if (!input) {
+      console.error(`Input not found: ${inputId}`);
+      return;
+    }
+    
     const value = parseInt(input.value);
     
     if (isNaN(value) || value < 1) {
@@ -1671,16 +1755,36 @@
     }
 
     const result = getEventResult(value);
-    event.result = result;
-    event.checked = true;
+    
+    if (isSecond) {
+      event.secondResult = result;
+      event.secondChecked = true;
+    } else {
+      event.result = result;
+      event.checked = true;
+    }
 
-    const resultDiv = document.getElementById(`result-${index}`);
-    const effectDiv = document.getElementById(`effect-${index}`);
+    const resultDiv = document.getElementById(resultId);
+    const effectDiv = document.getElementById(effectId);
+
+    if (!resultDiv || !effectDiv) {
+      console.error(`Elements not found: ${resultId} or ${effectId}`);
+      return;
+    }
 
     resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
     resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
-    const effects = event.data.effects;
+    // Выбираем правильные эффекты
+    let effects;
+    if (isSecond && event.data.secondEffects) {
+      effects = event.data.secondEffects;
+    } else if (!isSecond && event.data.effects) {
+      effects = event.data.effects;
+    } else {
+      effects = event.data.effects;
+    }
+    
     if (effects) {
       let effectText = '';
       let effectClass = '';
