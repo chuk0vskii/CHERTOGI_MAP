@@ -13,30 +13,50 @@
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
-  <!-- ТОЛЬКО ОДИН СТИЛЬ ДЛЯ ОТСТУПА (если нужно переопределить) -->
   <style>
-  .top-banner {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 250px !important; /* ← меняй это число — отступ от правого края */
-    justify-content: flex-start !important; /* ← всё слева */
-  }
+    /* ===== ПЕРЕОПРЕДЕЛЯЕМ ТОЛЬКО БАННЕР ===== */
+    .top-banner {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding: 0 80px !important; /* ← меняй это число — отступ от правого края */
+    }
 
-  .top-banner .title {
-    flex-shrink: 0 !important;
-    margin-right: auto !important; /* ← раздвигает название и кнопки */
-  }
+    .top-banner .title {
+      flex-shrink: 0 !important;
+      margin-right: auto !important;
+    }
 
-  .nav-links {
-    display: flex !important;
-    gap: 25px !important;
-    align-items: center !important;
-    margin-right: 0 !important;
-  }
-</style>
+    .nav-links {
+      display: flex !important;
+      gap: 20px !important;
+      align-items: center !important;
+    }
+
+    .nav-links a {
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-size: 14px !important;
+      letter-spacing: 1px !important;
+      padding: 6px 0 !important;
+      border-bottom: 2px solid transparent !important;
+      font-family: 'Philosopher', sans-serif !important;
+      white-space: nowrap !important;
+    }
+
+    .nav-links a:hover {
+      color: #ffd700 !important;
+    }
+
+    .nav-links a.active {
+      color: #ffd700 !important;
+      border-bottom-color: #ffd700 !important;
+    }
+  </style>
 </head>
 <body>
 
+  <!-- БАННЕР -->
   <div class="top-banner">
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
@@ -50,7 +70,7 @@
   <div id="version-counter">v1.0</div>
   <div id="map"></div>
 
-  <!-- ===== ВСЁ ОСТАЛЬНОЕ ===== -->
+  <!-- ===== ВСЁ ОСТАЛЬНОЕ (карта, панель, скрипты) ===== -->
   <div id="marker-container"></div>
 
   <div id="region-sidebar">
