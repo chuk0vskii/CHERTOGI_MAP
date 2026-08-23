@@ -77,7 +77,7 @@
     <div class="text">Загрузка карты...</div>
   </div>
 
-  <!-- БАННЕР (одинаковый на всех страницах) -->
+  <!-- БАННЕР -->
   <div class="top-banner">
     <span class="title">Огненные чертоги</span>
     <div class="nav-links">
@@ -136,38 +136,22 @@
   <script src="js/admin.js"></script>
   <script src="js/main.js"></script>
 
+  <!-- ===== УБИРАЕМ ВСЕ ТАЙМЕРЫ, ОСТАВЛЯЕМ ТОЛЬКО ПРОВЕРКУ ФЛАГА ===== -->
   <script>
-    // ===== ПОКАЗЫВАЕМ КАРТУ ПОСЛЕ ЗАГРУЗКИ =====
-    document.addEventListener('DOMContentLoaded', function() {
-      // Ждём загрузку облаков (они загружаются в clouds.js)
-      // Проверяем каждые 500ms, загрузились ли облака
-      let checkInterval = setInterval(function() {
-        if (window.cloudsLoaded) {
-          clearInterval(checkInterval);
-          showMap();
-        }
-      }, 200);
-
-      // Запасной вариант — через 3 секунды показываем в любом случае
-      setTimeout(function() {
-        clearInterval(checkInterval);
-        showMap();
-      }, 3000);
-
-      function showMap() {
-        const mapEl = document.getElementById('map');
-        if (mapEl) {
-          mapEl.classList.add('visible');
-        }
-        const preloader = document.getElementById('preloader');
-        if (preloader) {
-          preloader.classList.add('hidden');
-          setTimeout(function() {
-            preloader.style.display = 'none';
-          }, 800);
-        }
+    // Функция показа карты (вызывается из clouds.js)
+    window.showMap = function() {
+      const mapEl = document.getElementById('map');
+      if (mapEl) {
+        mapEl.classList.add('visible');
       }
-    });
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        preloader.classList.add('hidden');
+        setTimeout(function() {
+          preloader.style.display = 'none';
+        }, 800);
+      }
+    };
   </script>
 
   <button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
