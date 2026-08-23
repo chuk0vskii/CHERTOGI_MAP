@@ -16,7 +16,37 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БАННЕР (единый для всех страниц) ===== */
+/* ===== СКРЫВАЕМ ПОЛОСУ ПРОКРУТКИ ===== */
+html {
+  overflow-y: scroll; /* всегда показывать область прокрутки, но без полосы */
+}
+
+body {
+  overflow-y: scroll; /* убираем полосу, но скролл работает */
+}
+
+/* Для Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  width: 0px;        /* ширина полосы = 0 */
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Для Firefox */
+* {
+  scrollbar-width: none; /* убираем полосу в Firefox */
+}
+
+/* ================================================================
+   БАННЕР (ЕДИНЫЙ ДЛЯ ВСЕХ СТРАНИЦ)
+   ================================================================ */
 .top-banner {
   position: fixed;
   top: 0;
@@ -30,10 +60,10 @@ html, body {
   align-items: center;
   justify-content: space-between;
   z-index: 100;
-  padding: 0 84px;
+  padding: 0 80px;
+  box-sizing: border-box;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   user-select: none;
-  box-sizing: border-box;
 }
 
 .top-banner .title {
@@ -107,7 +137,9 @@ html, body {
   }
 }
 
-/* ===== КАРТА ===== */
+/* ================================================================
+   КАРТА
+   ================================================================ */
 #map {
   position: absolute;
   top: 70px;
@@ -117,7 +149,9 @@ html, body {
   background: #0d0d1a;
 }
 
-/* ===== БОКОВАЯ ПАНЕЛЬ ===== */
+/* ================================================================
+   БОКОВАЯ ПАНЕЛЬ
+   ================================================================ */
 #region-sidebar {
   display: none;
   position: fixed;
@@ -298,7 +332,9 @@ html, body {
   pointer-events: none;
 }
 
-/* ===== КНОПКИ-МАРКЕРЫ ===== */
+/* ================================================================
+   КНОПКИ-МАРКЕРЫ
+   ================================================================ */
 .marker-button {
   position: relative;
   cursor: pointer;
@@ -366,7 +402,9 @@ html, body {
   transform: scale(0.9);
 }
 
-/* ===== МОДАЛЬНОЕ ОКНО ===== */
+/* ================================================================
+   МОДАЛЬНОЕ ОКНО
+   ================================================================ */
 #report-modal {
   display: none !important;
   position: fixed;
@@ -460,7 +498,9 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* ===== ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ ===== */
+/* ================================================================
+   ОТКЛЮЧАЕМ АНИМАЦИЮ ДЛЯ ОБЛАКОВ
+   ================================================================ */
 .cloud-marker img {
   transition: none !important;
   transform: none !important;
