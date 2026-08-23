@@ -6,7 +6,7 @@
   <title>Огненные чертоги — В путь</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* стили только для контента (не для баннера) */
+    /* ===== СТИЛИ ТОЛЬКО ДЛЯ КОНТЕНТА ===== */
     * {
       margin: 0;
       padding: 0;
@@ -247,10 +247,6 @@
       font-weight: normal;
     }
     @media (max-width: 768px) {
-      .top-banner { height: 56px; padding: 0 16px; }
-      .top-banner .title { font-size: 18px; letter-spacing: 2px; }
-      .top-banner .nav-links { gap: 12px; }
-      .top-banner .nav-links a { font-size: 12px; }
       .container { padding: 80px 16px 30px; }
       h1 { font-size: 30px; }
       .calc-row { flex-direction: column; align-items: stretch; }
@@ -261,10 +257,6 @@
       .btn-draw { margin-left: 0; width: 100%; justify-content: center; }
     }
     @media (max-width: 480px) {
-      .top-banner { height: 48px; padding: 0 12px; }
-      .top-banner .title { font-size: 15px; letter-spacing: 1px; }
-      .top-banner .nav-links { gap: 8px; }
-      .top-banner .nav-links a { font-size: 10px; }
       .container { padding: 70px 12px 20px; }
       h1 { font-size: 24px; }
       .total-difficulty .value { font-size: 26px; }
@@ -360,8 +352,7 @@
 </div>
 
 <script>
-  const SIGNS = [
-    null,
+  const SIGNS = [ null,
     { title: 'Знак Тьмы', description: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.', mod: 2 },
     { title: 'Знак Рока', description: 'До первой успешной проверки, все проверки группы совершаются с помехой.', mod: 0 },
     { title: 'Знак Зверя', description: 'Группа не может избежать встреч с опасными существами в фазе Путь.', mod: 0 },
@@ -402,14 +393,12 @@
     const duration = parseInt(durationSelect.value, 10) || 0;
     const terrain = parseInt(terrainSelect.value, 10) || 0;
     const danger = parseInt(dangerSelect.value, 10) || 0;
-
     durationValue.textContent = duration > 0 ? `+${duration}` : '+0';
     terrainValue.textContent = terrain > 0 ? `+${terrain}` : '+0';
     dangerValue.textContent = danger > 0 ? `+${danger}` : '+0';
 
     let total = duration + terrain + danger + currentSignMod;
     if (total < 0) total = 0;
-
     totalDisplay.textContent = total;
 
     if (currentSignMod > 0) {
