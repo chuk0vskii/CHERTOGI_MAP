@@ -30,7 +30,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   z-index: 100;
-  padding: 0 80px;
+  padding: 0 84px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   user-select: none;
   box-sizing: border-box;
