@@ -6,7 +6,7 @@
   <title>Огненные чертоги — В путь</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ===== */
+    /* ===== СТИЛИ ===== */
     * {
       margin: 0;
       padding: 0;
@@ -244,6 +244,163 @@
       padding: 30px 0;
     }
 
+    /* ===== РАЗДЕЛ 3: ФАЗА ПУТЬ ===== */
+    .path-section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .path-section .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 26px;
+      color: #ffffff;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+      display: block;
+      text-align: center;
+    }
+    .path-section .subtitle {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+    .path-section .events-info {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border-left: 3px solid #4a0e0e;
+    }
+    .path-section .events-info .item {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .path-section .events-info .item strong {
+      color: #ffffff;
+    }
+    .path-section .events-info .item .highlight {
+      color: #ffd700;
+    }
+
+    .event-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 20px 25px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    .event-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .event-card .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .event-card .event-type {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 16px;
+      color: #ffd700;
+      letter-spacing: 1px;
+      font-weight: normal;
+    }
+    .event-card .event-roll {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .event-card .event-roll strong {
+      color: #ffffff;
+    }
+    .event-card .event-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #ccc;
+      padding: 10px 0;
+    }
+    .event-card .event-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .btn-roll {
+      padding: 8px 20px;
+      background: rgba(74, 14, 14, 0.6);
+      color: #ffffff;
+      border: 1px solid #4a0e0e;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Philosopher', sans-serif;
+    }
+    .btn-roll:hover {
+      background: #4a0e0e;
+    }
+    .btn-roll:active {
+      transform: scale(0.95);
+    }
+    .btn-generate-events {
+      padding: 10px 30px;
+      background: #4a0e0e;
+      color: #ffffff;
+      border: 2px solid #4a0e0e;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Philosopher', sans-serif;
+      width: 100%;
+      margin-top: 5px;
+    }
+    .btn-generate-events:hover {
+      background: transparent;
+      color: #ffffff;
+      border-color: #4a0e0e;
+    }
+    .event-card .event-result {
+      font-size: 14px;
+      padding: 8px 12px;
+      background: rgba(81, 207, 102, 0.1);
+      border-radius: 6px;
+      border-left: 2px solid #51cf66;
+      display: none;
+      margin-top: 10px;
+    }
+    .event-card .event-result.visible {
+      display: block;
+    }
+    .event-card .event-result .fail {
+      color: #ff6b6b;
+      border-left-color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+    }
+    .event-card .event-result .crit {
+      color: #ffd700;
+      border-left-color: #ffd700;
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .no-events {
+      color: rgba(255, 255, 255, 0.2);
+      text-align: center;
+      padding: 30px 0;
+      font-size: 16px;
+    }
+
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
@@ -252,6 +409,8 @@
       .region-selector .difficulty-display { text-align: center; }
       .sign-result { flex-direction: column; align-items: center; text-align: center; }
       .sign-result .image { width: 120px; height: 120px; }
+      .path-section .events-info { flex-direction: column; align-items: center; text-align: center; }
+      .event-card .event-header { flex-direction: column; align-items: flex-start; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -314,13 +473,36 @@
     </div>
   </div>
 
+  <!-- ===== РАЗДЕЛ 3: ФАЗА ПУТЬ ===== -->
+  <div class="path-section" id="pathSection">
+    <span class="title">Фаза Путь</span>
+    <div class="subtitle">События на пути к цели</div>
+
+    <div class="events-info" id="eventsInfo">
+      <div class="item">Общих событий: <strong id="commonEventsCount">—</strong></div>
+      <div class="item">Событий ролей (1d<strong id="maxRoleEvents">—</strong>): <strong id="roleEventsCount">—</strong></div>
+      <div class="item">Всего событий: <strong id="totalEventsCount">—</strong></div>
+      <div class="item">Сложность пути: <strong class="highlight" id="pathDifficultyDisplay">—</strong></div>
+    </div>
+
+    <button class="btn-generate-events" id="generateEventsBtn">Сгенерировать события пути</button>
+
+    <div id="eventsContainer" style="margin-top: 20px;">
+      <div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 
 <script>
-  // ===== ДАННЫЕ ЗНАКОВ =====
+  // ============================================================
+  //  ДАННЫЕ
+  // ============================================================
+
+  // ===== ЗНАКИ =====
   const SIGNS = [ null,
     { title: 'Знак Тьмы', description: 'Сложность пути повышена на 2. События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.', mod: 2 },
     { title: 'Знак Рока', description: 'До первой успешной проверки, все проверки группы совершаются с помехой.', mod: 0 },
@@ -344,7 +526,67 @@
     { title: 'Знак Очага', description: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.', mod: -3 }
   ];
 
-  // ===== ПЕРЕМЕННЫЕ =====
+  // ===== СПИСОК РОЛЕЙ =====
+  const ROLES = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
+
+  // ===== ОБЩИЕ СОБЫТИЯ (1d6) =====
+  const COMMON_EVENTS = [
+    { id: 1, title: 'Знаменье Темной Нити', description: 'От судьбы не уйдет никто. Ведь началась Темная Нить и она тянет искателей за собой. Хранитель Узлов получает 1 Кость Проклятья за каждого члена группы. Киньте заново по таблице и выберите наихудший результат.' },
+    { id: 2, title: 'Ловушка', description: 'Что-то здесь не так. Вся группа должна совершить бросок роли, выбирая наименьший показатель из своих навыков. Если все преуспели — можно разрядить ловушку или напасть с сюрпризом. Если больше половины провалили — ловушка сработает.' },
+    { id: 3, title: 'Древние Руины', description: 'Группа набредает на древнее строение. Все совершают Проверку Искры. При успехе — +1 на Прибытие. При провале — -1 на Прибытие.' },
+    { id: 4, title: 'Бескрайние Пейзажи', description: 'Группа проходит невероятные пейзажи. Все совершают Проверку Искры. При успехе — +1 на Прибытие и 1 Кость Удачи. При провале — -1 на Прибытие.' },
+    { id: 5, title: 'Невероятный Оазис', description: 'Группа прибывает в безопасный на вид оазис. Все совершают проверку Искры. Успех — длинный отдых и Кость Удачи. Провал — помеха на проверки Интеллекта до конца фазы Путь.' },
+    { id: 6, title: 'Вмешательство звезд', description: 'Сами боги вмешиваются в судьбу группы. Все члены группы должны совершить проверку Традиций. Результат определяет благословение или гнев богов.' }
+  ];
+
+  // ===== СОБЫТИЯ ПО РОЛЯМ =====
+  const ROLE_EVENTS = {
+    'Чтец_Знаков': [
+      { id: 1, title: 'Проклятые земли', description: 'Группа забрела в темные земли. Чтец знаков совершает проверку Традиции. Успех — +1 на Прибытие. Провал — -1 на Прибытие.' },
+      { id: 2, title: 'Преграда', description: 'Что-то мешает группе пройти дальше. Чтец Знаков должен совершить проверку Расследования. Успех — +1 на Прибытие. Провал — -1 на Прибытие.' },
+      { id: 3, title: 'Поющие Знаки', description: 'Нити судьбы пытаются обречь группу на провал. Чтец Знаков должен совершить проверку Традиции. Успех — +1 на Прибытие. Провал — Опасная Встреча.' },
+      { id: 4, title: 'Это должно было произойти!', description: 'Нити судьбы были связаны еще перед началом пути. Чтец Знаков делает проверку Традиций. Результат определяет дальнейшие события.' },
+      { id: 5, title: 'Ложные Нити', description: 'Иллюзия судьбы ведёт группу в неверном направлении. Чтец Знаков бросает проверку Расследования. Успех — +1 к Прибытию. Провал — +1 событие.' },
+      { id: 6, title: 'Шепчущий обо', description: 'Группа останавливается у древнего обо. Чтец Знаков совершает проверку Традиций. Успех — +1 к Прибытию и 1 кость удачи.' }
+    ],
+    'Тень_Нарара': [
+      { id: 1, title: 'Опасная Встреча', description: 'Что-то есть на вашем пути. Тень Нарара должна совершить проверку Скрытности. Успех — группа обходит опасность. Провал — группа замечена.' },
+      { id: 2, title: 'Плачь Вуали', description: 'Движение вуали в регионе привлекает существ. Тень Нарара должна совершить проверку Скрытности. Успех — ускользает. Провал — сражение.' },
+      { id: 3, title: 'Безопасный Ночлег', description: 'Группа в поисках безопасного ночлега. Тень Нарара проверка Расследования. Успех — +1 на Прибытие. Провал — Проверка Кремня и Искры.' },
+      { id: 4, title: 'Пролом реальности', description: 'Реальность изламывается. Тень Нарара проверка Скрытности. Успех — группа скрытно наблюдает. Провал — существа замечают группу.' },
+      { id: 5, title: 'Следопыты', description: 'Тень замечает следы другого отряда. Проверка Скрытности. Успех — +1 к Прибытию. Провал — Смертельная встреча.' },
+      { id: 6, title: 'Потайной тайник', description: 'Тень замечает остатки укрытого схрона. Проверка Ловкости рук. Успех — находка. Провал — ловушка.' }
+    ],
+    'Коготь_Акрепы': [
+      { id: 1, title: 'Духи пожирание', description: 'Провизия кончается быстро. Коготь Акрепы должен совершить проверку Выживание. Успех — провизия расходуется обычно. Провал — потеря провизии.' },
+      { id: 2, title: 'Золотая Добыча', description: 'Группа натыкается на следы великой добычи. Коготь Акрепы проверка Выживание. Успех — +1 уровень Кремня и Искры. Провал — трата времени.' },
+      { id: 3, title: 'Следы Великих', description: 'Группа наталкивается на огромные следы. Коготь Акрепы проверка Выживание. Успех — можно выследить зверя.' },
+      { id: 4, title: 'Ядовитая трапеза', description: 'Охота удачна, но мясо оказывается ядовитым. Проверка Природы у Когтя Акрепы. Успех — +1 к Провизии. Провал — отравление.' },
+      { id: 5, title: 'Засада на охоте', description: 'Во время охоты Коготь попадает в засаду. Проверка Выживания. Успех — ускользает. Провал — Смертельная Встреча.' },
+      { id: 6, title: 'Запретное место', description: 'Коготь следует за добычей и приходит к странному месту. Проверка Выживания. Успех — +1 к Провизии. Провал — добыча теряется.' }
+    ],
+    'Глаза_Звезд': [
+      { id: 1, title: 'Смертельная схватка', description: 'Слишком тихо в неизведанных землях. Глаза Звезд проверка Внимательности. Успех — возможность обойти опасность. Провал — сражение.' },
+      { id: 2, title: 'Они Пришли за Вами!', description: 'Что-то опасное движется прямо в вашу сторону. Глаза Звезд проверка Внимательности. Успех — можно подготовиться. Провал — бой сразу.' },
+      { id: 3, title: 'Испытание на Горизонте', description: 'Группа проходит около событий конфликта местности. Глаз Звезд проверка Внимательности. Успех — остаются скрытыми. Провал — группу замечают.' },
+      { id: 4, title: 'Смертельная погода', description: 'Что-то назревает на горизонте. Глаз Звезд проверка Внимательности. Успех — +1 на Прибытие. Провал — -1 на Прибытие.' },
+      { id: 5, title: 'Свет среди тьмы', description: 'Глаза замечают странное сияние вдали. Проверка Внимательности. Успех — находка. Провал — ловушка.' },
+      { id: 6, title: 'Движение теней', description: 'Глаза замечают странные тени. Проверка Внимательности. Успех — избегает встречи. Провал — Дети Вуали.' }
+    ],
+    'Длань_Батрины': [
+      { id: 1, title: 'Бешенство', description: 'С животными что-то не так. Длань Батрины проверка Ухода за животными. Успех — спасает животных. Провал — животное умирает.' },
+      { id: 2, title: 'Нарушенный Баланс', description: 'Что-то не так вокруг с животными. Длань Батрины проверка Ухода за Животными. Успех — определяет опасность. Провал — Проверка Искры.' },
+      { id: 3, title: 'Страх стада', description: 'Животные группы в ужасе останавливаются. Проверка Ухода за Животными. Успех — +1 на Прибытие. Провал — -1 на Прибытие.' },
+      { id: 4, title: 'Исчезновение', description: 'Животное группы исчезает ночью. Проверка Ухода за животными. Успех — находит раненым. Провал — утащено тварью.' },
+      { id: 5, title: 'Обострение чувств', description: 'Животное ощущает опасность заранее. Проверка Ухода за животными. Успех — предупреждает группу. Провал — +1 событие.' },
+      { id: 6, title: 'Дары Сумуга', description: 'Одно из животных начинает рожать. Проверка Ухода за животными. Успех — пополнение в стаде. Провал — животное умирает.' }
+    ]
+  };
+
+  // ============================================================
+  //  ПЕРЕМЕННЫЕ
+  // ============================================================
+
   let currentRegionId = null;
   let baseDifficulty = 0;
   let currentDifficulty = 0;
@@ -361,11 +603,22 @@
   const signMeta = document.getElementById('signMeta');
   const signImage = document.getElementById('signImage');
 
-  // ===== ЗАГРУЗКА РЕГИОНОВ =====
+  const commonEventsCount = document.getElementById('commonEventsCount');
+  const maxRoleEvents = document.getElementById('maxRoleEvents');
+  const roleEventsCount = document.getElementById('roleEventsCount');
+  const totalEventsCount = document.getElementById('totalEventsCount');
+  const pathDifficultyDisplay = document.getElementById('pathDifficultyDisplay');
+  const generateBtn = document.getElementById('generateEventsBtn');
+  const eventsContainer = document.getElementById('eventsContainer');
+
+  // ============================================================
+  //  ЗАГРУЗКА РЕГИОНОВ
+  // ============================================================
+
   async function loadRegions() {
     const { data, error } = await _supabase
       .from('regions')
-      .select('id, name, difficulty')
+      .select('id, name, difficulty, common_events, max_role_events, role_bonus')
       .eq('is_active', true)
       .eq('is_open', true)
       .order('name');
@@ -381,19 +634,24 @@
       option.value = region.id;
       option.textContent = region.name;
       option.dataset.difficulty = region.difficulty || 0;
+      option.dataset.commonEvents = region.common_events || 0;
+      option.dataset.maxRoleEvents = region.max_role_events || 0;
+      option.dataset.roleBonus = region.role_bonus || 0;
       regionSelect.appendChild(option);
     });
 
     console.log(`✅ Загружено ${data.length} открытых регионов`);
   }
 
-  // ===== ОБНОВЛЕНИЕ СЛОЖНОСТИ =====
+  // ============================================================
+  //  ФАЗА ЗНАКИ
+  // ============================================================
+
   function updateDifficulty() {
     const total = baseDifficulty + currentSignMod;
     currentDifficulty = total < 0 ? 0 : total;
     difficultyDisplay.textContent = currentDifficulty;
     
-    // Меняем цвет в зависимости от изменения
     if (currentSignMod > 0) {
       difficultyDisplay.style.color = '#ff6b6b';
     } else if (currentSignMod < 0) {
@@ -401,9 +659,11 @@
     } else {
       difficultyDisplay.style.color = '#ffd700';
     }
+
+    // Обновляем сложность в фазе Путь
+    pathDifficultyDisplay.textContent = currentDifficulty;
   }
 
-  // ===== ВЫБОР РЕГИОНА =====
   regionSelect.addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];
     if (this.value && this.value !== '') {
@@ -412,23 +672,35 @@
       currentSignMod = 0;
       updateDifficulty();
       
-      // Сбрасываем результат знака
       signResult.classList.remove('visible');
       signPlaceholder.style.display = 'block';
+
+      // Обновляем информацию о событиях
+      const common = parseInt(selected.dataset.commonEvents) || 0;
+      const maxRole = parseInt(selected.dataset.maxRoleEvents) || 0;
+      commonEventsCount.textContent = common;
+      maxRoleEvents.textContent = maxRole;
+      roleEventsCount.textContent = '—';
+      totalEventsCount.textContent = '—';
+      eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
     } else {
       currentRegionId = null;
       baseDifficulty = 0;
       currentSignMod = 0;
       difficultyDisplay.textContent = '—';
       difficultyDisplay.style.color = '#ffd700';
+      pathDifficultyDisplay.textContent = '—';
       signResult.classList.remove('visible');
       signPlaceholder.style.display = 'block';
+      commonEventsCount.textContent = '—';
+      maxRoleEvents.textContent = '—';
+      roleEventsCount.textContent = '—';
+      totalEventsCount.textContent = '—';
+      eventsContainer.innerHTML = '<div class="no-events">Выберите край, чтобы начать путь</div>';
     }
   });
 
-  // ===== ПОЛУЧЕНИЕ ЗНАКА =====
   function drawSign() {
-    // Проверяем, выбран ли регион (учитываем, что id может быть 0)
     const selectedOption = regionSelect.options[regionSelect.selectedIndex];
     
     if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
@@ -451,11 +723,9 @@
       return;
     }
 
-    // Обновляем модификатор сложности
     currentSignMod = sign.mod || 0;
     updateDifficulty();
 
-    // Показываем результат
     signTitle.textContent = sign.title;
     signDescription.textContent = sign.description;
 
@@ -466,7 +736,6 @@
     }
     signMeta.innerHTML = metaHtml;
 
-    // Картинка (пока красная заглушка)
     signImage.innerHTML = '500×500<br>заглушка';
     signImage.style.background = '#4a0e0e';
     signImage.style.display = 'flex';
@@ -476,20 +745,151 @@
     signImage.style.fontSize = '14px';
     signImage.style.textAlign = 'center';
 
-    // Показываем результат, скрываем плейсхолдер
     signResult.classList.add('visible');
     signPlaceholder.style.display = 'none';
   }
 
-  // ===== СОБЫТИЯ =====
   drawBtn.addEventListener('click', drawSign);
-
-  // Enter в поле ввода
   signInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') drawSign();
   });
 
-  // ===== ЗАПУСК =====
+  // ============================================================
+  //  ФАЗА ПУТЬ
+  // ============================================================
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generatePathEvents() {
+    const selectedOption = regionSelect.options[regionSelect.selectedIndex];
+    
+    if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
+      alert('Сначала выберите край!');
+      return;
+    }
+
+    const common = parseInt(selectedOption.dataset.commonEvents) || 0;
+    const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
+    const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
+
+    // Генерируем число ролевых событий (1dN + бонус)
+    let roleCount = 0;
+    if (maxRole > 0) {
+      const roll = getRandomInt(1, maxRole);
+      roleCount = roll + roleBonus;
+    }
+
+    const totalEvents = common + roleCount;
+
+    // Обновляем информацию
+    commonEventsCount.textContent = common;
+    maxRoleEvents.textContent = maxRole;
+    roleEventsCount.textContent = roleCount;
+    totalEventsCount.textContent = totalEvents;
+
+    // Генерируем список событий
+    const events = generateEventList(common, roleCount);
+    renderEvents(events);
+  }
+
+  function generateEventList(commonCount, roleCount) {
+    const events = [];
+
+    // Добавляем общие события
+    for (let i = 0; i < commonCount; i++) {
+      const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
+      events.push({
+        type: 'Общее',
+        data: COMMON_EVENTS[roll],
+        roll: roll + 1,
+        isCommon: true
+      });
+    }
+
+    // Добавляем ролевые события
+    for (let i = 0; i < roleCount; i++) {
+      const roleIndex = getRandomInt(0, ROLES.length - 1);
+      const role = ROLES[roleIndex];
+      const roleEvents = ROLE_EVENTS[role] || ROLE_EVENTS['Чтец_Знаков'];
+      const roll = getRandomInt(0, roleEvents.length - 1);
+      events.push({
+        type: role,
+        data: roleEvents[roll],
+        roll: roll + 1,
+        isCommon: false
+      });
+    }
+
+    // Перемешиваем события
+    for (let i = events.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [events[i], events[j]] = [events[j], events[i]];
+    }
+
+    return events;
+  }
+
+  function renderEvents(events) {
+    if (!events || events.length === 0) {
+      eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
+      return;
+    }
+
+    eventsContainer.innerHTML = events.map((event, index) => `
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-type">${event.type}</span>
+          <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
+        </div>
+        <div class="event-text">
+          <strong>${event.data.title}</strong><br>
+          ${event.data.description}
+        </div>
+        <div class="event-actions">
+          <button class="btn-roll" data-index="${index}">Бросить куб</button>
+        </div>
+        <div class="event-result" id="result-${index}">
+          Результат броска: <strong>${getRandomInt(1, 20)}</strong>
+        </div>
+      </div>
+    `).join('');
+
+    // Навешиваем обработчики на кнопки броска
+    eventsContainer.querySelectorAll('.btn-roll').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const index = this.dataset.index;
+        const result = document.getElementById(`result-${index}`);
+        const roll = getRandomInt(1, 20);
+        
+        let resultText = `🎲 Результат броска: <strong>${roll}</strong>`;
+        if (roll >= 18) {
+          resultText += ' — Критический успех! 🎉';
+          result.className = 'event-result visible crit';
+        } else if (roll >= 12) {
+          resultText += ' — Успех ✅';
+          result.className = 'event-result visible';
+        } else if (roll >= 6) {
+          resultText += ' — Провал ❌';
+          result.className = 'event-result visible fail';
+        } else {
+          resultText += ' — Критический провал! 💀';
+          result.className = 'event-result visible fail';
+        }
+        
+        result.innerHTML = resultText;
+        result.style.display = 'block';
+      });
+    });
+  }
+
+  generateBtn.addEventListener('click', generatePathEvents);
+
+  // ============================================================
+  //  ЗАПУСК
+  // ============================================================
+
   loadRegions();
 </script>
 
