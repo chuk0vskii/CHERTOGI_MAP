@@ -23,7 +23,7 @@ let signHistory = [];
 
 export function drawSign() {
   const regionId = getRegionId();
-  if (regionId === null) {
+  if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край!');
     return;
   }
@@ -58,8 +58,8 @@ export function drawSign() {
     metaHtml += ` | Изменение сложности: <strong class="${modClass}">${modText}</strong>`;
   }
   
-  const currentSignMod = signHistory.reduce((sum, s) => sum + s.mod, 0);
-  metaHtml += `<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ${currentSignMod > 0 ? '+' : ''}${currentSignMod}</span>`;
+  const totalMod = signHistory.reduce((sum, s) => sum + s.mod, 0);
+  metaHtml += `<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ${totalMod > 0 ? '+' : ''}${totalMod}</span>`;
   
   if (sign.effect) {
     metaHtml += `<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">${sign.effect}</span>`;
@@ -86,7 +86,7 @@ export function drawSign() {
 
 export function resetSigns() {
   const regionId = getRegionId();
-  if (regionId === null) {
+  if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край');
     return;
   }
@@ -98,8 +98,7 @@ export function resetSigns() {
   signResult.classList.remove('visible');
   signPlaceholder.style.display = 'block';
   
-  const meta = document.getElementById('signMeta');
-  meta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
+  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
   
@@ -110,11 +109,15 @@ export function resetSigns() {
 }
 
 // ============================================================
-// ИНИЦИАЛИЗАЦИЯ
+// ИНИЦИАЛИЗАЦИЯ СОБЫТИЙ (вызывается из init.js)
 // ============================================================
 
-drawBtn.addEventListener('click', drawSign);
-signInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') drawSign();
-});
-resetSignsBtn.addEventListener('click', resetSigns);
+export function initSigns() {
+  if (drawBtn) drawBtn.addEventListener('click', drawSign);
+  if (resetSignsBtn) resetSignsBtn.addEventListener('click', resetSigns);
+  if (signInput) {
+    signInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') drawSign();
+    });
+  }
+}
