@@ -9,26 +9,47 @@ import { generatePathEvents } from './modules/path.js';
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🚀 Огненные чертоги — В путь');
   
+  // Загружаем регионы
   await loadRegions();
   
-  // Обработчики
-  document.getElementById('drawSignBtn')?.addEventListener('click', drawSign);
-  document.getElementById('resetSignsBtn')?.addEventListener('click', resetSigns);
-  document.getElementById('generateEventsBtn')?.addEventListener('click', generatePathEvents);
+  // Навешиваем обработчики
+  const drawBtn = document.getElementById('drawSignBtn');
+  const resetBtn = document.getElementById('resetSignsBtn');
+  const generateBtn = document.getElementById('generateEventsBtn');
+  const signInput = document.getElementById('signInput');
+  const regionSelect = document.getElementById('regionSelect');
   
-  document.getElementById('signInput')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') drawSign();
-  });
+  if (drawBtn) drawBtn.addEventListener('click', drawSign);
+  if (resetBtn) resetBtn.addEventListener('click', resetSigns);
+  if (generateBtn) generateBtn.addEventListener('click', generatePathEvents);
   
-  document.getElementById('regionSelect')?.addEventListener('change', function() {
-    document.getElementById('signResult')?.classList.remove('visible');
-    document.getElementById('signPlaceholder') ? (document.getElementById('signPlaceholder').style.display = 'block') : null;
-    document.getElementById('eventsContainer') ? (document.getElementById('eventsContainer').innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>') : null;
-    document.getElementById('commonEventsCount').textContent = '—';
-    document.getElementById('maxRoleEvents').textContent = '—';
-    document.getElementById('roleEventsCount').textContent = '—';
-    document.getElementById('totalEventsCount').textContent = '—';
-  });
+  if (signInput) {
+    signInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') drawSign();
+    });
+  }
+  
+  // Обработчик смены региона
+  if (regionSelect) {
+    regionSelect.addEventListener('change', function() {
+      // Сбрасываем состояние при смене региона
+      const signResult = document.getElementById('signResult');
+      const signPlaceholder = document.getElementById('signPlaceholder');
+      if (signResult) signResult.classList.remove('visible');
+      if (signPlaceholder) signPlaceholder.style.display = 'block';
+      
+      const eventsContainer = document.getElementById('eventsContainer');
+      if (eventsContainer) {
+        eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+      }
+      
+      // Сбрасываем счётчики событий
+      document.getElementById('commonEventsCount').textContent = '—';
+      document.getElementById('maxRoleEvents').textContent = '—';
+      document.getElementById('roleEventsCount').textContent = '—';
+      document.getElementById('totalEventsCount').textContent = '—';
+    });
+  }
   
   console.log('✅ Инициализация завершена');
 });
