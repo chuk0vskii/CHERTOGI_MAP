@@ -1,7 +1,4 @@
-// ============================================================
-// КОНФИГУРАЦИЯ SUPABASE (МОДУЛЬ)
-// ============================================================
-
+// js/config-module.js
 const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
 
