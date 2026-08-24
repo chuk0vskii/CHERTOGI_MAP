@@ -63,6 +63,7 @@ function getRandomItem(data) {
   return data[index];
 }
 
+// ===== ГЕНЕРАЦИЯ СОБЫТИЙ =====
 export async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
@@ -80,7 +81,6 @@ export async function generatePathEvents() {
   if (maxRole > 0) {
     const roll = getRandomInt(1, maxRole);
     roleCount = roll + roleBonus;
-    // Показываем как 1dX+Y
     roleDisplay = `1d${maxRole}${roleBonus > 0 ? `+${roleBonus}` : roleBonus < 0 ? `${roleBonus}` : ''}`;
   }
 
@@ -98,6 +98,7 @@ export async function generatePathEvents() {
 async function generateEventList(commonCount, roleCount) {
   const events = [];
   tableCache = {};
+  let bonusEvents = [];
 
   // Общие события
   for (let i = 0; i < commonCount; i++) {
@@ -105,6 +106,11 @@ async function generateEventList(commonCount, roleCount) {
     const eventData = COMMON_EVENTS[roll];
     const eventCopy = createEventCopy(eventData, 'Общее', roll + 1);
     await enrichEventWithSubRoll(eventCopy);
+    
+    if (eventData.bonusEvent) {
+      bonusEvents.push(eventData.bonusEvent);
+    }
+    
     events.push(eventCopy);
   }
 
@@ -116,6 +122,19 @@ async function generateEventList(commonCount, roleCount) {
     const roll = getRandomInt(0, roleEvents.length - 1);
     const eventData = roleEvents[roll];
     const eventCopy = createEventCopy(eventData, role, roll + 1);
+    await enrichEventWithSubRoll(eventCopy);
+    
+    if (eventData.bonusEvent) {
+      bonusEvents.push(eventData.bonusEvent);
+    }
+    
+    events.push(eventCopy);
+  }
+
+  // Добавляем бонусные события
+  for (const bonusData of bonusEvents) {
+    const eventCopy = createEventCopy(bonusData, '⭐ Бонусное событие', '⭐');
+    eventCopy.isBonus = true;
     await enrichEventWithSubRoll(eventCopy);
     events.push(eventCopy);
   }
@@ -135,6 +154,7 @@ function createEventCopy(eventData, type, roll) {
     data: { ...eventData },
     roll: roll,
     isCommon: type === 'Общее',
+    isBonus: false,
     checked: false,
     result: null,
     subRoll: null,
@@ -148,23 +168,19 @@ function createEventCopy(eventData, type, roll) {
 async function enrichEventWithSubRoll(eventCopy) {
   const eventData = eventCopy.data;
   
-  // Добавляем информацию о проверке
   if (eventData.checkInfo) {
     eventCopy.data.description += `<br><span class="check-info">${eventData.checkInfo}</span>`;
   }
   
-  // Вторая проверка
   if (eventData.hasSecondCheck && eventData.secondCheckInfo) {
     eventCopy.data.description += `<br><span class="check-info">${eventData.secondCheckInfo}</span>`;
   }
   
-  // Под-бросок
   if (eventData.hasSubRoll && eventData.subRollType) {
     const config = EVENT_TABLES[eventData.title];
     const tableName = config?.table;
     const statsTable = config?.statsTable;
     
-    // Локальные таблицы
     if (eventData.subRollType === 'ruins') {
       const subData = generateRuins();
       eventCopy.subRollData = subData;
@@ -179,7 +195,6 @@ async function enrichEventWithSubRoll(eventCopy) {
       return;
     }
     
-    // Таблицы из Supabase
     if (tableName) {
       if (!tableCache[tableName]) {
         tableCache[tableName] = await getEventTableData(tableName, statsTable);
@@ -195,7 +210,6 @@ async function enrichEventWithSubRoll(eventCopy) {
         
         const fields = config?.fields || ['name'];
         const subText = fields.map(f => randomItem[f] || '').join(' | ');
-        
         eventCopy.subRoll = { fullText: subText, data: randomItem };
         
         const icon = eventData.subRollType === 'ruins' ? '🏛️' : 
@@ -222,7 +236,9 @@ function renderEvents(events) {
   }
 
   eventsContainer.innerHTML = events.map((event, index) => {
-    // Блок для статов
+    const isBonus = event.isBonus || false;
+    const bonusStyle = isBonus ? 'border-left: 3px solid #ffd700; background: rgba(255,215,0,0.05);' : '';
+    
     let statsHTML = '';
     if (event.statsData) {
       const stats = event.statsData;
@@ -242,7 +258,6 @@ function renderEvents(events) {
       `;
     }
     
-    // Вторая проверка
     let secondCheckHTML = '';
     if (event.data.hasSecondCheck) {
       secondCheckHTML = `
@@ -258,17 +273,21 @@ function renderEvents(events) {
       `;
     }
     
+    const typeDisplay = isBonus ? '⭐ Бонусное событие' : event.type;
+    const rollDisplay = isBonus ? '⭐' : `Бросок: <strong>${event.roll}</strong>`;
+    
     return `
-      <div class="event-card" data-index="${index}">
+      <div class="event-card" style="${bonusStyle}">
         <div class="event-header">
-          <span class="event-type">${event.type}</span>
-          <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
+          <span class="event-type" style="${isBonus ? 'color: #ffd700;' : ''}">${typeDisplay}</span>
+          <span class="event-roll">${rollDisplay}</span>
         </div>
         <div class="event-text">
           <strong>${event.data.title}</strong><br>
           ${event.data.description}
         </div>
         ${statsHTML}
+        ${!isBonus ? `
         <div class="event-check-row">
           <label for="check-${index}">Значение проверки:</label>
           <input type="number" id="check-${index}" min="1" max="30" value="10" class="check-input">
@@ -276,21 +295,19 @@ function renderEvents(events) {
         </div>
         <div class="event-result" id="result-${index}"></div>
         <div class="event-effect" id="effect-${index}"></div>
+        ` : `
+        <div style="color: rgba(255,215,0,0.4); font-size: 12px; margin-top: 8px;">✨ Бонусное событие (не требует проверки)</div>
+        `}
         ${secondCheckHTML}
       </div>
     `;
   }).join('');
 
-  // Навешиваем обработчики
   attachEventHandlers();
 }
 
-// ============================================================
-// ОБРАБОТЧИКИ СОБЫТИЙ
-// ============================================================
-
+// ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 function attachEventHandlers() {
-  // Основные проверки
   eventsContainer.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -298,7 +315,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Вторые проверки
   eventsContainer.querySelectorAll('.btn-check-second').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -306,7 +322,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Показать статы
   eventsContainer.querySelectorAll('.btn-show-stats').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -318,7 +333,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Скрыть статы
   eventsContainer.querySelectorAll('.btn-hide-stats').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -331,7 +345,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Enter для основных проверок
   eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -341,7 +354,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Enter для вторых проверок
   eventsContainer.querySelectorAll('.second-check').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -352,10 +364,7 @@ function attachEventHandlers() {
   });
 }
 
-// ============================================================
-// ОБРАБОТКА ПРОВЕРКИ
-// ============================================================
-
+// ===== ОБРАБОТКА ПРОВЕРКИ =====
 function handleCheck(index, type) {
   const event = currentEvents[index];
   if (!event) return;
@@ -392,7 +401,6 @@ function handleCheck(index, type) {
   resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
   resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
-  // Выбираем эффекты
   let effects;
   if (isSecond && event.data.secondEffects) {
     effects = event.data.secondEffects;
@@ -428,7 +436,6 @@ function handleCheck(index, type) {
     effectDiv.innerHTML = `<span class="${effectClass}">⚡ ${effectText}</span>`;
     effectDiv.className = 'event-effect visible';
     
-    // Проверяем изменение сложности
     const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
       const sign = diffMatch[1] === '+' ? 1 : -1;
@@ -453,5 +460,4 @@ export function initPath() {
   }
 }
 
-// Автоматическая инициализация
 initPath();
