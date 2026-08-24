@@ -24,7 +24,6 @@ let tableCache = {};
 
 async function getTableData(tableName) {
   try {
-    // Проверяем кэш
     if (tableCache[tableName]) {
       console.log(`📦 Кэш: ${tableName} (${tableCache[tableName].length} записей)`);
       return tableCache[tableName];
@@ -80,12 +79,25 @@ export async function rollTable(tableName, containerId) {
   let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
   html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
   
-  const fields = Object.keys(item).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at');
-  fields.forEach(field => {
-    const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
-    const value = item[field] || '—';
-    html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
-  });
+  // Определяем поля для отображения (исключаем служебные)
+  const excludeFields = ['id', 'created_at', 'updated_at', 'roll_min', 'roll_max'];
+  const fields = Object.keys(item).filter(key => !excludeFields.includes(key) && item[key] !== null && item[key] !== '');
+  
+  if (fields.length === 0) {
+    // Если нет полей для отображения, показываем все кроме id
+    const allFields = Object.keys(item).filter(key => key !== 'id');
+    allFields.forEach(field => {
+      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+      const value = item[field] || '—';
+      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
+    });
+  } else {
+    fields.forEach(field => {
+      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+      const value = item[field] || '—';
+      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
+    });
+  }
   
   html += `</div>`;
   container.innerHTML = html;
@@ -130,7 +142,6 @@ export async function generatePathEvents() {
 function generateEventList(commonCount, roleCount) {
   const events = [];
 
-  // Общие события
   for (let i = 0; i < commonCount; i++) {
     const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
     const eventData = COMMON_EVENTS[roll];
@@ -138,7 +149,6 @@ function generateEventList(commonCount, roleCount) {
     events.push(eventCopy);
   }
 
-  // Ролевые события
   for (let i = 0; i < roleCount; i++) {
     const roleIndex = getRandomInt(0, ROLES.length - 1);
     const role = ROLES[roleIndex];
@@ -149,7 +159,6 @@ function generateEventList(commonCount, roleCount) {
     events.push(eventCopy);
   }
 
-  // Перемешиваем
   for (let i = events.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [events[i], events[j]] = [events[j], events[i]];
@@ -182,10 +191,8 @@ function renderEvents(events) {
   }
 
   eventsContainer.innerHTML = events.map((event, index) => {
-    // Генерируем уникальный ID для контейнера таблицы
     const tableContainerId = `table-result-${index}-${Date.now()}`;
     
-    // Проверяем, есть ли таблица в событии
     let tableHTML = '';
     if (event.data.hasTable && event.data.tableName) {
       tableHTML = `
@@ -238,7 +245,6 @@ function renderEvents(events) {
     `;
   }).join('');
 
-  // Навешиваем обработчики
   attachEventHandlers();
 }
 
@@ -247,7 +253,6 @@ function renderEvents(events) {
 // ============================================================
 
 function attachEventHandlers() {
-  // Основные проверки
   eventsContainer.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -255,7 +260,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Вторые проверки
   eventsContainer.querySelectorAll('.btn-check-second').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -263,7 +267,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Кнопки ролла таблиц
   eventsContainer.querySelectorAll('.btn-roll-table').forEach(btn => {
     btn.addEventListener('click', function() {
       const tableName = this.dataset.table;
@@ -273,7 +276,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Enter для основных проверок
   eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -283,7 +285,6 @@ function attachEventHandlers() {
     });
   });
 
-  // Enter для вторых проверок
   eventsContainer.querySelectorAll('.second-check').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -337,7 +338,6 @@ function handleCheck(index, type) {
   resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
   resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
-  // Выбираем эффекты
   let effects;
   if (isSecond && event.data.secondEffects) {
     effects = event.data.secondEffects;
@@ -373,7 +373,6 @@ function handleCheck(index, type) {
     effectDiv.innerHTML = `<span class="${effectClass}">⚡ ${effectText}</span>`;
     effectDiv.className = 'event-effect visible';
     
-    // Проверяем изменение сложности
     const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
       const sign = diffMatch[1] === '+' ? 1 : -1;
