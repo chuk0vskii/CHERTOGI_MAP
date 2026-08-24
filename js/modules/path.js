@@ -63,7 +63,6 @@ function getRandomItem(data) {
   return data[index];
 }
 
-// ===== ГЕНЕРАЦИЯ СОБЫТИЙ =====
 export async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
@@ -77,16 +76,19 @@ export async function generatePathEvents() {
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
   let roleCount = 0;
+  let roleDisplay = '0';
   if (maxRole > 0) {
     const roll = getRandomInt(1, maxRole);
     roleCount = roll + roleBonus;
+    // Показываем как 1dX+Y
+    roleDisplay = `1d${maxRole}${roleBonus > 0 ? `+${roleBonus}` : roleBonus < 0 ? `${roleBonus}` : ''}`;
   }
 
   const totalEvents = common + roleCount;
 
   commonEventsCount.textContent = common;
   maxRoleEvents.textContent = maxRole;
-  roleEventsCount.textContent = roleCount;
+  roleEventsCount.textContent = `${roleDisplay} → ${roleCount}`;
   totalEventsCount.textContent = totalEvents;
 
   currentEvents = await generateEventList(common, roleCount);
