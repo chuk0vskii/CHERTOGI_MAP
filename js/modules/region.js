@@ -76,6 +76,11 @@ export function resetSignMod() {
 export async function loadRegions() {
   console.log('🔄 Загрузка регионов...');
   
+  if (!regionSelect) {
+    console.error('❌ Элемент regionSelect не найден!');
+    return;
+  }
+  
   try {
     const { data, error } = await _supabase
       .from('regions')
@@ -118,47 +123,54 @@ export async function loadRegions() {
 // ============================================================
 
 export function initRegionChangeHandler() {
-  if (regionSelect) {
-    regionSelect.addEventListener('change', function() {
-      const selected = this.options[this.selectedIndex];
-      if (this.value && this.value !== '') {
-        const id = parseInt(this.value);
-        const difficulty = parseInt(selected.dataset.difficulty) || 0;
-        
-        console.log('📌 Выбран регион ID:', id, 'Сложность:', difficulty);
-        
-        setRegionId(id);
-        setBaseDifficulty(difficulty);
-        resetSignMod();
-        
-        // Сбрасываем знаки
-        const signResult = document.getElementById('signResult');
-        const signPlaceholder = document.getElementById('signPlaceholder');
-        if (signResult) signResult.classList.remove('visible');
-        if (signPlaceholder) signPlaceholder.style.display = 'block';
-        
-        // Сбрасываем события
-        const eventsContainer = document.getElementById('eventsContainer');
-        if (eventsContainer) {
-          eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
-        }
-        
-        document.getElementById('commonEventsCount').textContent = '—';
-        document.getElementById('maxRoleEvents').textContent = '—';
-        document.getElementById('roleEventsCount').textContent = '—';
-        document.getElementById('totalEventsCount').textContent = '—';
-      } else {
-        console.log('📌 Регион сброшен');
-        setRegionId(null);
-        setBaseDifficulty(0);
-        resetSignMod();
+  if (!regionSelect) {
+    console.error('❌ regionSelect не найден в initRegionChangeHandler');
+    return;
+  }
+  
+  regionSelect.addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    console.log('📌 Событие change, выбран:', this.value, selected);
+    
+    if (this.value && this.value !== '') {
+      const id = parseInt(this.value);
+      const difficulty = parseInt(selected.dataset.difficulty) || 0;
+      
+      console.log('📌 Выбран регион ID:', id, 'Сложность:', difficulty);
+      
+      setRegionId(id);
+      setBaseDifficulty(difficulty);
+      resetSignMod();
+      
+      // Сбрасываем знаки
+      const signResult = document.getElementById('signResult');
+      const signPlaceholder = document.getElementById('signPlaceholder');
+      if (signResult) signResult.classList.remove('visible');
+      if (signPlaceholder) signPlaceholder.style.display = 'block';
+      
+      // Сбрасываем события
+      const eventsContainer = document.getElementById('eventsContainer');
+      if (eventsContainer) {
+        eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+      }
+      
+      document.getElementById('commonEventsCount').textContent = '—';
+      document.getElementById('maxRoleEvents').textContent = '—';
+      document.getElementById('roleEventsCount').textContent = '—';
+      document.getElementById('totalEventsCount').textContent = '—';
+    } else {
+      console.log('📌 Регион сброшен');
+      setRegionId(null);
+      setBaseDifficulty(0);
+      resetSignMod();
+      if (difficultyDisplay) {
         difficultyDisplay.textContent = '—';
         difficultyDisplay.style.color = '#ffd700';
-        if (pathDifficultyDisplay) {
-          pathDifficultyDisplay.textContent = '—';
-          pathDifficultyDisplay.style.color = '#ffd700';
-        }
       }
-    });
-  }
+      if (pathDifficultyDisplay) {
+        pathDifficultyDisplay.textContent = '—';
+        pathDifficultyDisplay.style.color = '#ffd700';
+      }
+    }
+  });
 }
