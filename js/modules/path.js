@@ -25,7 +25,6 @@ let tableCache = {};
 async function getTableData(tableName) {
   try {
     if (tableCache[tableName]) {
-      console.log(`📦 Кэш: ${tableName} (${tableCache[tableName].length} записей)`);
       return tableCache[tableName];
     }
     
@@ -33,7 +32,8 @@ async function getTableData(tableName) {
     
     const { data, error } = await _supabase
       .from(tableName)
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true });
     
     if (error) {
       console.error(`❌ Ошибка загрузки ${tableName}:`, error);
@@ -72,32 +72,35 @@ export async function rollTable(tableName, containerId) {
     return;
   }
   
+  // Рандомный выбор из таблицы (по id)
   const randomIndex = Math.floor(Math.random() * data.length);
   const item = data[randomIndex];
+  
+  console.log(`🎯 Выбрана запись #${randomIndex + 1}:`, item);
   
   // Формируем вывод
   let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
   html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
   
-  // Определяем поля для отображения (исключаем служебные)
-  const excludeFields = ['id', 'created_at', 'updated_at', 'roll_min', 'roll_max'];
-  const fields = Object.keys(item).filter(key => !excludeFields.includes(key) && item[key] !== null && item[key] !== '');
-  
-  if (fields.length === 0) {
-    // Если нет полей для отображения, показываем все кроме id
-    const allFields = Object.keys(item).filter(key => key !== 'id');
-    allFields.forEach(field => {
-      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
-      const value = item[field] || '—';
-      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
-    });
-  } else {
-    fields.forEach(field => {
-      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
-      const value = item[field] || '—';
-      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
-    });
+  // Выводим name и description
+  if (item.name) {
+    html += `<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">${item.name}</div>`;
   }
+  
+  if (item.description) {
+    html += `<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">${item.description}</div>`;
+  }
+  
+  // Если есть другие поля (кроме id, name, description) — выводим их
+  const extraFields = Object.keys(item).filter(key => 
+    key !== 'id' && key !== 'name' && key !== 'description' && 
+    key !== 'created_at' && key !== 'updated_at' && item[key] !== null && item[key] !== ''
+  );
+  
+  extraFields.forEach(field => {
+    const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+    html += `<div style="font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px;"><span style="color: #888;">${label}:</span> ${item[field]}</div>`;
+  });
   
   html += `</div>`;
   container.innerHTML = html;
@@ -271,7 +274,6 @@ function attachEventHandlers() {
     btn.addEventListener('click', function() {
       const tableName = this.dataset.table;
       const containerId = this.dataset.container;
-      console.log(`🔘 Нажата кнопка: table="${tableName}", container="${containerId}"`);
       rollTable(tableName, containerId);
     });
   });
