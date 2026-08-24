@@ -2,7 +2,7 @@
 // УПРАВЛЕНИЕ РЕГИОНОМ И СЛОЖНОСТЬЮ
 // ============================================================
 
-import { _supabase } from '../config.js';
+import { _supabase } from '../config-module.js';
 
 let currentRegionId = null;
 let baseDifficulty = 0;
