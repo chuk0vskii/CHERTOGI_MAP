@@ -24,9 +24,13 @@ let tableCache = {};
 
 async function getTableData(tableName) {
   try {
+    // Проверяем кэш
     if (tableCache[tableName]) {
+      console.log(`📦 Кэш: ${tableName} (${tableCache[tableName].length} записей)`);
       return tableCache[tableName];
     }
+    
+    console.log(`🔄 Загрузка таблицы: ${tableName}`);
     
     const { data, error } = await _supabase
       .from(tableName)
@@ -37,6 +41,7 @@ async function getTableData(tableName) {
       return null;
     }
     
+    console.log(`✅ Загружено ${data?.length || 0} записей из ${tableName}`);
     tableCache[tableName] = data;
     return data;
   } catch (error) {
@@ -50,35 +55,41 @@ async function getTableData(tableName) {
 // ============================================================
 
 export async function rollTable(tableName, containerId) {
+  console.log(`🎲 rollTable вызван: tableName="${tableName}", containerId="${containerId}"`);
+  
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error(`❌ Контейнер не найден: ${containerId}`);
+    return;
+  }
+  
   const data = await getTableData(tableName);
+  
   if (!data || data.length === 0) {
-    const container = document.getElementById(containerId);
-    if (container) {
-      container.innerHTML = '❌ Нет данных в таблице';
-      container.style.display = 'block';
-    }
+    container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
+      ❌ Нет данных в таблице "${tableName}"
+    </div>`;
+    container.style.display = 'block';
     return;
   }
   
   const randomIndex = Math.floor(Math.random() * data.length);
   const item = data[randomIndex];
   
-  const container = document.getElementById(containerId);
-  if (container) {
-    // Формируем вывод
-    let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
-    html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
-    
-    const fields = Object.keys(item).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at');
-    fields.forEach(field => {
-      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
-      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${item[field] || '—'}</div>`;
-    });
-    
-    html += `</div>`;
-    container.innerHTML = html;
-    container.style.display = 'block';
-  }
+  // Формируем вывод
+  let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
+  html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
+  
+  const fields = Object.keys(item).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at');
+  fields.forEach(field => {
+    const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+    const value = item[field] || '—';
+    html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${value}</div>`;
+  });
+  
+  html += `</div>`;
+  container.innerHTML = html;
+  container.style.display = 'block';
 }
 
 // ============================================================
@@ -172,7 +183,7 @@ function renderEvents(events) {
 
   eventsContainer.innerHTML = events.map((event, index) => {
     // Генерируем уникальный ID для контейнера таблицы
-    const tableContainerId = `table-result-${index}`;
+    const tableContainerId = `table-result-${index}-${Date.now()}`;
     
     // Проверяем, есть ли таблица в событии
     let tableHTML = '';
@@ -257,6 +268,7 @@ function attachEventHandlers() {
     btn.addEventListener('click', function() {
       const tableName = this.dataset.table;
       const containerId = this.dataset.container;
+      console.log(`🔘 Нажата кнопка: table="${tableName}", container="${containerId}"`);
       rollTable(tableName, containerId);
     });
   });
@@ -296,7 +308,10 @@ function handleCheck(index, type) {
   const effectId = isSecond ? `second-effect-${index}` : `effect-${index}`;
 
   const input = document.getElementById(inputId);
-  if (!input) return;
+  if (!input) {
+    console.error(`❌ Инпут не найден: ${inputId}`);
+    return;
+  }
   
   const value = parseInt(input.value);
   if (isNaN(value) || value < 1) {
