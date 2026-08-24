@@ -37,17 +37,37 @@ export function updateDifficulty() {
 // ГЕТТЕРЫ И СЕТТЕРЫ
 // ============================================================
 
-export function getRegionId() { return currentRegionId; }
-export function setRegionId(id) { currentRegionId = id; }
+export function getRegionId() { 
+  console.log('🔍 getRegionId вызван, возвращает:', currentRegionId);
+  return currentRegionId; 
+}
+
+export function setRegionId(id) { 
+  console.log('📌 setRegionId установлен:', id);
+  currentRegionId = id; 
+}
 
 export function getBaseDifficulty() { return baseDifficulty; }
-export function setBaseDifficulty(val) { baseDifficulty = val; updateDifficulty(); }
+export function setBaseDifficulty(val) { 
+  console.log('📊 Базовая сложность установлена:', val);
+  baseDifficulty = val; 
+  updateDifficulty(); 
+}
 
 export function getCurrentSignMod() { return currentSignMod; }
 export function setCurrentSignMod(val) { currentSignMod = val; updateDifficulty(); }
 
-export function addSignMod(val) { currentSignMod += val; updateDifficulty(); }
-export function resetSignMod() { currentSignMod = 0; updateDifficulty(); }
+export function addSignMod(val) { 
+  console.log('➕ Добавлен модификатор:', val);
+  currentSignMod += val; 
+  updateDifficulty(); 
+}
+
+export function resetSignMod() { 
+  console.log('🔄 Сброс модификаторов');
+  currentSignMod = 0; 
+  updateDifficulty(); 
+}
 
 // ============================================================
 // ЗАГРУЗКА РЕГИОНОВ ИЗ SUPABASE
@@ -90,5 +110,55 @@ export async function loadRegions() {
     console.log(`✅ Загружено ${data.length} открытых регионов`);
   } catch (err) {
     console.error('❌ Ошибка при загрузке регионов:', err);
+  }
+}
+
+// ============================================================
+// ОБРАБОТЧИК СМЕНЫ РЕГИОНА
+// ============================================================
+
+export function initRegionChangeHandler() {
+  if (regionSelect) {
+    regionSelect.addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      if (this.value && this.value !== '') {
+        const id = parseInt(this.value);
+        const difficulty = parseInt(selected.dataset.difficulty) || 0;
+        
+        console.log('📌 Выбран регион ID:', id, 'Сложность:', difficulty);
+        
+        setRegionId(id);
+        setBaseDifficulty(difficulty);
+        resetSignMod();
+        
+        // Сбрасываем знаки
+        const signResult = document.getElementById('signResult');
+        const signPlaceholder = document.getElementById('signPlaceholder');
+        if (signResult) signResult.classList.remove('visible');
+        if (signPlaceholder) signPlaceholder.style.display = 'block';
+        
+        // Сбрасываем события
+        const eventsContainer = document.getElementById('eventsContainer');
+        if (eventsContainer) {
+          eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+        }
+        
+        document.getElementById('commonEventsCount').textContent = '—';
+        document.getElementById('maxRoleEvents').textContent = '—';
+        document.getElementById('roleEventsCount').textContent = '—';
+        document.getElementById('totalEventsCount').textContent = '—';
+      } else {
+        console.log('📌 Регион сброшен');
+        setRegionId(null);
+        setBaseDifficulty(0);
+        resetSignMod();
+        difficultyDisplay.textContent = '—';
+        difficultyDisplay.style.color = '#ffd700';
+        if (pathDifficultyDisplay) {
+          pathDifficultyDisplay.textContent = '—';
+          pathDifficultyDisplay.style.color = '#ffd700';
+        }
+      }
+    });
   }
 }
