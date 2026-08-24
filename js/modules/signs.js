@@ -23,6 +23,8 @@ let signHistory = [];
 
 export function drawSign() {
   const regionId = getRegionId();
+  console.log('🎯 drawSign вызван, regionId:', regionId);
+  
   if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край!');
     return;
@@ -106,18 +108,4 @@ export function resetSigns() {
     signResult.classList.remove('visible');
     signPlaceholder.style.display = 'block';
   }, 2000);
-}
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ СОБЫТИЙ (вызывается из init.js)
-// ============================================================
-
-export function initSigns() {
-  if (drawBtn) drawBtn.addEventListener('click', drawSign);
-  if (resetSignsBtn) resetSignsBtn.addEventListener('click', resetSigns);
-  if (signInput) {
-    signInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') drawSign();
-    });
-  }
 }
