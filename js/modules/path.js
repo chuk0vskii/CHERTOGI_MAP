@@ -1,7 +1,7 @@
 // ============================================================
 // ФАЗА ПУТЬ
 // ============================================================
-
+import { _supabase } from '../config.js';
 import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
 import { EVENT_TABLES, RUINS_TABLE, OASIS_TABLE } from '../data/tables.js';
 import { getRandomInt, getEventResult, getResultLabel, getResultClass, generateRuins, generateOasis } from './utils.js';
