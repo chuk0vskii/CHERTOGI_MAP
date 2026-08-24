@@ -9,7 +9,7 @@ import { generatePathEvents } from '../modules/path.js';
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🚀 Огненные чертоги — В путь');
   
-  // Инициализируем обработчики
+  // Инициализируем обработчик смены региона
   initRegionChangeHandler();
   
   const drawBtn = document.getElementById('drawSignBtn');
