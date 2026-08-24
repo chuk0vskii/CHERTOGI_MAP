@@ -54,43 +54,67 @@ async function getTableData(tableName) {
 // ============================================================
 
 export async function rollTable(tableName, containerId) {
-  console.log(`🎲 rollTable вызван: tableName="${tableName}", containerId="${containerId}"`);
+  console.log(`🎲 rollTable вызван: tableName="${tableName}"`);
   
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`❌ Контейнер не найден: ${containerId}`);
     return;
   }
-  
-  const data = await getTableData(tableName);
-  
-  if (!data || data.length === 0) {
+
+  try {
+    console.log(`🔄 Делаю запрос к таблице: ${tableName}`);
+    
+    const { data, error } = await _supabase
+      .from(tableName)
+      .select('*');
+    
+    if (error) {
+      console.error(`❌ Ошибка запроса к ${tableName}:`, error);
+      container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
+        ❌ Ошибка: ${error.message}
+      </div>`;
+      container.style.display = 'block';
+      return;
+    }
+    
+    console.log(`📊 Получено данных из ${tableName}:`, data?.length || 0);
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
+        ❌ В таблице "${tableName}" нет данных
+      </div>`;
+      container.style.display = 'block';
+      return;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * data.length);
+    const item = data[randomIndex];
+    
+    console.log(`🎯 Выбрана запись #${randomIndex + 1}:`, item);
+    
+    let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
+    html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат: <strong>${randomIndex + 1}</strong></div>`;
+    
+    if (item.name) {
+      html += `<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">${item.name}</div>`;
+    }
+    
+    if (item.description) {
+      html += `<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">${item.description}</div>`;
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    container.style.display = 'block';
+    
+  } catch (err) {
+    console.error('❌ Критическая ошибка:', err);
     container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
-      ❌ Нет данных в таблице "${tableName}"
+      ❌ Ошибка: ${err.message}
     </div>`;
     container.style.display = 'block';
-    return;
   }
-  
-  const randomIndex = Math.floor(Math.random() * data.length);
-  const item = data[randomIndex];
-  
-  console.log(`🎯 Выбрана запись #${randomIndex + 1}:`, item);
-  
-  let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
-  html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
-  
-  if (item.name) {
-    html += `<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">${item.name}</div>`;
-  }
-  
-  if (item.description) {
-    html += `<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">${item.description}</div>`;
-  }
-  
-  html += `</div>`;
-  container.innerHTML = html;
-  container.style.display = 'block';
 }
 
 // ============================================================
