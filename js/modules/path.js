@@ -4,8 +4,7 @@
 
 import { _supabase } from '../config-module.js';
 import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
-import { EVENT_TABLES } from '../data/tables.js';
-import { getRandomInt, getEventResult, getResultLabel, getResultClass, generateRuins, generateOasis } from './utils.js';
+import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
 import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod } from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
@@ -19,37 +18,26 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 
-// ===== ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE =====
-async function getEventTableData(tableName, statsTable = null) {
+// ============================================================
+// ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
+// ============================================================
+
+async function getTableData(tableName) {
   try {
-    let query = _supabase.from(tableName).select('*');
-    const { data, error } = await query;
+    if (tableCache[tableName]) {
+      return tableCache[tableName];
+    }
+    
+    const { data, error } = await _supabase
+      .from(tableName)
+      .select('*');
     
     if (error) {
       console.error(`❌ Ошибка загрузки ${tableName}:`, error);
       return null;
     }
     
-    if (statsTable && data && data.length > 0) {
-      const statsIds = data.map(item => item.stats_id).filter(id => id !== null);
-      if (statsIds.length > 0) {
-        const { data: statsData, error: statsError } = await _supabase
-          .from(statsTable)
-          .select('*')
-          .in('id', statsIds);
-        
-        if (!statsError && statsData) {
-          const statsMap = {};
-          statsData.forEach(stat => { statsMap[stat.id] = stat; });
-          data.forEach(item => {
-            if (item.stats_id && statsMap[item.stats_id]) {
-              item.stats = statsMap[item.stats_id];
-            }
-          });
-        }
-      }
-    }
-    
+    tableCache[tableName] = data;
     return data;
   } catch (error) {
     console.error('❌ Ошибка:', error);
@@ -57,13 +45,46 @@ async function getEventTableData(tableName, statsTable = null) {
   }
 }
 
-function getRandomItem(data) {
-  if (!data || data.length === 0) return null;
-  const index = Math.floor(Math.random() * data.length);
-  return data[index];
+// ============================================================
+// РОЛЛ ТАБЛИЦЫ (для кнопок-ссылок)
+// ============================================================
+
+export async function rollTable(tableName, containerId) {
+  const data = await getTableData(tableName);
+  if (!data || data.length === 0) {
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = '❌ Нет данных в таблице';
+      container.style.display = 'block';
+    }
+    return;
+  }
+  
+  const randomIndex = Math.floor(Math.random() * data.length);
+  const item = data[randomIndex];
+  
+  const container = document.getElementById(containerId);
+  if (container) {
+    // Формируем вывод
+    let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
+    html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат броска: <strong>${randomIndex + 1}</strong></div>`;
+    
+    const fields = Object.keys(item).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at');
+    fields.forEach(field => {
+      const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+      html += `<div style="font-size: 14px; color: #e0d5c0;"><span style="color: #888;">${label}:</span> ${item[field] || '—'}</div>`;
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    container.style.display = 'block';
+  }
 }
 
-// ===== ГЕНЕРАЦИЯ СОБЫТИЙ =====
+// ============================================================
+// ГЕНЕРАЦИЯ СОБЫТИЙ
+// ============================================================
+
 export async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
@@ -91,26 +112,18 @@ export async function generatePathEvents() {
   roleEventsCount.textContent = `${roleDisplay} → ${roleCount}`;
   totalEventsCount.textContent = totalEvents;
 
-  currentEvents = await generateEventList(common, roleCount);
+  currentEvents = generateEventList(common, roleCount);
   renderEvents(currentEvents);
 }
 
-async function generateEventList(commonCount, roleCount) {
+function generateEventList(commonCount, roleCount) {
   const events = [];
-  tableCache = {};
-  let bonusEvents = [];
 
   // Общие события
   for (let i = 0; i < commonCount; i++) {
     const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
     const eventData = COMMON_EVENTS[roll];
     const eventCopy = createEventCopy(eventData, 'Общее', roll + 1);
-    await enrichEventWithSubRoll(eventCopy);
-    
-    if (eventData.bonusEvent) {
-      bonusEvents.push(eventData.bonusEvent);
-    }
-    
     events.push(eventCopy);
   }
 
@@ -122,20 +135,6 @@ async function generateEventList(commonCount, roleCount) {
     const roll = getRandomInt(0, roleEvents.length - 1);
     const eventData = roleEvents[roll];
     const eventCopy = createEventCopy(eventData, role, roll + 1);
-    await enrichEventWithSubRoll(eventCopy);
-    
-    if (eventData.bonusEvent) {
-      bonusEvents.push(eventData.bonusEvent);
-    }
-    
-    events.push(eventCopy);
-  }
-
-  // Добавляем бонусные события
-  for (const bonusData of bonusEvents) {
-    const eventCopy = createEventCopy(bonusData, '⭐ Бонусное событие', '⭐');
-    eventCopy.isBonus = true;
-    await enrichEventWithSubRoll(eventCopy);
     events.push(eventCopy);
   }
 
@@ -154,81 +153,17 @@ function createEventCopy(eventData, type, roll) {
     data: { ...eventData },
     roll: roll,
     isCommon: type === 'Общее',
-    isBonus: false,
     checked: false,
     result: null,
-    subRoll: null,
-    subRollData: null,
-    statsData: null,
     secondChecked: false,
     secondResult: null
   };
 }
 
-async function enrichEventWithSubRoll(eventCopy) {
-  const eventData = eventCopy.data;
-  
-  if (eventData.checkInfo) {
-    eventCopy.data.description += `<br><span class="check-info">${eventData.checkInfo}</span>`;
-  }
-  
-  if (eventData.hasSecondCheck && eventData.secondCheckInfo) {
-    eventCopy.data.description += `<br><span class="check-info">${eventData.secondCheckInfo}</span>`;
-  }
-  
-  if (eventData.hasSubRoll && eventData.subRollType) {
-    const config = EVENT_TABLES[eventData.title];
-    const tableName = config?.table;
-    const statsTable = config?.statsTable;
-    
-    if (eventData.subRollType === 'ruins') {
-      const subData = generateRuins();
-      eventCopy.subRollData = subData;
-      eventCopy.data.description += `<br><span class="sub-roll">🏛️ ${subData.fullText}</span>`;
-      return;
-    }
-    
-    if (eventData.subRollType === 'oasis') {
-      const subData = generateOasis();
-      eventCopy.subRollData = subData;
-      eventCopy.data.description += `<br><span class="sub-roll">🌴 ${subData.fullText}</span>`;
-      return;
-    }
-    
-    if (tableName) {
-      if (!tableCache[tableName]) {
-        tableCache[tableName] = await getEventTableData(tableName, statsTable);
-      }
-      
-      const subData = tableCache[tableName];
-      if (subData && subData.length > 0) {
-        const randomItem = getRandomItem(subData);
-        eventCopy.subRollData = randomItem;
-        if (randomItem.stats) {
-          eventCopy.statsData = randomItem.stats;
-        }
-        
-        const fields = config?.fields || ['name'];
-        const subText = fields.map(f => randomItem[f] || '').join(' | ');
-        eventCopy.subRoll = { fullText: subText, data: randomItem };
-        
-        const icon = eventData.subRollType === 'ruins' ? '🏛️' : 
-                    eventData.subRollType === 'oasis' ? '🌴' : '⚔️';
-        eventCopy.data.description += `<br><span class="sub-roll">${icon} ${subText}</span>`;
-        
-        if (randomItem.stats) {
-          eventCopy.data.description += `<br><span class="sub-roll" style="border-left-color: #ffd700;">
-            📊 <button class="btn-show-stats" data-index="0" style="background: transparent; border: none; color: #ffd700; cursor: pointer; text-decoration: underline; font-family: 'Philosopher', sans-serif; font-size: 13px;">
-              Показать статы существа
-            </button>
-          </span>`;
-        }
-      }
-    }
-  }
-}
+// ============================================================
+// ОТРИСОВКА СОБЫТИЙ
+// ============================================================
 
-// ===== ОТРИСОВКА СОБЫТИЙ =====
 function renderEvents(events) {
   if (!events || events.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
@@ -236,24 +171,18 @@ function renderEvents(events) {
   }
 
   eventsContainer.innerHTML = events.map((event, index) => {
-    const isBonus = event.isBonus || false;
-    const bonusStyle = isBonus ? 'border-left: 3px solid #ffd700; background: rgba(255,215,0,0.05);' : '';
+    // Генерируем уникальный ID для контейнера таблицы
+    const tableContainerId = `table-result-${index}`;
     
-    let statsHTML = '';
-    if (event.statsData) {
-      const stats = event.statsData;
-      statsHTML = `
-        <div class="stats-container" id="stats-${index}" style="display: none; margin-top: 10px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border: 1px solid rgba(255,215,0,0.2);">
-          <div style="color: #ffd700; font-family: 'Calypso', serif; font-size: 16px; margin-bottom: 8px;">📊 Характеристики существа</div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; font-size: 14px;">
-            ${stats.health ? `<div><span style="color: #888;">❤️ Здоровье:</span> <span style="color: #fff;">${stats.health}</span></div>` : ''}
-            ${stats.damage ? `<div><span style="color: #888;">⚔️ Урон:</span> <span style="color: #fff;">${stats.damage}</span></div>` : ''}
-            ${stats.armor ? `<div><span style="color: #888;">🛡️ Броня:</span> <span style="color: #fff;">${stats.armor}</span></div>` : ''}
-            ${stats.speed ? `<div><span style="color: #888;">💨 Скорость:</span> <span style="color: #fff;">${stats.speed}</span></div>` : ''}
-            ${stats.difficulty ? `<div><span style="color: #888;">📈 Сложность:</span> <span style="color: #ffd700;">${stats.difficulty}</span></div>` : ''}
-            ${stats.abilities ? `<div style="grid-column: 1/-1;"><span style="color: #888;">🔮 Способности:</span> <span style="color: #fff;">${stats.abilities}</span></div>` : ''}
-          </div>
-          <button class="btn-hide-stats" data-index="${index}" style="margin-top: 8px; background: transparent; border: 1px solid rgba(255,215,0,0.2); color: #888; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">Скрыть статы</button>
+    // Проверяем, есть ли таблица в событии
+    let tableHTML = '';
+    if (event.data.hasTable && event.data.tableName) {
+      tableHTML = `
+        <div style="margin-top: 8px;">
+          <button class="btn-roll-table" data-table="${event.data.tableName}" data-container="${tableContainerId}" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 13px; transition: all 0.3s;">
+            ${event.data.tableIcon || '🎲'} Бросить по ${event.data.tableLabel || 'таблице'}
+          </button>
+          <div id="${tableContainerId}" style="display: none; margin-top: 6px;"></div>
         </div>
       `;
     }
@@ -273,21 +202,19 @@ function renderEvents(events) {
       `;
     }
     
-    const typeDisplay = isBonus ? '⭐ Бонусное событие' : event.type;
-    const rollDisplay = isBonus ? '⭐' : `Бросок: <strong>${event.roll}</strong>`;
-    
     return `
-      <div class="event-card" style="${bonusStyle}">
+      <div class="event-card" data-index="${index}">
         <div class="event-header">
-          <span class="event-type" style="${isBonus ? 'color: #ffd700;' : ''}">${typeDisplay}</span>
-          <span class="event-roll">${rollDisplay}</span>
+          <span class="event-type">${event.type}</span>
+          <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
         </div>
         <div class="event-text">
           <strong>${event.data.title}</strong><br>
           ${event.data.description}
+          ${event.data.checkInfo ? `<br><span class="check-info">${event.data.checkInfo}</span>` : ''}
+          ${event.data.secondCheckInfo ? `<br><span class="check-info">${event.data.secondCheckInfo}</span>` : ''}
         </div>
-        ${statsHTML}
-        ${!isBonus ? `
+        ${tableHTML}
         <div class="event-check-row">
           <label for="check-${index}">Значение проверки:</label>
           <input type="number" id="check-${index}" min="1" max="30" value="10" class="check-input">
@@ -295,19 +222,21 @@ function renderEvents(events) {
         </div>
         <div class="event-result" id="result-${index}"></div>
         <div class="event-effect" id="effect-${index}"></div>
-        ` : `
-        <div style="color: rgba(255,215,0,0.4); font-size: 12px; margin-top: 8px;">✨ Бонусное событие (не требует проверки)</div>
-        `}
         ${secondCheckHTML}
       </div>
     `;
   }).join('');
 
+  // Навешиваем обработчики
   attachEventHandlers();
 }
 
-// ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+// ============================================================
+// ОБРАБОТЧИКИ СОБЫТИЙ
+// ============================================================
+
 function attachEventHandlers() {
+  // Основные проверки
   eventsContainer.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -315,6 +244,7 @@ function attachEventHandlers() {
     });
   });
 
+  // Вторые проверки
   eventsContainer.querySelectorAll('.btn-check-second').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.dataset.index);
@@ -322,29 +252,16 @@ function attachEventHandlers() {
     });
   });
 
-  eventsContainer.querySelectorAll('.btn-show-stats').forEach(btn => {
+  // Кнопки ролла таблиц
+  eventsContainer.querySelectorAll('.btn-roll-table').forEach(btn => {
     btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      const statsContainer = document.getElementById(`stats-${index}`);
-      if (statsContainer) {
-        statsContainer.style.display = 'block';
-        this.style.display = 'none';
-      }
+      const tableName = this.dataset.table;
+      const containerId = this.dataset.container;
+      rollTable(tableName, containerId);
     });
   });
 
-  eventsContainer.querySelectorAll('.btn-hide-stats').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      const statsContainer = document.getElementById(`stats-${index}`);
-      if (statsContainer) {
-        statsContainer.style.display = 'none';
-        const showBtn = document.querySelector(`.btn-show-stats[data-index="${index}"]`);
-        if (showBtn) showBtn.style.display = 'inline';
-      }
-    });
-  });
-
+  // Enter для основных проверок
   eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -354,6 +271,7 @@ function attachEventHandlers() {
     });
   });
 
+  // Enter для вторых проверок
   eventsContainer.querySelectorAll('.second-check').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -364,7 +282,10 @@ function attachEventHandlers() {
   });
 }
 
-// ===== ОБРАБОТКА ПРОВЕРКИ =====
+// ============================================================
+// ОБРАБОТКА ПРОВЕРКИ
+// ============================================================
+
 function handleCheck(index, type) {
   const event = currentEvents[index];
   if (!event) return;
@@ -401,6 +322,7 @@ function handleCheck(index, type) {
   resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
   resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
+  // Выбираем эффекты
   let effects;
   if (isSecond && event.data.secondEffects) {
     effects = event.data.secondEffects;
@@ -436,6 +358,7 @@ function handleCheck(index, type) {
     effectDiv.innerHTML = `<span class="${effectClass}">⚡ ${effectText}</span>`;
     effectDiv.className = 'event-effect visible';
     
+    // Проверяем изменение сложности
     const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
       const sign = diffMatch[1] === '+' ? 1 : -1;
