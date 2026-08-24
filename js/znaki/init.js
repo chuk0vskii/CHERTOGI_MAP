@@ -3,21 +3,32 @@
 // ============================================================
 
 import { loadRegions } from '../modules/region.js';
-import { drawSign, resetSigns, initSigns } from '../modules/signs.js';
-import { generatePathEvents, initPath } from '../modules/path.js';
+import { drawSign, resetSigns } from '../modules/signs.js';
+import { generatePathEvents } from '../modules/path.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🚀 Огненные чертоги — В путь');
   
-  // Инициализируем обработчики
-  initSigns();
-  initPath();
-  
   // Загружаем регионы
   await loadRegions();
   
-  // Обработчик смены региона
+  // Навешиваем обработчики
+  const drawBtn = document.getElementById('drawSignBtn');
+  const resetBtn = document.getElementById('resetSignsBtn');
+  const generateBtn = document.getElementById('generateEventsBtn');
+  const signInput = document.getElementById('signInput');
   const regionSelect = document.getElementById('regionSelect');
+  
+  if (drawBtn) drawBtn.addEventListener('click', drawSign);
+  if (resetBtn) resetBtn.addEventListener('click', resetSigns);
+  if (generateBtn) generateBtn.addEventListener('click', generatePathEvents);
+  
+  if (signInput) {
+    signInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') drawSign();
+    });
+  }
+  
   if (regionSelect) {
     regionSelect.addEventListener('change', function() {
       const signResult = document.getElementById('signResult');
