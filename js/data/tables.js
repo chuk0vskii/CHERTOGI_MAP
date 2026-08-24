@@ -26,10 +26,6 @@ export const EVENT_TABLES = {
     table: 'great_beasts',
     fields: ['name', 'description', 'treasure']
   },
-  'Опасная Встреча': {
-    table: 'deadly_encounters',
-    fields: ['name', 'description']
-  },
   'Преграда': {
     table: 'region_obstacles',
     fields: ['name', 'description']
@@ -40,6 +36,10 @@ export const EVENT_TABLES = {
   },
   
   // --- Тень Нарара ---
+  'Опасная Встреча': {
+    table: 'zone_conflicts',
+    fields: ['name', 'description']
+  },
   'Конфликт Зоны': {
     table: 'zone_conflicts',
     fields: ['name', 'description']
@@ -48,9 +48,23 @@ export const EVENT_TABLES = {
     table: 'veil_children',
     fields: ['name', 'description']
   },
+  'Плачь Вуали': {
+    table: 'veil_children',
+    fields: ['name', 'description']
+  },
   'Пролом реальности': {
     table: 'reality_tears',
     fields: ['name', 'description', 'effect']
+  },
+  'Следопыты': {
+    table: 'zone_conflicts',
+    fields: ['name', 'description']
+  },
+  
+  // --- Коготь Акрепы ---
+  'Запретное место': {
+    table: 'slaughter_zones',
+    fields: ['name', 'description']
   },
   
   // --- Глаза Звезд ---
@@ -60,6 +74,32 @@ export const EVENT_TABLES = {
   },
   'Испытание на Горизонте': {
     table: 'slaughter_zones',
+    fields: ['name', 'description']
+  },
+  'Свет среди тьмы': {
+    table: 'traps',
+    fields: ['name', 'description']
+  },
+  'Движение теней': {
+    table: 'veil_children',
+    fields: ['name', 'description']
+  },
+  'Они Пришли за Вами!': {
+    table: 'dangerous_creatures',
+    fields: ['name', 'description']
+  },
+  
+  // --- Длань Батрины ---
+  'Бешенство': {
+    table: 'parasitic_creatures',
+    fields: ['name', 'effect']
+  },
+  'Нарушенный Баланс': {
+    table: 'deadly_encounters',
+    fields: ['name', 'description']
+  },
+  'Исчезновение': {
+    table: 'dangerous_creatures',
     fields: ['name', 'description']
   }
 };
@@ -84,12 +124,4 @@ export const RUINS_TABLE = [
 ];
 
 export const OASIS_TABLE = [
-  ['Горячие источники Шамаса, снимающая 1 метку Тьмы.', 'Время от времени вода прилипает к чаше не выливаясь.'],
-  ['Горячие источники Улы, восстанавливающие Искру', 'Нет никогда ветра, как будто Нарар тут не летает.'],
-  ['Ледяная купель Азрака, восстанавливающая Кремень', 'Вся соленая еда сладкая и наоборот.'],
-  ['Ледяная купель Ману, снимающая проклятье.', 'Иногда слова, которые говорят твои товарищи, как будто звучат в обратную сторону.'],
-  ['Заросли фруктов, пополняющие кости провизии', 'Сны о будущем снятся тем, кто тут отдыхает.'],
-  ['Оазис близ источника пресной воды, где можно пополнить кости провизии', 'Дым странными узорами поднимается от костра.'],
-  ['Соленая купель, лечащие немагические болезни', 'Время здесь идет в два раза медленнее'],
-  ['Озерцо с целебной глиной, восстанавливающей все хиты', 'Здесь нет никаких знаков судьбы']
-];
+  ['Горячие источники Шамаса, снимающая 1 метку Тьмы.', 'Время от времени вода прилипает к чаше не выливаясь.
