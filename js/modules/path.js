@@ -1,12 +1,12 @@
 // ============================================================
 // ФАЗА ПУТЬ
 // ============================================================
-import { _supabase } from '../config-module.js';
 
+import { _supabase } from '../config-module.js';
 import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
-import { EVENT_TABLES, RUINS_TABLE, OASIS_TABLE } from '../data/tables.js';
+import { EVENT_TABLES } from '../data/tables.js';
 import { getRandomInt, getEventResult, getResultLabel, getResultClass, generateRuins, generateOasis } from './utils.js';
-import { getRegionId, getCurrentSignMod, addSignMod, updateDifficulty, getBaseDifficulty, setBaseDifficulty } from './region.js';
+import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod } from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
 const eventsContainer = document.getElementById('eventsContainer');
@@ -19,10 +19,7 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 
-// ============================================================
-// ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
-// ============================================================
-
+// ===== ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE =====
 async function getEventTableData(tableName, statsTable = null) {
   try {
     let query = _supabase.from(tableName).select('*');
@@ -33,7 +30,7 @@ async function getEventTableData(tableName, statsTable = null) {
       return null;
     }
     
-    if (statsTable && data.length > 0) {
+    if (statsTable && data && data.length > 0) {
       const statsIds = data.map(item => item.stats_id).filter(id => id !== null);
       if (statsIds.length > 0) {
         const { data: statsData, error: statsError } = await _supabase
@@ -66,10 +63,7 @@ function getRandomItem(data) {
   return data[index];
 }
 
-// ============================================================
-// ГЕНЕРАЦИЯ СОБЫТИЙ
-// ============================================================
-
+// ===== ГЕНЕРАЦИЯ СОБЫТИЙ =====
 export async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
@@ -208,7 +202,7 @@ async function enrichEventWithSubRoll(eventCopy) {
         
         if (randomItem.stats) {
           eventCopy.data.description += `<br><span class="sub-roll" style="border-left-color: #ffd700;">
-            📊 <button class="btn-show-stats" data-index="0" style="background: transparent; border: none; color: #ffd700; cursor: pointer; text-decoration: underline; font-family: \'Philosopher\', sans-serif; font-size: 13px;">
+            📊 <button class="btn-show-stats" data-index="0" style="background: transparent; border: none; color: #ffd700; cursor: pointer; text-decoration: underline; font-family: 'Philosopher', sans-serif; font-size: 13px;">
               Показать статы существа
             </button>
           </span>`;
@@ -218,10 +212,7 @@ async function enrichEventWithSubRoll(eventCopy) {
   }
 }
 
-// ============================================================
-// ОТРИСОВКА СОБЫТИЙ
-// ============================================================
-
+// ===== ОТРИСОВКА СОБЫТИЙ =====
 function renderEvents(events) {
   if (!events || events.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
@@ -394,6 +385,8 @@ function handleCheck(index, type) {
   const resultDiv = document.getElementById(resultId);
   const effectDiv = document.getElementById(effectId);
 
+  if (!resultDiv || !effectDiv) return;
+
   resultDiv.textContent = `🎲 Результат: ${value} — ${getResultLabel(result)}`;
   resultDiv.className = `event-result visible ${getResultClass(result)}`;
 
@@ -452,4 +445,11 @@ function handleCheck(index, type) {
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================================
 
-generateBtn.addEventListener('click', generatePathEvents);
+export function initPath() {
+  if (generateBtn) {
+    generateBtn.addEventListener('click', generatePathEvents);
+  }
+}
+
+// Автоматическая инициализация
+initPath();
