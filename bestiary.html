@@ -248,6 +248,7 @@
     { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts_extended' },
     { id: 'monsters', title: 'Монстры', table: 'monsters' },
     { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
+    { id: 'insectoids', title: 'Инсектоиды Чертогов', table: 'insectoids' },
     { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' }
   ];
 
@@ -416,15 +417,8 @@
       container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
 
-    for (var j = 0; j < SECTIONS.length; j++) {
-      var content = document.getElementById('content-' + SECTIONS[j].id);
-      if (content && content.querySelector('.creature-card')) {
-        content.classList.add('open');
-        var arrow = document.getElementById('arrow-' + SECTIONS[j].id);
-        if (arrow) arrow.classList.add('open');
-        break;
-      }
-    }
+    // НЕ ОТКРЫВАЕМ НИ ОДИН РАЗДЕЛ АВТОМАТИЧЕСКИ
+    // Все разделы закрыты по умолчанию
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
   }
