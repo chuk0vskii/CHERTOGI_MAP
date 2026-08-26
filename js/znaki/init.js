@@ -2,7 +2,7 @@
 // ТОЧКА ВХОДА ДЛЯ СТРАНИЦЫ "В ПУТЬ"
 // ============================================================
 
-console.log('🚀 znaki-init.js загружен');
+console.log('🚀 znaki/init.js загружен');
 
 // Ждём загрузки DOM
 document.addEventListener('DOMContentLoaded', async function() {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
   
-  // Обработчик смены региона (если не через initRegionChangeHandler)
+  // Обработчик смены региона (дополнительный, если не через initRegionChangeHandler)
   const regionSelect = document.getElementById('regionSelect');
   if (regionSelect) {
     regionSelect.addEventListener('change', function() {
