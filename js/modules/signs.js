@@ -2,8 +2,7 @@
 // ФАЗА ЗНАКИ
 // ============================================================
 
-// SIGNS из data/signs.js нужно подключить как обычный скрипт
-// или объявить здесь
+// _supabase доступен глобально из config.js
 
 const signInput = document.getElementById('signInput');
 const drawBtn = document.getElementById('drawSignBtn');
@@ -22,7 +21,7 @@ let signHistory = [];
 // ============================================================
 
 function drawSign() {
-  const regionId = getRegionId();
+  const regionId = window.getRegionId ? window.getRegionId() : null;
   console.log('🎯 drawSign вызван, regionId:', regionId);
   
   if (regionId === null || regionId === undefined) {
@@ -39,13 +38,13 @@ function drawSign() {
   let index = value;
   if (index > 20) index = 20;
 
-  const sign = SIGNS[index];
+  const sign = window.SIGNS ? window.SIGNS[index] : null;
   if (!sign) {
     alert('Знак не найден. Попробуйте другое число.');
     return;
   }
 
-  addSignMod(sign.mod);
+  if (window.addSignMod) window.addSignMod(sign.mod);
   signHistory.push({ index, title: sign.title, mod: sign.mod });
 
   signTitle.textContent = sign.title;
@@ -93,15 +92,15 @@ function drawSign() {
 // ============================================================
 
 function resetSigns() {
-  const regionId = getRegionId();
+  const regionId = window.getRegionId ? window.getRegionId() : null;
   if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край');
     return;
   }
   
-  resetSignMod();
+  if (window.resetSignMod) window.resetSignMod();
   signHistory = [];
-  updateDifficulty();
+  if (window.updateDifficulty) window.updateDifficulty();
   
   signResult.classList.remove('visible');
   signPlaceholder.style.display = 'block';
@@ -116,5 +115,6 @@ function resetSigns() {
   }, 2000);
 }
 
+// Делаем глобальными
 window.drawSign = drawSign;
 window.resetSigns = resetSigns;
