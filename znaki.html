@@ -1,715 +1,146 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Огненные чертоги — В путь</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    /* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #0a0a0a;
-      color: #e0d5c0;
-      font-family: 'Philosopher', 'Arial', sans-serif;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 100px 20px 40px;
-    }
+// ============================================================
+// ДАННЫЕ ЗНАКОВ
+// ============================================================
 
-    /* ===== РАЗДЕЛ 1: ВЫБОР КРАЯ ===== */
-    .region-selector {
-      background: rgba(74, 14, 14, 0.2);
-      border: 1px solid rgba(74, 14, 14, 0.3);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 30px;
-    }
-    .region-selector .label {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 22px;
-      color: #ffffff;
-      letter-spacing: 2px;
-      margin-bottom: 15px;
-      display: block;
-      font-weight: normal;
-    }
-    .region-selector .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      align-items: center;
-    }
-    .region-selector select {
-      flex: 1;
-      min-width: 250px;
-      padding: 14px 20px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: #e0d5c0;
-      font-size: 16px;
-      font-family: 'Philosopher', sans-serif;
-      cursor: pointer;
-      transition: border-color 0.3s;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffd700' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-    }
-    .region-selector select:hover {
-      border-color: #4a0e0e;
-    }
-    .region-selector select:focus {
-      outline: none;
-      border-color: #4a0e0e;
-    }
-    .region-selector select option {
-      background: #1a0a1a;
-      color: #e0d5c0;
-    }
-    .region-selector .difficulty-display {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 20px;
-      color: #ffffff;
-      padding: 10px 24px;
-      background: rgba(74, 14, 14, 0.4);
-      border-radius: 10px;
-      border-left: 3px solid #4a0e0e;
-      white-space: nowrap;
-      min-width: 160px;
-      text-align: center;
-      font-weight: normal;
-    }
-    .region-selector .difficulty-display span {
-      color: #ffd700;
-      font-size: 24px;
-    }
-
-    /* ===== РАЗДЕЛ 2: ФАЗА ЗНАКИ ===== */
-    .sign-section {
-      background: rgba(74, 14, 14, 0.2);
-      border: 1px solid rgba(74, 14, 14, 0.3);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 30px;
-    }
-    .sign-section .title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 26px;
-      color: #ffffff;
-      letter-spacing: 3px;
-      margin-bottom: 20px;
-      display: block;
-      text-align: center;
-      font-weight: normal;
-    }
-    .sign-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-    .sign-controls .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: center;
-    }
-    .sign-controls .field label {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .sign-controls .field input {
-      width: 100px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-      font-size: 22px;
-      text-align: center;
-      font-family: 'Philosopher', sans-serif;
-      transition: border-color 0.3s;
-    }
-    .sign-controls .field input:hover {
-      border-color: #4a0e0e;
-    }
-    .sign-controls .field input:focus {
-      outline: none;
-      border-color: #4a0e0e;
-    }
-    .btn-draw {
-      padding: 12px 40px;
-      background: #4a0e0e;
-      color: #ffffff;
-      border: 2px solid #4a0e0e;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 1px;
-      font-family: 'Philosopher', sans-serif;
-    }
-    .btn-draw:hover {
-      background: transparent;
-      color: #ffffff;
-      border-color: #4a0e0e;
-    }
-    .btn-draw:active {
-      transform: scale(0.96);
-    }
-    .btn-reset-signs {
-      padding: 8px 20px;
-      background: rgba(74, 14, 14, 0.3);
-      color: rgba(255, 255, 255, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Philosopher', sans-serif;
-    }
-    .btn-reset-signs:hover {
-      background: rgba(74, 14, 14, 0.6);
-      color: #ffffff;
-      border-color: #4a0e0e;
-    }
-
-    /* ===== РЕЗУЛЬТАТ ЗНАКА ===== */
-    .sign-result {
-      display: none;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 25px;
-      gap: 25px;
-      align-items: flex-start;
-      transition: all 0.4s ease;
-    }
-    .sign-result.visible {
-      display: flex;
-    }
-    .sign-result .image {
-  flex-shrink: 0;
-  width: 150px;
-  height: 150px;
-  background: #4a0e0e;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.2);
-  font-size: 12px;
-  letter-spacing: 1px;
-  overflow: hidden;
-}
-    .sign-result .info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .sign-result .info .sign-title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 22px;
-      color: #ffffff;
-      letter-spacing: 2px;
-      font-weight: normal;
-    }
-    .sign-result .info .sign-description {
-      font-size: 15px;
-      line-height: 1.6;
-      color: #ccc;
-    }
-    .sign-result .info .sign-meta {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.3);
-      letter-spacing: 1px;
-      margin-top: 5px;
-    }
-    .sign-result .info .sign-meta strong {
-      color: #ffffff;
-    }
-    .sign-result .info .sign-meta .mod-positive {
-      color: #ff6b6b;
-    }
-    .sign-result .info .sign-meta .mod-negative {
-      color: #51cf66;
-    }
-    .sign-result .info .sign-meta .mod-neutral {
-      color: #ffd700;
-    }
-
-    .sign-placeholder {
-      color: rgba(255, 255, 255, 0.15);
-      text-align: center;
-      font-size: 16px;
-      padding: 30px 0;
-    }
-
-    /* ===== РАЗДЕЛ 3: ФАЗА ПУТЬ ===== */
-    .path-section {
-      background: rgba(74, 14, 14, 0.2);
-      border: 1px solid rgba(74, 14, 14, 0.3);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 30px;
-    }
-    .path-section .title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 26px;
-      color: #ffffff;
-      letter-spacing: 3px;
-      margin-bottom: 20px;
-      display: block;
-      text-align: center;
-      font-weight: normal;
-    }
-    .path-section .subtitle {
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 14px;
-      text-align: center;
-      margin-bottom: 25px;
-      letter-spacing: 1px;
-    }
-    .path-section .events-info {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 15px;
-      padding: 15px 20px;
-      background: rgba(74, 14, 14, 0.2);
-      border-radius: 10px;
-      margin-bottom: 25px;
-      border-left: 3px solid #4a0e0e;
-    }
-    .path-section .events-info .item {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .path-section .events-info .item strong {
-      color: #ffffff;
-    }
-    .path-section .events-info .item .highlight {
-      color: #ffd700;
-    }
-
-    .event-card {
-      background: rgba(74, 14, 14, 0.2);
-      border: 1px solid rgba(74, 14, 14, 0.2);
-      border-radius: 12px;
-      padding: 20px 25px;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
-    }
-    .event-card:hover {
-      background: rgba(74, 14, 14, 0.35);
-      border-color: rgba(74, 14, 14, 0.5);
-    }
-    .event-card .event-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .event-card .event-type {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 16px;
-      color: #ffd700;
-      letter-spacing: 1px;
-      font-weight: normal;
-    }
-    .event-card .event-roll {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.3);
-    }
-    .event-card .event-roll strong {
-      color: #ffffff;
-    }
-    .event-card .event-text {
-      font-size: 14px;
-      line-height: 1.8;
-      color: #ccc;
-      padding: 10px 0;
-      white-space: pre-wrap;
-    }
-    .event-card .event-text .sub-roll {
-      display: block;
-      margin-top: 6px;
-      padding: 8px 12px;
-      background: rgba(255, 215, 0, 0.05);
-      border-radius: 6px;
-      border-left: 2px solid rgba(255, 215, 0, 0.3);
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-    .event-card .event-text .sub-roll strong {
-      color: #ffd700;
-    }
-    .event-card .event-text .check-info {
-      display: block;
-      margin-top: 6px;
-      padding: 6px 12px;
-      background: rgba(74, 14, 14, 0.4);
-      border-radius: 6px;
-      border-left: 2px solid #4a0e0e;
-      font-size: 13px;
-      color: rgba(255, 215, 0, 0.6);
-    }
-    .event-card .event-text .check-info strong {
-      color: #ffffff;
-    }
-    .event-card .event-check-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      align-items: center;
-      margin-top: 10px;
-    }
-    .event-card .event-check-row label {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-      letter-spacing: 1px;
-    }
-    .event-card .event-check-row input {
-      width: 80px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-      font-size: 18px;
-      text-align: center;
-      font-family: 'Philosopher', sans-serif;
-      transition: border-color 0.3s;
-    }
-    .event-card .event-check-row input:hover {
-      border-color: #4a0e0e;
-    }
-    .event-card .event-check-row input:focus {
-      outline: none;
-      border-color: #4a0e0e;
-    }
-    .btn-check {
-      padding: 8px 24px;
-      background: rgba(74, 14, 14, 0.6);
-      color: #ffffff;
-      border: 1px solid #4a0e0e;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Philosopher', sans-serif;
-    }
-    .btn-check:hover {
-      background: #4a0e0e;
-    }
-    .btn-check:active {
-      transform: scale(0.95);
-    }
-    .btn-check-second {
-      padding: 8px 24px;
-      background: rgba(255, 215, 0, 0.1);
-      color: #ffd700;
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Philosopher', sans-serif;
-    }
-    .btn-check-second:hover {
-      background: rgba(255, 215, 0, 0.2);
-    }
-    .btn-check-second:active {
-      transform: scale(0.95);
-    }
-    .btn-roll-table {
-      background: transparent;
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      color: #ffd700;
-      padding: 4px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Philosopher', sans-serif;
-      font-size: 13px;
-      transition: all 0.3s ease;
-    }
-    .btn-roll-table:hover {
-      background: rgba(255, 215, 0, 0.1);
-      border-color: #ffd700;
-    }
-    .btn-generate-events {
-      padding: 10px 30px;
-      background: #4a0e0e;
-      color: #ffffff;
-      border: 2px solid #4a0e0e;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Philosopher', sans-serif;
-      width: 100%;
-      margin-top: 5px;
-    }
-    .btn-generate-events:hover {
-      background: transparent;
-      color: #ffffff;
-      border-color: #4a0e0e;
-    }
-    .event-card .event-result {
-      font-size: 14px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border-left: 2px solid #555;
-      display: none;
-      margin-top: 10px;
-    }
-    .event-card .event-result.visible {
-      display: block;
-    }
-    .event-card .event-result.success {
-      color: #51cf66;
-      border-left-color: #51cf66;
-      background: rgba(81, 207, 102, 0.1);
-    }
-    .event-card .event-result.fail {
-      color: #ff6b6b;
-      border-left-color: #ff6b6b;
-      background: rgba(255, 107, 107, 0.1);
-    }
-    .event-card .event-result.crit-success {
-      color: #ffd700;
-      border-left-color: #ffd700;
-      background: rgba(255, 215, 0, 0.1);
-    }
-    .event-card .event-result.crit-fail {
-      color: #ff4444;
-      border-left-color: #ff4444;
-      background: rgba(255, 68, 68, 0.15);
-    }
-
-    .event-card .event-effect {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
-      margin-top: 8px;
-      border: 1px dashed rgba(255, 255, 255, 0.1);
-      display: none;
-    }
-    .event-card .event-effect.visible {
-      display: block;
-    }
-    .event-card .event-effect .effect-success {
-      color: #51cf66;
-    }
-    .event-card .event-effect .effect-fail {
-      color: #ff6b6b;
-    }
-    .event-card .event-effect .effect-crit {
-      color: #ffd700;
-    }
-
-    .event-card .second-check-section {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 215, 0, 0.1);
-    }
-
-    .no-events {
-      color: rgba(255, 255, 255, 0.2);
-      text-align: center;
-      padding: 30px 0;
-      font-size: 16px;
-    }
-
-    /* ===== РАЗДЕЛ 4: ФАЗА ПРИБЫТИЕ ===== */
-    .arrival-section {
-      background: rgba(74, 14, 14, 0.2);
-      border: 1px solid rgba(74, 14, 14, 0.3);
-      border-radius: 16px;
-      padding: 30px;
-    }
-    .arrival-section .title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 26px;
-      color: #ffffff;
-      letter-spacing: 3px;
-      margin-bottom: 20px;
-      display: block;
-      text-align: center;
-      font-weight: normal;
-    }
-    .arrival-section .subtitle {
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 14px;
-      text-align: center;
-      margin-bottom: 25px;
-      letter-spacing: 1px;
-    }
-    .arrival-display {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 12px;
-      padding: 30px 40px;
-      text-align: center;
-      border: 1px solid rgba(255, 215, 0, 0.1);
-    }
-    .arrival-display .arrival-label {
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.6);
-      letter-spacing: 1px;
-    }
-    .arrival-display .arrival-value {
-      font-size: 48px;
-      font-weight: bold;
-      color: #ffd700;
-      display: block;
-      margin-top: 8px;
-      font-family: 'Calypso', 'Times New Roman', serif;
-      letter-spacing: 2px;
-    }
-    .arrival-display .arrival-value.positive {
-      color: #51cf66;
-    }
-    .arrival-display .arrival-value.negative {
-      color: #ff6b6b;
-    }
-    .arrival-display .arrival-value.zero {
-      color: #ffd700;
-    }
-
-    /* ===== АДАПТАЦИЯ ===== */
-    @media (max-width: 768px) {
-      .container { padding: 80px 16px 30px; }
-      .region-selector .row { flex-direction: column; align-items: stretch; }
-      .region-selector select { min-width: auto; }
-      .region-selector .difficulty-display { text-align: center; }
-      .sign-result { flex-direction: column; align-items: center; text-align: center; }
-      .sign-result .image { width: 120px; height: 120px; }
-      .path-section .events-info { flex-direction: column; align-items: center; text-align: center; }
-      .event-card .event-header { flex-direction: column; align-items: flex-start; }
-      .event-card .event-check-row { flex-direction: column; align-items: stretch; }
-      .arrival-display { padding: 20px; }
-      .arrival-display .arrival-value { font-size: 36px; }
-    }
-    @media (max-width: 480px) {
-      .container { padding: 70px 12px 20px; }
-      .sign-result .image { width: 100px; height: 100px; }
-      .sign-controls .field input { width: 80px; }
-      .event-card .event-check-row input { width: 100%; }
-      .arrival-display .arrival-value { font-size: 28px; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- БАННЕР -->
-<div class="top-banner">
-  <span class="title">Огненные чертоги</span>
-  <div class="nav-links">
-    <a href="index.html">Карта</a>
-    <a href="znaki.html" class="active">В путь</a>
-    <a href="bestiary.html">Бестиарий</a>
-    <a href="tree.html">Древо смерти</a>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- ===== РАЗДЕЛ 1: ВЫБОР КРАЯ ===== -->
-  <div class="region-selector">
-    <span class="label">Выбор края</span>
-    <div class="row">
-      <select id="regionSelect">
-        <option value="">— Выберите край —</option>
-      </select>
-      <div class="difficulty-display">
-        Сложность: <span id="difficultyValue">—</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== РАЗДЕЛ 2: ФАЗА ЗНАКИ ===== -->
-  <div class="sign-section">
-    <span class="title">Фаза Знаки</span>
-
-    <div class="sign-controls">
-      <div class="field">
-        <label for="signInput">Число проверки</label>
-        <input type="number" id="signInput" min="1" max="30" value="1">
-      </div>
-      <button class="btn-draw" id="drawSignBtn">Узнать знак</button>
-      <button class="btn-reset-signs" id="resetSignsBtn">Сбросить эффекты знаков</button>
-    </div>
-
-    <div class="sign-result" id="signResult">
-      <div class="image" id="signImage">Изображение</div>
-      <div class="info">
-        <div class="sign-title" id="signTitle">—</div>
-        <div class="sign-description" id="signDescription">Выберите край и нажмите «Узнать знак»</div>
-        <div class="sign-meta" id="signMeta"></div>
-      </div>
-    </div>
-
-    <div class="sign-placeholder" id="signPlaceholder">
-      Выберите край и нажмите «Узнать знак»
-    </div>
-  </div>
-
-  <!-- ===== РАЗДЕЛ 3: ФАЗА ПУТЬ ===== -->
-  <div class="path-section" id="pathSection">
-    <span class="title">Фаза Путь</span>
-    <div class="subtitle">События на пути к цели</div>
-
-    <div class="events-info" id="eventsInfo">
-      <div class="item">Общих событий: <strong id="commonEventsCount">—</strong></div>
-      <div class="item">Событий ролей (1d<strong id="maxRoleEvents">—</strong>): <strong id="roleEventsCount">—</strong></div>
-      <div class="item">Всего событий: <strong id="totalEventsCount">—</strong></div>
-      <div class="item">Сложность пути: <strong class="highlight" id="pathDifficultyDisplay">—</strong></div>
-    </div>
-
-    <button class="btn-generate-events" id="generateEventsBtn">Сгенерировать события пути</button>
-
-    <div id="eventsContainer" style="margin-top: 20px;">
-      <div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>
-    </div>
-  </div>
-
-  <!-- ===== РАЗДЕЛ 4: ФАЗА ПРИБЫТИЕ ===== -->
-<div class="arrival-section" id="arrivalSection">
-  <span class="title">Фаза Прибытие</span>
-  <div class="subtitle">Накопленные бонусы</div>
-
-  <div class="arrival-display">
-    <div class="arrival-label">Бонус заработанной кварны</div>
-    <div class="arrival-value" id="arrivalValue">0</div>
-  </div>
-</div>
-
-<!-- ===== ПОДКЛЮЧЕНИЕ СКРИПТОВ ===== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js"></script>
-
-<!-- Модули для страницы "В путь" -->
-<script type="module" src="js/znaki/init.js"></script>
-
-</body>
-</html>
+export const SIGNS = [ null,
+  { 
+    title: 'Знак Тьмы', 
+    description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда-либо.',
+    mod: 2,
+    effect: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.',
+    image: 'tma.png'
+  },
+  { 
+    title: 'Знак Рока', 
+    description: 'Знак влечет ощущение неминуемого конца и мысли о том, что это путешествие - плохая идея.',
+    mod: 0,
+    effect: 'До первой успешной проверки, все проверки группы совершаются с помехой.',
+    image: 'rok.png'
+  },
+  { 
+    title: 'Знак Зверя', 
+    description: 'Знак означает, что что-то охотится в Чертогах, и оно знает, что вы отправляетесь в путь.',
+    mod: 0,
+    effect: 'Группа не может избежать встреч с опасными существами в фазе Путь.',
+    image: 'zver.png'
+  },
+  { 
+    title: 'Знак Красного Ветра', 
+    description: 'Это знак вражды Акрепы и Нарара, что означает бушующий ветер и изменение песков.',
+    mod: 1,
+    effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.',
+    image: 'krasnii.png'
+  },
+  { 
+    title: 'Знак Ай\'анги', 
+    description: 'Этот знак означает, что Ай\'aнга недоволен, предвидятся буря.',
+    mod: 1,
+    effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.',
+    image: null
+  },
+  { 
+    title: 'Знак Червя', 
+    description: 'Знак предвещает беду с провизией и едой.',
+    mod: 1,
+    effect: 'Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.',
+    image: 'cherv.png'
+  },
+  { 
+    title: 'Знак Золотого Плода', 
+    description: 'Предвещает невероятный пир и то, что еда будет вкусна, словно нектар богов.',
+    mod: -1,
+    effect: 'Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.',
+    image: 'gold.png'
+  },
+  { 
+    title: 'Знак Вдохновения', 
+    description: 'Знак предвещает невероятные виды и хорошую погоду, которая вдохновляет группу.',
+    mod: 0,
+    effect: 'Первый бросок для избежания усталости, группа делает с преимуществом.',
+    image: null
+  },
+  { 
+    title: 'Знак Нарара', 
+    description: 'Знак означает благословение северного ветра, который поможет в пути группе.',
+    mod: -1,
+    effect: 'Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).',
+    image: null
+  },
+  { 
+    title: 'Знак Шамаса', 
+    description: 'Знак предвещает, что лучи Шамаса не позволят опасности скрыться от ваших глаз.',
+    mod: 0,
+    effect: 'Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.',
+    image: null
+  },
+  { 
+    title: 'Знак Шептуна', 
+    description: 'Знак означает невероятное вдохновение на приключение и предчувствие удачи.',
+    mod: 0,
+    effect: 'Все в группе получают 1 кость удачи на фазу Путь.',
+    image: null
+  },
+  { 
+    title: 'Знак Звёзд', 
+    description: 'Знак высшего оберега, звезды следят за вами и надеются на поступки, которые долетят до Тингира.',
+    mod: -2,
+    effect: 'Сложность пути понижается на 2.',
+    image: null
+  },
+  { 
+    title: 'Знак Голода', 
+    description: 'Знак предвещает встречу с голодными духами, которые хотят, чтобы и вы познали их голод.',
+    mod: 0,
+    effect: 'Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.',
+    image: null
+  },
+  { 
+    title: 'Знак Золотой Нити', 
+    description: 'Знак означает невероятную удачу и поддержку судьбы.',
+    mod: 0,
+    effect: 'В фазе Путь все проверки ролей делаются с преимуществом.',
+    image: null
+  },
+  { 
+    title: 'Знак Закрытого Ока', 
+    description: 'Знак предвещает трудную видимость под дозором Ману.',
+    mod: 0,
+    effect: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.',
+    image: null
+  },
+  { 
+    title: 'Знак Прибытия', 
+    description: 'Знак предвещает тяжелый путь, но легкое прибытие к цели.',
+    mod: 0,
+    effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.',
+    image: null
+  },
+  { 
+    title: 'Знак Пути', 
+    description: 'Знак предвещает легкий путь, но тяжелое прибытие к цели.',
+    mod: 0,
+    effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.',
+    image: null
+  },
+  { 
+    title: 'Знак Конца', 
+    description: 'Знак означает смерть, двуглавые совы бдят, чтобы обрезать нить судьбы искателя.',
+    mod: 0,
+    effect: 'Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.',
+    image: null
+  },
+  { 
+    title: 'Знак Черного Треугольника', 
+    description: 'Знак показывает дребезжание в нитях судьбы, и Вуаль это слышит.',
+    mod: 0,
+    effect: 'При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.',
+    image: null
+  },
+  { 
+    title: 'Знак Очага', 
+    description: 'Знак предвещает легкое возвращение домой.',
+    mod: -3,
+    effect: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.',
+    image: null
+  }
+];
