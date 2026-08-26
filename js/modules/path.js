@@ -129,17 +129,21 @@ export async function generatePathEvents() {
 
   let roleCount = 0;
   let roleDisplay = '0';
+  let rollResult = 0;
+  let bonusDisplay = '';
+  
   if (maxRole > 0) {
-    const roll = getRandomInt(1, maxRole);
-    roleCount = roll + roleBonus;
-    roleDisplay = '1d' + maxRole + (roleBonus > 0 ? '+' + roleBonus : roleBonus < 0 ? '' + roleBonus : '');
+    rollResult = getRandomInt(1, maxRole);
+    roleCount = rollResult + roleBonus;
+    bonusDisplay = roleBonus > 0 ? ' +' + roleBonus : roleBonus < 0 ? ' ' + roleBonus : '';
+    roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
   }
 
   const totalEvents = common + roleCount;
 
   commonEventsCount.textContent = common;
   maxRoleEvents.textContent = maxRole;
-  roleEventsCount.textContent = roleDisplay + ' → ' + roleCount;
+  roleEventsCount.textContent = roleDisplay;
   totalEventsCount.textContent = totalEvents;
 
   currentEvents = generateEventList(common, roleCount);
