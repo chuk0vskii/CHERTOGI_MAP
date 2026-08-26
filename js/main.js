@@ -1,4 +1,4 @@
-// ===== TOЧКА ВХОДА =====
+// ===== ТОЧКА ВХОДА =====
 console.log('✅ Карта и маркеры загружены');
 
 // Скрываем карту при загрузке
@@ -6,7 +6,7 @@ document.getElementById('map').style.opacity = '0';
 
 async function init() {
   try {
-    // Загружаем облака (они должны быть первыми)
+    // Загружаем облака
     if (typeof loadClouds === 'function') {
       await loadClouds();
       console.log('✅ Облака загружены');
@@ -24,18 +24,32 @@ async function init() {
     }
     
     // Показываем карту
-    document.getElementById('map').style.opacity = '1';
-    document.getElementById('map').style.transition = 'none';
+    const mapEl = document.getElementById('map');
+    if (mapEl) {
+      mapEl.classList.add('visible');
+      mapEl.style.transition = 'none';
+    }
+    
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+      preloader.classList.add('hidden');
+      setTimeout(function() {
+        preloader.style.display = 'none';
+      }, 800);
+    }
     
     console.log('✅ Всё загружено! Карта показана.');
     
   } catch (error) {
     console.error('❌ Ошибка загрузки:', error);
-    document.getElementById('map').style.opacity = '1';
+    const mapEl = document.getElementById('map');
+    if (mapEl) {
+      mapEl.classList.add('visible');
+      mapEl.style.transition = 'none';
+    }
   }
 }
 
-// Запускаем после загрузки страницы
 if (document.readyState === 'complete') {
   init();
 } else {
