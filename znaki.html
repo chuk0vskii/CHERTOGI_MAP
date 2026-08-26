@@ -541,6 +541,61 @@
       font-size: 16px;
     }
 
+    /* ===== РАЗДЕЛ 4: ФАЗА ПРИБЫТИЕ ===== */
+    .arrival-section {
+      background: rgba(74, 14, 14, 0.2);
+      border: 1px solid rgba(74, 14, 14, 0.3);
+      border-radius: 16px;
+      padding: 30px;
+    }
+    .arrival-section .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 26px;
+      color: #ffffff;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+      display: block;
+      text-align: center;
+      font-weight: normal;
+    }
+    .arrival-section .subtitle {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+    .arrival-display {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 30px 40px;
+      text-align: center;
+      border: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    .arrival-display .arrival-label {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1px;
+    }
+    .arrival-display .arrival-value {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ffd700;
+      display: block;
+      margin-top: 8px;
+      font-family: 'Calypso', 'Times New Roman', serif;
+      letter-spacing: 2px;
+    }
+    .arrival-display .arrival-value.positive {
+      color: #51cf66;
+    }
+    .arrival-display .arrival-value.negative {
+      color: #ff6b6b;
+    }
+    .arrival-display .arrival-value.zero {
+      color: #ffd700;
+    }
+
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
@@ -552,12 +607,15 @@
       .path-section .events-info { flex-direction: column; align-items: center; text-align: center; }
       .event-card .event-header { flex-direction: column; align-items: flex-start; }
       .event-card .event-check-row { flex-direction: column; align-items: stretch; }
+      .arrival-display { padding: 20px; }
+      .arrival-display .arrival-value { font-size: 36px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .sign-result .image { width: 100px; height: 100px; }
       .sign-controls .field input { width: 80px; }
       .event-card .event-check-row input { width: 100%; }
+      .arrival-display .arrival-value { font-size: 28px; }
     }
   </style>
 </head>
@@ -632,6 +690,17 @@
 
     <div id="eventsContainer" style="margin-top: 20px;">
       <div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>
+    </div>
+  </div>
+
+  <!-- ===== РАЗДЕЛ 4: ФАЗА ПРИБЫТИЕ ===== -->
+  <div class="arrival-section" id="arrivalSection">
+    <span class="title">Фаза Прибытие</span>
+    <div class="subtitle">Подсчёт заработанных кварнов</div>
+
+    <div class="arrival-display">
+      <div class="arrival-label">Заработано кварнов</div>
+      <div class="arrival-value" id="arrivalValue">0</div>
     </div>
   </div>
 
