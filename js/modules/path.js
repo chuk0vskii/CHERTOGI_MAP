@@ -129,8 +129,6 @@ export async function generatePathEvents() {
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
-  console.log('📊 common:', common, 'maxRole:', maxRole, 'roleBonus:', roleBonus);
-
   let roleCount = 0;
   let roleDisplay = '0';
   let rollResult = 0;
@@ -152,8 +150,6 @@ export async function generatePathEvents() {
 
   currentEvents = generateEventList(common, roleCount);
   renderEvents(currentEvents);
-  
-  console.log('✅ События сгенерированы, всего:', currentEvents.length);
 }
 
 function generateEventList(commonCount, roleCount) {
@@ -418,7 +414,7 @@ function handleCheck(index, type) {
 export function initPath() {
   if (generateBtn) {
     generateBtn.addEventListener('click', generatePathEvents);
-    console.log('✅ Кнопка "Сгенерировать события" подключена через initPath');
+    console.log('✅ Кнопка "Сгенерировать события" подключена');
   }
 }
 
