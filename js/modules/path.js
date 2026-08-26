@@ -13,6 +13,13 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 
+// Получаем данные из глобальных переменных
+const COMMON_EVENTS = window.COMMON_EVENTS || [];
+const ROLES = window.ROLES || [];
+const ROLE_EVENTS = window.ROLE_EVENTS || {};
+
+// ... остальной код ...
+
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
 // ============================================================
