@@ -8,15 +8,25 @@ console.log('🚀 znaki/init.js загружен');
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('📦 DOM загружен');
   
+  // Проверяем, что все функции определены
+  console.log('🔍 Проверка функций:');
+  console.log('  loadRegions:', typeof window.loadRegions);
+  console.log('  initRegionChangeHandler:', typeof window.initRegionChangeHandler);
+  console.log('  drawSign:', typeof window.drawSign);
+  console.log('  resetSigns:', typeof window.resetSigns);
+  console.log('  generatePathEvents:', typeof window.generatePathEvents);
+  
   // Загружаем регионы
-  if (typeof loadRegions === 'function') {
-    await loadRegions();
+  if (typeof window.loadRegions === 'function') {
+    await window.loadRegions();
     console.log('✅ Регионы загружены');
+  } else {
+    console.error('❌ loadRegions не определена!');
   }
   
   // Инициализируем обработчик смены региона
-  if (typeof initRegionChangeHandler === 'function') {
-    initRegionChangeHandler();
+  if (typeof window.initRegionChangeHandler === 'function') {
+    window.initRegionChangeHandler();
   }
   
   // Навешиваем обработчики на кнопки
@@ -25,34 +35,24 @@ document.addEventListener('DOMContentLoaded', async function() {
   const generateBtn = document.getElementById('generateEventsBtn');
   const signInput = document.getElementById('signInput');
   
-  if (drawBtn) drawBtn.addEventListener('click', drawSign);
-  if (resetBtn) resetBtn.addEventListener('click', resetSigns);
-  if (generateBtn) generateBtn.addEventListener('click', generatePathEvents);
+  if (drawBtn) {
+    drawBtn.addEventListener('click', window.drawSign);
+    console.log('✅ Кнопка "Узнать знак" настроена');
+  }
+  
+  if (resetBtn) {
+    resetBtn.addEventListener('click', window.resetSigns);
+    console.log('✅ Кнопка "Сбросить эффекты" настроена');
+  }
+  
+  if (generateBtn) {
+    generateBtn.addEventListener('click', window.generatePathEvents);
+    console.log('✅ Кнопка "Сгенерировать события" настроена');
+  }
   
   if (signInput) {
     signInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') drawSign();
-    });
-  }
-  
-  // Обработчик смены региона (дополнительный, если не через initRegionChangeHandler)
-  const regionSelect = document.getElementById('regionSelect');
-  if (regionSelect) {
-    regionSelect.addEventListener('change', function() {
-      const signResult = document.getElementById('signResult');
-      const signPlaceholder = document.getElementById('signPlaceholder');
-      if (signResult) signResult.classList.remove('visible');
-      if (signPlaceholder) signPlaceholder.style.display = 'block';
-      
-      const eventsContainer = document.getElementById('eventsContainer');
-      if (eventsContainer) {
-        eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
-      }
-      
-      document.getElementById('commonEventsCount').textContent = '—';
-      document.getElementById('maxRoleEvents').textContent = '—';
-      document.getElementById('roleEventsCount').textContent = '—';
-      document.getElementById('totalEventsCount').textContent = '—';
+      if (e.key === 'Enter') window.drawSign();
     });
   }
   
