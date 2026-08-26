@@ -207,7 +207,6 @@
       font-size: 16px;
     }
 
-    /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
@@ -239,14 +238,11 @@
 <div class="container">
   <h1 class="page-title">Бестиарий</h1>
   <div class="page-subtitle">Существа, населяющие Чертоги</div>
-
-  <!-- ===== РАЗДЕЛЫ ===== -->
   <div id="sections-container">
     <div class="loading">Загрузка бестиария...</div>
   </div>
 </div>
 
-<!-- ===== ПОДКЛЮЧЕНИЕ СКРИПТОВ ===== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
@@ -266,7 +262,7 @@
   // КОНФИГУРАЦИЯ РАЗДЕЛОВ
   // ============================================================
 
-  const SECTIONS = [
+  var SECTIONS = [
     {
       id: 'beasts',
       title: 'Звери',
@@ -307,18 +303,18 @@
     try {
       console.log('Загрузка ' + section.table + '...');
       
-      const { data, error } = await _supabase
+      var result = await _supabase
         .from(section.table)
         .select('*')
         .order('name');
 
-      if (error) {
-        console.error('Ошибка загрузки ' + section.table + ':', error);
+      if (result.error) {
+        console.error('Ошибка загрузки ' + section.table + ':', result.error);
         return [];
       }
 
-      console.log('Загружено ' + (data?.length || 0) + ' записей из ' + section.table);
-      return data || [];
+      console.log('Загружено ' + (result.data ? result.data.length : 0) + ' записей из ' + section.table);
+      return result.data || [];
     } catch (err) {
       console.error('Критическая ошибка ' + section.table + ':', err);
       return [];
@@ -330,7 +326,7 @@
   // ============================================================
 
   function getFieldLabel(field) {
-    const labels = {
+    var labels = {
       'name': 'Название',
       'size': 'Размер',
       'type': 'Тип существа',
@@ -365,64 +361,62 @@
   }
 
   function renderCreatureCard(creature, fields) {
-    const description = creature.description || '';
+    var description = creature.description || '';
 
-    // Основные поля для отображения
-    const mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
-    const statFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+    var mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
+    var statFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
     
-    // Дополнительные поля для развёрнутого вида
-    const extraFields = fields.filter(f => 
-      !mainFields.includes(f) && 
-      !statFields.includes(f) && 
-      f !== 'description' &&
-      creature[f] !== undefined && 
-      creature[f] !== null && 
-      creature[f] !== ''
-    );
-
-    let statsHTML = '';
-    statFields.forEach(f => {
-      if (creature[f] !== undefined && creature[f] !== null) {
-        const label = getFieldLabel(f);
-        statsHTML += `<div class="stat"><strong>${label}</strong> ${creature[f]}</div>`;
+    var extraFields = [];
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (mainFields.indexOf(f) === -1 && statFields.indexOf(f) === -1 && f !== 'description' && creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
+        extraFields.push(f);
       }
-    });
-
-    let extraHTML = '';
-    if (extraFields.length > 0) {
-      extraHTML = `
-        <button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button>
-        <div class="stats-full">
-          ${extraFields.map(f => {
-            const label = getFieldLabel(f);
-            const value = creature[f] || '—';
-            const cls = getFieldClass(f);
-            return `<div class="stat-row"><span class="label">${label}:</span> <span class="value ${cls}">${value}</span></div>`;
-          }).join('')}
-        </div>
-      `;
     }
 
-    return `
-      <div class="creature-card" data-id="${creature.id}">
-        <div class="creature-name">${creature.name || 'Без имени'}</div>
-        <div class="creature-meta">
-          ${creature.size ? '<span>' + creature.size + '</span>' : ''}
-          ${creature.type ? '<span>' + creature.type + '</span>' : ''}
-          ${creature.armor_class ? '<span>КД ' + creature.armor_class + '</span>' : ''}
-          ${creature.hit_points ? '<span>Хиты ' + creature.hit_points + '</span>' : ''}
-          ${creature.speed ? '<span>Скорость ' + creature.speed + '</span>' : ''}
-        </div>
-        ${description ? '<div class="creature-description">' + description + '</div>' : ''}
-        ${statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : ''}
-        ${extraHTML}
-      </div>
-    `;
+    var statsHTML = '';
+    for (var j = 0; j < statFields.length; j++) {
+      var f = statFields[j];
+      if (creature[f] !== undefined && creature[f] !== null) {
+        var label = getFieldLabel(f);
+        statsHTML += '<div class="stat"><strong>' + label + '</strong> ' + creature[f] + '</div>';
+      }
+    }
+
+    var extraHTML = '';
+    if (extraFields.length > 0) {
+      var extraRows = '';
+      for (var k = 0; k < extraFields.length; k++) {
+        var f = extraFields[k];
+        var label = getFieldLabel(f);
+        var value = creature[f] || '—';
+        var cls = getFieldClass(f);
+        extraRows += '<div class="stat-row"><span class="label">' + label + ':</span> <span class="value ' + cls + '">' + value + '</span></div>';
+      }
+      extraHTML = '<button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button><div class="stats-full">' + extraRows + '</div>';
+    }
+
+    var metaHTML = '';
+    if (creature.size) metaHTML += '<span>' + creature.size + '</span>';
+    if (creature.type) metaHTML += '<span>' + creature.type + '</span>';
+    if (creature.armor_class) metaHTML += '<span>КД ' + creature.armor_class + '</span>';
+    if (creature.hit_points) metaHTML += '<span>Хиты ' + creature.hit_points + '</span>';
+    if (creature.speed) metaHTML += '<span>Скорость ' + creature.speed + '</span>';
+
+    var descHTML = description ? '<div class="creature-description">' + description + '</div>' : '';
+    var statsContainerHTML = statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : '';
+
+    return '<div class="creature-card" data-id="' + (creature.id || '') + '">' +
+      '<div class="creature-name">' + (creature.name || 'Без имени') + '</div>' +
+      (metaHTML ? '<div class="creature-meta">' + metaHTML + '</div>' : '') +
+      descHTML +
+      statsContainerHTML +
+      extraHTML +
+    '</div>';
   }
 
   function toggleStats(btn) {
-    const statsFull = btn.nextElementSibling;
+    var statsFull = btn.nextElementSibling;
     if (statsFull && statsFull.classList.contains('stats-full')) {
       statsFull.classList.toggle('open');
       btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
@@ -430,29 +424,29 @@
   }
 
   function renderSection(section, creatures) {
-    const sectionDiv = document.createElement('div');
+    var sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
     sectionDiv.id = 'section-' + section.id;
 
-    let contentHTML = '';
+    var contentHTML = '';
     if (creatures.length === 0) {
       contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
     } else {
-      contentHTML = creatures.map(function(c) { return renderCreatureCard(c, section.fields); }).join('');
+      for (var i = 0; i < creatures.length; i++) {
+        contentHTML += renderCreatureCard(creatures[i], section.fields);
+      }
     }
 
-    sectionDiv.innerHTML = `
-      <div class="section-header" onclick="toggleSection('${section.id}')">
-        <span class="title">${section.title}</span>
-        <span style="display:flex; align-items:center; gap:12px;">
-          <span class="count">${creatures.length} существ</span>
-          <span class="arrow" id="arrow-${section.id}">▼</span>
-        </span>
-      </div>
-      <div class="section-content" id="content-${section.id}">
-        ${contentHTML}
-      </div>
-    `;
+    sectionDiv.innerHTML = '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
+      '<span class="title">' + section.title + '</span>' +
+      '<span style="display:flex; align-items:center; gap:12px;">' +
+        '<span class="count">' + creatures.length + ' существ</span>' +
+        '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
+      '</span>' +
+    '</div>' +
+    '<div class="section-content" id="content-' + section.id + '">' +
+      contentHTML +
+    '</div>';
 
     return sectionDiv;
   }
@@ -508,11 +502,9 @@
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
   }
 
-  // Делаем функции глобальными для onclick
   window.toggleSection = toggleSection;
   window.toggleStats = toggleStats;
 
-  // Запускаем
   document.addEventListener('DOMContentLoaded', init);
 </script>
 
