@@ -224,33 +224,63 @@
 <div class="container">
   <h1 class="page-title">Бестиарий</h1>
   <div class="page-subtitle">Существа, населяющие Чертоги</div>
-  <div id="sections-container"></div>
+  <div id="sections-container">
+    <div class="loading">Загрузка бестиария...</div>
+  </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
   // ============================================================
-  // ТЕСТОВЫЕ ДАННЫЕ ДЛЯ БЕСТИАРИЯ
+  // КОНФИГУРАЦИЯ SUPABASE
   // ============================================================
 
-  var TEST_DATA = {
-    beasts: [
-      { id: 1, name: 'Кенеф', size: 'Средний', type: 'Зверь', armor_class: 13, hit_points: 22, speed: '40 футов', strength: 8, dexterity: 18, constitution: 12, intelligence: 4, wisdom: 14, charisma: 6, skills: 'Восприятие +6, Скрытность +8', senses: 'Пассивная Внимательность 16', abilities: 'Особый слух: Преимущество на проверки Внимательности, связанные со слухом. Стайная тактика.', actions: 'Укус: +6, 1к4+3. Ядовитый плевок: +6, спасбросок Ловкости Сл 13 или ослепление.', description: 'Кенеф — хищник средних размеров, напоминающий помесь лисицы и пустынной ящерицы.' },
-      { id: 2, name: 'Сагун', size: 'Средний', type: 'Зверь', armor_class: 15, hit_points: 40, speed: '40 футов, лазание 30 футов', strength: 14, dexterity: 18, constitution: 14, intelligence: 4, wisdom: 12, charisma: 6, skills: 'Восприятие +5, Скрытность +8', senses: 'Тёмное зрение 60 футов, пассивная Внимательность 15', abilities: 'Планирующий охотник: Преимущество при атаке с высоты.', actions: 'Укус: +6, 1к10+4. Кровососание.', description: 'Сагун — мускулистый шакал с густой темной шерстью.' },
-      { id: 3, name: 'Марчик', size: 'Средний', type: 'Зверь', armor_class: 14, hit_points: 35, speed: '40 футов', strength: 12, dexterity: 16, constitution: 12, intelligence: 4, wisdom: 12, charisma: 8, skills: 'Восприятие +5', senses: 'Пассивная Внимательность 15', abilities: 'Хоровой смех: Могут испугать существ.', actions: 'Укус: +5, 1к6+3.', description: 'Марчик — пятнистый шакал с короткой грубой шерстью.' }
-    ],
-    great_beasts: [
-      { id: 1, name: 'Газур - владыка Снегов', size: 'Гигантский', type: 'Великий зверь', armor_class: 20, hit_points: 165, speed: '50 футов', strength: 30, dexterity: 10, constitution: 28, intelligence: 8, wisdom: 16, charisma: 14, damage_resistances: 'холодный', damage_vulnerabilities: 'огненный', condition_immunities: 'истощение', abilities: 'Ледяная Аура, Сверхмассивный', actions: 'Мультиатака: рогами. Топот Ледника.', description: 'Исполинский бизон с шерстью белее снега и рогами из чистейшего льда.' }
-    ],
-    monsters: [
-      { id: 1, name: 'Кан', size: 'Средний', type: 'Монстр', armor_class: 13, hit_points: 35, speed: '45 футов', strength: 15, dexterity: 16, constitution: 14, intelligence: 10, wisdom: 12, charisma: 6, skills: 'Восприятие +3', senses: 'Пассивное Восприятие 13', abilities: 'Тактика стаи, Глаз ночи', actions: 'Мультиатака: укус и две когтями.', description: 'Кан — двуногий ящер с клювом, отличающийся красными перьями у самцов.' }
-    ],
-    humanoids: [
-      { id: 1, name: 'Хунохой воин', size: 'Средний', type: 'Гуманоид', armor_class: 15, hit_points: 30, speed: '30 футов', strength: 14, dexterity: 16, constitution: 14, intelligence: 10, wisdom: 12, charisma: 8, skills: 'Восприятие +3, Выживание +3', senses: 'Тёмное зрение 60 футов', abilities: 'Стайная тактика', actions: 'Мультиатака: когти и укус.', description: 'Хунохой — низкорослые гуманоиды, напоминающие гиен.' }
-    ],
-    veil_aberrations: [
-      { id: 1, name: 'Нинавеш Грани', size: 'Средний', type: 'Аберрация', armor_class: 16, hit_points: 125, speed: '30 футов, ползая 30 футов', strength: 18, dexterity: 22, constitution: 14, intelligence: 14, wisdom: 14, charisma: 10, abilities: 'Рука Изира, Хаос Вуали', actions: 'Мультиатака: 4 атаки крюком.', description: 'Вуаль полностью заполняет существо и оно становится лишь оболочкой для Изира.' }
-    ]
-  };
+  var SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var _supabase = supabaseClient;
+
+  console.log('Supabase подключён');
+
+  // ============================================================
+  // КОНФИГУРАЦИЯ РАЗДЕЛОВ
+  // ============================================================
+
+  var SECTIONS = [
+    { id: 'beasts', title: 'Звери', table: 'beasts' },
+    { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts_extended' },
+    { id: 'monsters', title: 'Монстры', table: 'monsters' },
+    { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
+    { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' }
+  ];
+
+  // ============================================================
+  // ЗАГРУЗКА ДАННЫХ
+  // ============================================================
+
+  async function loadSection(section) {
+    try {
+      console.log('Загрузка ' + section.table + '...');
+      
+      var result = await _supabase
+        .from(section.table)
+        .select('*')
+        .order('name');
+
+      if (result.error) {
+        console.error('Ошибка загрузки ' + section.table + ':', result.error);
+        return [];
+      }
+
+      console.log('Загружено ' + (result.data ? result.data.length : 0) + ' записей из ' + section.table);
+      return result.data || [];
+    } catch (err) {
+      console.error('Критическая ошибка ' + section.table + ':', err);
+      return [];
+    }
+  }
 
   // ============================================================
   // ОТРИСОВКА
@@ -337,10 +367,10 @@
     }
   }
 
-  function renderSection(title, creatures, sectionId) {
+  function renderSection(section, creatures) {
     var sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
-    sectionDiv.id = 'section-' + sectionId;
+    sectionDiv.id = 'section-' + section.id;
 
     var contentHTML = '';
     if (creatures.length === 0) {
@@ -352,14 +382,14 @@
     }
 
     sectionDiv.innerHTML = 
-      '<div class="section-header" onclick="toggleSection(\'' + sectionId + '\')">' +
-        '<span class="title">' + title + '</span>' +
+      '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
+        '<span class="title">' + section.title + '</span>' +
         '<span style="display:flex; align-items:center; gap:12px;">' +
           '<span class="count">' + creatures.length + ' существ</span>' +
-          '<span class="arrow" id="arrow-' + sectionId + '">▼</span>' +
+          '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
         '</span>' +
       '</div>' +
-      '<div class="section-content" id="content-' + sectionId + '">' +
+      '<div class="section-content" id="content-' + section.id + '">' +
         contentHTML +
       '</div>';
 
@@ -379,41 +409,42 @@
   // ИНИЦИАЛИЗАЦИЯ
   // ============================================================
 
-  function init() {
-    console.log('📖 Загрузка бестиария (тестовые данные)...');
+  async function init() {
+    console.log('Загрузка бестиария...');
 
     var container = document.getElementById('sections-container');
-    container.innerHTML = '';
+    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
 
-    var sections = [
-      { id: 'beasts', title: 'Звери', data: TEST_DATA.beasts },
-      { id: 'great_beasts', title: 'Великие странствующие звери', data: TEST_DATA.great_beasts },
-      { id: 'monsters', title: 'Монстры', data: TEST_DATA.monsters },
-      { id: 'humanoids', title: 'Гуманоиды', data: TEST_DATA.humanoids },
-      { id: 'veil_aberrations', title: 'Аберрации Вуали', data: TEST_DATA.veil_aberrations }
-    ];
-
-    var fragment = document.createDocumentFragment();
     var totalCreatures = 0;
+    var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < sections.length; i++) {
-      var section = sections[i];
-      totalCreatures += section.data.length;
-      var sectionEl = renderSection(section.title, section.data, section.id);
+    for (var i = 0; i < SECTIONS.length; i++) {
+      var section = SECTIONS[i];
+      var creatures = await loadSection(section);
+      totalCreatures += creatures.length;
+      var sectionEl = renderSection(section, creatures);
       fragment.appendChild(sectionEl);
     }
 
+    container.innerHTML = '';
     container.appendChild(fragment);
 
-    // Открываем первый раздел
-    var firstContent = document.getElementById('content-beasts');
-    if (firstContent) {
-      firstContent.classList.add('open');
-      var arrow = document.getElementById('arrow-beasts');
-      if (arrow) arrow.classList.add('open');
+    if (totalCreatures === 0) {
+      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
 
-    console.log('✅ Бестиарий загружен (' + totalCreatures + ' существ)');
+    // Открываем первый раздел с данными
+    for (var j = 0; j < SECTIONS.length; j++) {
+      var content = document.getElementById('content-' + SECTIONS[j].id);
+      if (content && content.querySelector('.creature-card')) {
+        content.classList.add('open');
+        var arrow = document.getElementById('arrow-' + SECTIONS[j].id);
+        if (arrow) arrow.classList.add('open');
+        break;
+      }
+    }
+
+    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
   }
 
   window.toggleSection = toggleSection;
