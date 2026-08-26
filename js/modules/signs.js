@@ -3,7 +3,7 @@
 // ============================================================
 
 // _supabase доступен глобально из config.js
-
+console.log('📦 modules/signs.js загружен');
 const signInput = document.getElementById('signInput');
 const drawBtn = document.getElementById('drawSignBtn');
 const resetSignsBtn = document.getElementById('resetSignsBtn');
@@ -118,3 +118,6 @@ function resetSigns() {
 // Делаем глобальными
 window.drawSign = drawSign;
 window.resetSigns = resetSigns;
+window.drawSign = drawSign;
+window.resetSigns = resetSigns;
+console.log('✅ drawSign и resetSigns добавлены в window');
