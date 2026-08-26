@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Огненные чертоги — Бестиарий</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0d0d1a;
+      color: #e0d5c0;
+      font-family: 'Philosopher', 'Arial', sans-serif;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    /* ===== ЗАГОЛОВОК ===== */
+    .page-title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 42px;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+    }
+    .page-subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ===== РАЗДЕЛЫ ===== */
+    .section {
+      margin-bottom: 40px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .section-header:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: #4a0e0e;
+    }
+    .section-header .title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 24px;
+      color: #ffffff;
+      letter-spacing: 2px;
+    }
+    .section-header .count {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .section-header .arrow {
+      font-size: 18px;
+      color: #ffd700;
+      transition: transform 0.3s ease;
+    }
+    .section-header .arrow.open {
+      transform: rotate(180deg);
+    }
+
+    .section-content {
+      display: none;
+      padding: 20px 0;
+      gap: 16px;
+      flex-direction: column;
+    }
+    .section-content.open {
+      display: flex;
+    }
+
+    /* ===== КАРТОЧКА СУЩЕСТВА ===== */
+    .creature-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 20px 24px;
+      transition: all 0.3s ease;
+    }
+    .creature-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 215, 0, 0.15);
+    }
+    .creature-card .creature-name {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 22px;
+      color: #ffd700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .creature-card .creature-meta {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 8px;
+    }
+    .creature-card .creature-meta span {
+      margin-right: 16px;
+    }
+    .creature-card .creature-description {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #ccc;
+      margin-bottom: 10px;
+    }
+    .creature-card .creature-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 6px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: 8px;
+    }
+    .creature-card .creature-stats .stat {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .creature-card .creature-stats .stat strong {
+      color: #ffffff;
+    }
+    .creature-card .btn-toggle-stats {
+      background: transparent;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: rgba(255, 215, 0, 0.6);
+      padding: 4px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Philosopher', sans-serif;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      margin-top: 6px;
+    }
+    .creature-card .btn-toggle-stats:hover {
+      background: rgba(255, 215, 0, 0.05);
+      color: #ffd700;
+      border-color: rgba(255, 215, 0, 0.4);
+    }
+    .creature-card .stats-full {
+      display: none;
+      margin-top: 10px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      border-left: 2px solid rgba(255, 215, 0, 0.2);
+    }
+    .creature-card .stats-full.open {
+      display: block;
+    }
+    .creature-card .stats-full .stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      padding: 2px 0;
+    }
+    .creature-card .stats-full .stat-row .label {
+      color: #888;
+      min-width: 100px;
+      font-weight: bold;
+    }
+    .creature-card .stats-full .stat-row .value {
+      color: #e0d5c0;
+    }
+    .creature-card .stats-full .stat-row .resist {
+      color: #51cf66;
+    }
+    .creature-card .stats-full .stat-row .vulnerable {
+      color: #ff6b6b;
+    }
+    .creature-card .stats-full .stat-row .immune {
+      color: #ffd700;
+    }
+
+    .loading {
+      color: rgba(255, 255, 255, 0.3);
+      text-align: center;
+      padding: 20px 0;
+    }
+    .no-data {
+      color: rgba(255, 255, 255, 0.15);
+      text-align: center;
+      padding: 20px 0;
+      font-size: 16px;
+    }
+
+    /* ===== АДАПТАЦИЯ ===== */
+    @media (max-width: 768px) {
+      .container { padding: 80px 16px 30px; }
+      .page-title { font-size: 30px; }
+      .section-header .title { font-size: 20px; }
+      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 70px 12px 20px; }
+      .page-title { font-size: 24px; }
+      .section-header .title { font-size: 17px; }
+      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- БАННЕР -->
+<div class="top-banner">
+  <span class="title">Огненные чертоги</span>
+  <div class="nav-links">
+    <a href="index.html">Карта</a>
+    <a href="znaki.html">В путь</a>
+    <a href="bestiary.html" class="active">Бестиарий</a>
+    <a href="tree.html">Древо смерти</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1 class="page-title">Бестиарий</h1>
+  <div class="page-subtitle">Существа, населяющие Чертоги</div>
+
+  <!-- ===== РАЗДЕЛЫ ===== -->
+  <div id="sections-container">
+    <div class="loading">Загрузка бестиария...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+
+<script>
+  // ============================================================
+  // КОНФИГУРАЦИЯ РАЗДЕЛОВ
+  // ============================================================
+
+  const SECTIONS = [
+    {
+      id: 'beasts',
+      title: 'Звери',
+      icon: '🐾',
+      table: 'beasts',
+      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+    },
+    {
+      id: 'great_beasts',
+      title: 'Великие странствующие звери',
+      icon: '🐉',
+      table: 'great_beasts_extended',
+      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description', 'treasure']
+    },
+    {
+      id: 'monsters',
+      title: 'Монстры',
+      icon: '👹',
+      table: 'monsters',
+      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+    },
+    {
+      id: 'humanoids',
+      title: 'Гуманоиды',
+      icon: '🧝',
+      table: 'humanoids',
+      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+    },
+    {
+      id: 'veil_aberrations',
+      title: 'Аберрации Вуали',
+      icon: '👻',
+      table: 'veil_aberrations',
+      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+    }
+  ];
+
+  // ============================================================
+  // ЗАГРУЗКА ДАННЫХ
+  // ============================================================
+
+  async function loadSection(section) {
+    try {
+      const { data, error } = await _supabase
+        .from(section.table)
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error(`❌ Ошибка загрузки ${section.table}:`, error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error(`❌ Критическая ошибка ${section.table}:`, err);
+      return [];
+    }
+  }
+
+  // ============================================================
+  // ОТРИСОВКА
+  // ============================================================
+
+  function getFieldLabel(field) {
+    const labels = {
+      'name': 'Название',
+      'size': 'Размер',
+      'type': 'Тип существа',
+      'armor_class': 'КД',
+      'hit_points': 'Хиты',
+      'speed': 'Скорость',
+      'strength': 'Сил',
+      'dexterity': 'Лов',
+      'constitution': 'Тел',
+      'intelligence': 'Инт',
+      'wisdom': 'Мдр',
+      'charisma': 'Хур',
+      'skills': 'Навыки',
+      'senses': 'Чувства',
+      'proficiency_bonus': 'Бонус мастерства',
+      'damage_resistances': 'Сопротивление к урону',
+      'damage_vulnerabilities': 'Уязвимость к урону',
+      'condition_immunities': 'Иммунитет к состоянию',
+      'abilities': 'Умения',
+      'actions': 'ДЕЙСТВИЯ',
+      'description': 'Описание',
+      'treasure': 'Сокровище'
+    };
+    return labels[field] || field;
+  }
+
+  function getFieldClass(field) {
+    if (field === 'damage_resistances') return 'resist';
+    if (field === 'damage_vulnerabilities') return 'vulnerable';
+    if (field === 'condition_immunities') return 'immune';
+    return '';
+  }
+
+  function renderCreatureCard(creature, fields) {
+    // Основные поля для быстрого отображения
+    const mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
+    const mainData = {};
+    mainFields.forEach(f => {
+      if (creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
+        mainData[f] = creature[f];
+      }
+    });
+
+    // Собираем все остальные поля для развёрнутого вида
+    const extraFields = fields.filter(f => 
+      !mainFields.includes(f) && 
+      creature[f] !== undefined && 
+      creature[f] !== null && 
+      creature[f] !== ''
+    );
+
+    // Описание
+    const description = creature.description || '';
+
+    return `
+      <div class="creature-card" data-id="${creature.id}">
+        <div class="creature-name">${creature.name || 'Без имени'}</div>
+        <div class="creature-meta">
+          ${creature.size ? `<span>📏 ${creature.size}</span>` : ''}
+          ${creature.type ? `<span>🏷️ ${creature.type}</span>` : ''}
+          ${creature.armor_class ? `<span>🛡️ КД ${creature.armor_class}</span>` : ''}
+          ${creature.hit_points ? `<span>❤️ ${creature.hit_points}</span>` : ''}
+          ${creature.speed ? `<span>💨 ${creature.speed}</span>` : ''}
+        </div>
+        ${description ? `<div class="creature-description">${description}</div>` : ''}
+        <div class="creature-stats">
+          ${creature.strength !== undefined && creature.strength !== null ? `<div class="stat"><strong>Сил</strong> ${creature.strength}</div>` : ''}
+          ${creature.dexterity !== undefined && creature.dexterity !== null ? `<div class="stat"><strong>Лов</strong> ${creature.dexterity}</div>` : ''}
+          ${creature.constitution !== undefined && creature.constitution !== null ? `<div class="stat"><strong>Тел</strong> ${creature.constitution}</div>` : ''}
+          ${creature.intelligence !== undefined && creature.intelligence !== null ? `<div class="stat"><strong>Инт</strong> ${creature.intelligence}</div>` : ''}
+          ${creature.wisdom !== undefined && creature.wisdom !== null ? `<div class="stat"><strong>Мдр</strong> ${creature.wisdom}</div>` : ''}
+          ${creature.charisma !== undefined && creature.charisma !== null ? `<div class="stat"><strong>Хур</strong> ${creature.charisma}</div>` : ''}
+        </div>
+        ${extraFields.length > 0 ? `
+          <button class="btn-toggle-stats" onclick="toggleStats(this)">📊 Показать все характеристики</button>
+          <div class="stats-full">
+            ${extraFields.map(f => {
+              const label = getFieldLabel(f);
+              const value = creature[f] || '—';
+              const cls = getFieldClass(f);
+              return `<div class="stat-row"><span class="label">${label}:</span> <span class="value ${cls}">${value}</span></div>`;
+            }).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function toggleStats(btn) {
+    const statsFull = btn.nextElementSibling;
+    if (statsFull && statsFull.classList.contains('stats-full')) {
+      statsFull.classList.toggle('open');
+      btn.textContent = statsFull.classList.contains('open') ? '📊 Скрыть характеристики' : '📊 Показать все характеристики';
+    }
+  }
+
+  function renderSection(section, creatures) {
+    const container = document.getElementById('sections-container');
+    
+    // Удаляем загрузку
+    const loading = container.querySelector('.loading');
+    if (loading) loading.remove();
+    
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'section';
+    sectionDiv.id = `section-${section.id}`;
+
+    let contentHTML = '';
+    if (creatures.length === 0) {
+      contentHTML = `<div class="no-data">Нет существ в этом разделе</div>`;
+    } else {
+      contentHTML = creatures.map(c => renderCreatureCard(c, section.fields)).join('');
+    }
+
+    sectionDiv.innerHTML = `
+      <div class="section-header" onclick="toggleSection('${section.id}')">
+        <span class="title">${section.icon} ${section.title}</span>
+        <span style="display:flex; align-items:center; gap:12px;">
+          <span class="count">${creatures.length} существ</span>
+          <span class="arrow" id="arrow-${section.id}">▼</span>
+        </span>
+      </div>
+      <div class="section-content" id="content-${section.id}">
+        ${contentHTML}
+      </div>
+    `;
+
+    container.appendChild(sectionDiv);
+  }
+
+  function toggleSection(sectionId) {
+    const content = document.getElementById(`content-${sectionId}`);
+    const arrow = document.getElementById(`arrow-${sectionId}`);
+    if (content) {
+      content.classList.toggle('open');
+      if (arrow) arrow.classList.toggle('open');
+    }
+  }
+
+  // ============================================================
+  // ИНИЦИАЛИЗАЦИЯ
+  // ============================================================
+
+  async function init() {
+    console.log('📖 Загрузка бестиария...');
+
+    const container = document.getElementById('sections-container');
+    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
+
+    let hasData = false;
+
+    for (const section of SECTIONS) {
+      const creatures = await loadSection(section);
+      if (creatures.length > 0) hasData = true;
+      renderSection(section, creatures);
+    }
+
+    // Если нет данных ни в одном разделе
+    if (!hasData) {
+      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
+    }
+
+    // По умолчанию открываем первый раздел с данными
+    for (const section of SECTIONS) {
+      const content = document.getElementById(`content-${section.id}`);
+      if (content && content.querySelector('.creature-card')) {
+        content.classList.add('open');
+        const arrow = document.getElementById(`arrow-${section.id}`);
+        if (arrow) arrow.classList.add('open');
+        break;
+      }
+    }
+
+    console.log('✅ Бестиарий загружен');
+  }
+
+  // Делаем toggleSection глобальной для onclick
+  window.toggleSection = toggleSection;
+  window.toggleStats = toggleStats;
+
+  // Запускаем
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
