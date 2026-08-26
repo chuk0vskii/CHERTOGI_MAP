@@ -21,6 +21,8 @@ const ROLE_EVENTS = {
 };
 
 // Делаем глобальными
+// Делаем глобальными
 window.COMMON_EVENTS = COMMON_EVENTS;
 window.ROLES = ROLES;
 window.ROLE_EVENTS = ROLE_EVENTS;
+console.log('✅ EVENTS загружены, общих событий:', COMMON_EVENTS.length);
