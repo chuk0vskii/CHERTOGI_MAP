@@ -2,11 +2,10 @@
 // ФАЗА ЗНАКИ
 // ============================================================
 
-// _supabase доступен глобально из config.js
-console.log('📦 modules/signs.js загружен');
+import { SIGNS } from '../data/signs.js';
+import { getRegionId, addSignMod, resetSignMod, updateDifficulty } from './region.js';
+
 const signInput = document.getElementById('signInput');
-const drawBtn = document.getElementById('drawSignBtn');
-const resetSignsBtn = document.getElementById('resetSignsBtn');
 const signResult = document.getElementById('signResult');
 const signPlaceholder = document.getElementById('signPlaceholder');
 const signTitle = document.getElementById('signTitle');
@@ -20,8 +19,8 @@ let signHistory = [];
 // БРОСОК ЗНАКА
 // ============================================================
 
-function drawSign() {
-  const regionId = window.getRegionId ? window.getRegionId() : null;
+export function drawSign() {
+  const regionId = getRegionId();
   console.log('🎯 drawSign вызван, regionId:', regionId);
   
   if (regionId === null || regionId === undefined) {
@@ -38,13 +37,13 @@ function drawSign() {
   let index = value;
   if (index > 20) index = 20;
 
-  const sign = window.SIGNS ? window.SIGNS[index] : null;
+  const sign = SIGNS[index];
   if (!sign) {
     alert('Знак не найден. Попробуйте другое число.');
     return;
   }
 
-  if (window.addSignMod) window.addSignMod(sign.mod);
+  addSignMod(sign.mod);
   signHistory.push({ index, title: sign.title, mod: sign.mod });
 
   signTitle.textContent = sign.title;
@@ -91,16 +90,16 @@ function drawSign() {
 // СБРОС
 // ============================================================
 
-function resetSigns() {
-  const regionId = window.getRegionId ? window.getRegionId() : null;
+export function resetSigns() {
+  const regionId = getRegionId();
   if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край');
     return;
   }
   
-  if (window.resetSignMod) window.resetSignMod();
+  resetSignMod();
   signHistory = [];
-  if (window.updateDifficulty) window.updateDifficulty();
+  updateDifficulty();
   
   signResult.classList.remove('visible');
   signPlaceholder.style.display = 'block';
@@ -114,10 +113,3 @@ function resetSigns() {
     signPlaceholder.style.display = 'block';
   }, 2000);
 }
-
-// Делаем глобальными
-window.drawSign = drawSign;
-window.resetSigns = resetSigns;
-window.drawSign = drawSign;
-window.resetSigns = resetSigns;
-console.log('✅ drawSign и resetSigns добавлены в window');
