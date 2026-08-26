@@ -178,3 +178,12 @@ export function initRegionChangeHandler() {
     }
   });
 }
+
+// ============================================================
+// ЭКСПОРТ ВСЕХ ФУНКЦИЙ (включая updateDifficulty и updateArrivalDisplay)
+// ============================================================
+
+export { 
+  updateDifficulty,
+  updateArrivalDisplay
+};
