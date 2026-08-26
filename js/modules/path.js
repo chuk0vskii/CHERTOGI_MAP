@@ -447,3 +447,6 @@ window.getRandomInt = getRandomInt;
 window.getEventResult = getEventResult;
 window.getResultLabel = getResultLabel;
 window.getResultClass = getResultClass;
+// Делаем функции глобальными
+window.generatePathEvents = generatePathEvents;
+window.rollTable = rollTable;
