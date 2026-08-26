@@ -1,5 +1,5 @@
 // ============================================================
-// УПРАВЛЕНИЕ РЕГИОНОМ И СЛОЖНОСТЬЮ
+// УПРАВЛЕНИЕ РЕГИОНОМ, СЛОЖНОСТЬЮ И ПРИБЫТИЕМ
 // ============================================================
 
 import { _supabase } from '../config-module.js';
@@ -7,10 +7,13 @@ import { _supabase } from '../config-module.js';
 let currentRegionId = null;
 let baseDifficulty = 0;
 let currentSignMod = 0;
+let arrivalBonus = 0;           // Накопленный бонус прибытия из событий
 
 const regionSelect = document.getElementById('regionSelect');
 const difficultyDisplay = document.getElementById('difficultyValue');
 const pathDifficultyDisplay = document.getElementById('pathDifficultyDisplay');
+const arrivalDisplay = document.getElementById('arrivalValue');
+const arrivalTotalDisplay = document.getElementById('arrivalTotal');
 
 // ============================================================
 // ОБНОВЛЕНИЕ СЛОЖНОСТИ
@@ -31,53 +34,68 @@ export function updateDifficulty() {
     const color = currentSignMod > 0 ? '#ff6b6b' : currentSignMod < 0 ? '#51cf66' : '#ffd700';
     pathDifficultyDisplay.style.color = color;
   }
+  
+  updateArrivalDisplay();
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ПРИБЫТИЯ
+// ============================================================
+
+export function updateArrivalDisplay() {
+  if (arrivalDisplay) {
+    arrivalDisplay.textContent = arrivalBonus;
+    const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
+    arrivalDisplay.style.color = color;
+  }
+  if (arrivalTotalDisplay) {
+    arrivalTotalDisplay.textContent = arrivalBonus;
+    const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
+    arrivalTotalDisplay.style.color = color;
+  }
 }
 
 // ============================================================
 // ГЕТТЕРЫ И СЕТТЕРЫ
 // ============================================================
 
-export function getRegionId() { 
-  console.log('🔍 getRegionId вызван, возвращает:', currentRegionId);
-  return currentRegionId; 
-}
-
-export function setRegionId(id) { 
-  console.log('📌 setRegionId установлен:', id);
-  currentRegionId = id; 
-}
+export function getRegionId() { return currentRegionId; }
+export function setRegionId(id) { currentRegionId = id; }
 
 export function getBaseDifficulty() { return baseDifficulty; }
-export function setBaseDifficulty(val) { 
-  console.log('📊 Базовая сложность установлена:', val);
-  baseDifficulty = val; 
-  updateDifficulty(); 
-}
+export function setBaseDifficulty(val) { baseDifficulty = val; updateDifficulty(); }
 
 export function getCurrentSignMod() { return currentSignMod; }
 export function setCurrentSignMod(val) { currentSignMod = val; updateDifficulty(); }
 
-export function addSignMod(val) { 
-  console.log('➕ Добавлен модификатор:', val);
-  currentSignMod += val; 
-  updateDifficulty(); 
-}
+export function addSignMod(val) { currentSignMod += val; updateDifficulty(); }
+export function resetSignMod() { currentSignMod = 0; updateDifficulty(); }
 
-export function resetSignMod() { 
-  console.log('🔄 Сброс модификаторов');
-  currentSignMod = 0; 
-  updateDifficulty(); 
+// ============================================================
+// УПРАВЛЕНИЕ ПРИБЫТИЕМ (КВАРНЫ)
+// ============================================================
+
+export function getArrivalBonus() { return arrivalBonus; }
+export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(); }
+export function addArrivalBonus(val) { 
+  arrivalBonus += val; 
+  updateArrivalDisplay();
+  console.log(`🏆 Кварны прибытия изменены: ${arrivalBonus}`);
+}
+export function resetArrivalBonus() { 
+  arrivalBonus = 0; 
+  updateArrivalDisplay();
 }
 
 // ============================================================
-// ЗАГРУЗКА РЕГИОНОВ ИЗ SUPABASE
+// ЗАГРУЗКА РЕГИОНОВ
 // ============================================================
 
 export async function loadRegions() {
   console.log('🔄 Загрузка регионов...');
   
   if (!regionSelect) {
-    console.error('❌ Элемент regionSelect не найден!');
+    console.error('❌ regionSelect не найден');
     return;
   }
   
@@ -95,7 +113,6 @@ export async function loadRegions() {
     }
 
     if (!data || data.length === 0) {
-      console.warn('⚠️ Нет открытых регионов');
       regionSelect.innerHTML = '<option value="">— Нет доступных краев —</option>';
       return;
     }
@@ -123,14 +140,10 @@ export async function loadRegions() {
 // ============================================================
 
 export function initRegionChangeHandler() {
-  if (!regionSelect) {
-    console.error('❌ regionSelect не найден в initRegionChangeHandler');
-    return;
-  }
+  if (!regionSelect) return;
   
   regionSelect.addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];
-    console.log('📌 Событие change, выбран:', this.value, selected);
     
     if (this.value && this.value !== '') {
       const id = parseInt(this.value);
@@ -141,14 +154,14 @@ export function initRegionChangeHandler() {
       setRegionId(id);
       setBaseDifficulty(difficulty);
       resetSignMod();
+      resetArrivalBonus();  // Сбрасываем кварны при смене региона
       
-      // Сбрасываем знаки
+      // Сбрасываем UI
       const signResult = document.getElementById('signResult');
       const signPlaceholder = document.getElementById('signPlaceholder');
       if (signResult) signResult.classList.remove('visible');
       if (signPlaceholder) signPlaceholder.style.display = 'block';
       
-      // Сбрасываем события
       const eventsContainer = document.getElementById('eventsContainer');
       if (eventsContainer) {
         eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
@@ -163,6 +176,8 @@ export function initRegionChangeHandler() {
       setRegionId(null);
       setBaseDifficulty(0);
       resetSignMod();
+      resetArrivalBonus();
+      
       if (difficultyDisplay) {
         difficultyDisplay.textContent = '—';
         difficultyDisplay.style.color = '#ffd700';
@@ -170,6 +185,14 @@ export function initRegionChangeHandler() {
       if (pathDifficultyDisplay) {
         pathDifficultyDisplay.textContent = '—';
         pathDifficultyDisplay.style.color = '#ffd700';
+      }
+      if (arrivalDisplay) {
+        arrivalDisplay.textContent = '0';
+        arrivalDisplay.style.color = '#ffd700';
+      }
+      if (arrivalTotalDisplay) {
+        arrivalTotalDisplay.textContent = '0';
+        arrivalTotalDisplay.style.color = '#ffd700';
       }
     }
   });
