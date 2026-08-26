@@ -69,14 +69,23 @@ export function drawSign() {
   
   signMeta.innerHTML = metaHtml;
 
-  signImage.innerHTML = '500×500<br>заглушка';
-  signImage.style.background = '#4a0e0e';
-  signImage.style.display = 'flex';
-  signImage.style.alignItems = 'center';
-  signImage.style.justifyContent = 'center';
-  signImage.style.color = 'rgba(255,255,255,0.2)';
-  signImage.style.fontSize = '14px';
-  signImage.style.textAlign = 'center';
+  // ===== КАРТИНКА ЗНАКА =====
+  if (sign.image) {
+    signImage.innerHTML = `<img src="/CHERTOGI_MAP/znakiimg/${sign.image}" alt="${sign.title}" style="width:100%; height:100%; object-fit:cover;">`;
+    signImage.style.background = 'transparent';
+    signImage.style.display = 'flex';
+    signImage.style.alignItems = 'center';
+    signImage.style.justifyContent = 'center';
+  } else {
+    signImage.innerHTML = '500×500<br>заглушка';
+    signImage.style.background = '#4a0e0e';
+    signImage.style.display = 'flex';
+    signImage.style.alignItems = 'center';
+    signImage.style.justifyContent = 'center';
+    signImage.style.color = 'rgba(255,255,255,0.2)';
+    signImage.style.fontSize = '14px';
+    signImage.style.textAlign = 'center';
+  }
 
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
