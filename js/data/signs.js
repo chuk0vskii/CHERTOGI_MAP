@@ -144,6 +144,8 @@ const SIGNS = [ null,
     image: null
   }
 ];
+window.SIGNS = SIGNS;
+console.log('✅ SIGNS добавлены в window, всего:', SIGNS.length - 1);
 
 // Делаем глобальным
 // Делаем глобальным
