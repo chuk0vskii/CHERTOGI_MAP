@@ -387,8 +387,11 @@ function handleCheck(index, type) {
     }
     
     // Проверяем изменение Прибытия (кварны)
-    // Ищем: "+1 на Прибытие", "+2 на Прибытие", "-1 к Прибытию", "+1 Прибытие" и т.д.
-    var arrivalMatch = effectText.match(/([+-])\s*(\d+)\s*(?:на\s*|к\s*)?Прибыти[ею]/i);
+    // Ищем все варианты: "+1 на Прибытие", "+2 к Прибытию", "+1 Прибытие", 
+    // "-1 на бросок Прибытия", "+1 на проверку Прибытия"
+    var arrivalRegex = /([+-])\s*(\d+)\s*(?:на\s*|к\s*)?(?:бросок\s*|проверк[ау]\s*)?Прибыти[ею]/i;
+    var arrivalMatch = effectText.match(arrivalRegex);
+    
     if (arrivalMatch) {
       var sign = arrivalMatch[1] === '+' ? 1 : -1;
       var amount = parseInt(arrivalMatch[2]);
@@ -398,6 +401,8 @@ function handleCheck(index, type) {
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
       notif.textContent = '🏆 Бонус кварны изменён: ' + getArrivalBonus();
       effectDiv.appendChild(notif);
+      
+      console.log('🎯 Найден бонус к Прибытию: ' + sign * amount);
     }
   }
 }
