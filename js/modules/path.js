@@ -387,7 +387,8 @@ function handleCheck(index, type) {
     }
     
     // Проверяем изменение Прибытия (кварны)
-    const arrivalMatch = effectText.match(/([+-])\s*(\d+)\s+на\s+Прибытие/i);
+    // Ищем разные варианты: "+1 на Прибытие", "+1 к Прибытию", "+1 Прибытие", "-1 на Прибытие" и т.д.
+    const arrivalMatch = effectText.match(/([+-])\s*(\d+)\s*(?:на\s*)?Прибыти[ею]/i);
     if (arrivalMatch) {
       const sign = arrivalMatch[1] === '+' ? 1 : -1;
       const amount = parseInt(arrivalMatch[2]);
@@ -395,7 +396,7 @@ function handleCheck(index, type) {
       
       const notif = document.createElement('div');
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
-      notif.textContent = '🏆 Кварны прибытия изменены: ' + getArrivalBonus();
+      notif.textContent = '🏆 Бонус кварны изменён: ' + getArrivalBonus();
       effectDiv.appendChild(notif);
     }
   }
