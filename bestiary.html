@@ -24,7 +24,6 @@
       padding: 100px 20px 40px;
     }
 
-    /* ===== ЗАГОЛОВОК ===== */
     .page-title {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 42px;
@@ -43,7 +42,6 @@
       margin-bottom: 40px;
     }
 
-    /* ===== РАЗДЕЛЫ ===== */
     .section {
       margin-bottom: 40px;
     }
@@ -93,7 +91,6 @@
       display: flex;
     }
 
-    /* ===== КАРТОЧКА СУЩЕСТВА ===== */
     .creature-card {
       background: rgba(74, 14, 14, 0.2);
       border: 1px solid rgba(74, 14, 14, 0.2);
@@ -250,13 +247,13 @@
   // КОНФИГУРАЦИЯ SUPABASE
   // ============================================================
 
-  const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+  var SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
 
-  const { createClient } = supabase;
-  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var _supabase = supabaseClient;
 
-  console.log('Supabase подключён');
+  console.log('✅ Supabase подключён');
 
   // ============================================================
   // КОНФИГУРАЦИЯ РАЗДЕЛОВ
@@ -266,32 +263,27 @@
     {
       id: 'beasts',
       title: 'Звери',
-      table: 'beasts',
-      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+      table: 'beasts'
     },
     {
       id: 'great_beasts',
       title: 'Великие странствующие звери',
-      table: 'great_beasts_extended',
-      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description', 'treasure']
+      table: 'great_beasts_extended'
     },
     {
       id: 'monsters',
       title: 'Монстры',
-      table: 'monsters',
-      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+      table: 'monsters'
     },
     {
       id: 'humanoids',
       title: 'Гуманоиды',
-      table: 'humanoids',
-      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+      table: 'humanoids'
     },
     {
       id: 'veil_aberrations',
       title: 'Аберрации Вуали',
-      table: 'veil_aberrations',
-      fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
+      table: 'veil_aberrations'
     }
   ];
 
@@ -301,7 +293,7 @@
 
   async function loadSection(section) {
     try {
-      console.log('Загрузка ' + section.table + '...');
+      console.log('🔄 Загрузка ' + section.table + '...');
       
       var result = await _supabase
         .from(section.table)
@@ -309,14 +301,14 @@
         .order('name');
 
       if (result.error) {
-        console.error('Ошибка загрузки ' + section.table + ':', result.error);
+        console.error('❌ Ошибка загрузки ' + section.table + ':', result.error);
         return [];
       }
 
-      console.log('Загружено ' + (result.data ? result.data.length : 0) + ' записей из ' + section.table);
+      console.log('✅ Загружено ' + (result.data ? result.data.length : 0) + ' записей из ' + section.table);
       return result.data || [];
     } catch (err) {
-      console.error('Критическая ошибка ' + section.table + ':', err);
+      console.error('❌ Критическая ошибка ' + section.table + ':', err);
       return [];
     }
   }
@@ -360,41 +352,32 @@
     return '';
   }
 
-  function renderCreatureCard(creature, fields) {
+  function renderCreatureCard(creature) {
     var description = creature.description || '';
 
-    var mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
-    var statFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
-    
-    var extraFields = [];
-    for (var i = 0; i < fields.length; i++) {
-      var f = fields[i];
-      if (mainFields.indexOf(f) === -1 && statFields.indexOf(f) === -1 && f !== 'description' && creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
-        extraFields.push(f);
-      }
-    }
+    var statsFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+    var extraFields = ['skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'treasure'];
 
     var statsHTML = '';
-    for (var j = 0; j < statFields.length; j++) {
-      var f = statFields[j];
+    for (var i = 0; i < statsFields.length; i++) {
+      var f = statsFields[i];
       if (creature[f] !== undefined && creature[f] !== null) {
-        var label = getFieldLabel(f);
-        statsHTML += '<div class="stat"><strong>' + label + '</strong> ' + creature[f] + '</div>';
+        statsHTML += '<div class="stat"><strong>' + getFieldLabel(f) + '</strong> ' + creature[f] + '</div>';
       }
     }
 
-    var extraHTML = '';
-    if (extraFields.length > 0) {
-      var extraRows = '';
-      for (var k = 0; k < extraFields.length; k++) {
-        var f = extraFields[k];
+    var extraRows = '';
+    for (var j = 0; j < extraFields.length; j++) {
+      var f = extraFields[j];
+      if (creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
         var label = getFieldLabel(f);
         var value = creature[f] || '—';
         var cls = getFieldClass(f);
         extraRows += '<div class="stat-row"><span class="label">' + label + ':</span> <span class="value ' + cls + '">' + value + '</span></div>';
       }
-      extraHTML = '<button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button><div class="stats-full">' + extraRows + '</div>';
     }
+
+    var extraHTML = extraRows ? '<button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button><div class="stats-full">' + extraRows + '</div>' : '';
 
     var metaHTML = '';
     if (creature.size) metaHTML += '<span>' + creature.size + '</span>';
@@ -433,20 +416,21 @@
       contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
     } else {
       for (var i = 0; i < creatures.length; i++) {
-        contentHTML += renderCreatureCard(creatures[i], section.fields);
+        contentHTML += renderCreatureCard(creatures[i]);
       }
     }
 
-    sectionDiv.innerHTML = '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
-      '<span class="title">' + section.title + '</span>' +
-      '<span style="display:flex; align-items:center; gap:12px;">' +
-        '<span class="count">' + creatures.length + ' существ</span>' +
-        '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
-      '</span>' +
-    '</div>' +
-    '<div class="section-content" id="content-' + section.id + '">' +
-      contentHTML +
-    '</div>';
+    sectionDiv.innerHTML = 
+      '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
+        '<span class="title">' + section.title + '</span>' +
+        '<span style="display:flex; align-items:center; gap:12px;">' +
+          '<span class="count">' + creatures.length + ' существ</span>' +
+          '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="section-content" id="content-' + section.id + '">' +
+        contentHTML +
+      '</div>';
 
     return sectionDiv;
   }
@@ -465,7 +449,7 @@
   // ============================================================
 
   async function init() {
-    console.log('Загрузка бестиария...');
+    console.log('📖 Загрузка бестиария...');
 
     var container = document.getElementById('sections-container');
     container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
@@ -499,7 +483,7 @@
       }
     }
 
-    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
+    console.log('✅ Бестиарий загружен (' + totalCreatures + ' существ)');
   }
 
   window.toggleSection = toggleSection;
