@@ -83,7 +83,7 @@
     .section-content {
       display: none;
       padding: 20px 0;
-      gap: 16px;
+      gap: 20px;
       flex-direction: column;
     }
     .section-content.open {
@@ -94,7 +94,7 @@
       background: rgba(74, 14, 14, 0.2);
       border: 1px solid rgba(74, 14, 14, 0.2);
       border-radius: 12px;
-      padding: 20px 24px;
+      padding: 24px 28px;
       transition: all 0.3s ease;
     }
     .creature-card:hover {
@@ -106,33 +106,33 @@
       font-size: 22px;
       color: #ffffff;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
       font-weight: normal;
     }
     .creature-card .creature-meta {
       font-size: 14px;
       color: rgba(255, 255, 255, 0.4);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .creature-card .creature-meta span {
-      margin-right: 16px;
+      margin-right: 18px;
     }
     .creature-card .creature-description {
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.8;
       color: #ccc;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .creature-card .creature-stats {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 6px;
-      padding: 10px 0;
+      gap: 8px;
+      padding: 12px 0;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
-      margin-top: 8px;
+      margin-top: 10px;
     }
     .creature-card .creature-stats .stat {
-      font-size: 13px;
+      font-size: 14px;
       color: rgba(255, 255, 255, 0.5);
     }
     .creature-card .creature-stats .stat strong {
@@ -142,13 +142,13 @@
       background: transparent;
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: rgba(255, 255, 255, 0.5);
-      padding: 4px 16px;
+      padding: 6px 18px;
       border-radius: 6px;
       cursor: pointer;
       font-family: 'Philosopher', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       transition: all 0.3s ease;
-      margin-top: 6px;
+      margin-top: 10px;
     }
     .creature-card .btn-toggle-stats:hover {
       background: rgba(74, 14, 14, 0.3);
@@ -157,8 +157,8 @@
     }
     .creature-card .stats-full {
       display: none;
-      margin-top: 10px;
-      padding: 14px 16px;
+      margin-top: 12px;
+      padding: 16px 20px;
       background: rgba(74, 14, 14, 0.2);
       border-radius: 8px;
       border-left: 2px solid rgba(74, 14, 14, 0.5);
@@ -169,14 +169,15 @@
     .creature-card .stats-full .stat-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 20px;
+      gap: 6px 24px;
       font-size: 14px;
       color: rgba(255, 255, 255, 0.6);
-      padding: 2px 0;
+      padding: 4px 0;
+      line-height: 1.6;
     }
     .creature-card .stats-full .stat-row .label {
       color: rgba(255, 255, 255, 0.4);
-      min-width: 100px;
+      min-width: 110px;
     }
     .creature-card .stats-full .stat-row .value {
       color: #e0d5c0;
@@ -198,13 +199,15 @@
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
+      .creature-card { padding: 18px 20px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-      .creature-card .stats-full .stat-row { flex-direction: column; gap: 0; }
+      .creature-card .stats-full .stat-row { flex-direction: column; gap: 2px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
+      .creature-card { padding: 14px 16px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
     }
   </style>
@@ -232,10 +235,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
-  // ============================================================
-  // КОНФИГУРАЦИЯ SUPABASE
-  // ============================================================
-
   var SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
 
@@ -244,10 +243,6 @@
 
   console.log('Supabase подключён');
 
-  // ============================================================
-  // КОНФИГУРАЦИЯ РАЗДЕЛОВ
-  // ============================================================
-
   var SECTIONS = [
     { id: 'beasts', title: 'Звери', table: 'beasts' },
     { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts_extended' },
@@ -255,10 +250,6 @@
     { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
     { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' }
   ];
-
-  // ============================================================
-  // ЗАГРУЗКА ДАННЫХ
-  // ============================================================
 
   async function loadSection(section) {
     try {
@@ -281,10 +272,6 @@
       return [];
     }
   }
-
-  // ============================================================
-  // ОТРИСОВКА
-  // ============================================================
 
   function getFieldLabel(field) {
     var labels = {
@@ -405,10 +392,6 @@
     }
   }
 
-  // ============================================================
-  // ИНИЦИАЛИЗАЦИЯ
-  // ============================================================
-
   async function init() {
     console.log('Загрузка бестиария...');
 
@@ -433,7 +416,6 @@
       container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
 
-    // Открываем первый раздел с данными
     for (var j = 0; j < SECTIONS.length; j++) {
       var content = document.getElementById('content-' + SECTIONS[j].id);
       if (content && content.querySelector('.creature-card')) {
