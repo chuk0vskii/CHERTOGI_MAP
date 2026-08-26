@@ -7,13 +7,12 @@ import { _supabase } from '../config-module.js';
 let currentRegionId = null;
 let baseDifficulty = 0;
 let currentSignMod = 0;
-let arrivalBonus = 0;           // Накопленный бонус прибытия из событий
+let arrivalBonus = 0;
 
 const regionSelect = document.getElementById('regionSelect');
 const difficultyDisplay = document.getElementById('difficultyValue');
 const pathDifficultyDisplay = document.getElementById('pathDifficultyDisplay');
 const arrivalDisplay = document.getElementById('arrivalValue');
-const arrivalTotalDisplay = document.getElementById('arrivalTotal');
 
 // ============================================================
 // ОБНОВЛЕНИЕ СЛОЖНОСТИ
@@ -48,11 +47,6 @@ export function updateArrivalDisplay() {
     const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
     arrivalDisplay.style.color = color;
   }
-  if (arrivalTotalDisplay) {
-    arrivalTotalDisplay.textContent = arrivalBonus;
-    const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
-    arrivalTotalDisplay.style.color = color;
-  }
 }
 
 // ============================================================
@@ -80,7 +74,7 @@ export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(
 export function addArrivalBonus(val) { 
   arrivalBonus += val; 
   updateArrivalDisplay();
-  console.log(`🏆 Кварны прибытия изменены: ${arrivalBonus}`);
+  console.log('🏆 Бонус кварны изменён: ' + arrivalBonus);
 }
 export function resetArrivalBonus() { 
   arrivalBonus = 0; 
@@ -118,7 +112,7 @@ export async function loadRegions() {
     }
 
     regionSelect.innerHTML = '<option value="">— Выберите край —</option>';
-    data.forEach(region => {
+    data.forEach(function(region) {
       const option = document.createElement('option');
       option.value = region.id;
       option.textContent = region.name;
@@ -129,7 +123,7 @@ export async function loadRegions() {
       regionSelect.appendChild(option);
     });
 
-    console.log(`✅ Загружено ${data.length} открытых регионов`);
+    console.log('✅ Загружено ' + data.length + ' открытых регионов');
   } catch (err) {
     console.error('❌ Ошибка при загрузке регионов:', err);
   }
@@ -154,9 +148,8 @@ export function initRegionChangeHandler() {
       setRegionId(id);
       setBaseDifficulty(difficulty);
       resetSignMod();
-      resetArrivalBonus();  // Сбрасываем кварны при смене региона
+      resetArrivalBonus();
       
-      // Сбрасываем UI
       const signResult = document.getElementById('signResult');
       const signPlaceholder = document.getElementById('signPlaceholder');
       if (signResult) signResult.classList.remove('visible');
@@ -189,10 +182,6 @@ export function initRegionChangeHandler() {
       if (arrivalDisplay) {
         arrivalDisplay.textContent = '0';
         arrivalDisplay.style.color = '#ffd700';
-      }
-      if (arrivalTotalDisplay) {
-        arrivalTotalDisplay.textContent = '0';
-        arrivalTotalDisplay.style.color = '#ffd700';
       }
     }
   });
