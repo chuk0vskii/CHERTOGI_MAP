@@ -1,9 +1,6 @@
 // ===== ТОЧКА ВХОДА =====
 console.log('✅ Карта и маркеры загружены');
 
-// Скрываем карту при загрузке
-document.getElementById('map').style.opacity = '0';
-
 async function init() {
   try {
     // Загружаем облака
@@ -23,11 +20,12 @@ async function init() {
       await loadAdminRegions();
     }
     
-    // Показываем карту
+    // ===== ПОКАЗЫВАЕМ КАРТУ =====
     const mapEl = document.getElementById('map');
     if (mapEl) {
       mapEl.classList.add('visible');
-      mapEl.style.transition = 'none';
+      mapEl.style.opacity = '1';
+      console.log('✅ Класс visible добавлен');
     }
     
     const preloader = document.getElementById('preloader');
@@ -45,11 +43,12 @@ async function init() {
     const mapEl = document.getElementById('map');
     if (mapEl) {
       mapEl.classList.add('visible');
-      mapEl.style.transition = 'none';
+      mapEl.style.opacity = '1';
     }
   }
 }
 
+// Запускаем после загрузки страницы
 if (document.readyState === 'complete') {
   init();
 } else {
