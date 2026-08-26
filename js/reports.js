@@ -1,4 +1,3 @@
-
 // ===== ЗАГРУЗКА ОТЧЁТОВ =====
 async function loadReports(regionId) {
   reportsList.innerHTML = '<p style="color: #777; font-size: 14px;">Загрузка...</p>';
