@@ -2,8 +2,8 @@
 // ФАЗА ЗНАКИ
 // ============================================================
 
-import { SIGNS } from '../data/signs.js';
-import { getRegionId, addSignMod, resetSignMod, updateDifficulty } from './region.js';
+// SIGNS из data/signs.js нужно подключить как обычный скрипт
+// или объявить здесь
 
 const signInput = document.getElementById('signInput');
 const drawBtn = document.getElementById('drawSignBtn');
@@ -21,7 +21,7 @@ let signHistory = [];
 // БРОСОК ЗНАКА
 // ============================================================
 
-export function drawSign() {
+function drawSign() {
   const regionId = getRegionId();
   console.log('🎯 drawSign вызван, regionId:', regionId);
   
@@ -45,33 +45,30 @@ export function drawSign() {
     return;
   }
 
-  // Добавляем модификатор
   addSignMod(sign.mod);
   signHistory.push({ index, title: sign.title, mod: sign.mod });
 
-  // Отображаем результат
   signTitle.textContent = sign.title;
   signDescription.textContent = sign.description;
 
-  let metaHtml = `Выпало: <strong>${value}</strong>`;
+  let metaHtml = 'Выпало: <strong>' + value + '</strong>';
   if (sign.mod !== 0) {
     const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
-    const modText = sign.mod > 0 ? `+${sign.mod}` : `${sign.mod}`;
-    metaHtml += ` | Изменение сложности: <strong class="${modClass}">${modText}</strong>`;
+    const modText = sign.mod > 0 ? '+' + sign.mod : '' + sign.mod;
+    metaHtml += ' | Изменение сложности: <strong class="' + modClass + '">' + modText + '</strong>';
   }
   
-  const totalMod = signHistory.reduce((sum, s) => sum + s.mod, 0);
-  metaHtml += `<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ${totalMod > 0 ? '+' : ''}${totalMod}</span>`;
+  const totalMod = signHistory.reduce(function(sum, s) { return sum + s.mod; }, 0);
+  metaHtml += '<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ' + (totalMod > 0 ? '+' : '') + totalMod + '</span>';
   
   if (sign.effect) {
-    metaHtml += `<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">${sign.effect}</span>`;
+    metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + sign.effect + '</span>';
   }
   
   signMeta.innerHTML = metaHtml;
 
-  // ===== КАРТИНКА ЗНАКА =====
   if (sign.image) {
-    signImage.innerHTML = `<img src="/CHERTOGI_MAP/znakiimg/${sign.image}" alt="${sign.title}" style="width:100%; height:100%; object-fit:cover;">`;
+    signImage.innerHTML = '<img src="/CHERTOGI_MAP/znakiimg/' + sign.image + '" alt="' + sign.title + '" style="width:100%; height:100%; object-fit:cover;">';
     signImage.style.background = 'transparent';
     signImage.style.display = 'flex';
     signImage.style.alignItems = 'center';
@@ -92,10 +89,10 @@ export function drawSign() {
 }
 
 // ============================================================
-// СБРОС ЭФФЕКТОВ ЗНАКОВ
+// СБРОС
 // ============================================================
 
-export function resetSigns() {
+function resetSigns() {
   const regionId = getRegionId();
   if (regionId === null || regionId === undefined) {
     alert('Сначала выберите край');
@@ -113,8 +110,11 @@ export function resetSigns() {
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
   
-  setTimeout(() => {
+  setTimeout(function() {
     signResult.classList.remove('visible');
     signPlaceholder.style.display = 'block';
   }, 2000);
 }
+
+window.drawSign = drawSign;
+window.resetSigns = resetSigns;
