@@ -2,11 +2,6 @@
 // ФАЗА ПУТЬ
 // ============================================================
 
-import { _supabase } from '../config-module.js';
-import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
-import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
-import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod, addArrivalBonus, getArrivalBonus } from './region.js';
-
 const generateBtn = document.getElementById('generateEventsBtn');
 const eventsContainer = document.getElementById('eventsContainer');
 const commonEventsCount = document.getElementById('commonEventsCount');
@@ -50,10 +45,10 @@ async function getTableData(tableName) {
 }
 
 // ============================================================
-// РОЛЛ ТАБЛИЦЫ (для кнопок-ссылок)
+// РОЛЛ ТАБЛИЦЫ
 // ============================================================
 
-export async function rollTable(tableName, containerId) {
+async function rollTable(tableName, containerId) {
   console.log('🎲 rollTable вызван: tableName="' + tableName + '"');
   
   const container = document.getElementById(containerId);
@@ -115,7 +110,7 @@ export async function rollTable(tableName, containerId) {
 // ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
-export async function generatePathEvents() {
+async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
   if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
@@ -192,7 +187,7 @@ function createEventCopy(eventData, type, roll) {
 }
 
 // ============================================================
-// ОТРИСОВКА СОБЫТИЙ
+// ОТРИСОВКА
 // ============================================================
 
 function renderEvents(events) {
@@ -252,10 +247,6 @@ function renderEvents(events) {
 
   attachEventHandlers();
 }
-
-// ============================================================
-// ОБРАБОТЧИКИ СОБЫТИЙ
-// ============================================================
 
 function attachEventHandlers() {
   eventsContainer.querySelectorAll('.btn-check').forEach(function(btn) {
@@ -377,7 +368,6 @@ function handleCheck(index, type) {
     effectDiv.innerHTML = '<span class="' + effectClass + '">⚡ ' + effectText + '</span>';
     effectDiv.className = 'event-effect visible';
     
-    // Проверяем изменение сложности пути
     var diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
       var sign = diffMatch[1] === '+' ? 1 : -1;
@@ -390,9 +380,6 @@ function handleCheck(index, type) {
       effectDiv.appendChild(notif);
     }
     
-    // Проверяем изменение Прибытия (кварны)
-    // Ищем все варианты: "+1 на Прибытие", "+2 к Прибытию", "+1 Прибытие", 
-    // "-1 на бросок Прибытия", "+1 на проверку Прибытия"
     var arrivalRegex = /([+-])\s*(\d+)\s*(?:на\s*|к\s*)?(?:бросок\s*|проверк[ау]\s*)?Прибыти[ею]/i;
     var arrivalMatch = effectText.match(arrivalRegex);
     
@@ -412,14 +399,44 @@ function handleCheck(index, type) {
 }
 
 // ============================================================
-// ИНИЦИАЛИЗАЦИЯ
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (дублируем из utils.js)
 // ============================================================
 
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.addEventListener('click', generatePathEvents);
-  }
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Автоматическая инициализация
-initPath();
+function getEventResult(roll) {
+  if (roll >= 18) return 'crit_success';
+  if (roll >= 12) return 'success';
+  if (roll >= 6) return 'fail';
+  return 'crit_fail';
+}
+
+function getResultLabel(result) {
+  var labels = {
+    'crit_success': 'Критический успех! 🎉',
+    'success': 'Успех ✅',
+    'fail': 'Провал ❌',
+    'crit_fail': 'Критический провал! 💀'
+  };
+  return labels[result] || '—';
+}
+
+function getResultClass(result) {
+  var classes = {
+    'crit_success': 'crit-success',
+    'success': 'success',
+    'fail': 'fail',
+    'crit_fail': 'crit-fail'
+  };
+  return classes[result] || '';
+}
+
+// Делаем функции глобальными
+window.generatePathEvents = generatePathEvents;
+window.rollTable = rollTable;
+window.getRandomInt = getRandomInt;
+window.getEventResult = getEventResult;
+window.getResultLabel = getResultLabel;
+window.getResultClass = getResultClass;
