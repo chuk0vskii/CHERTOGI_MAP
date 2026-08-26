@@ -300,27 +300,27 @@ function attachEventHandlers() {
 // ============================================================
 
 function handleCheck(index, type) {
-  const event = currentEvents[index];
+  var event = currentEvents[index];
   if (!event) return;
 
-  const isSecond = type === 'second';
-  const inputId = isSecond ? 'second-check-' + index : 'check-' + index;
-  const resultId = isSecond ? 'second-result-' + index : 'result-' + index;
-  const effectId = isSecond ? 'second-effect-' + index : 'effect-' + index;
+  var isSecond = type === 'second';
+  var inputId = isSecond ? 'second-check-' + index : 'check-' + index;
+  var resultId = isSecond ? 'second-result-' + index : 'result-' + index;
+  var effectId = isSecond ? 'second-effect-' + index : 'effect-' + index;
 
-  const input = document.getElementById(inputId);
+  var input = document.getElementById(inputId);
   if (!input) {
     console.error('❌ Инпут не найден: ' + inputId);
     return;
   }
   
-  const value = parseInt(input.value);
+  var value = parseInt(input.value);
   if (isNaN(value) || value < 1) {
     alert('Введите корректное значение проверки (минимум 1)');
     return;
   }
 
-  const result = getEventResult(value);
+  var result = getEventResult(value);
   
   if (isSecond) {
     event.secondResult = result;
@@ -330,15 +330,15 @@ function handleCheck(index, type) {
     event.checked = true;
   }
 
-  const resultDiv = document.getElementById(resultId);
-  const effectDiv = document.getElementById(effectId);
+  var resultDiv = document.getElementById(resultId);
+  var effectDiv = document.getElementById(effectId);
 
   if (!resultDiv || !effectDiv) return;
 
   resultDiv.textContent = '🎲 Результат: ' + value + ' — ' + getResultLabel(result);
   resultDiv.className = 'event-result visible ' + getResultClass(result);
 
-  let effects;
+  var effects;
   if (isSecond && event.data.secondEffects) {
     effects = event.data.secondEffects;
   } else if (!isSecond && event.data.effects) {
@@ -348,8 +348,8 @@ function handleCheck(index, type) {
   }
   
   if (effects) {
-    let effectText = '';
-    let effectClass = '';
+    var effectText = '';
+    var effectClass = '';
     
     switch(result) {
       case 'crit_success':
@@ -374,27 +374,27 @@ function handleCheck(index, type) {
     effectDiv.className = 'event-effect visible';
     
     // Проверяем изменение сложности пути
-    const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
+    var diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
-      const sign = diffMatch[1] === '+' ? 1 : -1;
-      const amount = parseInt(diffMatch[2]);
+      var sign = diffMatch[1] === '+' ? 1 : -1;
+      var amount = parseInt(diffMatch[2]);
       addSignMod(sign * amount);
       
-      const notif = document.createElement('div');
+      var notif = document.createElement('div');
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #ffd700;';
       notif.textContent = '🔄 Сложность пути изменена: ' + (getBaseDifficulty() + getCurrentSignMod());
       effectDiv.appendChild(notif);
     }
     
     // Проверяем изменение Прибытия (кварны)
-    // Ищем разные варианты: "+1 на Прибытие", "+1 к Прибытию", "+1 Прибытие", "-1 на Прибытие" и т.д.
-    const arrivalMatch = effectText.match(/([+-])\s*(\d+)\s*(?:на\s*)?Прибыти[ею]/i);
+    // Ищем: "+1 на Прибытие", "+2 на Прибытие", "-1 к Прибытию", "+1 Прибытие" и т.д.
+    var arrivalMatch = effectText.match(/([+-])\s*(\d+)\s*(?:на\s*|к\s*)?Прибыти[ею]/i);
     if (arrivalMatch) {
-      const sign = arrivalMatch[1] === '+' ? 1 : -1;
-      const amount = parseInt(arrivalMatch[2]);
+      var sign = arrivalMatch[1] === '+' ? 1 : -1;
+      var amount = parseInt(arrivalMatch[2]);
       addArrivalBonus(sign * amount);
       
-      const notif = document.createElement('div');
+      var notif = document.createElement('div');
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
       notif.textContent = '🏆 Бонус кварны изменён: ' + getArrivalBonus();
       effectDiv.appendChild(notif);
