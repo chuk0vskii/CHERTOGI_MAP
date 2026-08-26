@@ -2,6 +2,11 @@
 // ФАЗА ПУТЬ
 // ============================================================
 
+import { _supabase } from '../config-module.js';
+import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
+import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
+import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod, addArrivalBonus, getArrivalBonus } from './region.js';
+
 const generateBtn = document.getElementById('generateEventsBtn');
 const eventsContainer = document.getElementById('eventsContainer');
 const commonEventsCount = document.getElementById('commonEventsCount');
@@ -12,13 +17,6 @@ const regionSelect = document.getElementById('regionSelect');
 
 let currentEvents = [];
 let tableCache = {};
-
-// Получаем данные из глобальных переменных
-const COMMON_EVENTS = window.COMMON_EVENTS || [];
-const ROLES = window.ROLES || [];
-const ROLE_EVENTS = window.ROLE_EVENTS || {};
-
-// ... остальной код ...
 
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
@@ -55,7 +53,7 @@ async function getTableData(tableName) {
 // РОЛЛ ТАБЛИЦЫ
 // ============================================================
 
-async function rollTable(tableName, containerId) {
+export async function rollTable(tableName, containerId) {
   console.log('🎲 rollTable вызван: tableName="' + tableName + '"');
   
   const container = document.getElementById(containerId);
@@ -117,7 +115,9 @@ async function rollTable(tableName, containerId) {
 // ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
-async function generatePathEvents() {
+export async function generatePathEvents() {
+  console.log('🎯 generatePathEvents вызван!');
+  
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   
   if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
@@ -128,6 +128,8 @@ async function generatePathEvents() {
   const common = parseInt(selectedOption.dataset.commonEvents) || 0;
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
+
+  console.log('📊 common:', common, 'maxRole:', maxRole, 'roleBonus:', roleBonus);
 
   let roleCount = 0;
   let roleDisplay = '0';
@@ -150,6 +152,8 @@ async function generatePathEvents() {
 
   currentEvents = generateEventList(common, roleCount);
   renderEvents(currentEvents);
+  
+  console.log('✅ События сгенерированы, всего:', currentEvents.length);
 }
 
 function generateEventList(commonCount, roleCount) {
@@ -254,6 +258,10 @@ function renderEvents(events) {
 
   attachEventHandlers();
 }
+
+// ============================================================
+// ОБРАБОТЧИКИ
+// ============================================================
 
 function attachEventHandlers() {
   eventsContainer.querySelectorAll('.btn-check').forEach(function(btn) {
@@ -399,54 +407,20 @@ function handleCheck(index, type) {
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
       notif.textContent = '🏆 Бонус кварны изменён: ' + getArrivalBonus();
       effectDiv.appendChild(notif);
-      
-      console.log('🎯 Найден бонус к Прибытию: ' + sign * amount);
     }
   }
 }
 
 // ============================================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (дублируем из utils.js)
+// ИНИЦИАЛИЗАЦИЯ
 // ============================================================
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+export function initPath() {
+  if (generateBtn) {
+    generateBtn.addEventListener('click', generatePathEvents);
+    console.log('✅ Кнопка "Сгенерировать события" подключена через initPath');
+  }
 }
 
-function getEventResult(roll) {
-  if (roll >= 18) return 'crit_success';
-  if (roll >= 12) return 'success';
-  if (roll >= 6) return 'fail';
-  return 'crit_fail';
-}
-
-function getResultLabel(result) {
-  var labels = {
-    'crit_success': 'Критический успех! 🎉',
-    'success': 'Успех ✅',
-    'fail': 'Провал ❌',
-    'crit_fail': 'Критический провал! 💀'
-  };
-  return labels[result] || '—';
-}
-
-function getResultClass(result) {
-  var classes = {
-    'crit_success': 'crit-success',
-    'success': 'success',
-    'fail': 'fail',
-    'crit_fail': 'crit-fail'
-  };
-  return classes[result] || '';
-}
-
-// Делаем функции глобальными
-window.generatePathEvents = generatePathEvents;
-window.rollTable = rollTable;
-window.getRandomInt = getRandomInt;
-window.getEventResult = getEventResult;
-window.getResultLabel = getResultLabel;
-window.getResultClass = getResultClass;
-// Делаем функции глобальными
-window.generatePathEvents = generatePathEvents;
-window.rollTable = rollTable;
+// Автоматическая инициализация
+initPath();
