@@ -146,4 +146,6 @@ const SIGNS = [ null,
 ];
 
 // Делаем глобальным
+// Делаем глобальным
 window.SIGNS = SIGNS;
+console.log('✅ SIGNS загружены, всего знаков:', SIGNS.length - 1);
