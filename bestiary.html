@@ -13,7 +13,7 @@
       box-sizing: border-box;
     }
     body {
-      background: #0d0d1a;
+      background: #0a0a0a;
       color: #e0d5c0;
       font-family: 'Philosopher', 'Arial', sans-serif;
       min-height: 100vh;
@@ -32,6 +32,7 @@
       text-align: center;
       margin-bottom: 10px;
       letter-spacing: 4px;
+      font-weight: normal;
     }
     .page-subtitle {
       text-align: center;
@@ -52,14 +53,14 @@
       align-items: center;
       cursor: pointer;
       padding: 16px 24px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(74, 14, 14, 0.4);
+      border: 1px solid rgba(74, 14, 14, 0.3);
       border-radius: 12px;
       transition: all 0.3s ease;
       user-select: none;
     }
     .section-header:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(74, 14, 14, 0.6);
       border-color: #4a0e0e;
     }
     .section-header .title {
@@ -67,6 +68,7 @@
       font-size: 24px;
       color: #ffffff;
       letter-spacing: 2px;
+      font-weight: normal;
     }
     .section-header .count {
       font-size: 14px;
@@ -74,7 +76,7 @@
     }
     .section-header .arrow {
       font-size: 18px;
-      color: #ffd700;
+      color: #ffffff;
       transition: transform 0.3s ease;
     }
     .section-header .arrow.open {
@@ -93,22 +95,23 @@
 
     /* ===== КАРТОЧКА СУЩЕСТВА ===== */
     .creature-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(74, 14, 14, 0.2);
+      border: 1px solid rgba(74, 14, 14, 0.2);
       border-radius: 12px;
       padding: 20px 24px;
       transition: all 0.3s ease;
     }
     .creature-card:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 215, 0, 0.15);
+      background: rgba(74, 14, 14, 0.35);
+      border-color: rgba(74, 14, 14, 0.5);
     }
     .creature-card .creature-name {
       font-family: 'Calypso', 'Times New Roman', serif;
       font-size: 22px;
-      color: #ffd700;
+      color: #ffffff;
       letter-spacing: 1px;
       margin-bottom: 4px;
+      font-weight: normal;
     }
     .creature-card .creature-meta {
       font-size: 14px;
@@ -141,8 +144,8 @@
     }
     .creature-card .btn-toggle-stats {
       background: transparent;
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      color: rgba(255, 215, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.5);
       padding: 4px 16px;
       border-radius: 6px;
       cursor: pointer;
@@ -152,17 +155,17 @@
       margin-top: 6px;
     }
     .creature-card .btn-toggle-stats:hover {
-      background: rgba(255, 215, 0, 0.05);
-      color: #ffd700;
-      border-color: rgba(255, 215, 0, 0.4);
+      background: rgba(74, 14, 14, 0.3);
+      color: #ffffff;
+      border-color: rgba(74, 14, 14, 0.5);
     }
     .creature-card .stats-full {
       display: none;
       margin-top: 10px;
       padding: 14px 16px;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(74, 14, 14, 0.2);
       border-radius: 8px;
-      border-left: 2px solid rgba(255, 215, 0, 0.2);
+      border-left: 2px solid rgba(74, 14, 14, 0.5);
     }
     .creature-card .stats-full.open {
       display: block;
@@ -176,9 +179,8 @@
       padding: 2px 0;
     }
     .creature-card .stats-full .stat-row .label {
-      color: #888;
+      color: rgba(255, 255, 255, 0.4);
       min-width: 100px;
-      font-weight: bold;
     }
     .creature-card .stats-full .stat-row .value {
       color: #e0d5c0;
@@ -211,6 +213,7 @@
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+      .creature-card .stats-full .stat-row { flex-direction: column; gap: 0; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -245,9 +248,20 @@
 
 <!-- ===== ПОДКЛЮЧЕНИЕ СКРИПТОВ ===== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js"></script>
 
 <script>
+  // ============================================================
+  // КОНФИГУРАЦИЯ SUPABASE
+  // ============================================================
+
+  const SUPABASE_URL = 'https://djieimjwhgjgsjcysceh.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  console.log('Supabase подключён');
+
   // ============================================================
   // КОНФИГУРАЦИЯ РАЗДЕЛОВ
   // ============================================================
@@ -256,35 +270,30 @@
     {
       id: 'beasts',
       title: 'Звери',
-      icon: '🐾',
       table: 'beasts',
       fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
     },
     {
       id: 'great_beasts',
       title: 'Великие странствующие звери',
-      icon: '🐉',
       table: 'great_beasts_extended',
       fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description', 'treasure']
     },
     {
       id: 'monsters',
       title: 'Монстры',
-      icon: '👹',
       table: 'monsters',
       fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
     },
     {
       id: 'humanoids',
       title: 'Гуманоиды',
-      icon: '🧝',
       table: 'humanoids',
       fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
     },
     {
       id: 'veil_aberrations',
       title: 'Аберрации Вуали',
-      icon: '👻',
       table: 'veil_aberrations',
       fields: ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'description']
     }
@@ -296,7 +305,7 @@
 
   async function loadSection(section) {
     try {
-      console.log(`🔄 Загрузка ${section.table}...`);
+      console.log('Загрузка ' + section.table + '...');
       
       const { data, error } = await _supabase
         .from(section.table)
@@ -304,14 +313,14 @@
         .order('name');
 
       if (error) {
-        console.error(`❌ Ошибка загрузки ${section.table}:`, error);
+        console.error('Ошибка загрузки ' + section.table + ':', error);
         return [];
       }
 
-      console.log(`✅ Загружено ${data?.length || 0} записей из ${section.table}`);
+      console.log('Загружено ' + (data?.length || 0) + ' записей из ' + section.table);
       return data || [];
     } catch (err) {
-      console.error(`❌ Критическая ошибка ${section.table}:`, err);
+      console.error('Критическая ошибка ' + section.table + ':', err);
       return [];
     }
   }
@@ -341,7 +350,7 @@
       'damage_vulnerabilities': 'Уязвимость к урону',
       'condition_immunities': 'Иммунитет к состоянию',
       'abilities': 'Умения',
-      'actions': 'ДЕЙСТВИЯ',
+      'actions': 'Действия',
       'description': 'Описание',
       'treasure': 'Сокровище'
     };
@@ -358,36 +367,56 @@
   function renderCreatureCard(creature, fields) {
     const description = creature.description || '';
 
+    // Основные поля для отображения
+    const mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
+    const statFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+    
+    // Дополнительные поля для развёрнутого вида
+    const extraFields = fields.filter(f => 
+      !mainFields.includes(f) && 
+      !statFields.includes(f) && 
+      f !== 'description' &&
+      creature[f] !== undefined && 
+      creature[f] !== null && 
+      creature[f] !== ''
+    );
+
+    let statsHTML = '';
+    statFields.forEach(f => {
+      if (creature[f] !== undefined && creature[f] !== null) {
+        const label = getFieldLabel(f);
+        statsHTML += `<div class="stat"><strong>${label}</strong> ${creature[f]}</div>`;
+      }
+    });
+
+    let extraHTML = '';
+    if (extraFields.length > 0) {
+      extraHTML = `
+        <button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button>
+        <div class="stats-full">
+          ${extraFields.map(f => {
+            const label = getFieldLabel(f);
+            const value = creature[f] || '—';
+            const cls = getFieldClass(f);
+            return `<div class="stat-row"><span class="label">${label}:</span> <span class="value ${cls}">${value}</span></div>`;
+          }).join('')}
+        </div>
+      `;
+    }
+
     return `
       <div class="creature-card" data-id="${creature.id}">
         <div class="creature-name">${creature.name || 'Без имени'}</div>
         <div class="creature-meta">
-          ${creature.size ? `<span>📏 ${creature.size}</span>` : ''}
-          ${creature.type ? `<span>🏷️ ${creature.type}</span>` : ''}
-          ${creature.armor_class ? `<span>🛡️ КД ${creature.armor_class}</span>` : ''}
-          ${creature.hit_points ? `<span>❤️ ${creature.hit_points}</span>` : ''}
-          ${creature.speed ? `<span>💨 ${creature.speed}</span>` : ''}
+          ${creature.size ? '<span>' + creature.size + '</span>' : ''}
+          ${creature.type ? '<span>' + creature.type + '</span>' : ''}
+          ${creature.armor_class ? '<span>КД ' + creature.armor_class + '</span>' : ''}
+          ${creature.hit_points ? '<span>Хиты ' + creature.hit_points + '</span>' : ''}
+          ${creature.speed ? '<span>Скорость ' + creature.speed + '</span>' : ''}
         </div>
-        ${description ? `<div class="creature-description">${description}</div>` : ''}
-        <div class="creature-stats">
-          ${creature.strength !== undefined && creature.strength !== null ? `<div class="stat"><strong>Сил</strong> ${creature.strength}</div>` : ''}
-          ${creature.dexterity !== undefined && creature.dexterity !== null ? `<div class="stat"><strong>Лов</strong> ${creature.dexterity}</div>` : ''}
-          ${creature.constitution !== undefined && creature.constitution !== null ? `<div class="stat"><strong>Тел</strong> ${creature.constitution}</div>` : ''}
-          ${creature.intelligence !== undefined && creature.intelligence !== null ? `<div class="stat"><strong>Инт</strong> ${creature.intelligence}</div>` : ''}
-          ${creature.wisdom !== undefined && creature.wisdom !== null ? `<div class="stat"><strong>Мдр</strong> ${creature.wisdom}</div>` : ''}
-          ${creature.charisma !== undefined && creature.charisma !== null ? `<div class="stat"><strong>Хур</strong> ${creature.charisma}</div>` : ''}
-        </div>
-        ${fields.filter(f => !['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'description'].includes(f) && creature[f] !== undefined && creature[f] !== null && creature[f] !== '').length > 0 ? `
-          <button class="btn-toggle-stats" onclick="toggleStats(this)">📊 Показать все характеристики</button>
-          <div class="stats-full">
-            ${fields.filter(f => !['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'description'].includes(f) && creature[f] !== undefined && creature[f] !== null && creature[f] !== '').map(f => {
-              const label = getFieldLabel(f);
-              const value = creature[f] || '—';
-              const cls = getFieldClass(f);
-              return `<div class="stat-row"><span class="label">${label}:</span> <span class="value ${cls}">${value}</span></div>`;
-            }).join('')}
-          </div>
-        ` : ''}
+        ${description ? '<div class="creature-description">' + description + '</div>' : ''}
+        ${statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : ''}
+        ${extraHTML}
       </div>
     `;
   }
@@ -396,25 +425,25 @@
     const statsFull = btn.nextElementSibling;
     if (statsFull && statsFull.classList.contains('stats-full')) {
       statsFull.classList.toggle('open');
-      btn.textContent = statsFull.classList.contains('open') ? '📊 Скрыть характеристики' : '📊 Показать все характеристики';
+      btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
     }
   }
 
   function renderSection(section, creatures) {
     const sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
-    sectionDiv.id = `section-${section.id}`;
+    sectionDiv.id = 'section-' + section.id;
 
     let contentHTML = '';
     if (creatures.length === 0) {
-      contentHTML = `<div class="no-data">Нет существ в этом разделе</div>`;
+      contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
     } else {
-      contentHTML = creatures.map(c => renderCreatureCard(c, section.fields)).join('');
+      contentHTML = creatures.map(function(c) { return renderCreatureCard(c, section.fields); }).join('');
     }
 
     sectionDiv.innerHTML = `
       <div class="section-header" onclick="toggleSection('${section.id}')">
-        <span class="title">${section.icon} ${section.title}</span>
+        <span class="title">${section.title}</span>
         <span style="display:flex; align-items:center; gap:12px;">
           <span class="count">${creatures.length} существ</span>
           <span class="arrow" id="arrow-${section.id}">▼</span>
@@ -429,8 +458,8 @@
   }
 
   function toggleSection(sectionId) {
-    const content = document.getElementById(`content-${sectionId}`);
-    const arrow = document.getElementById(`arrow-${sectionId}`);
+    var content = document.getElementById('content-' + sectionId);
+    var arrow = document.getElementById('arrow-' + sectionId);
     if (content) {
       content.classList.toggle('open');
       if (arrow) arrow.classList.toggle('open');
@@ -442,45 +471,44 @@
   // ============================================================
 
   async function init() {
-    console.log('📖 Загрузка бестиария...');
+    console.log('Загрузка бестиария...');
 
-    const container = document.getElementById('sections-container');
+    var container = document.getElementById('sections-container');
     container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
 
-    let totalCreatures = 0;
-    const fragment = document.createDocumentFragment();
+    var totalCreatures = 0;
+    var fragment = document.createDocumentFragment();
 
-    for (const section of SECTIONS) {
-      const creatures = await loadSection(section);
+    for (var i = 0; i < SECTIONS.length; i++) {
+      var section = SECTIONS[i];
+      var creatures = await loadSection(section);
       totalCreatures += creatures.length;
-      const sectionEl = renderSection(section, creatures);
+      var sectionEl = renderSection(section, creatures);
       fragment.appendChild(sectionEl);
     }
 
-    // Очищаем контейнер и добавляем все секции
     container.innerHTML = '';
     container.appendChild(fragment);
 
-    // Если нет данных ни в одном разделе
     if (totalCreatures === 0) {
       container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
 
-    // По умолчанию открываем первый раздел с данными
-    for (const section of SECTIONS) {
-      const content = document.getElementById(`content-${section.id}`);
+    // Открываем первый раздел с данными
+    for (var j = 0; j < SECTIONS.length; j++) {
+      var content = document.getElementById('content-' + SECTIONS[j].id);
       if (content && content.querySelector('.creature-card')) {
         content.classList.add('open');
-        const arrow = document.getElementById(`arrow-${section.id}`);
+        var arrow = document.getElementById('arrow-' + SECTIONS[j].id);
         if (arrow) arrow.classList.add('open');
         break;
       }
     }
 
-    console.log(`✅ Бестиарий загружен (${totalCreatures} существ)`);
+    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
   }
 
-  // Делаем toggleSection глобальной для onclick
+  // Делаем функции глобальными для onclick
   window.toggleSection = toggleSection;
   window.toggleStats = toggleStats;
 
