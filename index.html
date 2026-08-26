@@ -14,6 +14,62 @@
   <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,fetch,Function.prototype.bind,es5&flags=always,gated&unknown=polyfill"></script>
 
   <style>
+    /* ===== ЕДИНЫЙ СТИЛЬ ДЛЯ БАННЕРА ===== */
+    .top-banner {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 0 80px !important;
+      box-sizing: border-box !important;
+    }
+    .top-banner .title {
+      flex-shrink: 0 !important;
+    }
+    .nav-links {
+      display: flex !important;
+      gap: 20px !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
+    }
+    .nav-links a {
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-size: 14px !important;
+      letter-spacing: 1px !important;
+      padding: 6px 0 !important;
+      border-bottom: 2px solid transparent !important;
+      font-family: 'Philosopher', sans-serif !important;
+      white-space: nowrap !important;
+    }
+    .nav-links a:hover {
+      color: #ffd700 !important;
+    }
+    .nav-links a.active {
+      color: #ffd700 !important;
+      border-bottom-color: #ffd700 !important;
+    }
+    @media (max-width: 768px) {
+      .top-banner { padding: 0 16px !important; }
+      .top-banner .title { font-size: 18px !important; }
+      .nav-links { gap: 12px !important; }
+      .nav-links a { font-size: 12px !important; }
+    }
+    @media (max-width: 480px) {
+      .top-banner { padding: 0 10px !important; }
+      .top-banner .title { font-size: 15px !important; }
+      .nav-links { gap: 8px !important; }
+      .nav-links a { font-size: 10px !important; }
+    }
+
+    /* ===== КАРТА СКРЫТА ДО ЗАГРУЗКИ ===== */
+    #map {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #map.visible {
+      opacity: 1;
+    }
+
     /* ===== ПРЕЛОАДЕР ===== */
     #preloader {
       position: fixed;
@@ -30,12 +86,10 @@
       gap: 20px;
       transition: opacity 0.8s ease;
     }
-
     #preloader.hidden {
       opacity: 0;
       pointer-events: none;
     }
-
     #preloader .spinner {
       width: 50px;
       height: 50px;
@@ -44,7 +98,6 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
     #preloader .text {
       color: rgba(255, 215, 0, 0.6);
       font-family: 'Philosopher', sans-serif;
@@ -52,20 +105,9 @@
       letter-spacing: 3px;
       text-transform: uppercase;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
-    }
-
-    /* ===== КАРТА СКРЫТА ДО ЗАГРУЗКИ ===== */
-    #map {
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-
-    #map.visible {
-      opacity: 1;
     }
   </style>
 </head>
@@ -78,16 +120,15 @@
   </div>
 
   <!-- БАННЕР -->
-  <!-- БАННЕР -->
-<div class="top-banner">
-  <span class="title">Огненные чертоги</span>
-  <div class="nav-links">
-    <a href="index.html">Карта</a>
-    <a href="znaki.html" class="active">В путь</a>
-    <a href="bestiary.html">Бестиарий</a>
-    <a href="tree.html">Древо смерти</a>
+  <div class="top-banner">
+    <span class="title">Огненные чертоги</span>
+    <div class="nav-links">
+      <a href="index.html" class="active">Карта</a>
+      <a href="znaki.html">В путь</a>
+      <a href="bestiary.html">Бестиарий</a>
+      <a href="tree.html">Древо смерти</a>
+    </div>
   </div>
-</div>
 
   <div id="version-counter">v1.0</div>
   <div id="map"></div>
@@ -106,13 +147,13 @@
       <h2 id="sidebar-title">Название региона</h2>
       <p id="sidebar-description">Описание региона</p>
       <div id="region-difficulty"></div>
-      <button id="report-btn">Составить отчёт</button>
+      <button id="report-btn">Войдите, чтобы создать отчёт</button>
       <h4 id="reports-title">Отчёты игроков</h4>
       <div id="reports-list"><p>Загрузка...</p></div>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
+  <!-- МОДАЛЬНОЕ ОКНО ОТЧЁТА -->
   <div id="report-modal">
     <div>
       <h3>Новый отчёт</h3>
@@ -126,39 +167,29 @@
     </div>
   </div>
 
+  <!-- ===== ПОДКЛЮЧЕНИЕ СКРИПТОВ ===== -->
   <script src="https://cdn.maptiler.com/ol/v6.12.0/ol.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-  <script src="js/config.js"></script>
+  <!-- Подключаем config-module.js -->
+  <script type="module">
+    import { _supabase } from './js/config-module.js';
+    window._supabase = _supabase;
+    console.log('✅ Supabase инициализирован');
+  </script>
+
+  <!-- Старые скрипты (карта) -->
   <script src="js/map.js"></script>
   <script src="js/clouds.js"></script>
   <script src="js/overlays.js"></script>
-  <script src="js/sidebar.js"></script>
-  <script src="js/reports.js"></script>
-  <script src="js/admin.js"></script>
+  
+  <!-- Новые модули (отчёты + панель) -->
+  <script type="module" src="js/modules/reports.js"></script>
+  <script type="module" src="js/modules/sidebar.js"></script>
+  
   <script src="js/main.js"></script>
 
-  <script>
-    // ===== ПОКАЗЫВАЕМ КАРТУ =====
-    function showMap() {
-      const mapEl = document.getElementById('map');
-      if (mapEl) {
-        mapEl.classList.add('visible');
-      }
-      const preloader = document.getElementById('preloader');
-      if (preloader) {
-        preloader.classList.add('hidden');
-        setTimeout(function() {
-          preloader.style.display = 'none';
-        }, 800);
-      }
-    }
-
-    // ===== ЖДЁМ 4 СЕКУНДЫ И ПОКАЗЫВАЕМ =====
-    setTimeout(showMap, 4000);
-  </script>
-
-  <!-- КНОПКА КООРДИНАТ -->
+  <!-- ===== КНОПКИ ===== -->
   <button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
     Координаты
   </button>
@@ -179,7 +210,6 @@
     });
   </script>
 
-  <!-- КНОПКА АДМИНКИ -->
   <button id="admin-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
     Админ
   </button>
