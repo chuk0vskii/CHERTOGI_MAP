@@ -356,24 +356,6 @@
   }
 
   function renderCreatureCard(creature, fields) {
-    // Основные поля для быстрого отображения
-    const mainFields = ['name', 'size', 'type', 'armor_class', 'hit_points', 'speed'];
-    const mainData = {};
-    mainFields.forEach(f => {
-      if (creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
-        mainData[f] = creature[f];
-      }
-    });
-
-    // Собираем все остальные поля для развёрнутого вида
-    const extraFields = fields.filter(f => 
-      !mainFields.includes(f) && 
-      creature[f] !== undefined && 
-      creature[f] !== null && 
-      creature[f] !== ''
-    );
-
-    // Описание
     const description = creature.description || '';
 
     return `
@@ -395,10 +377,10 @@
           ${creature.wisdom !== undefined && creature.wisdom !== null ? `<div class="stat"><strong>Мдр</strong> ${creature.wisdom}</div>` : ''}
           ${creature.charisma !== undefined && creature.charisma !== null ? `<div class="stat"><strong>Хур</strong> ${creature.charisma}</div>` : ''}
         </div>
-        ${extraFields.length > 0 ? `
+        ${fields.filter(f => !['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'description'].includes(f) && creature[f] !== undefined && creature[f] !== null && creature[f] !== '').length > 0 ? `
           <button class="btn-toggle-stats" onclick="toggleStats(this)">📊 Показать все характеристики</button>
           <div class="stats-full">
-            ${extraFields.map(f => {
+            ${fields.filter(f => !['name', 'size', 'type', 'armor_class', 'hit_points', 'speed', 'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'description'].includes(f) && creature[f] !== undefined && creature[f] !== null && creature[f] !== '').map(f => {
               const label = getFieldLabel(f);
               const value = creature[f] || '—';
               const cls = getFieldClass(f);
@@ -419,12 +401,6 @@
   }
 
   function renderSection(section, creatures) {
-    const container = document.getElementById('sections-container');
-    
-    // Удаляем загрузку
-    const loading = container.querySelector('.loading');
-    if (loading) loading.remove();
-    
     const sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
     sectionDiv.id = `section-${section.id}`;
@@ -449,7 +425,7 @@
       </div>
     `;
 
-    container.appendChild(sectionDiv);
+    return sectionDiv;
   }
 
   function toggleSection(sectionId) {
@@ -471,16 +447,22 @@
     const container = document.getElementById('sections-container');
     container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
 
-    let hasData = false;
+    let totalCreatures = 0;
+    const fragment = document.createDocumentFragment();
 
     for (const section of SECTIONS) {
       const creatures = await loadSection(section);
-      if (creatures.length > 0) hasData = true;
-      renderSection(section, creatures);
+      totalCreatures += creatures.length;
+      const sectionEl = renderSection(section, creatures);
+      fragment.appendChild(sectionEl);
     }
 
+    // Очищаем контейнер и добавляем все секции
+    container.innerHTML = '';
+    container.appendChild(fragment);
+
     // Если нет данных ни в одном разделе
-    if (!hasData) {
+    if (totalCreatures === 0) {
       container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
 
@@ -495,7 +477,7 @@
       }
     }
 
-    console.log('✅ Бестиарий загружен');
+    console.log(`✅ Бестиарий загружен (${totalCreatures} существ)`);
   }
 
   // Делаем toggleSection глобальной для onclick
