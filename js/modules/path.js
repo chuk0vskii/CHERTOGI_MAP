@@ -1,313 +1,4 @@
 // ============================================================
-// ФАЗА ПУТЬ
-// ============================================================
-
-import { _supabase } from '../config-module.js';
-import { COMMON_EVENTS, ROLES, ROLE_EVENTS } from '../data/events.js';
-import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
-import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod } from './region.js';
-
-const generateBtn = document.getElementById('generateEventsBtn');
-const eventsContainer = document.getElementById('eventsContainer');
-const commonEventsCount = document.getElementById('commonEventsCount');
-const maxRoleEvents = document.getElementById('maxRoleEvents');
-const roleEventsCount = document.getElementById('roleEventsCount');
-const totalEventsCount = document.getElementById('totalEventsCount');
-const regionSelect = document.getElementById('regionSelect');
-
-let currentEvents = [];
-let tableCache = {};
-
-// ============================================================
-// ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
-// ============================================================
-
-async function getTableData(tableName) {
-  try {
-    if (tableCache[tableName]) {
-      return tableCache[tableName];
-    }
-    
-    console.log(`🔄 Загрузка таблицы: ${tableName}`);
-    
-    const { data, error } = await _supabase
-      .from(tableName)
-      .select('*')
-      .order('id', { ascending: true });
-    
-    if (error) {
-      console.error(`❌ Ошибка загрузки ${tableName}:`, error);
-      return null;
-    }
-    
-    console.log(`✅ Загружено ${data?.length || 0} записей из ${tableName}`);
-    tableCache[tableName] = data;
-    return data;
-  } catch (error) {
-    console.error('❌ Ошибка:', error);
-    return null;
-  }
-}
-
-// ============================================================
-// РОЛЛ ТАБЛИЦЫ (для кнопок-ссылок)
-// ============================================================
-
-export async function rollTable(tableName, containerId) {
-  console.log(`🎲 rollTable вызван: tableName="${tableName}"`);
-  
-  const container = document.getElementById(containerId);
-  if (!container) {
-    console.error(`❌ Контейнер не найден: ${containerId}`);
-    return;
-  }
-
-  try {
-    console.log(`🔄 Делаю запрос к таблице: ${tableName}`);
-    
-    const { data, error } = await _supabase
-      .from(tableName)
-      .select('*');
-    
-    if (error) {
-      console.error(`❌ Ошибка запроса к ${tableName}:`, error);
-      container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
-        ❌ Ошибка: ${error.message}
-      </div>`;
-      container.style.display = 'block';
-      return;
-    }
-    
-    console.log(`📊 Получено данных из ${tableName}:`, data?.length || 0);
-    
-    if (!data || data.length === 0) {
-      container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
-        ❌ В таблице "${tableName}" нет данных
-      </div>`;
-      container.style.display = 'block';
-      return;
-    }
-    
-    const randomIndex = Math.floor(Math.random() * data.length);
-    const item = data[randomIndex];
-    
-    console.log(`🎯 Выбрана запись #${randomIndex + 1}:`, item);
-    
-    let html = `<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">`;
-    html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">🎲 Результат: <strong>${randomIndex + 1}</strong></div>`;
-    
-    if (item.name) {
-      html += `<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">${item.name}</div>`;
-    }
-    
-    if (item.description) {
-      html += `<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">${item.description}</div>`;
-    }
-    
-    html += `</div>`;
-    container.innerHTML = html;
-    container.style.display = 'block';
-    
-  } catch (err) {
-    console.error('❌ Критическая ошибка:', err);
-    container.innerHTML = `<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">
-      ❌ Ошибка: ${err.message}
-    </div>`;
-    container.style.display = 'block';
-  }
-}
-
-// ============================================================
-// ГЕНЕРАЦИЯ СОБЫТИЙ
-// ============================================================
-
-export async function generatePathEvents() {
-  const selectedOption = regionSelect.options[regionSelect.selectedIndex];
-  
-  if (!regionSelect.value || regionSelect.value === '' || !selectedOption || selectedOption.value === '') {
-    alert('Сначала выберите край!');
-    return;
-  }
-
-  const common = parseInt(selectedOption.dataset.commonEvents) || 0;
-  const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
-  const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
-
-  let roleCount = 0;
-  let roleDisplay = '0';
-  if (maxRole > 0) {
-    const roll = getRandomInt(1, maxRole);
-    roleCount = roll + roleBonus;
-    roleDisplay = `1d${maxRole}${roleBonus > 0 ? `+${roleBonus}` : roleBonus < 0 ? `${roleBonus}` : ''}`;
-  }
-
-  const totalEvents = common + roleCount;
-
-  commonEventsCount.textContent = common;
-  maxRoleEvents.textContent = maxRole;
-  roleEventsCount.textContent = `${roleDisplay} → ${roleCount}`;
-  totalEventsCount.textContent = totalEvents;
-
-  currentEvents = generateEventList(common, roleCount);
-  renderEvents(currentEvents);
-}
-
-function generateEventList(commonCount, roleCount) {
-  const events = [];
-
-  for (let i = 0; i < commonCount; i++) {
-    const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
-    const eventData = COMMON_EVENTS[roll];
-    const eventCopy = createEventCopy(eventData, 'Общее', roll + 1);
-    events.push(eventCopy);
-  }
-
-  for (let i = 0; i < roleCount; i++) {
-    const roleIndex = getRandomInt(0, ROLES.length - 1);
-    const role = ROLES[roleIndex];
-    const roleEvents = ROLE_EVENTS[role] || ROLE_EVENTS['Чтец_Знаков'];
-    const roll = getRandomInt(0, roleEvents.length - 1);
-    const eventData = roleEvents[roll];
-    const eventCopy = createEventCopy(eventData, role, roll + 1);
-    events.push(eventCopy);
-  }
-
-  for (let i = events.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [events[i], events[j]] = [events[j], events[i]];
-  }
-
-  return events;
-}
-
-function createEventCopy(eventData, type, roll) {
-  return {
-    type: type,
-    data: { ...eventData },
-    roll: roll,
-    isCommon: type === 'Общее',
-    checked: false,
-    result: null,
-    secondChecked: false,
-    secondResult: null
-  };
-}
-
-// ============================================================
-// ОТРИСОВКА СОБЫТИЙ
-// ============================================================
-
-function renderEvents(events) {
-  if (!events || events.length === 0) {
-    eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
-    return;
-  }
-
-  eventsContainer.innerHTML = events.map((event, index) => {
-    const tableContainerId = `table-result-${index}-${Date.now()}`;
-    
-    let tableHTML = '';
-    if (event.data.hasTable && event.data.tableName) {
-      tableHTML = `
-        <div style="margin-top: 8px;">
-          <button class="btn-roll-table" data-table="${event.data.tableName}" data-container="${tableContainerId}" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 13px; transition: all 0.3s;">
-            ${event.data.tableIcon || '🎲'} Бросить по ${event.data.tableLabel || 'таблице'}
-          </button>
-          <div id="${tableContainerId}" style="display: none; margin-top: 6px;"></div>
-        </div>
-      `;
-    }
-    
-    let secondCheckHTML = '';
-    if (event.data.hasSecondCheck) {
-      secondCheckHTML = `
-        <div class="second-check-section">
-          <div class="event-check-row">
-            <label for="second-check-${index}" style="color: rgba(255,215,0,0.6);">Значение проверки (Тень Нарара):</label>
-            <input type="number" id="second-check-${index}" min="1" max="30" value="10" class="check-input second-check">
-            <button class="btn-check-second" data-index="${index}">Проверить</button>
-          </div>
-          <div class="event-result" id="second-result-${index}"></div>
-          <div class="event-effect" id="second-effect-${index}"></div>
-        </div>
-      `;
-    }
-    
-    return `
-      <div class="event-card" data-index="${index}">
-        <div class="event-header">
-          <span class="event-type">${event.type}</span>
-          <span class="event-roll">Бросок: <strong>${event.roll}</strong></span>
-        </div>
-        <div class="event-text">
-          <strong>${event.data.title}</strong><br>
-          ${event.data.description}
-          ${event.data.checkInfo ? `<br><span class="check-info">${event.data.checkInfo}</span>` : ''}
-          ${event.data.secondCheckInfo ? `<br><span class="check-info">${event.data.secondCheckInfo}</span>` : ''}
-        </div>
-        ${tableHTML}
-        <div class="event-check-row">
-          <label for="check-${index}">Значение проверки:</label>
-          <input type="number" id="check-${index}" min="1" max="30" value="10" class="check-input">
-          <button class="btn-check" data-index="${index}">Проверить</button>
-        </div>
-        <div class="event-result" id="result-${index}"></div>
-        <div class="event-effect" id="effect-${index}"></div>
-        ${secondCheckHTML}
-      </div>
-    `;
-  }).join('');
-
-  attachEventHandlers();
-}
-
-// ============================================================
-// ОБРАБОТЧИКИ СОБЫТИЙ
-// ============================================================
-
-function attachEventHandlers() {
-  eventsContainer.querySelectorAll('.btn-check').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      handleCheck(index, 'main');
-    });
-  });
-
-  eventsContainer.querySelectorAll('.btn-check-second').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      handleCheck(index, 'second');
-    });
-  });
-
-  eventsContainer.querySelectorAll('.btn-roll-table').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const tableName = this.dataset.table;
-      const containerId = this.dataset.container;
-      rollTable(tableName, containerId);
-    });
-  });
-
-  eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(input => {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const index = parseInt(this.id.split('-')[1]);
-        handleCheck(index, 'main');
-      }
-    });
-  });
-
-  eventsContainer.querySelectorAll('.second-check').forEach(input => {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const index = parseInt(this.id.split('-')[2]);
-        handleCheck(index, 'second');
-      }
-    });
-  });
-}
-
-// ============================================================
 // ОБРАБОТКА ПРОВЕРКИ
 // ============================================================
 
@@ -321,10 +12,7 @@ function handleCheck(index, type) {
   const effectId = isSecond ? `second-effect-${index}` : `effect-${index}`;
 
   const input = document.getElementById(inputId);
-  if (!input) {
-    console.error(`❌ Инпут не найден: ${inputId}`);
-    return;
-  }
+  if (!input) return;
   
   const value = parseInt(input.value);
   if (isNaN(value) || value < 1) {
@@ -385,6 +73,7 @@ function handleCheck(index, type) {
     effectDiv.innerHTML = `<span class="${effectClass}">⚡ ${effectText}</span>`;
     effectDiv.className = 'event-effect visible';
     
+    // Проверяем изменение сложности пути
     const diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
     if (diffMatch) {
       const sign = diffMatch[1] === '+' ? 1 : -1;
@@ -396,18 +85,19 @@ function handleCheck(index, type) {
       notif.textContent = `🔄 Сложность пути изменена: ${getBaseDifficulty() + getCurrentSignMod()}`;
       effectDiv.appendChild(notif);
     }
+    
+    // Проверяем изменение Прибытия (кварны)
+    // Ищем фразы: "+1 на Прибытие", "-1 на Прибытие", "+2 на Прибытие" и т.д.
+    const arrivalMatch = effectText.match(/([+-])\s*(\d+)\s+на\s+Прибытие/i);
+    if (arrivalMatch) {
+      const sign = arrivalMatch[1] === '+' ? 1 : -1;
+      const amount = parseInt(arrivalMatch[2]);
+      addArrivalBonus(sign * amount);
+      
+      const notif = document.createElement('div');
+      notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
+      notif.textContent = `🏆 Кварны прибытия изменены: ${getArrivalBonus()}`;
+      effectDiv.appendChild(notif);
+    }
   }
 }
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.addEventListener('click', generatePathEvents);
-  }
-}
-
-// Автоматическая инициализация
-initPath();
