@@ -1,8 +1,8 @@
 // ============================================================
-// УПРАВЛЕНИЕ РЕГИОНОМ, СЛОЖНОСТЬЮ И ПРИБЫТИЕМ
+// УПРАВЛЕНИЕ РЕГИОНОМ И СЛОЖНОСТЬЮ
 // ============================================================
 
-import { _supabase } from '../config-module.js';
+// _supabase доступен глобально из config.js
 
 let currentRegionId = null;
 let baseDifficulty = 0;
@@ -18,7 +18,7 @@ const arrivalDisplay = document.getElementById('arrivalValue');
 // ОБНОВЛЕНИЕ СЛОЖНОСТИ
 // ============================================================
 
-export function updateDifficulty() {
+function updateDifficulty() {
   const total = baseDifficulty + currentSignMod;
   const display = total < 0 ? 0 : total;
   
@@ -37,11 +37,7 @@ export function updateDifficulty() {
   updateArrivalDisplay();
 }
 
-// ============================================================
-// ОБНОВЛЕНИЕ ПРИБЫТИЯ
-// ============================================================
-
-export function updateArrivalDisplay() {
+function updateArrivalDisplay() {
   if (arrivalDisplay) {
     arrivalDisplay.textContent = arrivalBonus;
     const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
@@ -53,30 +49,30 @@ export function updateArrivalDisplay() {
 // ГЕТТЕРЫ И СЕТТЕРЫ
 // ============================================================
 
-export function getRegionId() { return currentRegionId; }
-export function setRegionId(id) { currentRegionId = id; }
+function getRegionId() { return currentRegionId; }
+function setRegionId(id) { currentRegionId = id; }
 
-export function getBaseDifficulty() { return baseDifficulty; }
-export function setBaseDifficulty(val) { baseDifficulty = val; updateDifficulty(); }
+function getBaseDifficulty() { return baseDifficulty; }
+function setBaseDifficulty(val) { baseDifficulty = val; updateDifficulty(); }
 
-export function getCurrentSignMod() { return currentSignMod; }
-export function setCurrentSignMod(val) { currentSignMod = val; updateDifficulty(); }
+function getCurrentSignMod() { return currentSignMod; }
+function setCurrentSignMod(val) { currentSignMod = val; updateDifficulty(); }
 
-export function addSignMod(val) { currentSignMod += val; updateDifficulty(); }
-export function resetSignMod() { currentSignMod = 0; updateDifficulty(); }
+function addSignMod(val) { currentSignMod += val; updateDifficulty(); }
+function resetSignMod() { currentSignMod = 0; updateDifficulty(); }
 
 // ============================================================
 // УПРАВЛЕНИЕ ПРИБЫТИЕМ (КВАРНЫ)
 // ============================================================
 
-export function getArrivalBonus() { return arrivalBonus; }
-export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(); }
-export function addArrivalBonus(val) { 
+function getArrivalBonus() { return arrivalBonus; }
+function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(); }
+function addArrivalBonus(val) { 
   arrivalBonus += val; 
   updateArrivalDisplay();
   console.log('🏆 Бонус кварны изменён: ' + arrivalBonus);
 }
-export function resetArrivalBonus() { 
+function resetArrivalBonus() { 
   arrivalBonus = 0; 
   updateArrivalDisplay();
 }
@@ -85,7 +81,7 @@ export function resetArrivalBonus() {
 // ЗАГРУЗКА РЕГИОНОВ
 // ============================================================
 
-export async function loadRegions() {
+async function loadRegions() {
   console.log('🔄 Загрузка регионов...');
   
   if (!regionSelect) {
@@ -133,7 +129,7 @@ export async function loadRegions() {
 // ОБРАБОТЧИК СМЕНЫ РЕГИОНА
 // ============================================================
 
-export function initRegionChangeHandler() {
+function initRegionChangeHandler() {
   if (!regionSelect) return;
   
   regionSelect.addEventListener('change', function() {
@@ -186,3 +182,18 @@ export function initRegionChangeHandler() {
     }
   });
 }
+
+// Делаем функции глобальными
+window.loadRegions = loadRegions;
+window.initRegionChangeHandler = initRegionChangeHandler;
+window.getRegionId = getRegionId;
+window.setRegionId = setRegionId;
+window.getBaseDifficulty = getBaseDifficulty;
+window.setBaseDifficulty = setBaseDifficulty;
+window.getCurrentSignMod = getCurrentSignMod;
+window.addSignMod = addSignMod;
+window.resetSignMod = resetSignMod;
+window.getArrivalBonus = getArrivalBonus;
+window.addArrivalBonus = addArrivalBonus;
+window.resetArrivalBonus = resetArrivalBonus;
+window.updateDifficulty = updateDifficulty;
