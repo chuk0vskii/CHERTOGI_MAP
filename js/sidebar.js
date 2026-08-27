@@ -23,7 +23,7 @@ function isReportAuthorized() {
 
 function setReportAuthorized(value) {
   isAuthorized = value;
-  console.log('🔑 Статус доступа к отчётам:', isAuthorized ? '✅ Открыт' : '🔒 Закрыт');
+  console.log('Статус доступа к отчётам:', isAuthorized ? 'Открыт' : 'Закрыт');
 }
 
 function getCurrentKeeper() {
@@ -108,21 +108,19 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
 });
 
 // ============================================================
-// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ (ПОЯВЛЯЕТСЯ ТОЛЬКО ПОСЛЕ АВТОРИЗАЦИИ)
+// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ
 // ============================================================
 
 function addReportSection() {
   var panelContent = document.querySelector('.panel-content');
   if (!panelContent) return;
   
-  // Если уже есть секция — обновляем её видимость
   var existingSection = document.getElementById('report-section');
   if (existingSection) {
     existingSection.style.display = isAuthorized ? 'block' : 'none';
     return;
   }
   
-  // Создаём секцию (скрыта по умолчанию)
   var section = document.createElement('div');
   section.id = 'report-section';
   section.style.cssText = 'margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; display: none;';
@@ -130,35 +128,31 @@ function addReportSection() {
   section.innerHTML = `
     <div style="margin-bottom: 12px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <span style="color: #ffd700; font-family: 'Calypso', serif; font-size: 18px; letter-spacing: 1px; font-weight: normal;">📝 Создать отчёт</span>
+        <span style="color: #ffd700; font-family: 'Calypso', serif; font-size: 18px; letter-spacing: 1px; font-weight: normal;">Создать отчёт</span>
         <button id="toggle-report-btn" style="background: transparent; border: 1px solid rgba(255,215,0,0.2); color: #ffd700; padding: 2px 12px; border-radius: 4px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">Свернуть</button>
       </div>
       
       <div id="report-fields" style="display: block;">
-        <!-- Имя Хранителя -->
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Имя Хранителя узлов</label>
           <input id="keeper-display" type="text" style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffd700; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;" readonly>
         </div>
         
-        <!-- Текст отчёта -->
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Текст отчёта</label>
           <textarea id="report-content" placeholder="Опишите события..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px; min-height: 60px; resize: vertical;"></textarea>
         </div>
         
-        <!-- Умершие персонажи -->
         <div style="margin-bottom: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label style="font-size: 13px; color: rgba(255,255,255,0.5);">💀 Умершие персонажи</label>
+            <label style="font-size: 13px; color: rgba(255,255,255,0.5);">Умершие персонажи</label>
             <button id="add-deceased-btn" style="background: rgba(74,14,14,0.3); border: 1px solid #4a0e0e; border-radius: 4px; color: #ffd700; padding: 2px 12px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">+ Добавить</button>
           </div>
           <div id="deceased-container"></div>
         </div>
         
-        <!-- Ресурсы (чекбоксы) -->
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">📦 Ресурсы</label>
+          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Точки интереса</label>
           <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
@@ -171,7 +165,6 @@ function addReportSection() {
           </div>
         </div>
         
-        <!-- Кнопка отправки -->
         <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
       </div>
     </div>
@@ -179,7 +172,6 @@ function addReportSection() {
   
   panelContent.appendChild(section);
   
-  // Навешиваем обработчики
   document.getElementById('toggle-report-btn')?.addEventListener('click', function() {
     var fields = document.getElementById('report-fields');
     if (fields) {
@@ -199,7 +191,6 @@ function addReportSection() {
   addDeceasedField();
   updateKeeperDisplay();
   
-  // Показываем секцию только если авторизован
   if (isAuthorized) {
     section.style.display = 'block';
   }
@@ -223,7 +214,7 @@ function updateReportSectionVisibility() {
 function updateKeeperDisplay() {
   var keeperDisplay = document.getElementById('keeper-display');
   if (keeperDisplay) {
-    keeperDisplay.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : '🔑 Войдите по паролю');
+    keeperDisplay.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : 'Войдите по паролю');
   }
 }
 
@@ -232,7 +223,7 @@ function updateKeeperDisplay() {
 // ============================================================
 
 async function submitReportHandler() {
-  console.log('📤 Отправка отчёта');
+  console.log('Отправка отчёта');
   
   if (!isAuthorized) {
     alert('Сначала введите пароль!');
@@ -245,7 +236,6 @@ async function submitReportHandler() {
     return;
   }
 
-  // Собираем имена умерших
   var deceasedInputs = document.querySelectorAll('.deceased-name');
   var deceasedNames = [];
   deceasedInputs.forEach(function(input) {
@@ -253,7 +243,6 @@ async function submitReportHandler() {
     if (name) deceasedNames.push(name);
   });
 
-  // Собираем ресурсы (чекбоксы)
   var hasResource = document.getElementById('resource-check')?.checked || false;
   var hasShelter = document.getElementById('shelter-check')?.checked || false;
 
@@ -269,8 +258,7 @@ async function submitReportHandler() {
   );
   
   if (result.success) {
-    alert('✅ Отчёт сохранён!');
-    // Очищаем поля
+    alert('Отчёт сохранён!');
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
@@ -278,7 +266,7 @@ async function submitReportHandler() {
     addDeceasedField();
     loadReports(currentRegionId);
   } else {
-    alert('❌ Ошибка: ' + result.error);
+    alert('Ошибка: ' + result.error);
   }
 }
 
@@ -292,20 +280,18 @@ function updateReportButton() {
   
   if (isAuthorized) {
     var keeper = getCurrentKeeper();
-    reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
+    reportBtn.textContent = keeper ? 'Составить отчёт (' + keeper + ')' : 'Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = null;
-    // Показываем секцию отчёта
     updateReportSectionVisibility();
   } else {
-    reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
+    reportBtn.textContent = 'Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = function() {
       openPasswordModal();
     };
-    // Скрываем секцию отчёта
     updateReportSectionVisibility();
   }
 }
@@ -331,7 +317,7 @@ passwordModal.style.cssText = `
 `;
 passwordModal.innerHTML = `
   <div style="background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; color: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.8);">
-    <h3 style="font-family: 'Calypso', serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">🔑 Введите пароль</h3>
+    <h3 style="font-family: 'Calypso', serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">Введите пароль</h3>
     <p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 16px;">Введите пароль для доступа к созданию отчётов</p>
     <input id="password-input" type="password" placeholder="Введите пароль..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
     <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
@@ -388,7 +374,6 @@ passwordSubmitBtn.addEventListener('click', function() {
     closePasswordModal();
     updateReportButton();
     updateKeeperDisplay();
-    // alert убран!
   } else {
     passwordError.textContent = 'Неверный пароль';
     passwordError.style.display = 'block';
