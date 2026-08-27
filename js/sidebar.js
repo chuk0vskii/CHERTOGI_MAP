@@ -35,7 +35,7 @@ function setCurrentKeeper(name) {
 }
 
 // ============================================================
-// ДОБАВЛЕНИЕ ПОЛЕЙ ДЛЯ ОТЧЁТА В ПАНЕЛЬ
+// ДОБАВЛЕНИЕ ПОЛЕЙ ДЛЯ УМЕРШЕГО
 // ============================================================
 
 function addDeceasedField() {
@@ -51,29 +51,6 @@ function addDeceasedField() {
   `;
   
   var removeBtn = div.querySelector('.remove-deceased-btn');
-  removeBtn.addEventListener('click', function() {
-    div.remove();
-  });
-  
-  container.appendChild(div);
-}
-
-function addResourceField() {
-  var container = document.getElementById('resources-container');
-  if (!container) return;
-  
-  var div = document.createElement('div');
-  div.className = 'resource-field';
-  div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
-  div.innerHTML = `
-    <select class="resource-type" style="flex:1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;">
-      <option value="Место ресурса">Место ресурса</option>
-      <option value="Место ночлега">Место ночлега</option>
-    </select>
-    <button class="remove-resource-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">✕</button>
-  `;
-  
-  var removeBtn = div.querySelector('.remove-resource-btn');
   removeBtn.addEventListener('click', function() {
     div.remove();
   });
@@ -131,18 +108,24 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
 });
 
 // ============================================================
-// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ
+// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ (ПОЯВЛЯЕТСЯ ТОЛЬКО ПОСЛЕ АВТОРИЗАЦИИ)
 // ============================================================
 
 function addReportSection() {
   var panelContent = document.querySelector('.panel-content');
   if (!panelContent) return;
   
-  if (document.getElementById('report-section')) return;
+  // Если уже есть секция — обновляем её видимость
+  var existingSection = document.getElementById('report-section');
+  if (existingSection) {
+    existingSection.style.display = isAuthorized ? 'block' : 'none';
+    return;
+  }
   
+  // Создаём секцию (скрыта по умолчанию)
   var section = document.createElement('div');
   section.id = 'report-section';
-  section.style.cssText = 'margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;';
+  section.style.cssText = 'margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; display: none;';
   
   section.innerHTML = `
     <div style="margin-bottom: 12px;">
@@ -152,16 +135,19 @@ function addReportSection() {
       </div>
       
       <div id="report-fields" style="display: block;">
+        <!-- Имя Хранителя -->
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Имя Хранителя узлов</label>
           <input id="keeper-display" type="text" style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffd700; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;" readonly>
         </div>
         
+        <!-- Текст отчёта -->
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Текст отчёта</label>
           <textarea id="report-content" placeholder="Опишите события..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px; min-height: 60px; resize: vertical;"></textarea>
         </div>
         
+        <!-- Умершие персонажи -->
         <div style="margin-bottom: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <label style="font-size: 13px; color: rgba(255,255,255,0.5);">💀 Умершие персонажи</label>
@@ -170,14 +156,22 @@ function addReportSection() {
           <div id="deceased-container"></div>
         </div>
         
+        <!-- Ресурсы (чекбоксы) -->
         <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label style="font-size: 13px; color: rgba(255,255,255,0.5);">📦 Ресурсы</label>
-            <button id="add-resource-btn" style="background: rgba(74,14,14,0.3); border: 1px solid #4a0e0e; border-radius: 4px; color: #ffd700; padding: 2px 12px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">+ Добавить</button>
+          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">📦 Ресурсы</label>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
+              Место ресурса
+            </label>
+            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
+              Место ночлега
+            </label>
           </div>
-          <div id="resources-container"></div>
         </div>
         
+        <!-- Кнопка отправки -->
         <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
       </div>
     </div>
@@ -185,6 +179,7 @@ function addReportSection() {
   
   panelContent.appendChild(section);
   
+  // Навешиваем обработчики
   document.getElementById('toggle-report-btn')?.addEventListener('click', function() {
     var fields = document.getElementById('report-fields');
     if (fields) {
@@ -199,13 +194,26 @@ function addReportSection() {
   });
   
   document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
-  document.getElementById('add-resource-btn')?.addEventListener('click', addResourceField);
-  
   document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
   
   addDeceasedField();
-  addResourceField();
   updateKeeperDisplay();
+  
+  // Показываем секцию только если авторизован
+  if (isAuthorized) {
+    section.style.display = 'block';
+  }
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ВИДИМОСТИ СЕКЦИИ ОТЧЁТА
+// ============================================================
+
+function updateReportSectionVisibility() {
+  var section = document.getElementById('report-section');
+  if (section) {
+    section.style.display = isAuthorized ? 'block' : 'none';
+  }
 }
 
 // ============================================================
@@ -237,6 +245,7 @@ async function submitReportHandler() {
     return;
   }
 
+  // Собираем имена умерших
   var deceasedInputs = document.querySelectorAll('.deceased-name');
   var deceasedNames = [];
   deceasedInputs.forEach(function(input) {
@@ -244,11 +253,9 @@ async function submitReportHandler() {
     if (name) deceasedNames.push(name);
   });
 
-  var resourceSelects = document.querySelectorAll('.resource-type');
-  var resources = [];
-  resourceSelects.forEach(function(select) {
-    resources.push(select.value);
-  });
+  // Собираем ресурсы (чекбоксы)
+  var hasResource = document.getElementById('resource-check')?.checked || false;
+  var hasShelter = document.getElementById('shelter-check')?.checked || false;
 
   var keeperName = getCurrentKeeper();
 
@@ -257,16 +264,18 @@ async function submitReportHandler() {
     content, 
     keeperName, 
     deceasedNames, 
-    resources
+    hasResource, 
+    hasShelter
   );
   
   if (result.success) {
     alert('✅ Отчёт сохранён!');
+    // Очищаем поля
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
-    document.getElementById('resources-container').innerHTML = '';
+    document.getElementById('resource-check').checked = false;
+    document.getElementById('shelter-check').checked = false;
     addDeceasedField();
-    addResourceField();
     loadReports(currentRegionId);
   } else {
     alert('❌ Ошибка: ' + result.error);
@@ -286,16 +295,18 @@ function updateReportButton() {
     reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
-    // Убираем обработчик, чтобы не открывал пароль
     reportBtn.onclick = null;
+    // Показываем секцию отчёта
+    updateReportSectionVisibility();
   } else {
     reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
     reportBtn.style.cursor = 'pointer';
-    // Добавляем обработчик для открытия пароля
     reportBtn.onclick = function() {
       openPasswordModal();
     };
+    // Скрываем секцию отчёта
+    updateReportSectionVisibility();
   }
 }
 
@@ -377,7 +388,7 @@ passwordSubmitBtn.addEventListener('click', function() {
     closePasswordModal();
     updateReportButton();
     updateKeeperDisplay();
-    alert('✅ Доступ получен! Хранитель: ' + keeperName);
+    // alert убран!
   } else {
     passwordError.textContent = 'Неверный пароль';
     passwordError.style.display = 'block';
