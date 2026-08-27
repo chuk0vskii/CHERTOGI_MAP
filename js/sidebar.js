@@ -93,7 +93,6 @@ function updateReportButton() {
     reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
-    console.log('✅ Кнопка отчёта обновлена: текст =', reportBtn.textContent);
   } else {
     reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
@@ -207,43 +206,28 @@ keeperInput.addEventListener('keydown', function(e) {
 });
 
 // ============================================================
-// ОБРАБОТЧИК КНОПКИ "СОСТАВИТЬ ОТЧЁТ" (с отладкой)
+// ОБРАБОТЧИК КНОПКИ "СОСТАВИТЬ ОТЧЁТ"
 // ============================================================
 
-// Ищем кнопку
 var reportBtn = document.getElementById('report-btn');
-console.log('🔍 report-btn найден:', reportBtn);
 
 if (reportBtn) {
-  // Удаляем старые обработчики (если были)
-  var newReportBtn = reportBtn.cloneNode(true);
-  reportBtn.parentNode.replaceChild(newReportBtn, reportBtn);
-  
-  newReportBtn.addEventListener('click', function() {
+  reportBtn.addEventListener('click', function() {
     console.log('🖱️ Клик по кнопке "Составить отчёт"');
-    console.log('📌 isAuthorized:', isAuthorized);
-    console.log('📌 currentRegionId:', currentRegionId);
     
-    // Проверяем авторизацию
     if (!isAuthorized) {
-      console.log('🔑 Не авторизован, открываем модалку пароля');
       openPasswordModal();
       return;
     }
     
-    // Проверяем, что выбран регион
     if (!currentRegionId) {
       alert('Сначала выберите регион на карте');
       return;
     }
     
-    // Открываем модалку отчёта
     var modal = document.getElementById('report-modal');
-    console.log('📦 report-modal найден:', modal);
-    
     if (!modal) {
       console.error('❌ Модалка отчёта не найдена!');
-      alert('Ошибка: модальное окно не найдено');
       return;
     }
     
@@ -262,16 +246,20 @@ if (reportBtn) {
       keeperDisplay.value = getCurrentKeeper() || 'Не указан';
     }
     
-    // Сбрасываем поля
     if (reportContent) reportContent.value = '';
     if (deceasedContainer) deceasedContainer.innerHTML = '';
     if (resourcesContainer) resourcesContainer.innerHTML = '';
     
-    // Добавляем первые поля
     addDeceasedField();
     addResourceField();
     
+    // ===== ПРИНУДИТЕЛЬНО ПОКАЗЫВАЕМ МОДАЛКУ =====
     modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.style.zIndex = '9999';
+    modal.style.pointerEvents = 'auto';
+    
     console.log('✅ Модалка отчёта открыта');
   });
 } else {
@@ -284,10 +272,7 @@ if (reportBtn) {
 
 function addDeceasedField() {
   var container = document.getElementById('deceased-container');
-  if (!container) {
-    console.warn('⚠️ deceased-container не найден');
-    return;
-  }
+  if (!container) return;
   
   var div = document.createElement('div');
   div.className = 'deceased-field';
@@ -311,10 +296,7 @@ function addDeceasedField() {
 
 function addResourceField() {
   var container = document.getElementById('resources-container');
-  if (!container) {
-    console.warn('⚠️ resources-container не найден');
-    return;
-  }
+  if (!container) return;
   
   var div = document.createElement('div');
   div.className = 'resource-field';
@@ -402,7 +384,11 @@ document.getElementById('submit-report-btn')?.addEventListener('click', async fu
 
 function closeReportModal() {
   var modal = document.getElementById('report-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+    modal.style.visibility = 'hidden';
+    modal.style.opacity = '0';
+  }
 }
 
 document.getElementById('cancel-report-btn')?.addEventListener('click', closeReportModal);
