@@ -35,16 +35,22 @@ async function loadReports(regionId) {
   for (var i = 0; i < data.length; i++) {
     var report = data[i];
     
+    // Умершие
     var deceasedHTML = '';
     if (report.deceased_names && report.deceased_names.length > 0) {
       deceasedHTML = '<div style="color: #ff6b6b; font-size: 12px; margin-top: 4px;">💀 Умершие: ' + report.deceased_names.join(', ') + '</div>';
     }
     
+    // Ресурсы
     var resourcesHTML = '';
-    if (report.resources && report.resources.length > 0) {
-      resourcesHTML = '<div style="color: #51cf66; font-size: 12px; margin-top: 2px;">📦 Ресурсы: ' + report.resources.join(', ') + '</div>';
+    var resources = [];
+    if (report.has_resource) resources.push('📍 Место ресурса');
+    if (report.has_shelter) resources.push('🏕️ Место ночлега');
+    if (resources.length > 0) {
+      resourcesHTML = '<div style="color: #51cf66; font-size: 12px; margin-top: 2px;">📦 Ресурсы: ' + resources.join(', ') + '</div>';
     }
     
+    // Хранитель
     var keeperHTML = '';
     if (report.keeper_name) {
       keeperHTML = '<div style="color: #ffd700; font-size: 12px; margin-top: 2px;">👤 Хранитель: ' + report.keeper_name + '</div>';
@@ -71,13 +77,14 @@ async function loadReports(regionId) {
 // ОТПРАВКА ОТЧЁТА
 // ============================================================
 
-async function submitReport(regionId, content, keeperName, deceasedNames, resources) {
+async function submitReport(regionId, content, keeperName, deceasedNames, hasResource, hasShelter) {
   var insertData = {
     region_id: regionId,
     keeper_name: keeperName || null,
     content: content,
     deceased_names: deceasedNames && deceasedNames.length > 0 ? deceasedNames : null,
-    resources: resources && resources.length > 0 ? resources : null,
+    has_resource: hasResource || false,
+    has_shelter: hasShelter || false,
     game_date: new Date().toISOString().split('T')[0]
   };
 
