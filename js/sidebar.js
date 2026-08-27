@@ -64,7 +64,7 @@ function openSidebar(regionId, name, description, difficulty) {
 
   sidebar.style.display = 'block';
   sidebar.classList.add('open');
-  setTimeout(function() { sidebar.style.transform = 'translateX(0)'; }, 10);
+  setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
   loadReports(regionId);
   updateReportButton();
 }
@@ -72,7 +72,7 @@ function openSidebar(regionId, name, description, difficulty) {
 function closeSidebar() {
   sidebar.classList.remove('open');
   sidebar.style.transform = 'translateX(100%)';
-  setTimeout(function() { sidebar.style.display = 'none'; }, 300);
+  setTimeout(() => { sidebar.style.display = 'none'; }, 300);
 }
 
 document.getElementById('close-icon').addEventListener('click', function(e) {
@@ -206,27 +206,63 @@ keeperInput.addEventListener('keydown', function(e) {
 });
 
 // ============================================================
-// МОДАЛЬНОЕ ОКНО ОТЧЁТА
+// ОБРАБОТЧИК КНОПКИ "СОСТАВИТЬ ОТЧЁТ"
 // ============================================================
 
-var modal = document.getElementById('report-modal');
-var modalRegionName = document.getElementById('modal-region-name');
-var reportContent = document.getElementById('report-content');
-var reportDeceasedContainer = document.getElementById('deceased-container');
-var reportResourcesContainer = document.getElementById('resources-container');
-var addDeceasedBtn = document.getElementById('add-deceased-btn');
-var addResourceBtn = document.getElementById('add-resource-btn');
-var keeperDisplay = document.getElementById('keeper-display');
-
-var deceasedCount = 0;
-var resourceCount = 0;
+document.getElementById('report-btn')?.addEventListener('click', function() {
+  // Проверяем авторизацию
+  if (!isReportAuthorized()) {
+    openPasswordModal();
+    return;
+  }
+  
+  // Проверяем, что выбран регион
+  if (!currentRegionId) {
+    alert('Сначала выберите регион на карте');
+    return;
+  }
+  
+  // Открываем модалку отчёта
+  var modal = document.getElementById('report-modal');
+  var modalRegionName = document.getElementById('modal-region-name');
+  var keeperDisplay = document.getElementById('keeper-display');
+  var reportContent = document.getElementById('report-content');
+  var deceasedContainer = document.getElementById('deceased-container');
+  var resourcesContainer = document.getElementById('resources-container');
+  
+  if (!modal) {
+    console.error('❌ Модалка отчёта не найдена!');
+    return;
+  }
+  
+  // Заполняем данные
+  var regionName = sidebarTitle.textContent;
+  modalRegionName.textContent = '📍 Регион: ' + regionName;
+  
+  if (keeperDisplay) {
+    keeperDisplay.value = getCurrentKeeper() || 'Не указан';
+  }
+  
+  // Сбрасываем поля
+  if (reportContent) reportContent.value = '';
+  if (deceasedContainer) deceasedContainer.innerHTML = '';
+  if (resourcesContainer) resourcesContainer.innerHTML = '';
+  
+  // Добавляем первые поля
+  addDeceasedField();
+  addResourceField();
+  
+  modal.style.display = 'flex';
+});
 
 // ============================================================
 // ДОБАВЛЕНИЕ ПОЛЯ ДЛЯ УМЕРШЕГО
 // ============================================================
 
 function addDeceasedField() {
-  deceasedCount++;
+  var container = document.getElementById('deceased-container');
+  if (!container) return;
+  
   var div = document.createElement('div');
   div.className = 'deceased-field';
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
@@ -238,10 +274,9 @@ function addDeceasedField() {
   var removeBtn = div.querySelector('.remove-deceased-btn');
   removeBtn.addEventListener('click', function() {
     div.remove();
-    deceasedCount--;
   });
   
-  reportDeceasedContainer.appendChild(div);
+  container.appendChild(div);
 }
 
 // ============================================================
@@ -249,9 +284,119 @@ function addDeceasedField() {
 // ============================================================
 
 function addResourceField() {
-  resourceCount++;
+  var container = document.getElementById('resources-container');
+  if (!container) return;
+  
   var div = document.createElement('div');
   div.className = 'resource-field';
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
   div.innerHTML = `
-    <select class="resource-type
+    <select class="resource-type" style="flex:1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;">
+      <option value="Место ресурса">Место ресурса</option>
+      <option value="Место ночлега">Место ночлега</option>
+    </select>
+    <button class="remove-resource-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">✕</button>
+  `;
+  
+  var removeBtn = div.querySelector('.remove-resource-btn');
+  removeBtn.addEventListener('click', function() {
+    div.remove();
+  });
+  
+  container.appendChild(div);
+}
+
+// ============================================================
+// КНОПКИ ДОБАВЛЕНИЯ (из HTML)
+// ============================================================
+
+document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
+document.getElementById('add-resource-btn')?.addEventListener('click', addResourceField);
+
+// ============================================================
+// ОТПРАВКА ОТЧЁТА
+// ============================================================
+
+document.getElementById('submit-report-btn')?.addEventListener('click', async function() {
+  if (!isReportAuthorized()) {
+    alert('Сначала введите пароль!');
+    closeReportModal();
+    openPasswordModal();
+    return;
+  }
+  
+  var content = document.getElementById('report-content')?.value.trim();
+  if (!content) {
+    alert('Напишите текст отчёта');
+    return;
+  }
+
+  // Собираем имена умерших
+  var deceasedInputs = document.querySelectorAll('.deceased-name');
+  var deceasedNames = [];
+  deceasedInputs.forEach(function(input) {
+    var name = input.value.trim();
+    if (name) deceasedNames.push(name);
+  });
+
+  // Собираем ресурсы
+  var resourceSelects = document.querySelectorAll('.resource-type');
+  var resources = [];
+  resourceSelects.forEach(function(select) {
+    resources.push(select.value);
+  });
+
+  var keeperName = getCurrentKeeper();
+
+  var result = await submitReport(
+    currentRegionId, 
+    content, 
+    keeperName, 
+    deceasedNames, 
+    resources
+  );
+  
+  if (result.success) {
+    alert('✅ Отчёт сохранён!');
+    closeReportModal();
+    loadReports(currentRegionId);
+  } else {
+    alert('❌ Ошибка: ' + result.error);
+  }
+});
+
+// ============================================================
+// ЗАКРЫТИЕ МОДАЛКИ ОТЧЁТА
+// ============================================================
+
+function closeReportModal() {
+  var modal = document.getElementById('report-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+document.getElementById('cancel-report-btn')?.addEventListener('click', closeReportModal);
+document.getElementById('report-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeReportModal();
+});
+
+// ============================================================
+// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
+// ============================================================
+
+function closeSidebarOnMapClick() {
+  if (typeof map !== 'undefined') {
+    map.on('click', function(event) {
+      var target = event.originalEvent.target;
+      var isOverlay = target.closest('.ol-overlay-container') !== null;
+      
+      if (!isOverlay) {
+        var sidebarEl = document.getElementById('region-sidebar');
+        if (sidebarEl && sidebarEl.style.display === 'block') {
+          closeSidebar();
+        }
+      }
+    });
+  }
+}
+
+setTimeout(closeSidebarOnMapClick, 1000);
