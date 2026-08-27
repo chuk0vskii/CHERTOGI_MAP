@@ -20,57 +20,85 @@ async function loadReports(regionId) {
     .limit(10);
 
   if (result.error) {
-    console.error('❌ Ошибка загрузки отчётов:', result.error);
-    reportsList.innerHTML = '<p style="color: #ff6b6b; font-size: 14px;">❌ Ошибка загрузки</p>';
+    console.error('Ошибка загрузки отчётов:', result.error);
+    reportsList.innerHTML = '<p style="color: #ff6b6b; font-size: 14px;">Ошибка загрузки</p>';
     return;
   }
 
   var data = result.data;
   if (!data || data.length === 0) {
-    reportsList.innerHTML = '<p style="color: #777; font-size: 14px;">📭 Пока нет отчётов для этого региона</p>';
+    reportsList.innerHTML = '<p style="color: #777; font-size: 14px;">Пока нет отчётов для этого региона</p>';
     return;
   }
 
   var html = '';
   for (var i = 0; i < data.length; i++) {
     var report = data[i];
+    var reportId = 'report-' + report.id;
     
-    // Умершие
-    var deceasedHTML = '';
-    if (report.deceased_names && report.deceased_names.length > 0) {
-      deceasedHTML = '<div style="color: #ff6b6b; font-size: 12px; margin-top: 4px;">💀 Умершие: ' + report.deceased_names.join(', ') + '</div>';
-    }
-    
-    // Ресурсы
-    var resourcesHTML = '';
-    var resources = [];
-    if (report.has_resource) resources.push('📍 Место ресурса');
-    if (report.has_shelter) resources.push('🏕️ Место ночлега');
-    if (resources.length > 0) {
-      resourcesHTML = '<div style="color: #51cf66; font-size: 12px; margin-top: 2px;">📦 Ресурсы: ' + resources.join(', ') + '</div>';
-    }
+    // Формируем полное содержимое отчёта (скрыто по умолчанию)
+    var fullContent = '';
     
     // Хранитель
-    var keeperHTML = '';
     if (report.keeper_name) {
-      keeperHTML = '<div style="color: #ffd700; font-size: 12px; margin-top: 2px;">👤 Хранитель: ' + report.keeper_name + '</div>';
+      fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + report.keeper_name + '</div>';
     }
     
+    // Текст отчёта
+    if (report.content) {
+      fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + report.content + '</div>';
+    }
+    
+    // Умершие
+    if (report.deceased_names && report.deceased_names.length > 0) {
+      fullContent += '<div style="color: #ff6b6b; font-size: 13px; margin-top: 4px;"><span style="color: #888;">Умершие:</span> ' + report.deceased_names.join(', ') + '</div>';
+    }
+    
+    // Точки интереса
+    var points = [];
+    if (report.has_resource) points.push('Место ресурса');
+    if (report.has_shelter) points.push('Место ночлега');
+    if (points.length > 0) {
+      fullContent += '<div style="color: #51cf66; font-size: 13px; margin-top: 2px;"><span style="color: #888;">Точки интереса:</span> ' + points.join(', ') + '</div>';
+    }
+    
+    // Если нет дополнительной информации
+    if (!fullContent) {
+      fullContent = '<div style="color: #888; font-size: 13px; margin-top: 4px;">Нет дополнительной информации</div>';
+    }
+    
+    var dateStr = new Date(report.created_at).toLocaleDateString('ru-RU');
+    var timeStr = new Date(report.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    
     html += `
-      <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 3px solid rgba(255, 215, 0, 0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <span style="color: #aaa; font-size: 11px;">🗓️ ${new Date(report.created_at).toLocaleDateString('ru-RU')}</span>
+      <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 2px solid rgba(255,215,0,0.2); cursor: pointer;" onclick="toggleReport('${reportId}')">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #aaa; font-size: 12px;">${dateStr} ${timeStr}</span>
           <span style="color: #555; font-size: 10px;">#${report.id}</span>
         </div>
-        ${keeperHTML}
-        <div style="color: #e0d5c0; font-size: 14px; line-height: 1.4; word-wrap: break-word;">${report.content}</div>
-        ${deceasedHTML}
-        ${resourcesHTML}
+        <div id="${reportId}" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
+          ${fullContent}
+        </div>
       </div>
     `;
   }
   
   reportsList.innerHTML = html;
+}
+
+// ============================================================
+// ПЕРЕКЛЮЧЕНИЕ ВИДИМОСТИ ОТЧЁТА
+// ============================================================
+
+function toggleReport(reportId) {
+  var element = document.getElementById(reportId);
+  if (element) {
+    if (element.style.display === 'none') {
+      element.style.display = 'block';
+    } else {
+      element.style.display = 'none';
+    }
+  }
 }
 
 // ============================================================
@@ -93,7 +121,7 @@ async function submitReport(regionId, content, keeperName, deceasedNames, hasRes
     .insert([insertData]);
 
   if (result.error) {
-    console.error('❌ Ошибка отправки отчёта:', result.error);
+    console.error('Ошибка отправки отчёта:', result.error);
     return { success: false, error: result.error.message };
   }
 
