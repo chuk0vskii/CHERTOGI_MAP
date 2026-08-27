@@ -310,6 +310,39 @@ async function submitReportHandler() {
 }
 
 // ============================================================
+// СМЕНА ХРАНИТЕЛЯ (СБРОС АВТОРИЗАЦИИ)
+// ============================================================
+
+function resetAuthorization() {
+  if (confirm('Вы уверены, что хотите сменить Хранителя узлов? Текущий сеанс будет завершён.')) {
+    setReportAuthorized(false);
+    setCurrentKeeper('');
+    updateReportButton();
+    updateKeeperDisplay();
+    updateReportSectionVisibility();
+    
+    // Скрываем секцию отчёта
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'none';
+    }
+    
+    // Обновляем кнопку
+    var reportBtn = document.getElementById('report-btn');
+    if (reportBtn) {
+      reportBtn.textContent = 'Введите пароль для создания отчёта';
+      reportBtn.style.opacity = '0.6';
+      reportBtn.style.cursor = 'pointer';
+      reportBtn.onclick = function() {
+        openPasswordModal();
+      };
+    }
+    
+    console.log('Авторизация сброшена');
+  }
+}
+
+// ============================================================
 // ОБНОВЛЕНИЕ КНОПКИ ОТЧЁТА
 // ============================================================
 
@@ -324,6 +357,19 @@ function updateReportButton() {
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = null;
     updateReportSectionVisibility();
+    
+    // Добавляем кнопку смены Хранителя, если её нет
+    var changeBtn = document.getElementById('change-keeper-btn');
+    if (!changeBtn) {
+      var btn = document.createElement('button');
+      btn.id = 'change-keeper-btn';
+      btn.textContent = 'Сменить Хранителя';
+      btn.style.cssText = 'width: 100%; padding: 6px; margin-top: 6px; background: rgba(74,14,14,0.3); border: 1px solid rgba(74,14,14,0.3); border-radius: 4px; color: rgba(255,255,255,0.5); cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px; transition: all 0.3s;';
+      btn.onmouseover = function() { this.style.background = 'rgba(74,14,14,0.6)'; this.style.color = '#ffffff'; };
+      btn.onmouseout = function() { this.style.background = 'rgba(74,14,14,0.3)'; this.style.color = 'rgba(255,255,255,0.5)'; };
+      btn.onclick = resetAuthorization;
+      reportBtn.parentNode.insertBefore(btn, reportBtn.nextSibling);
+    }
   } else {
     reportBtn.textContent = 'Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
@@ -332,6 +378,12 @@ function updateReportButton() {
       openPasswordModal();
     };
     updateReportSectionVisibility();
+    
+    // Удаляем кнопку смены Хранителя, если она есть
+    var changeBtn = document.getElementById('change-keeper-btn');
+    if (changeBtn) {
+      changeBtn.remove();
+    }
   }
 }
 
@@ -437,18 +489,14 @@ keeperInput.addEventListener('keydown', function(e) {
 // ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ ПРИ ЗАГРУЗКЕ
 // ============================================================
 
-// Загружаем сохранённое состояние при инициализации
 loadAuthState();
 
-// Если авторизация была сохранена — обновляем UI
 if (isAuthorized) {
-  // Ждём загрузки DOM, чтобы обновить кнопки
   document.addEventListener('DOMContentLoaded', function() {
     updateReportButton();
     updateKeeperDisplay();
     updateReportSectionVisibility();
     
-    // Если панель открыта — обновляем секцию
     var section = document.getElementById('report-section');
     if (section) {
       section.style.display = 'block';
