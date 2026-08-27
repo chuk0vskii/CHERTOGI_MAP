@@ -2,9 +2,6 @@
 // БОКОВАЯ ПАНЕЛЬ
 // ============================================================
 
-import { loadReports, submitReport } from './reports.js';
-import { isReportAuthorized, setReportAuthorized, REPORT_PASSWORD, getCurrentKeeper, setCurrentKeeper } from '../config-module.js';
-
 let currentRegionId = null;
 const sidebar = document.getElementById('region-sidebar');
 const sidebarTitle = document.getElementById('sidebar-title');
@@ -13,10 +10,35 @@ const reportsList = document.getElementById('reports-list');
 const difficultyContainer = document.getElementById('region-difficulty');
 
 // ============================================================
-// ОТКРЫТИЕ ПАНЕЛИ
+// КОНФИГУРАЦИЯ ПАРОЛЯ
 // ============================================================
 
-export function openSidebar(regionId, name, description, difficulty) {
+const REPORT_PASSWORD = 'CHERTOGI2024';
+let isAuthorized = false;
+let currentKeeper = '';
+
+function isReportAuthorized() {
+  return isAuthorized;
+}
+
+function setReportAuthorized(value) {
+  isAuthorized = value;
+  console.log('🔑 Статус доступа к отчётам:', isAuthorized ? '✅ Открыт' : '🔒 Закрыт');
+}
+
+function getCurrentKeeper() {
+  return currentKeeper;
+}
+
+function setCurrentKeeper(name) {
+  currentKeeper = name;
+}
+
+// ============================================================
+// ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ
+// ============================================================
+
+function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
   sidebarTitle.textContent = name;
   sidebarDesc.textContent = description || 'Описание отсутствует';
@@ -42,27 +64,32 @@ export function openSidebar(regionId, name, description, difficulty) {
 
   sidebar.style.display = 'block';
   sidebar.classList.add('open');
-  setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
+  setTimeout(function() { sidebar.style.transform = 'translateX(0)'; }, 10);
   loadReports(regionId);
   updateReportButton();
 }
 
-export function closeSidebar() {
+function closeSidebar() {
   sidebar.classList.remove('open');
   sidebar.style.transform = 'translateX(100%)';
-  setTimeout(() => { sidebar.style.display = 'none'; }, 300);
+  setTimeout(function() { sidebar.style.display = 'none'; }, 300);
 }
+
+document.getElementById('close-icon').addEventListener('click', function(e) {
+  e.stopPropagation();
+  closeSidebar();
+});
 
 // ============================================================
 // ОБНОВЛЕНИЕ КНОПКИ ОТЧЁТА
 // ============================================================
 
 function updateReportButton() {
-  const reportBtn = document.getElementById('report-btn');
+  var reportBtn = document.getElementById('report-btn');
   if (!reportBtn) return;
   
   if (isReportAuthorized()) {
-    const keeper = getCurrentKeeper();
+    var keeper = getCurrentKeeper();
     reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
@@ -77,7 +104,7 @@ function updateReportButton() {
 // МОДАЛЬНОЕ ОКНО ПАРОЛЯ
 // ============================================================
 
-const passwordModal = document.createElement('div');
+var passwordModal = document.createElement('div');
 passwordModal.id = 'password-modal';
 passwordModal.style.cssText = `
   display: none;
@@ -107,11 +134,11 @@ passwordModal.innerHTML = `
 `;
 document.body.appendChild(passwordModal);
 
-const passwordInput = document.getElementById('password-input');
-const keeperInput = document.getElementById('keeper-input');
-const passwordSubmitBtn = document.getElementById('password-submit-btn');
-const passwordCancelBtn = document.getElementById('password-cancel-btn');
-const passwordError = document.getElementById('password-error');
+var passwordInput = document.getElementById('password-input');
+var keeperInput = document.getElementById('keeper-input');
+var passwordSubmitBtn = document.getElementById('password-submit-btn');
+var passwordCancelBtn = document.getElementById('password-cancel-btn');
+var passwordError = document.getElementById('password-error');
 
 // ============================================================
 // ОБРАБОТЧИКИ МОДАЛКИ ПАРОЛЯ
@@ -122,7 +149,7 @@ function openPasswordModal() {
   keeperInput.value = '';
   passwordError.style.display = 'none';
   passwordModal.style.display = 'flex';
-  setTimeout(() => passwordInput.focus(), 100);
+  setTimeout(function() { passwordInput.focus(); }, 100);
 }
 
 function closePasswordModal() {
@@ -130,8 +157,8 @@ function closePasswordModal() {
 }
 
 passwordSubmitBtn.addEventListener('click', function() {
-  const inputPassword = passwordInput.value.trim();
-  const keeperName = keeperInput.value.trim();
+  var inputPassword = passwordInput.value.trim();
+  var keeperName = keeperInput.value.trim();
 
   if (!inputPassword) {
     passwordError.textContent = 'Введите пароль';
@@ -151,7 +178,7 @@ passwordSubmitBtn.addEventListener('click', function() {
     closePasswordModal();
     updateReportButton();
     
-    const reportBtn = document.getElementById('report-btn');
+    var reportBtn = document.getElementById('report-btn');
     if (reportBtn) {
       reportBtn.textContent = '📝 Составить отчёт (' + keeperName + ')';
       reportBtn.style.opacity = '1';
@@ -179,19 +206,20 @@ keeperInput.addEventListener('keydown', function(e) {
 });
 
 // ============================================================
-// МОДАЛЬНОЕ ОКНО ОТЧЁТА (С ДИНАМИЧЕСКИМИ ПОЛЯМИ)
+// МОДАЛЬНОЕ ОКНО ОТЧЁТА
 // ============================================================
 
-const modal = document.getElementById('report-modal');
-const modalRegionName = document.getElementById('modal-region-name');
-const reportContent = document.getElementById('report-content');
-const reportDeceasedContainer = document.getElementById('deceased-container');
-const reportResourcesContainer = document.getElementById('resources-container');
-const addDeceasedBtn = document.getElementById('add-deceased-btn');
-const addResourceBtn = document.getElementById('add-resource-btn');
+var modal = document.getElementById('report-modal');
+var modalRegionName = document.getElementById('modal-region-name');
+var reportContent = document.getElementById('report-content');
+var reportDeceasedContainer = document.getElementById('deceased-container');
+var reportResourcesContainer = document.getElementById('resources-container');
+var addDeceasedBtn = document.getElementById('add-deceased-btn');
+var addResourceBtn = document.getElementById('add-resource-btn');
+var keeperDisplay = document.getElementById('keeper-display');
 
-let deceasedCount = 0;
-let resourceCount = 0;
+var deceasedCount = 0;
+var resourceCount = 0;
 
 // ============================================================
 // КЛИК ПО КНОПКЕ "СОСТАВИТЬ ОТЧЁТ"
@@ -205,8 +233,13 @@ document.getElementById('report-btn')?.addEventListener('click', function() {
   
   if (!currentRegionId) return;
   
-  const regionName = sidebarTitle.textContent;
+  var regionName = sidebarTitle.textContent;
   modalRegionName.textContent = '📍 Регион: ' + regionName;
+  
+  // Заполняем имя Хранителя
+  if (keeperDisplay) {
+    keeperDisplay.value = getCurrentKeeper() || 'Не указан';
+  }
   
   // Сбрасываем поля
   reportContent.value = '';
@@ -219,7 +252,7 @@ document.getElementById('report-btn')?.addEventListener('click', function() {
   addDeceasedField();
   addResourceField();
   
-  document.getElementById('report-modal').style.display = 'flex';
+  modal.style.display = 'flex';
 });
 
 // ============================================================
@@ -228,7 +261,7 @@ document.getElementById('report-btn')?.addEventListener('click', function() {
 
 function addDeceasedField() {
   deceasedCount++;
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.className = 'deceased-field';
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
   div.innerHTML = `
@@ -236,7 +269,7 @@ function addDeceasedField() {
     <button class="remove-deceased-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">✕</button>
   `;
   
-  const removeBtn = div.querySelector('.remove-deceased-btn');
+  var removeBtn = div.querySelector('.remove-deceased-btn');
   removeBtn.addEventListener('click', function() {
     div.remove();
     deceasedCount--;
@@ -251,7 +284,7 @@ function addDeceasedField() {
 
 function addResourceField() {
   resourceCount++;
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.className = 'resource-field';
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
   div.innerHTML = `
@@ -262,7 +295,7 @@ function addResourceField() {
     <button class="remove-resource-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">✕</button>
   `;
   
-  const removeBtn = div.querySelector('.remove-resource-btn');
+  var removeBtn = div.querySelector('.remove-resource-btn');
   removeBtn.addEventListener('click', function() {
     div.remove();
     resourceCount--;
@@ -275,8 +308,12 @@ function addResourceField() {
 // КНОПКИ ДОБАВЛЕНИЯ
 // ============================================================
 
-document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
-document.getElementById('add-resource-btn')?.addEventListener('click', addResourceField);
+if (addDeceasedBtn) {
+  addDeceasedBtn.addEventListener('click', addDeceasedField);
+}
+if (addResourceBtn) {
+  addResourceBtn.addEventListener('click', addResourceField);
+}
 
 // ============================================================
 // ОТПРАВКА ОТЧЁТА
@@ -290,30 +327,30 @@ document.getElementById('submit-report-btn')?.addEventListener('click', async fu
     return;
   }
   
-  const content = reportContent.value.trim();
+  var content = reportContent.value.trim();
   if (!content) {
     alert('Напишите текст отчёта');
     return;
   }
 
   // Собираем имена умерших
-  const deceasedInputs = document.querySelectorAll('.deceased-name');
-  const deceasedNames = [];
+  var deceasedInputs = document.querySelectorAll('.deceased-name');
+  var deceasedNames = [];
   deceasedInputs.forEach(function(input) {
-    const name = input.value.trim();
+    var name = input.value.trim();
     if (name) deceasedNames.push(name);
   });
 
   // Собираем ресурсы
-  const resourceSelects = document.querySelectorAll('.resource-type');
-  const resources = [];
+  var resourceSelects = document.querySelectorAll('.resource-type');
+  var resources = [];
   resourceSelects.forEach(function(select) {
     resources.push(select.value);
   });
 
-  const keeperName = getCurrentKeeper();
+  var keeperName = getCurrentKeeper();
 
-  const result = await submitReport(
+  var result = await submitReport(
     currentRegionId, 
     content, 
     keeperName, 
@@ -331,15 +368,15 @@ document.getElementById('submit-report-btn')?.addEventListener('click', async fu
 });
 
 // ============================================================
-// МОДАЛЬНОЕ ОКНО ОТЧЁТА - ЗАКРЫТИЕ
+// ЗАКРЫТИЕ МОДАЛКИ
 // ============================================================
 
-export function closeModal() {
-  document.getElementById('report-modal').style.display = 'none';
+function closeModal() {
+  modal.style.display = 'none';
 }
 
 document.getElementById('cancel-report-btn')?.addEventListener('click', closeModal);
-document.getElementById('report-modal')?.addEventListener('click', function(e) {
+modal?.addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
@@ -347,15 +384,15 @@ document.getElementById('report-modal')?.addEventListener('click', function(e) {
 // ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
 // ============================================================
 
-export function closeSidebarOnMapClick() {
+function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
     map.on('click', function(event) {
-      const target = event.originalEvent.target;
-      const isOverlay = target.closest('.ol-overlay-container') !== null;
+      var target = event.originalEvent.target;
+      var isOverlay = target.closest('.ol-overlay-container') !== null;
       
       if (!isOverlay) {
-        const sidebar = document.getElementById('region-sidebar');
-        if (sidebar && sidebar.style.display === 'block') {
+        var sidebarEl = document.getElementById('region-sidebar');
+        if (sidebarEl && sidebarEl.style.display === 'block') {
           closeSidebar();
         }
       }
