@@ -38,9 +38,6 @@ function setCurrentKeeper(name) {
 // ДОБАВЛЕНИЕ ПОЛЕЙ ДЛЯ ОТЧЁТА В ПАНЕЛЬ
 // ============================================================
 
-var deceasedCount = 0;
-var resourceCount = 0;
-
 function addDeceasedField() {
   var container = document.getElementById('deceased-container');
   if (!container) return;
@@ -112,7 +109,6 @@ function openSidebar(regionId, name, description, difficulty) {
     img.textContent = 'Изображение региона';
   }
 
-  // Добавляем секцию отчёта в панель
   addReportSection();
 
   sidebar.style.display = 'block';
@@ -142,7 +138,6 @@ function addReportSection() {
   var panelContent = document.querySelector('.panel-content');
   if (!panelContent) return;
   
-  // Проверяем, есть ли уже секция
   if (document.getElementById('report-section')) return;
   
   var section = document.createElement('div');
@@ -190,7 +185,6 @@ function addReportSection() {
   
   panelContent.appendChild(section);
   
-  // Навешиваем обработчики
   document.getElementById('toggle-report-btn')?.addEventListener('click', function() {
     var fields = document.getElementById('report-fields');
     if (fields) {
@@ -209,7 +203,6 @@ function addReportSection() {
   
   document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
   
-  // Добавляем первые поля
   addDeceasedField();
   addResourceField();
   updateKeeperDisplay();
@@ -269,12 +262,9 @@ async function submitReportHandler() {
   
   if (result.success) {
     alert('✅ Отчёт сохранён!');
-    // Очищаем поля
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resources-container').innerHTML = '';
-    deceasedCount = 0;
-    resourceCount = 0;
     addDeceasedField();
     addResourceField();
     loadReports(currentRegionId);
@@ -296,10 +286,16 @@ function updateReportButton() {
     reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
+    // Убираем обработчик, чтобы не открывал пароль
+    reportBtn.onclick = null;
   } else {
     reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
     reportBtn.style.cursor = 'pointer';
+    // Добавляем обработчик для открытия пароля
+    reportBtn.onclick = function() {
+      openPasswordModal();
+    };
   }
 }
 
@@ -381,13 +377,6 @@ passwordSubmitBtn.addEventListener('click', function() {
     closePasswordModal();
     updateReportButton();
     updateKeeperDisplay();
-    
-    var reportBtn = document.getElementById('report-btn');
-    if (reportBtn) {
-      reportBtn.textContent = '📝 Составить отчёт (' + keeperName + ')';
-      reportBtn.style.opacity = '1';
-      reportBtn.style.cursor = 'pointer';
-    }
     alert('✅ Доступ получен! Хранитель: ' + keeperName);
   } else {
     passwordError.textContent = 'Неверный пароль';
