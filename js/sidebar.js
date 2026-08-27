@@ -14,8 +14,45 @@ const difficultyContainer = document.getElementById('region-difficulty');
 // ============================================================
 
 const REPORT_PASSWORD = 'CHERTOGI2024';
+const STORAGE_KEY = 'chertogi_report_auth';
 let isAuthorized = false;
 let currentKeeper = '';
+
+// ============================================================
+// ЗАГРУЗКА СОСТОЯНИЯ ИЗ SESSIONSTORAGE
+// ============================================================
+
+function loadAuthState() {
+  try {
+    var saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      var data = JSON.parse(saved);
+      isAuthorized = data.isAuthorized || false;
+      currentKeeper = data.currentKeeper || '';
+      console.log('Загружено состояние авторизации:', isAuthorized ? 'Открыт (' + currentKeeper + ')' : 'Закрыт');
+      return true;
+    }
+  } catch (e) {
+    console.warn('Ошибка загрузки состояния:', e);
+  }
+  return false;
+}
+
+// ============================================================
+// СОХРАНЕНИЕ СОСТОЯНИЯ В SESSIONSTORAGE
+// ============================================================
+
+function saveAuthState() {
+  try {
+    var data = {
+      isAuthorized: isAuthorized,
+      currentKeeper: currentKeeper
+    };
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Ошибка сохранения состояния:', e);
+  }
+}
 
 function isReportAuthorized() {
   return isAuthorized;
@@ -23,6 +60,7 @@ function isReportAuthorized() {
 
 function setReportAuthorized(value) {
   isAuthorized = value;
+  saveAuthState();
   console.log('Статус доступа к отчётам:', isAuthorized ? 'Открыт' : 'Закрыт');
 }
 
@@ -32,6 +70,7 @@ function getCurrentKeeper() {
 
 function setCurrentKeeper(name) {
   currentKeeper = name;
+  saveAuthState();
 }
 
 // ============================================================
@@ -393,6 +432,29 @@ passwordInput.addEventListener('keydown', function(e) {
 keeperInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') passwordSubmitBtn.click();
 });
+
+// ============================================================
+// ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ ПРИ ЗАГРУЗКЕ
+// ============================================================
+
+// Загружаем сохранённое состояние при инициализации
+loadAuthState();
+
+// Если авторизация была сохранена — обновляем UI
+if (isAuthorized) {
+  // Ждём загрузки DOM, чтобы обновить кнопки
+  document.addEventListener('DOMContentLoaded', function() {
+    updateReportButton();
+    updateKeeperDisplay();
+    updateReportSectionVisibility();
+    
+    // Если панель открыта — обновляем секцию
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'block';
+    }
+  });
+}
 
 // ============================================================
 // ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
