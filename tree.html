@@ -246,7 +246,7 @@
   <div class="page-subtitle">Каждый павший оставляет след на ветвях</div>
 
   <div id="treeContainer" class="tree-container">
-    <img src="/CHERTOGI_MAP/drevo_smerty.jpg" alt="Древо смерти" class="tree-image" id="treeImage">
+    <img src="/CHERTOGI_MAP/icons/drevo_smerty.jpg" alt="Древо смерти" class="tree-image" id="treeImage">
     <div class="nodes-container" id="nodesContainer"></div>
   </div>
 
@@ -309,7 +309,6 @@
   // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ
   // ============================================================
 
-  var isCoordMode = false;
   var coordsDisplay = document.getElementById('coordsDisplay');
 
   document.getElementById('treeContainer').addEventListener('click', function(e) {
@@ -421,7 +420,6 @@
     // Сначала показываем 10 пустых узлов (всегда)
     var emptyCount = Math.min(10, allNodePositions.length);
     
-    // Показываем пустые узлы
     for (var k = 0; k < emptyCount; k++) {
       var pos = allNodePositions[k];
       var node = document.createElement('div');
@@ -431,7 +429,7 @@
       node.style.animationDelay = (k * 0.05) + 's';
       
       node.innerHTML = `
-        <img src="/CHERTOGI_MAP/uzelsmerty.png" alt="узел">
+        <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
         <span class="node-tooltip">Пустой узел</span>
       `;
       
@@ -456,7 +454,7 @@
       node.style.animationDelay = ((m + emptyCount) * 0.06) + 's';
       
       node.innerHTML = `
-        <img src="/CHERTOGI_MAP/uzelsmerty.png" alt="узел">
+        <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
         <span class="node-tooltip">${person.name}</span>
       `;
       
