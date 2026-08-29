@@ -406,40 +406,90 @@
 
 <script>
   // ============================================================
-  // КОНФИГУРАЦИЯ УЗЛОВ (координаты в процентах от картинки)
+  // НОВЫЕ КООРДИНАТЫ УЗЛОВ (57 штук)
   // ============================================================
 
-  var DEFAULT_NODES = [
-    { id: 1, x: 43.5, y: 87.3 },
-    { id: 2, x: 44.1, y: 82.9 },
-    { id: 3, x: 50.2, y: 81.7 },
-    { id: 4, x: 37.0, y: 80.1 },
-    { id: 5, x: 42.5, y: 79.9 },
-    { id: 6, x: 44.8, y: 74.8 },
-    { id: 7, x: 41.0, y: 73.5 },
-    { id: 8, x: 33.0, y: 75.7 },
-    { id: 9, x: 32.0, y: 77.6 },
-    { id: 10, x: 30.1, y: 80.3 },
-    { id: 11, x: 33.9, y: 84.7 },
-    { id: 12, x: 32.0, y: 83.3 },
-    { id: 13, x: 24.8, y: 86.6 },
-    { id: 14, x: 21.5, y: 81.3 },
-    { id: 15, x: 20.1, y: 73.9 },
-    { id: 16, x: 26.0, y: 78.3 },
-    { id: 17, x: 28.0, y: 77.2 },
-    { id: 18, x: 21.0, y: 60.3 },
-    { id: 19, x: 46.0, y: 72.5 },
-    { id: 20, x: 47.8, y: 75.5 },
-    { id: 21, x: 54.0, y: 81.7 },
-    { id: 22, x: 63.7, y: 81.7 },
-    { id: 23, x: 64.3, y: 77.4 },
-    { id: 24, x: 76.5, y: 78.3 },
-    { id: 25, x: 89.0, y: 56.0 },
-    { id: 26, x: 76.1, y: 42.8 }
+  var ALL_NODES = [
+    { x: 41.0, y: 84.6 },
+    { x: 39.6, y: 83.1 },
+    { x: 38.2, y: 80.9 },
+    { x: 35.4, y: 87.7 },
+    { x: 33.2, y: 80.1 },
+    { x: 32.7, y: 72.2 },
+    { x: 33.2, y: 60.2 },
+    { x: 29.8, y: 66.2 },
+    { x: 35.8, y: 69.8 },
+    { x: 37.2, y: 59.5 },
+    { x: 38.3, y: 70.4 },
+    { x: 45.8, y: 76.4 },
+    { x: 49.2, y: 66.8 },
+    { x: 47.3, y: 60.0 },
+    { x: 52.3, y: 82.1 },
+    { x: 55.6, y: 75.0 },
+    { x: 58.3, y: 81.6 },
+    { x: 57.6, y: 70.8 },
+    { x: 55.7, y: 63.6 },
+    { x: 55.5, y: 44.7 },
+    { x: 55.0, y: 31.7 },
+    { x: 60.9, y: 46.1 },
+    { x: 62.9, y: 41.7 },
+    { x: 72.9, y: 38.1 },
+    { x: 67.6, y: 41.5 },
+    { x: 65.6, y: 42.5 },
+    { x: 68.2, y: 73.9 },
+    { x: 72.9, y: 68.4 },
+    { x: 72.7, y: 57.0 },
+    { x: 73.7, y: 47.4 },
+    { x: 67.9, y: 62.9 },
+    { x: 69.5, y: 65.9 },
+    { x: 49.0, y: 75.3 },
+    { x: 41.1, y: 59.1 },
+    { x: 61.2, y: 15.8 },
+    { x: 49.9, y: 36.8 },
+    { x: 71.8, y: 22.1 },
+    { x: 42.7, y: 69.5 },
+    { x: 41.6, y: 77.1 },
+    { x: 65.5, y: 63.8 },
+    { x: 71.2, y: 46.7 },
+    { x: 52.0, y: 73.9 },
+    { x: 53.4, y: 73.8 },
+    { x: 44.1, y: 52.1 },
+    { x: 48.8, y: 49.6 },
+    { x: 45.6, y: 39.2 },
+    { x: 68.5, y: 36.2 },
+    { x: 68.4, y: 80.4 },
+    { x: 61.7, y: 66.2 },
+    { x: 67.3, y: 54.5 },
+    { x: 58.1, y: 58.3 },
+    { x: 56.4, y: 54.6 }
   ];
+
+  // Перемешиваем массив в случайном порядке (алгоритм Фишера-Йетса)
+  function shuffleArray(arr) {
+    var shuffled = arr.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = temp;
+    }
+    return shuffled;
+  }
+
+  // Создаём перемешанный массив с ID
+  var shuffledNodes = shuffleArray(ALL_NODES);
+  var DEFAULT_NODES = shuffledNodes.map(function(node, index) {
+    return {
+      id: index + 1,
+      x: node.x,
+      y: node.y
+    };
+  });
 
   var allNodePositions = DEFAULT_NODES;
   var allDeceasedNames = [];
+
+  console.log('✅ Загружено ' + allNodePositions.length + ' узлов в случайном порядке');
 
   // ============================================================
   // ВРЕМЕННЫЕ МАРКЕРЫ
@@ -457,7 +507,6 @@
     marker.dataset.x = x;
     marker.dataset.y = y;
     
-    // Подпись с координатами
     var label = document.createElement('span');
     label.className = 'marker-label';
     label.textContent = '📍';
@@ -471,7 +520,6 @@
     container.appendChild(marker);
     tempMarkers.push(marker);
     
-    // Показываем уведомление
     showCoordsNotification(coordString, x, y);
   }
 
@@ -508,9 +556,7 @@
   // ============================================================
 
   document.getElementById('treeContainer').addEventListener('click', function(e) {
-    // Игнорируем клики по узлам
     if (e.target.closest('.node-point')) return;
-    // Игнорируем клики по кнопке
     if (e.target.closest('.clear-markers-btn')) return;
     
     var rect = this.getBoundingClientRect();
@@ -519,7 +565,6 @@
     
     var coordString = '{ x: ' + x + ', y: ' + y + ' }';
     
-    // Копируем в буфер обмена
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(coordString).then(function() {
         console.log('📋 Координаты скопированы:', coordString);
@@ -530,7 +575,6 @@
       copyFallback(coordString);
     }
     
-    // Добавляем временный маркер
     addTempMarker(x, y, coordString);
   });
 
@@ -640,6 +684,7 @@
     var container = document.getElementById('nodesContainer');
     container.innerHTML = '';
 
+    // Перемешиваем имена умерших
     var shuffled = deceased.slice();
     for (var i = shuffled.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -648,6 +693,7 @@
       shuffled[j] = temp;
     }
 
+    // Показываем все узлы (57 штук)
     for (var m = 0; m < allNodePositions.length; m++) {
       var pos = allNodePositions[m];
       var person = shuffled[m] || null;
@@ -663,7 +709,7 @@
       
       node.style.left = pos.x + '%';
       node.style.top = pos.y + '%';
-      node.style.animationDelay = (m * 0.04) + 's';
+      node.style.animationDelay = (m * 0.03) + 's';
       
       var tooltipText = '';
       if (isEmpty) {
