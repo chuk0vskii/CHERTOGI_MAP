@@ -98,13 +98,87 @@ function addDeceasedField() {
 }
 
 // ============================================================
+// МАППИНГ ID РЕГИОНА → НОМЕР ФАЙЛА
+// ============================================================
+
+function getRegionImageNumber(regionId) {
+  // Сопоставление ID региона с номером файла
+  var mapping = {
+    1: 1,   // Забытые курганы → 1.png
+    2: 2,   // Острые скалы → 2.jpg
+    3: 3,   // 3.png
+    4: 4    // 4.png
+  };
+  
+  // Если ID есть в маппинге, возвращаем номер, иначе используем сам ID
+  return mapping[regionId] || regionId;
+}
+
+// ============================================================
 // ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
 // ============================================================
 
 function getRegionImagePath(regionId) {
-  // Формируем путь к картинке на основе ID региона
-  // Сначала проверяем .png, потом .jpg
-  return `/CHERTOGI_MAP/images/${regionId}`;
+  var imageNumber = getRegionImageNumber(regionId);
+  return `/CHERTOGI_MAP/images/${imageNumber}`;
+}
+
+// ============================================================
+// ЗАГРУЗКА ИЗОБРАЖЕНИЯ С ПРОВЕРКОЙ СУЩЕСТВОВАНИЯ
+// ============================================================
+
+function loadRegionImage(regionId) {
+  var imgContainer = document.getElementById('region-image-placeholder');
+  if (!imgContainer) return;
+  
+  // Очищаем контейнер
+  imgContainer.textContent = '';
+  imgContainer.style.display = 'flex';
+  imgContainer.style.alignItems = 'center';
+  imgContainer.style.justifyContent = 'center';
+  imgContainer.style.overflow = 'hidden';
+  imgContainer.style.backgroundColor = '#4a0e0e';
+  
+  var basePath = getRegionImagePath(regionId);
+  
+  // Список расширений для проверки
+  var extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+  var currentIndex = 0;
+  
+  function tryLoadNext() {
+    if (currentIndex >= extensions.length) {
+      // Все расширения проверены, файл не найден
+      imgContainer.style.backgroundImage = 'none';
+      imgContainer.textContent = '🖼️ Нет изображения';
+      imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
+      imgContainer.style.fontSize = '14px';
+      imgContainer.style.fontFamily = 'Philosopher, sans-serif';
+      return;
+    }
+    
+    var ext = extensions[currentIndex];
+    var fullPath = basePath + ext;
+    
+    var img = new Image();
+    img.onload = function() {
+      // Файл загрузился успешно
+      imgContainer.style.backgroundImage = 'url(' + fullPath + ')';
+      imgContainer.style.backgroundSize = 'cover';
+      imgContainer.style.backgroundPosition = 'center';
+      imgContainer.style.backgroundRepeat = 'no-repeat';
+      imgContainer.textContent = '';
+      console.log('✅ Загружено изображение:', fullPath);
+    };
+    img.onerror = function() {
+      // Этот файл не найден, пробуем следующее расширение
+      currentIndex++;
+      tryLoadNext();
+    };
+    img.src = fullPath;
+  }
+  
+  // Начинаем проверку с первого расширения
+  tryLoadNext();
 }
 
 // ============================================================
@@ -117,50 +191,7 @@ function openSidebar(regionId, name, description, difficulty) {
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
   // --- УСТАНОВКА ИЗОБРАЖЕНИЯ ---
-  var imgContainer = document.getElementById('region-image-placeholder');
-  if (imgContainer) {
-    // Убираем текстовую заглушку
-    imgContainer.textContent = '';
-    imgContainer.style.display = 'flex';
-    imgContainer.style.alignItems = 'center';
-    imgContainer.style.justifyContent = 'center';
-    imgContainer.style.overflow = 'hidden';
-    
-    // Пробуем загрузить .png
-    var imagePath = getRegionImagePath(regionId);
-    
-    // Проверяем .png
-    var img = new Image();
-    img.onload = function() {
-      imgContainer.style.backgroundImage = 'url(' + imagePath + '.png)';
-      imgContainer.style.backgroundSize = 'cover';
-      imgContainer.style.backgroundPosition = 'center';
-      imgContainer.style.backgroundRepeat = 'no-repeat';
-      imgContainer.textContent = '';
-    };
-    img.onerror = function() {
-      // Если .png не загрузился, пробуем .jpg
-      var imgJpg = new Image();
-      imgJpg.onload = function() {
-        imgContainer.style.backgroundImage = 'url(' + imagePath + '.jpg)';
-        imgContainer.style.backgroundSize = 'cover';
-        imgContainer.style.backgroundPosition = 'center';
-        imgContainer.style.backgroundRepeat = 'no-repeat';
-        imgContainer.textContent = '';
-      };
-      imgJpg.onerror = function() {
-        // Если ни .png ни .jpg нет, показываем заглушку
-        imgContainer.style.backgroundImage = 'none';
-        imgContainer.style.backgroundColor = '#4a0e0e';
-        imgContainer.textContent = '🖼️ Нет изображения';
-        imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
-        imgContainer.style.fontSize = '14px';
-        imgContainer.style.fontFamily = 'Philosopher, sans-serif';
-      };
-      imgJpg.src = imagePath + '.jpg';
-    };
-    img.src = imagePath + '.png';
-  }
+  loadRegionImage(regionId);
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
