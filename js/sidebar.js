@@ -98,6 +98,16 @@ function addDeceasedField() {
 }
 
 // ============================================================
+// ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
+// ============================================================
+
+function getRegionImagePath(regionId) {
+  // Формируем путь к картинке на основе ID региона
+  // Сначала проверяем .png, потом .jpg
+  return `/CHERTOGI_MAP/images/${regionId}`;
+}
+
+// ============================================================
 // ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ
 // ============================================================
 
@@ -105,6 +115,52 @@ function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
   sidebarTitle.textContent = name;
   sidebarDesc.textContent = description || 'Описание отсутствует';
+
+  // --- УСТАНОВКА ИЗОБРАЖЕНИЯ ---
+  var imgContainer = document.getElementById('region-image-placeholder');
+  if (imgContainer) {
+    // Убираем текстовую заглушку
+    imgContainer.textContent = '';
+    imgContainer.style.display = 'flex';
+    imgContainer.style.alignItems = 'center';
+    imgContainer.style.justifyContent = 'center';
+    imgContainer.style.overflow = 'hidden';
+    
+    // Пробуем загрузить .png
+    var imagePath = getRegionImagePath(regionId);
+    
+    // Проверяем .png
+    var img = new Image();
+    img.onload = function() {
+      imgContainer.style.backgroundImage = 'url(' + imagePath + '.png)';
+      imgContainer.style.backgroundSize = 'cover';
+      imgContainer.style.backgroundPosition = 'center';
+      imgContainer.style.backgroundRepeat = 'no-repeat';
+      imgContainer.textContent = '';
+    };
+    img.onerror = function() {
+      // Если .png не загрузился, пробуем .jpg
+      var imgJpg = new Image();
+      imgJpg.onload = function() {
+        imgContainer.style.backgroundImage = 'url(' + imagePath + '.jpg)';
+        imgContainer.style.backgroundSize = 'cover';
+        imgContainer.style.backgroundPosition = 'center';
+        imgContainer.style.backgroundRepeat = 'no-repeat';
+        imgContainer.textContent = '';
+      };
+      imgJpg.onerror = function() {
+        // Если ни .png ни .jpg нет, показываем заглушку
+        imgContainer.style.backgroundImage = 'none';
+        imgContainer.style.backgroundColor = '#4a0e0e';
+        imgContainer.textContent = '🖼️ Нет изображения';
+        imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
+        imgContainer.style.fontSize = '14px';
+        imgContainer.style.fontFamily = 'Philosopher, sans-serif';
+      };
+      imgJpg.src = imagePath + '.jpg';
+    };
+    img.src = imagePath + '.png';
+  }
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
@@ -117,12 +173,6 @@ function openSidebar(regionId, name, description, difficulty) {
     } else {
       difficultyContainer.innerHTML = '';
     }
-  }
-
-  const img = document.getElementById('region-image-placeholder');
-  if (img) {
-    img.style.backgroundImage = 'none';
-    img.textContent = 'Изображение региона';
   }
 
   addReportSection();
@@ -321,13 +371,11 @@ function resetAuthorization() {
     updateKeeperDisplay();
     updateReportSectionVisibility();
     
-    // Скрываем секцию отчёта
     var section = document.getElementById('report-section');
     if (section) {
       section.style.display = 'none';
     }
     
-    // Обновляем кнопку
     var reportBtn = document.getElementById('report-btn');
     if (reportBtn) {
       reportBtn.textContent = 'Введите пароль для создания отчёта';
@@ -358,7 +406,6 @@ function updateReportButton() {
     reportBtn.onclick = null;
     updateReportSectionVisibility();
     
-    // Добавляем кнопку смены Хранителя, если её нет
     var changeBtn = document.getElementById('change-keeper-btn');
     if (!changeBtn) {
       var btn = document.createElement('button');
@@ -379,7 +426,6 @@ function updateReportButton() {
     };
     updateReportSectionVisibility();
     
-    // Удаляем кнопку смены Хранителя, если она есть
     var changeBtn = document.getElementById('change-keeper-btn');
     if (changeBtn) {
       changeBtn.remove();
