@@ -53,6 +53,7 @@
       border-radius: 16px;
       border: 1px solid rgba(74, 14, 14, 0.2);
       overflow: hidden;
+      cursor: crosshair;
     }
     .tree-container .tree-image {
       width: 100%;
@@ -130,6 +131,19 @@
       transform: translateX(-50%) scale(1);
     }
 
+    /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) ===== */
+    .node-point.empty .node-tooltip {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .node-point.empty img {
+      filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
+      opacity: 0.5;
+    }
+    .node-point.empty:hover img {
+      filter: drop-shadow(0 2px 12px rgba(255, 255, 255, 0.2));
+      opacity: 0.7;
+    }
+
     @keyframes nodeAppear {
       0% {
         opacity: 0;
@@ -175,6 +189,28 @@
     .tree-stats .stat-item strong {
       color: #ffd700;
       font-size: 20px;
+    }
+
+    /* ===== КООРДИНАТЫ ===== */
+    .coords-display {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 10, 10, 0.9);
+      color: #ffd700;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Philosopher', sans-serif;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      z-index: 999;
+      display: none;
+      pointer-events: none;
+      letter-spacing: 1px;
+    }
+    .coords-display.visible {
+      display: block;
     }
 
     /* ===== АДАПТАЦИЯ ===== */
@@ -223,6 +259,9 @@
   <div id="loadingMessage" class="loading">Загрузка...</div>
 </div>
 
+<!-- ОТОБРАЖЕНИЕ КООРДИНАТ -->
+<div class="coords-display" id="coordsDisplay">X: 0.0%, Y: 0.0%</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 
@@ -231,7 +270,8 @@
   // КОНФИГУРАЦИЯ УЗЛОВ (координаты в процентах от картинки)
   // ============================================================
 
-  var NODE_POSITIONS = [
+  // 10 начальных узлов (пустые)
+  var DEFAULT_NODES = [
     { x: 50, y: 8 },
     { x: 35, y: 15 },
     { x: 65, y: 15 },
@@ -241,7 +281,11 @@
     { x: 60, y: 30 },
     { x: 20, y: 40 },
     { x: 80, y: 40 },
-    { x: 45, y: 45 },
+    { x: 45, y: 45 }
+  ];
+
+  // Дополнительные узлы для заполнения (если будет больше имён)
+  var EXTRA_NODES = [
     { x: 55, y: 45 },
     { x: 30, y: 55 },
     { x: 70, y: 55 },
@@ -257,9 +301,31 @@
     { x: 50, y: 95 }
   ];
 
-  var usedNodeIndex = 0;
+  var allNodePositions = DEFAULT_NODES.concat(EXTRA_NODES);
   var allDeceasedNames = [];
   var nodeAssignments = [];
+
+  // ============================================================
+  // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ
+  // ============================================================
+
+  var isCoordMode = false;
+  var coordsDisplay = document.getElementById('coordsDisplay');
+
+  document.getElementById('treeContainer').addEventListener('click', function(e) {
+    var rect = this.getBoundingClientRect();
+    var x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    var y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+    
+    coordsDisplay.textContent = 'X: ' + x + '%, Y: ' + y + '%';
+    coordsDisplay.classList.add('visible');
+    
+    console.log('{ x: ' + x + ', y: ' + y + ' },');
+    
+    setTimeout(function() {
+      coordsDisplay.classList.remove('visible');
+    }, 3000);
+  });
 
   // ============================================================
   // ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
@@ -319,17 +385,11 @@
       allDeceasedNames = allDeceased;
 
       document.getElementById('totalDeceased').textContent = allDeceased.length;
-      document.getElementById('totalNodes').textContent = Math.min(allDeceased.length, NODE_POSITIONS.length);
+      document.getElementById('totalNodes').textContent = Math.min(allDeceased.length + 10, allNodePositions.length);
       
       if (lastDeceasedName) {
         var date = new Date(lastDeceasedTime);
         document.getElementById('lastDeceased').textContent = lastDeceasedName + ' (' + date.toLocaleDateString('ru-RU') + ')';
-      }
-
-      if (allDeceased.length === 0) {
-        loading.textContent = 'Пока нет павших... Древо смерти пустует';
-        loading.style.display = 'block';
-        return;
       }
 
       loading.style.display = 'none';
@@ -349,8 +409,7 @@
     var container = document.getElementById('nodesContainer');
     container.innerHTML = '';
 
-    var count = Math.min(deceased.length, NODE_POSITIONS.length);
-    
+    // Перемешиваем имена умерших
     var shuffled = deceased.slice();
     for (var i = shuffled.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -359,15 +418,42 @@
       shuffled[j] = temp;
     }
 
-    for (var k = 0; k < count; k++) {
-      var pos = NODE_POSITIONS[k];
-      var person = shuffled[k];
+    // Сначала показываем 10 пустых узлов (всегда)
+    var emptyCount = Math.min(10, allNodePositions.length);
+    
+    // Показываем пустые узлы
+    for (var k = 0; k < emptyCount; k++) {
+      var pos = allNodePositions[k];
+      var node = document.createElement('div');
+      node.className = 'node-point empty';
+      node.style.left = pos.x + '%';
+      node.style.top = pos.y + '%';
+      node.style.animationDelay = (k * 0.05) + 's';
+      
+      node.innerHTML = `
+        <img src="/CHERTOGI_MAP/uzelsmerty.png" alt="узел">
+        <span class="node-tooltip">Пустой узел</span>
+      `;
+      
+      container.appendChild(node);
+    }
+
+    // Затем добавляем узлы с именами (начиная с 11-й позиции)
+    var startIndex = 10;
+    var maxNodes = Math.min(deceased.length, allNodePositions.length - startIndex);
+    
+    for (var m = 0; m < maxNodes; m++) {
+      var posIndex = startIndex + m;
+      if (posIndex >= allNodePositions.length) break;
+      
+      var pos = allNodePositions[posIndex];
+      var person = shuffled[m] || { name: 'Безымянный' };
       
       var node = document.createElement('div');
       node.className = 'node-point';
       node.style.left = pos.x + '%';
       node.style.top = pos.y + '%';
-      node.style.animationDelay = (k * 0.08) + 's';
+      node.style.animationDelay = ((m + emptyCount) * 0.06) + 's';
       
       node.innerHTML = `
         <img src="/CHERTOGI_MAP/uzelsmerty.png" alt="узел">
