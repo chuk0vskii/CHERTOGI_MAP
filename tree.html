@@ -17,47 +17,37 @@
       color: #e0d5c0;
       font-family: 'Philosopher', 'Arial', sans-serif;
       min-height: 100vh;
+      overflow: hidden;
     }
+
+    /* ===== КОНТЕЙНЕР НА ВЕСЬ ЭКРАН ===== */
     .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 100px 20px 40px;
+      width: 100vw;
+      height: 100vh;
+      padding: 70px 0 0 0;
       position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* ===== ЗАГОЛОВОК ===== */
-    .page-title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 42px;
-      color: #ffffff;
-      text-align: center;
-      margin-bottom: 10px;
-      letter-spacing: 4px;
-      font-weight: normal;
-    }
-    .page-subtitle {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 14px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 40px;
-    }
-
-    /* ===== КОНТЕЙНЕР С КАРТИНКОЙ ===== */
+    /* ===== КОНТЕЙНЕР С КАРТИНКОЙ (на весь экран) ===== */
     .tree-container {
       position: relative;
-      max-width: 800px;
-      margin: 0 auto;
+      width: 100%;
+      height: 100%;
       background: rgba(74, 14, 14, 0.1);
-      border-radius: 16px;
-      border: 1px solid rgba(74, 14, 14, 0.2);
       overflow: hidden;
       cursor: crosshair;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    
     .tree-container .tree-image {
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: contain;
       display: block;
       user-select: none;
       pointer-events: none;
@@ -76,8 +66,8 @@
     /* ===== УЗЕЛ ===== */
     .node-point {
       position: absolute;
-      width: 15px;
-      height: 15px;
+      width: 20px;
+      height: 20px;
       transform: translate(-50%, -50%);
       cursor: pointer;
       pointer-events: auto;
@@ -149,7 +139,7 @@
       border-color: rgba(255, 215, 0, 0.3);
     }
 
-    /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) — ПОЛНОСТЬЮ ВИДИМЫЙ ===== */
+    /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) ===== */
     .node-point.empty img {
       filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.2));
       opacity: 1 !important;
@@ -160,10 +150,6 @@
     .node-point.empty .node-tooltip {
       color: rgba(255, 255, 255, 0.4);
       border-color: rgba(255, 255, 255, 0.1);
-    }
-    /* Номер узла в подписи пустого узла */
-    .node-point.empty .node-tooltip .node-id {
-      color: rgba(255, 215, 0, 0.5);
     }
 
     @keyframes nodeAppear {
@@ -177,46 +163,49 @@
       }
     }
 
-    /* ===== ЗАГРУЗКА ===== */
-    .loading {
-      color: rgba(255, 255, 255, 0.3);
-      text-align: center;
-      padding: 60px 0;
-      font-size: 18px;
-    }
-    .no-data {
-      color: rgba(255, 255, 255, 0.15);
-      text-align: center;
-      padding: 60px 0;
-      font-size: 16px;
-    }
-
-    /* ===== СТАТИСТИКА ===== */
+    /* ===== СТАТИСТИКА (поверх картинки, внизу) ===== */
     .tree-stats {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: center;
       gap: 40px;
-      margin-top: 20px;
-      padding: 16px 24px;
-      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 30px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.1);
       flex-wrap: wrap;
+      justify-content: center;
+      z-index: 20;
     }
     .tree-stats .stat-item {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.4);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
       letter-spacing: 1px;
+      white-space: nowrap;
     }
     .tree-stats .stat-item strong {
       color: #ffd700;
-      font-size: 20px;
+      font-size: 18px;
+    }
+
+    /* ===== ЗАГРУЗКА ===== */
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 18px;
+      z-index: 5;
     }
 
     /* ===== КООРДИНАТЫ (уведомление) ===== */
     .coords-notification {
       position: fixed;
-      bottom: 30px;
+      bottom: 100px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(10, 10, 10, 0.95);
@@ -249,17 +238,18 @@
 
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
-      .container { padding: 80px 16px 30px; }
-      .page-title { font-size: 30px; }
-      .tree-stats { gap: 20px; }
       .node-point { width: 18px; height: 18px; }
       .node-point .node-tooltip { font-size: 11px; padding: 4px 10px; }
+      .tree-stats { gap: 20px; padding: 10px 20px; bottom: 20px; }
+      .tree-stats .stat-item { font-size: 11px; }
+      .tree-stats .stat-item strong { font-size: 15px; }
     }
     @media (max-width: 480px) {
-      .container { padding: 70px 12px 20px; }
-      .page-title { font-size: 24px; }
       .node-point { width: 16px; height: 16px; }
       .node-point .node-tooltip { font-size: 10px; padding: 3px 8px; }
+      .tree-stats { gap: 12px; padding: 8px 16px; bottom: 15px; flex-wrap: wrap; }
+      .tree-stats .stat-item { font-size: 10px; }
+      .tree-stats .stat-item strong { font-size: 13px; }
     }
   </style>
 </head>
@@ -277,21 +267,19 @@
 </div>
 
 <div class="container">
-  <h1 class="page-title">Древо смерти</h1>
-  <div class="page-subtitle">Каждый павший оставляет след на ветвях</div>
-
   <div id="treeContainer" class="tree-container">
     <img src="/CHERTOGI_MAP/znakiimg/drevo_smerty.jpg" alt="Древо смерти" class="tree-image" id="treeImage">
     <div class="nodes-container" id="nodesContainer"></div>
+    
+    <!-- СТАТИСТИКА ПОВЕРХ КАРТИНКИ -->
+    <div class="tree-stats" id="treeStats">
+      <div class="stat-item">Всего павших: <strong id="totalDeceased">0</strong></div>
+      <div class="stat-item">Узлов на древе: <strong id="totalNodes">0</strong></div>
+      <div class="stat-item">Последний павший: <strong id="lastDeceased">—</strong></div>
+    </div>
+    
+    <div id="loadingMessage" class="loading">Загрузка...</div>
   </div>
-
-  <div class="tree-stats" id="treeStats">
-    <div class="stat-item">Всего павших: <strong id="totalDeceased">0</strong></div>
-    <div class="stat-item">Узлов на древе: <strong id="totalNodes">0</strong></div>
-    <div class="stat-item">Последний павший: <strong id="lastDeceased">—</strong></div>
-  </div>
-
-  <div id="loadingMessage" class="loading">Загрузка...</div>
 </div>
 
 <!-- УВЕДОМЛЕНИЕ О КООРДИНАТАХ -->
@@ -307,7 +295,6 @@
   // КОНФИГУРАЦИЯ УЗЛОВ (координаты в процентах от картинки)
   // ============================================================
 
-  // 26 узлов для Древа смерти (пронумерованы)
   var DEFAULT_NODES = [
     { id: 1, x: 43.5, y: 87.3 },
     { id: 2, x: 44.1, y: 82.9 },
@@ -474,7 +461,6 @@
     var container = document.getElementById('nodesContainer');
     container.innerHTML = '';
 
-    // Перемешиваем имена умерших
     var shuffled = deceased.slice();
     for (var i = shuffled.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -483,7 +469,6 @@
       shuffled[j] = temp;
     }
 
-    // Показываем ВСЕ 26 узлов
     for (var m = 0; m < allNodePositions.length; m++) {
       var pos = allNodePositions[m];
       var person = shuffled[m] || null;
@@ -501,7 +486,6 @@
       node.style.top = pos.y + '%';
       node.style.animationDelay = (m * 0.04) + 's';
       
-      // Формируем подпись: номер узла + имя (или "Пустой узел")
       var tooltipText = '';
       if (isEmpty) {
         tooltipText = 'Узел #' + pos.id + ' — Пустой';
