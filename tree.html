@@ -73,41 +73,44 @@
       pointer-events: none;
     }
 
-    /* ===== УЗЕЛ (УМЕНЬШЕН В 2 РАЗА) ===== */
+    /* ===== УЗЕЛ ===== */
     .node-point {
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       transform: translate(-50%, -50%);
       cursor: pointer;
       pointer-events: auto;
       transition: all 0.3s ease;
       opacity: 0;
       animation: nodeAppear 0.5s ease forwards;
+      z-index: 10;
     }
     .node-point img {
       width: 100%;
       height: 100%;
       display: block;
       object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
+      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
       transition: transform 0.3s ease;
       opacity: 1 !important;
     }
     .node-point:hover img {
-      transform: scale(1.4);
-      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.6));
+      transform: scale(1.5);
+      filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.8));
     }
+    
+    /* ===== ПОДПИСЬ ПРИ НАВЕДЕНИИ ===== */
     .node-point .node-tooltip {
       position: absolute;
-      bottom: 120%;
+      bottom: 130%;
       left: 50%;
       transform: translateX(-50%) scale(0.8);
       background: rgba(10, 10, 10, 0.95);
       color: #ffd700;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
       font-family: 'Philosopher', sans-serif;
       white-space: nowrap;
       pointer-events: none;
@@ -116,6 +119,7 @@
       transition: all 0.3s ease;
       border: 1px solid rgba(255, 215, 0, 0.2);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      letter-spacing: 0.5px;
     }
     .node-point .node-tooltip::after {
       content: '';
@@ -123,7 +127,7 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      border: 5px solid transparent;
+      border: 6px solid transparent;
       border-top-color: rgba(10, 10, 10, 0.95);
     }
     .node-point:hover .node-tooltip {
@@ -134,21 +138,34 @@
 
     /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) ===== */
     .node-point.empty .node-tooltip {
-      color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.05);
     }
     .node-point.empty img {
       filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.1));
-      opacity: 0.6 !important;
+      opacity: 0.4 !important;
     }
     .node-point.empty:hover img {
       filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.2));
-      opacity: 0.8 !important;
+      opacity: 0.6 !important;
+    }
+
+    /* ===== УЗЕЛ С ИМЕНЕМ (дополнительное свечение) ===== */
+    .node-point.filled img {
+      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.6));
+    }
+    .node-point.filled:hover img {
+      filter: drop-shadow(0 2px 16px rgba(255, 215, 0, 0.9));
+    }
+    .node-point.filled .node-tooltip {
+      color: #ffd700;
+      border-color: rgba(255, 215, 0, 0.3);
     }
 
     @keyframes nodeAppear {
       0% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
+        transform: translate(-50%, -50%) scale(0.3);
       }
       100% {
         opacity: 1;
@@ -226,18 +243,33 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
     }
 
+    /* ===== НОМЕР УЗЛА (для отладки) ===== */
+    .node-point .node-number {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.15);
+      font-family: 'Philosopher', monospace;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
       .tree-stats { gap: 20px; }
-      .node-point { width: 14px; height: 14px; }
-      .node-point .node-tooltip { font-size: 10px; padding: 3px 8px; }
+      .node-point { width: 16px; height: 16px; }
+      .node-point .node-tooltip { font-size: 11px; padding: 4px 10px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .page-title { font-size: 24px; }
-      .node-point { width: 12px; height: 12px; }
+      .node-point { width: 14px; height: 14px; }
+      .node-point .node-tooltip { font-size: 10px; padding: 3px 8px; }
+      .node-point .node-number { font-size: 6px; top: -16px; }
     }
   </style>
 </head>
@@ -285,43 +317,44 @@
   // КОНФИГУРАЦИЯ УЗЛОВ (координаты в процентах от картинки)
   // ============================================================
 
-  // 10 начальных узлов (пустые)
+  // 26 узлов для Древа смерти (пронумерованы)
   var DEFAULT_NODES = [
-    { x: 50, y: 8 },
-    { x: 35, y: 15 },
-    { x: 65, y: 15 },
-    { x: 25, y: 25 },
-    { x: 75, y: 25 },
-    { x: 40, y: 30 },
-    { x: 60, y: 30 },
-    { x: 20, y: 40 },
-    { x: 80, y: 40 },
-    { x: 45, y: 45 }
+    { id: 1, x: 43.5, y: 87.3 },
+    { id: 2, x: 44.1, y: 82.9 },
+    { id: 3, x: 50.2, y: 81.7 },
+    { id: 4, x: 37.0, y: 80.1 },
+    { id: 5, x: 42.5, y: 79.9 },
+    { id: 6, x: 44.8, y: 74.8 },
+    { id: 7, x: 41.0, y: 73.5 },
+    { id: 8, x: 33.0, y: 75.7 },
+    { id: 9, x: 32.0, y: 77.6 },
+    { id: 10, x: 30.1, y: 80.3 },
+    { id: 11, x: 33.9, y: 84.7 },
+    { id: 12, x: 32.0, y: 83.3 },
+    { id: 13, x: 24.8, y: 86.6 },
+    { id: 14, x: 21.5, y: 81.3 },
+    { id: 15, x: 20.1, y: 73.9 },
+    { id: 16, x: 26.0, y: 78.3 },
+    { id: 17, x: 28.0, y: 77.2 },
+    { id: 18, x: 21.0, y: 60.3 },
+    { id: 19, x: 46.0, y: 72.5 },
+    { id: 20, x: 47.8, y: 75.5 },
+    { id: 21, x: 54.0, y: 81.7 },
+    { id: 22, x: 63.7, y: 81.7 },
+    { id: 23, x: 64.3, y: 77.4 },
+    { id: 24, x: 76.5, y: 78.3 },
+    { id: 25, x: 89.0, y: 56.0 },
+    { id: 26, x: 76.1, y: 42.8 }
   ];
 
-  // Дополнительные узлы для заполнения (если будет больше имён)
-  var EXTRA_NODES = [
-    { x: 55, y: 45 },
-    { x: 30, y: 55 },
-    { x: 70, y: 55 },
-    { x: 50, y: 58 },
-    { x: 35, y: 68 },
-    { x: 65, y: 68 },
-    { x: 25, y: 78 },
-    { x: 75, y: 78 },
-    { x: 45, y: 82 },
-    { x: 55, y: 82 },
-    { x: 30, y: 90 },
-    { x: 70, y: 90 },
-    { x: 50, y: 95 }
-  ];
+  // Запасные узлы (если понадобятся)
+  var EXTRA_NODES = [];
 
   var allNodePositions = DEFAULT_NODES.concat(EXTRA_NODES);
   var allDeceasedNames = [];
-  var nodeAssignments = [];
 
   // ============================================================
-  // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ (С КОПИРОВАНИЕМ)
+  // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ
   // ============================================================
 
   var coordsNotification = document.getElementById('coordsNotification');
@@ -342,7 +375,6 @@
       navigator.clipboard.writeText(coordString).then(function() {
         console.log('Координаты скопированы:', coordString);
       }).catch(function() {
-        // fallback
         copyFallback(coordString);
       });
     } else {
@@ -352,17 +384,15 @@
     // Показываем уведомление
     coordsText.textContent = 'X: ' + x + '%, Y: ' + y + '%';
     coordsNotification.classList.remove('visible');
-    // Небольшая задержка для перезапуска анимации
     void coordsNotification.offsetWidth;
     coordsNotification.classList.add('visible');
     
-    // Убираем уведомление через 3 секунды
     setTimeout(function() {
       coordsNotification.classList.remove('visible');
     }, 3000);
   });
 
-  // Fallback для копирования (если clipboard API недоступен)
+  // Fallback для копирования
   function copyFallback(text) {
     var textarea = document.createElement('textarea');
     textarea.value = text;
@@ -437,7 +467,7 @@
       allDeceasedNames = allDeceased;
 
       document.getElementById('totalDeceased').textContent = allDeceased.length;
-      document.getElementById('totalNodes').textContent = Math.min(allDeceased.length + 10, allNodePositions.length);
+      document.getElementById('totalNodes').textContent = Math.min(allDeceased.length, allNodePositions.length);
       
       if (lastDeceasedName) {
         var date = new Date(lastDeceasedTime);
@@ -470,45 +500,39 @@
       shuffled[j] = temp;
     }
 
-    // Сначала показываем 10 пустых узлов (всегда)
-    var emptyCount = Math.min(10, allNodePositions.length);
+    // Определяем сколько узлов показывать
+    var totalNodes = Math.min(deceased.length, allNodePositions.length);
     
-    for (var k = 0; k < emptyCount; k++) {
-      var pos = allNodePositions[k];
+    // Если умерших больше, чем узлов, показываем все узлы
+    // Иначе показываем только столько, сколько есть имён
+    var nodesToShow = Math.min(deceased.length, allNodePositions.length);
+    
+    for (var m = 0; m < allNodePositions.length; m++) {
+      var pos = allNodePositions[m];
+      var person = shuffled[m] || null;
+      var isEmpty = !person;
+      
+      // Если это пустой узел, но у нас есть ещё имена для других узлов — пропускаем
+      // Всегда показываем все 26 узлов, но пустые подсвечиваем иначе
       var node = document.createElement('div');
-      node.className = 'node-point empty';
+      
+      if (isEmpty) {
+        node.className = 'node-point empty';
+      } else {
+        node.className = 'node-point filled';
+      }
+      
       node.style.left = pos.x + '%';
       node.style.top = pos.y + '%';
-      node.style.animationDelay = (k * 0.05) + 's';
+      node.style.animationDelay = (m * 0.04) + 's';
+      
+      var tooltipText = isEmpty ? 'Пустой узел' : person.name;
+      var numberText = '#' + pos.id;
       
       node.innerHTML = `
         <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
-        <span class="node-tooltip">Пустой узел</span>
-      `;
-      
-      container.appendChild(node);
-    }
-
-    // Затем добавляем узлы с именами (начиная с 11-й позиции)
-    var startIndex = 10;
-    var maxNodes = Math.min(deceased.length, allNodePositions.length - startIndex);
-    
-    for (var m = 0; m < maxNodes; m++) {
-      var posIndex = startIndex + m;
-      if (posIndex >= allNodePositions.length) break;
-      
-      var pos = allNodePositions[posIndex];
-      var person = shuffled[m] || { name: 'Безымянный' };
-      
-      var node = document.createElement('div');
-      node.className = 'node-point';
-      node.style.left = pos.x + '%';
-      node.style.top = pos.y + '%';
-      node.style.animationDelay = ((m + emptyCount) * 0.06) + 's';
-      
-      node.innerHTML = `
-        <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
-        <span class="node-tooltip">${person.name}</span>
+        <span class="node-number">${numberText}</span>
+        <span class="node-tooltip">${tooltipText}</span>
       `;
       
       container.appendChild(node);
@@ -516,7 +540,7 @@
   }
 
   // ============================================================
-  // ЗАПУСК
+  // АВТООБНОВЛЕНИЕ ПРИ ФОКУСЕ
   // ============================================================
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -528,6 +552,7 @@
     }
   });
 
+  // Обновляем при возвращении на вкладку
   window.addEventListener('focus', function() {
     loadDeceased();
   });
