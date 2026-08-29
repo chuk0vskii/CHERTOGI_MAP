@@ -92,6 +92,7 @@
       object-fit: contain;
       filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
       transition: transform 0.3s ease;
+      opacity: 1 !important;
     }
     .node-point:hover img {
       transform: scale(1.4);
@@ -136,12 +137,12 @@
       color: rgba(255, 255, 255, 0.3);
     }
     .node-point.empty img {
-      filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1));
-      opacity: 0.4;
+      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.1));
+      opacity: 0.6 !important;
     }
     .node-point.empty:hover img {
-      filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.2));
-      opacity: 0.6;
+      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.2));
+      opacity: 0.8 !important;
     }
 
     @keyframes nodeAppear {
@@ -191,26 +192,38 @@
       font-size: 20px;
     }
 
-    /* ===== КООРДИНАТЫ ===== */
-    .coords-display {
+    /* ===== КООРДИНАТЫ (уведомление) ===== */
+    .coords-notification {
       position: fixed;
-      bottom: 20px;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(10, 10, 10, 0.9);
-      color: #ffd700;
-      padding: 8px 20px;
+      background: rgba(10, 10, 10, 0.95);
+      color: #51cf66;
+      padding: 10px 24px;
       border-radius: 8px;
       font-size: 14px;
       font-family: 'Philosopher', sans-serif;
-      border: 1px solid rgba(255, 215, 0, 0.2);
+      border: 1px solid rgba(81, 207, 102, 0.3);
       z-index: 999;
       display: none;
       pointer-events: none;
       letter-spacing: 1px;
+      text-align: center;
     }
-    .coords-display.visible {
+    .coords-notification.visible {
       display: block;
+      animation: fadeInOut 2s ease forwards;
+    }
+    .coords-notification .coords-text {
+      color: #ffd700;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
     }
 
     /* ===== АДАПТАЦИЯ ===== */
@@ -246,7 +259,6 @@
   <div class="page-subtitle">Каждый павший оставляет след на ветвях</div>
 
   <div id="treeContainer" class="tree-container">
-    <!-- КАРТИНКА ДРЕВА: /CHERTOGI_MAP/znakiimg/drevo_smerty.jpg -->
     <img src="/CHERTOGI_MAP/znakiimg/drevo_smerty.jpg" alt="Древо смерти" class="tree-image" id="treeImage">
     <div class="nodes-container" id="nodesContainer"></div>
   </div>
@@ -260,8 +272,10 @@
   <div id="loadingMessage" class="loading">Загрузка...</div>
 </div>
 
-<!-- ОТОБРАЖЕНИЕ КООРДИНАТ -->
-<div class="coords-display" id="coordsDisplay">X: 0.0%, Y: 0.0%</div>
+<!-- УВЕДОМЛЕНИЕ О КООРДИНАТАХ -->
+<div class="coords-notification" id="coordsNotification">
+  Координаты скопированы: <span class="coords-text" id="coordsText">X: 0.0%, Y: 0.0%</span>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
@@ -307,25 +321,63 @@
   var nodeAssignments = [];
 
   // ============================================================
-  // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ
+  // ОПРЕДЕЛЕНИЕ КООРДИНАТ ПРИ КЛИКЕ НА КАРТИНКУ (С КОПИРОВАНИЕМ)
   // ============================================================
 
-  var coordsDisplay = document.getElementById('coordsDisplay');
+  var coordsNotification = document.getElementById('coordsNotification');
+  var coordsText = document.getElementById('coordsText');
 
   document.getElementById('treeContainer').addEventListener('click', function(e) {
+    // Проверяем, что клик не по узлу
+    if (e.target.closest('.node-point')) return;
+    
     var rect = this.getBoundingClientRect();
     var x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
     var y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
     
-    coordsDisplay.textContent = 'X: ' + x + '%, Y: ' + y + '%';
-    coordsDisplay.classList.add('visible');
+    var coordString = '{ x: ' + x + ', y: ' + y + ' }';
     
-    console.log('{ x: ' + x + ', y: ' + y + ' },');
+    // Копируем в буфер обмена
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(coordString).then(function() {
+        console.log('Координаты скопированы:', coordString);
+      }).catch(function() {
+        // fallback
+        copyFallback(coordString);
+      });
+    } else {
+      copyFallback(coordString);
+    }
     
+    // Показываем уведомление
+    coordsText.textContent = 'X: ' + x + '%, Y: ' + y + '%';
+    coordsNotification.classList.remove('visible');
+    // Небольшая задержка для перезапуска анимации
+    void coordsNotification.offsetWidth;
+    coordsNotification.classList.add('visible');
+    
+    // Убираем уведомление через 3 секунды
     setTimeout(function() {
-      coordsDisplay.classList.remove('visible');
+      coordsNotification.classList.remove('visible');
     }, 3000);
   });
+
+  // Fallback для копирования (если clipboard API недоступен)
+  function copyFallback(text) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      console.log('Координаты скопированы (fallback):', text);
+    } catch (e) {
+      console.log('Не удалось скопировать:', text);
+    }
+    document.body.removeChild(textarea);
+  }
 
   // ============================================================
   // ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
