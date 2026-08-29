@@ -76,8 +76,8 @@
     /* ===== УЗЕЛ ===== */
     .node-point {
       position: absolute;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       transform: translate(-50%, -50%);
       cursor: pointer;
       pointer-events: auto;
@@ -91,13 +91,13 @@
       height: 100%;
       display: block;
       object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
+      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
       transition: transform 0.3s ease;
       opacity: 1 !important;
     }
     .node-point:hover img {
       transform: scale(1.5);
-      filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.8));
+      filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.7));
     }
     
     /* ===== ПОДПИСЬ ПРИ НАВЕДЕНИИ ===== */
@@ -120,6 +120,7 @@
       border: 1px solid rgba(255, 215, 0, 0.2);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       letter-spacing: 0.5px;
+      line-height: 1.4;
     }
     .node-point .node-tooltip::after {
       content: '';
@@ -136,30 +137,33 @@
       transform: translateX(-50%) scale(1);
     }
 
-    /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) ===== */
-    .node-point.empty .node-tooltip {
-      color: rgba(255, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.05);
-    }
-    .node-point.empty img {
-      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.1));
-      opacity: 0.4 !important;
-    }
-    .node-point.empty:hover img {
-      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.2));
-      opacity: 0.6 !important;
-    }
-
-    /* ===== УЗЕЛ С ИМЕНЕМ (дополнительное свечение) ===== */
+    /* ===== УЗЕЛ С ИМЕНЕМ (заполненный) ===== */
     .node-point.filled img {
-      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.6));
+      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.5));
     }
     .node-point.filled:hover img {
-      filter: drop-shadow(0 2px 16px rgba(255, 215, 0, 0.9));
+      filter: drop-shadow(0 2px 16px rgba(255, 215, 0, 0.8));
     }
     .node-point.filled .node-tooltip {
       color: #ffd700;
       border-color: rgba(255, 215, 0, 0.3);
+    }
+
+    /* ===== УЗЕЛ БЕЗ ИМЕНИ (пустой) — ПОЛНОСТЬЮ ВИДИМЫЙ ===== */
+    .node-point.empty img {
+      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.2));
+      opacity: 1 !important;
+    }
+    .node-point.empty:hover img {
+      filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.4));
+    }
+    .node-point.empty .node-tooltip {
+      color: rgba(255, 255, 255, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    /* Номер узла в подписи пустого узла */
+    .node-point.empty .node-tooltip .node-id {
+      color: rgba(255, 215, 0, 0.5);
     }
 
     @keyframes nodeAppear {
@@ -243,33 +247,19 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
     }
 
-    /* ===== НОМЕР УЗЛА (для отладки) ===== */
-    .node-point .node-number {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 8px;
-      color: rgba(255, 255, 255, 0.15);
-      font-family: 'Philosopher', monospace;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
     /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
       .tree-stats { gap: 20px; }
-      .node-point { width: 16px; height: 16px; }
+      .node-point { width: 18px; height: 18px; }
       .node-point .node-tooltip { font-size: 11px; padding: 4px 10px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .page-title { font-size: 24px; }
-      .node-point { width: 14px; height: 14px; }
+      .node-point { width: 16px; height: 16px; }
       .node-point .node-tooltip { font-size: 10px; padding: 3px 8px; }
-      .node-point .node-number { font-size: 6px; top: -16px; }
     }
   </style>
 </head>
@@ -347,10 +337,7 @@
     { id: 26, x: 76.1, y: 42.8 }
   ];
 
-  // Запасные узлы (если понадобятся)
-  var EXTRA_NODES = [];
-
-  var allNodePositions = DEFAULT_NODES.concat(EXTRA_NODES);
+  var allNodePositions = DEFAULT_NODES;
   var allDeceasedNames = [];
 
   // ============================================================
@@ -361,7 +348,6 @@
   var coordsText = document.getElementById('coordsText');
 
   document.getElementById('treeContainer').addEventListener('click', function(e) {
-    // Проверяем, что клик не по узлу
     if (e.target.closest('.node-point')) return;
     
     var rect = this.getBoundingClientRect();
@@ -370,7 +356,6 @@
     
     var coordString = '{ x: ' + x + ', y: ' + y + ' }';
     
-    // Копируем в буфер обмена
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(coordString).then(function() {
         console.log('Координаты скопированы:', coordString);
@@ -381,7 +366,6 @@
       copyFallback(coordString);
     }
     
-    // Показываем уведомление
     coordsText.textContent = 'X: ' + x + '%, Y: ' + y + '%';
     coordsNotification.classList.remove('visible');
     void coordsNotification.offsetWidth;
@@ -392,7 +376,6 @@
     }, 3000);
   });
 
-  // Fallback для копирования
   function copyFallback(text) {
     var textarea = document.createElement('textarea');
     textarea.value = text;
@@ -467,7 +450,7 @@
       allDeceasedNames = allDeceased;
 
       document.getElementById('totalDeceased').textContent = allDeceased.length;
-      document.getElementById('totalNodes').textContent = Math.min(allDeceased.length, allNodePositions.length);
+      document.getElementById('totalNodes').textContent = allNodePositions.length;
       
       if (lastDeceasedName) {
         var date = new Date(lastDeceasedTime);
@@ -500,20 +483,12 @@
       shuffled[j] = temp;
     }
 
-    // Определяем сколько узлов показывать
-    var totalNodes = Math.min(deceased.length, allNodePositions.length);
-    
-    // Если умерших больше, чем узлов, показываем все узлы
-    // Иначе показываем только столько, сколько есть имён
-    var nodesToShow = Math.min(deceased.length, allNodePositions.length);
-    
+    // Показываем ВСЕ 26 узлов
     for (var m = 0; m < allNodePositions.length; m++) {
       var pos = allNodePositions[m];
       var person = shuffled[m] || null;
       var isEmpty = !person;
       
-      // Если это пустой узел, но у нас есть ещё имена для других узлов — пропускаем
-      // Всегда показываем все 26 узлов, но пустые подсвечиваем иначе
       var node = document.createElement('div');
       
       if (isEmpty) {
@@ -526,12 +501,16 @@
       node.style.top = pos.y + '%';
       node.style.animationDelay = (m * 0.04) + 's';
       
-      var tooltipText = isEmpty ? 'Пустой узел' : person.name;
-      var numberText = '#' + pos.id;
+      // Формируем подпись: номер узла + имя (или "Пустой узел")
+      var tooltipText = '';
+      if (isEmpty) {
+        tooltipText = 'Узел #' + pos.id + ' — Пустой';
+      } else {
+        tooltipText = '#' + pos.id + ' — ' + person.name;
+      }
       
       node.innerHTML = `
         <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
-        <span class="node-number">${numberText}</span>
         <span class="node-tooltip">${tooltipText}</span>
       `;
       
@@ -540,7 +519,7 @@
   }
 
   // ============================================================
-  // АВТООБНОВЛЕНИЕ ПРИ ФОКУСЕ
+  // ЗАПУСК
   // ============================================================
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -552,7 +531,6 @@
     }
   });
 
-  // Обновляем при возвращении на вкладку
   window.addEventListener('focus', function() {
     loadDeceased();
   });
