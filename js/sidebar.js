@@ -101,25 +101,38 @@ function addDeceasedField() {
 // МАППИНГ ID РЕГИОНА → НОМЕР ФАЙЛА
 // ============================================================
 
-function getRegionImageNumber(regionId) {
+// ⚠️ ИЗМЕНИТЕ ЭТОТ МАППИНГ НА ПРАВИЛЬНЫЙ!
+// Сначала посмотрите в консоли, какие ID у каких регионов,
+// а потом исправьте этот маппинг
+
+function getRegionImageNumber(regionId, regionName) {
+  // ВЫВОДИМ В КОНСОЛЬ, ЧТОБЫ УВИДЕТЬ ID И НАЗВАНИЕ РЕГИОНА
+  console.log('🔍 Регион ID:', regionId, 'Название:', regionName);
+  
   // Сопоставление ID региона с номером файла
+  // ИЗМЕНИТЕ ЭТИ ЦИФРЫ НА ПРАВИЛЬНЫЕ!
   var mapping = {
-    1: 1,   // Забытые курганы → 1.png
-    2: 2,   // Острые скалы → 2.jpg
-    3: 3,   // 3.png
-    4: 4    // 4.png
+    // Если в базе ID=1, а картинка должна быть 1.png
+    1: 1,
+    // Если в базе ID=2, а картинка должна быть 2.jpg
+    2: 2,
+    // Если в базе ID=3, а картинка должна быть 3.png
+    3: 3,
+    // Если в базе ID=4, а картинка должна быть 4.png
+    4: 4
   };
   
-  // Если ID есть в маппинге, возвращаем номер, иначе используем сам ID
-  return mapping[regionId] || regionId;
+  var imageNumber = mapping[regionId] || regionId;
+  console.log('📸 Будет загружено изображение:', imageNumber + '.png или .jpg');
+  return imageNumber;
 }
 
 // ============================================================
 // ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
 // ============================================================
 
-function getRegionImagePath(regionId) {
-  var imageNumber = getRegionImageNumber(regionId);
+function getRegionImagePath(regionId, regionName) {
+  var imageNumber = getRegionImageNumber(regionId, regionName);
   return `/CHERTOGI_MAP/images/${imageNumber}`;
 }
 
@@ -127,7 +140,7 @@ function getRegionImagePath(regionId) {
 // ЗАГРУЗКА ИЗОБРАЖЕНИЯ С ПРОВЕРКОЙ СУЩЕСТВОВАНИЯ
 // ============================================================
 
-function loadRegionImage(regionId) {
+function loadRegionImage(regionId, regionName) {
   var imgContainer = document.getElementById('region-image-placeholder');
   if (!imgContainer) return;
   
@@ -139,7 +152,7 @@ function loadRegionImage(regionId) {
   imgContainer.style.overflow = 'hidden';
   imgContainer.style.backgroundColor = '#4a0e0e';
   
-  var basePath = getRegionImagePath(regionId);
+  var basePath = getRegionImagePath(regionId, regionName);
   
   // Список расширений для проверки
   var extensions = ['.png', '.jpg', '.jpeg', '.webp'];
@@ -191,7 +204,7 @@ function openSidebar(regionId, name, description, difficulty) {
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
   // --- УСТАНОВКА ИЗОБРАЖЕНИЯ ---
-  loadRegionImage(regionId);
+  loadRegionImage(regionId, name);
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
