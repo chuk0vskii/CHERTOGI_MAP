@@ -18,10 +18,6 @@ const STORAGE_KEY = 'chertogi_report_auth';
 let isAuthorized = false;
 let currentKeeper = '';
 
-// ============================================================
-// ЗАГРУЗКА СОСТОЯНИЯ ИЗ SESSIONSTORAGE
-// ============================================================
-
 function loadAuthState() {
   try {
     var saved = sessionStorage.getItem(STORAGE_KEY);
@@ -29,7 +25,7 @@ function loadAuthState() {
       var data = JSON.parse(saved);
       isAuthorized = data.isAuthorized || false;
       currentKeeper = data.currentKeeper || '';
-      console.log('Загружено состояние авторизации:', isAuthorized ? 'Открыт (' + currentKeeper + ')' : 'Закрыт');
+      console.log('Загружено состояние авторизации:', isAuthorized ? 'Открыт' : 'Закрыт');
       return true;
     }
   } catch (e) {
@@ -37,10 +33,6 @@ function loadAuthState() {
   }
   return false;
 }
-
-// ============================================================
-// СОХРАНЕНИЕ СОСТОЯНИЯ В SESSIONSTORAGE
-// ============================================================
 
 function saveAuthState() {
   try {
@@ -73,10 +65,6 @@ function setCurrentKeeper(name) {
   saveAuthState();
 }
 
-// ============================================================
-// ДОБАВЛЕНИЕ ПОЛЕЙ ДЛЯ УМЕРШЕГО
-// ============================================================
-
 function addDeceasedField() {
   var container = document.getElementById('deceased-container');
   if (!container) return;
@@ -85,8 +73,8 @@ function addDeceasedField() {
   div.className = 'deceased-field';
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
   div.innerHTML = `
-    <input type="text" class="deceased-name" placeholder="Имя умершего персонажа..." style="flex:1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;">
-    <button class="remove-deceased-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">✕</button>
+    <input type="text" class="deceased-name" placeholder="Имя умершего персонажа..." style="flex:1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px;">
+    <button class="remove-deceased-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">X</button>
   `;
   
   var removeBtn = div.querySelector('.remove-deceased-btn');
@@ -97,17 +85,9 @@ function addDeceasedField() {
   container.appendChild(div);
 }
 
-// ============================================================
-// ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
-// ============================================================
-
 function getRegionImagePath(regionId) {
-  return `/CHERTOGI_MAP/images/${regionId}`;
+  return '/CHERTOGI_MAP/images/' + regionId;
 }
-
-// ============================================================
-// ЗАГРУЗКА ИЗОБРАЖЕНИЯ С ПРОВЕРКОЙ СУЩЕСТВОВАНИЯ
-// ============================================================
 
 function loadRegionImage(regionId) {
   var imgContainer = document.getElementById('region-image-placeholder');
@@ -127,7 +107,7 @@ function loadRegionImage(regionId) {
   function tryLoadNext() {
     if (currentIndex >= extensions.length) {
       imgContainer.style.backgroundImage = 'none';
-      imgContainer.textContent = '🖼️ Нет изображения';
+      imgContainer.textContent = 'Нет изображения';
       imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
       imgContainer.style.fontSize = '14px';
       imgContainer.style.fontFamily = 'Philosopher, sans-serif';
@@ -144,7 +124,7 @@ function loadRegionImage(regionId) {
       imgContainer.style.backgroundPosition = 'center';
       imgContainer.style.backgroundRepeat = 'no-repeat';
       imgContainer.textContent = '';
-      console.log('✅ Загружено изображение:', fullPath);
+      console.log('Загружено изображение:', fullPath);
     };
     img.onerror = function() {
       currentIndex++;
@@ -155,10 +135,6 @@ function loadRegionImage(regionId) {
   
   tryLoadNext();
 }
-
-// ============================================================
-// ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ
-// ============================================================
 
 function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
@@ -171,8 +147,8 @@ function openSidebar(regionId, name, description, difficulty) {
     if (difficulty !== undefined && difficulty !== null) {
       difficultyContainer.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; margin: 12px 0 16px 0; padding: 8px 12px; background: rgba(74, 14, 14, 0.4); border-radius: 6px; border-left: 3px solid #4a0e0e;">
-          <span style="color: #aaa; font-size: 14px; font-family: 'Philosopher', sans-serif;">Сложность пути:</span>
-          <span style="color: #ffd700; font-size: 18px; font-weight: 700; font-family: 'Philosopher', sans-serif;">${difficulty}</span>
+          <span style="color: #aaa; font-size: 14px; font-family: "Philosopher", sans-serif;">Сложность пути:</span>
+          <span style="color: #ffd700; font-size: 18px; font-weight: 700; font-family: "Philosopher", sans-serif;">${difficulty}</span>
         </div>
       `;
     } else {
@@ -201,10 +177,6 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
   closeSidebar();
 });
 
-// ============================================================
-// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ
-// ============================================================
-
 function addReportSection() {
   var panelContent = document.querySelector('.panel-content');
   if (!panelContent) return;
@@ -222,25 +194,25 @@ function addReportSection() {
   section.innerHTML = `
     <div style="margin-bottom: 12px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <span style="color: #ffd700; font-family: 'Calypso', serif; font-size: 18px; letter-spacing: 1px; font-weight: normal;">Создать отчёт</span>
-        <button id="toggle-report-btn" style="background: transparent; border: 1px solid rgba(255,215,0,0.2); color: #ffd700; padding: 2px 12px; border-radius: 4px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">Свернуть</button>
+        <span style="color: #ffd700; font-family: "Calypso", serif; font-size: 18px; letter-spacing: 1px; font-weight: normal;">Создать отчёт</span>
+        <button id="toggle-report-btn" style="background: transparent; border: 1px solid rgba(255,215,0,0.2); color: #ffd700; padding: 2px 12px; border-radius: 4px; cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px;">Свернуть</button>
       </div>
       
       <div id="report-fields" style="display: block;">
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Имя Хранителя узлов</label>
-          <input id="keeper-display" type="text" style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffd700; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px;" readonly>
+          <input id="keeper-display" type="text" style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffd700; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px;" readonly>
         </div>
         
         <div style="margin-bottom: 10px;">
           <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Текст отчёта</label>
-          <textarea id="report-content" placeholder="Опишите события..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 14px; min-height: 60px; resize: vertical;"></textarea>
+          <textarea id="report-content" placeholder="Опишите события..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px; min-height: 60px; resize: vertical;"></textarea>
         </div>
         
         <div style="margin-bottom: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <label style="font-size: 13px; color: rgba(255,255,255,0.5);">Умершие персонажи</label>
-            <button id="add-deceased-btn" style="background: rgba(74,14,14,0.3); border: 1px solid #4a0e0e; border-radius: 4px; color: #ffd700; padding: 2px 12px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px;">+ Добавить</button>
+            <button id="add-deceased-btn" style="background: rgba(74,14,14,0.3); border: 1px solid #4a0e0e; border-radius: 4px; color: #ffd700; padding: 2px 12px; cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px;">+ Добавить</button>
           </div>
           <div id="deceased-container"></div>
         </div>
@@ -250,16 +222,16 @@ function addReportSection() {
           <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              🏕️ Место ресурса
+              Место ресурса
             </label>
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              🛏️ Место ночлега
+              Место ночлега
             </label>
           </div>
         </div>
         
-        <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
+        <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
       </div>
     </div>
   `;
@@ -290,20 +262,12 @@ function addReportSection() {
   }
 }
 
-// ============================================================
-// ОБНОВЛЕНИЕ ВИДИМОСТИ СЕКЦИИ ОТЧЁТА
-// ============================================================
-
 function updateReportSectionVisibility() {
   var section = document.getElementById('report-section');
   if (section) {
     section.style.display = isAuthorized ? 'block' : 'none';
   }
 }
-
-// ============================================================
-// ОБНОВЛЕНИЕ ИМЕНИ ХРАНИТЕЛЯ
-// ============================================================
 
 function updateKeeperDisplay() {
   var keeperDisplay = document.getElementById('keeper-display');
@@ -313,25 +277,62 @@ function updateKeeperDisplay() {
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ СЛУЧАЙНЫХ КООРДИНАТ В ДИАПАЗОНЕ ОТ ТОЧКИ
+// ГЕНЕРАЦИЯ СЛУЧАЙНЫХ КООРДИНАТ С ПРОВЕРКОЙ КОЛЛИЗИЙ
 // ============================================================
 
-function generateRandomMarkerPosition(centerX, centerY, minDist, maxDist) {
-  var distance = minDist + Math.random() * (maxDist - minDist);
-  var angle = Math.random() * 2 * Math.PI;
+var usedMarkerPositions = [];
+
+function clearMarkerPositionsCache() {
+  usedMarkerPositions = [];
+}
+
+function isPositionTooClose(x, y, minDistance) {
+  for (var i = 0; i < usedMarkerPositions.length; i++) {
+    var pos = usedMarkerPositions[i];
+    var dx = x - pos.x;
+    var dy = y - pos.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < minDistance) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function generateRandomMarkerPosition(centerX, centerY, minDist, maxDist, minDistanceBetween) {
+  var maxAttempts = 50;
+  var attempts = 0;
   
-  return {
-    x: centerX + Math.cos(angle) * distance,
-    y: centerY + Math.sin(angle) * distance
-  };
+  while (attempts < maxAttempts) {
+    var distance = minDist + Math.random() * (maxDist - minDist);
+    var angle = Math.random() * 2 * Math.PI;
+    
+    var x = centerX + Math.cos(angle) * distance;
+    var y = centerY + Math.sin(angle) * distance;
+    
+    if (!isPositionTooClose(x, y, minDistanceBetween)) {
+      usedMarkerPositions.push({ x: x, y: y });
+      return { x: x, y: y };
+    }
+    
+    attempts++;
+  }
+  
+  console.warn('Не удалось найти свободную позицию, увеличиваем радиус поиска');
+  var distance = maxDist + 50 + Math.random() * 100;
+  var angle = Math.random() * 2 * Math.PI;
+  var x = centerX + Math.cos(angle) * distance;
+  var y = centerY + Math.sin(angle) * distance;
+  usedMarkerPositions.push({ x: x, y: y });
+  return { x: x, y: y };
 }
 
 // ============================================================
-// ОТПРАВКА ОТЧЁТА (создание меток)
+// ОТПРАВКА ОТЧЁТА
 // ============================================================
 
 async function submitReportHandler() {
-  console.log('📝 Отправка отчёта...');
+  console.log('Отправка отчёта...');
   
   if (!isAuthorized) {
     alert('Сначала введите пароль!');
@@ -367,7 +368,6 @@ async function submitReportHandler() {
   var keeperName = getCurrentKeeper();
 
   try {
-    // Получаем координаты региона
     var regionResult = await _supabase
       .from('regions')
       .select('x, y')
@@ -383,7 +383,6 @@ async function submitReportHandler() {
     var regionX = regionResult.data.x;
     var regionY = regionResult.data.y;
     
-    // Подготавливаем данные для вставки
     var insertData = {
       region_id: currentRegionId,
       keeper_name: keeperName || null,
@@ -394,34 +393,30 @@ async function submitReportHandler() {
       game_date: new Date().toISOString().split('T')[0]
     };
     
-    // Генерируем координаты для меток
     var markerType = null;
     var markerX = null;
     var markerY = null;
     
-    if (hasResource && hasShelter) {
-      // Если выбраны оба — создаём метку ресурса (приоритет)
-      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+    var minDistanceBetween = 40;
+    
+    if (hasResource) {
+      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180, minDistanceBetween);
       markerType = 'resource';
       markerX = pos.x;
       markerY = pos.y;
-    } else if (hasResource) {
-      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
-      markerType = 'resource';
-      markerX = pos.x;
-      markerY = pos.y;
-    } else if (hasShelter) {
-      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+    }
+    
+    if (hasShelter && !hasResource) {
+      var pos2 = generateRandomMarkerPosition(regionX, regionY, 70, 180, minDistanceBetween);
       markerType = 'shelter';
-      markerX = pos.x;
-      markerY = pos.y;
+      markerX = pos2.x;
+      markerY = pos2.y;
     }
     
     insertData.marker_type = markerType;
     insertData.marker_x = markerX;
     insertData.marker_y = markerY;
     
-    // Сохраняем отчёт
     var result = await _supabase
       .from('game_reports')
       .insert([insertData]);
@@ -432,19 +427,16 @@ async function submitReportHandler() {
       return;
     }
 
-    alert('✅ Отчёт сохранён!');
+    alert('Отчёт сохранён!');
     
-    // Очищаем форму
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
     document.getElementById('shelter-check').checked = false;
     addDeceasedField();
     
-    // Обновляем список отчётов
     await loadReports(currentRegionId);
     
-    // Обновляем метки на карте
     if (typeof loadReportMarkers === 'function') {
       await loadReportMarkers();
     }
@@ -454,10 +446,6 @@ async function submitReportHandler() {
     alert('Ошибка: ' + err.message);
   }
 }
-
-// ============================================================
-// СМЕНА ХРАНИТЕЛЯ (СБРОС АВТОРИЗАЦИИ)
-// ============================================================
 
 function resetAuthorization() {
   if (confirm('Вы уверены, что хотите сменить Хранителя узлов? Текущий сеанс будет завершён.')) {
@@ -474,7 +462,7 @@ function resetAuthorization() {
     
     var reportBtn = document.getElementById('report-btn');
     if (reportBtn) {
-      reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
+      reportBtn.textContent = 'Введите пароль для создания отчёта';
       reportBtn.style.opacity = '0.6';
       reportBtn.style.cursor = 'pointer';
       reportBtn.onclick = function() {
@@ -486,17 +474,13 @@ function resetAuthorization() {
   }
 }
 
-// ============================================================
-// ОБНОВЛЕНИЕ КНОПКИ ОТЧЁТА
-// ============================================================
-
 function updateReportButton() {
   var reportBtn = document.getElementById('report-btn');
   if (!reportBtn) return;
   
   if (isAuthorized) {
     var keeper = getCurrentKeeper();
-    reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
+    reportBtn.textContent = keeper ? 'Составить отчёт (' + keeper + ')' : 'Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = null;
@@ -506,7 +490,7 @@ function updateReportButton() {
     if (!changeBtn) {
       var btn = document.createElement('button');
       btn.id = 'change-keeper-btn';
-      btn.textContent = '🔄 Сменить Хранителя';
+      btn.textContent = 'Сменить Хранителя';
       btn.style.cssText = 'width: 100%; padding: 6px; margin-top: 6px; background: rgba(74,14,14,0.3); border: 1px solid rgba(74,14,14,0.3); border-radius: 4px; color: rgba(255,255,255,0.5); cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px; transition: all 0.3s;';
       btn.onmouseover = function() { this.style.background = 'rgba(74,14,14,0.6)'; this.style.color = '#ffffff'; };
       btn.onmouseout = function() { this.style.background = 'rgba(74,14,14,0.3)'; this.style.color = 'rgba(255,255,255,0.5)'; };
@@ -514,7 +498,7 @@ function updateReportButton() {
       reportBtn.parentNode.insertBefore(btn, reportBtn.nextSibling);
     }
   } else {
-    reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
+    reportBtn.textContent = 'Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = function() {
@@ -550,13 +534,13 @@ passwordModal.style.cssText = `
 `;
 passwordModal.innerHTML = `
   <div style="background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; color: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.8);">
-    <h3 style="font-family: 'Calypso', serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">🔑 Введите пароль</h3>
+    <h3 style="font-family: "Calypso", serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">Введите пароль</h3>
     <p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 16px;">Введите пароль для доступа к созданию отчётов</p>
-    <input id="password-input" type="password" placeholder="Введите пароль..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
-    <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
+    <input id="password-input" type="password" placeholder="Введите пароль..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 16px;">
+    <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 16px;">
     <div style="display: flex; gap: 10px;">
-      <button id="password-submit-btn" style="flex: 1; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-weight: bold; transition: all 0.3s;">Подтвердить</button>
-      <button id="password-cancel-btn" style="padding: 10px 20px; background: transparent; color: #888; border: 1px solid #555; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif;">Отмена</button>
+      <button id="password-submit-btn" style="flex: 1; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Подтвердить</button>
+      <button id="password-cancel-btn" style="padding: 10px 20px; background: transparent; color: #888; border: 1px solid #555; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif;">Отмена</button>
     </div>
     <div id="password-error" style="color: #ff6b6b; font-size: 13px; text-align: center; margin-top: 8px; display: none;"></div>
   </div>
@@ -568,10 +552,6 @@ var keeperInput = document.getElementById('keeper-input');
 var passwordSubmitBtn = document.getElementById('password-submit-btn');
 var passwordCancelBtn = document.getElementById('password-cancel-btn');
 var passwordError = document.getElementById('password-error');
-
-// ============================================================
-// ОБРАБОТЧИКИ МОДАЛКИ ПАРОЛЯ
-// ============================================================
 
 function openPasswordModal() {
   passwordInput.value = '';
@@ -614,7 +594,7 @@ passwordSubmitBtn.addEventListener('click', function() {
       section.style.display = 'block';
     }
   } else {
-    passwordError.textContent = '❌ Неверный пароль';
+    passwordError.textContent = 'Неверный пароль';
     passwordError.style.display = 'block';
     passwordInput.value = '';
     passwordInput.focus();
@@ -633,10 +613,6 @@ keeperInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') passwordSubmitBtn.click();
 });
 
-// ============================================================
-// ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ ПРИ ЗАГРУЗКЕ
-// ============================================================
-
 loadAuthState();
 
 if (isAuthorized) {
@@ -651,10 +627,6 @@ if (isAuthorized) {
     }
   });
 }
-
-// ============================================================
-// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
-// ============================================================
 
 function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
