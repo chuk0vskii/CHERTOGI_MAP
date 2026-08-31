@@ -1,5 +1,5 @@
 // ============================================================
-// МАРКЕРЫ РЕГИОНОВ (КНОПКИ НА КАРТЕ)
+// МАРКЕРЫ РЕГИОНОВ
 // ============================================================
 
 const markerOverlays = [];
@@ -12,7 +12,6 @@ function createMarkerOverlay(regionId, name, description, x, y, difficulty) {
     <span class="marker-tooltip">${name}</span>
   `;
 
-  // Увеличение при наведении
   element.addEventListener('mouseenter', function() {
     const img = this.querySelector('img');
     if (img) {
@@ -28,14 +27,13 @@ function createMarkerOverlay(regionId, name, description, x, y, difficulty) {
     }
   });
 
-  // Клик — открываем сайдбар
   element.addEventListener('click', function(e) {
     e.stopPropagation();
     if (typeof openSidebar === 'function') {
       openSidebar(regionId, name, description, difficulty);
     } else {
-      console.error('❌ Функция openSidebar не найдена!');
-      alert(`📍 ${name}\n\n${description}`);
+      console.error('Функция openSidebar не найдена');
+      alert('Регион: ' + name + '\n\n' + description);
     }
   });
 
@@ -51,10 +49,6 @@ function createMarkerOverlay(regionId, name, description, x, y, difficulty) {
   markerOverlays.push(overlay);
 }
 
-// ============================================================
-// ЗАГРУЗКА МАРКЕРОВ РЕГИОНОВ
-// ============================================================
-
 async function loadMarkers() {
   try {
     const { data, error } = await _supabase
@@ -64,15 +58,13 @@ async function loadMarkers() {
       .eq('is_open', true);
 
     if (error) {
-      console.error('❌ Ошибка загрузки регионов:', error);
+      console.error('Ошибка загрузки регионов:', error);
       return;
     }
 
-    // Очищаем старые маркеры
     markerOverlays.forEach(overlay => map.removeOverlay(overlay));
     markerOverlays.length = 0;
 
-    // Создаём новые маркеры
     data.forEach(region => {
       createMarkerOverlay(
         region.id,
@@ -84,23 +76,17 @@ async function loadMarkers() {
       );
     });
 
-    console.log(`✅ Загружено ${data.length} открытых регионов`);
+    console.log('Загружено ' + data.length + ' открытых регионов');
     
-    // После загрузки маркеров регионов загружаем метки отчётов
     if (typeof loadReportMarkers === 'function') {
       await loadReportMarkers();
     }
     
   } catch (err) {
-    console.error('❌ Ошибка загрузки маркеров:', err);
+    console.error('Ошибка загрузки маркеров:', err);
   }
 }
 
-// ============================================================
-// ЗАПУСК
-// ============================================================
-
-// Загружаем маркеры после инициализации карты
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
     if (typeof map !== 'undefined' && map) {
@@ -109,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 500);
 });
 
-// Перезагружаем маркеры при возвращении на страницу
 window.addEventListener('focus', function() {
   if (typeof map !== 'undefined' && map) {
     loadMarkers();
