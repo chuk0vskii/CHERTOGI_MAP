@@ -22,10 +22,13 @@ let currentKeeper = '';
 // СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
 // ============================================================
 
-let placementMode = null;
-let tempMarkerOverlay = null;
-let tempMarkerPosition = null;
+let placementMode = null; // 'resource' или 'shelter'
+let tempMarkers = {
+  resource: null, // { overlay, position }
+  shelter: null
+};
 let mapClickListener = null;
+let activePlacementType = null;
 
 function loadAuthState() {
   try {
@@ -176,7 +179,6 @@ function openSidebar(regionId, name, description, difficulty) {
 }
 
 function closeSidebar() {
-  // Если активен режим размещения метки, не закрываем сайдбар
   if (placementMode) {
     console.log('Режим размещения метки активен, сайдбар не закрывается');
     return;
@@ -189,7 +191,6 @@ function closeSidebar() {
 
 document.getElementById('close-icon').addEventListener('click', function(e) {
   e.stopPropagation();
-  // Если активен режим размещения метки, сначала отключаем его
   if (placementMode) {
     resetPlacementState();
   }
@@ -254,6 +255,10 @@ function addReportSection() {
           <div id="marker-placed-info" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(81,207,102,0.1); border-radius: 6px; border: 1px solid rgba(81,207,102,0.2); font-size: 13px; color: #51cf66;">
             Метка размещена. Вы можете переместить её, кликнув в другое место.
           </div>
+          <div id="marker-status" style="margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.3);">
+            <span id="resource-status">Ресурс: не выбран</span>
+            <span id="shelter-status" style="margin-left: 16px;">Ночлег: не выбран</span>
+          </div>
         </div>
         
         <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
@@ -281,39 +286,39 @@ function addReportSection() {
   
   document.getElementById('resource-check')?.addEventListener('change', function() {
     if (this.checked) {
-      // Если уже выбрано другое, снимаем его
-      if (placementMode && placementMode !== 'resource') {
-        var otherCheckbox = document.getElementById(placementMode + '-check');
-        if (otherCheckbox) {
-          otherCheckbox.checked = false;
-        }
-      }
+      activePlacementType = 'resource';
       startPlacementMode('resource');
     } else {
-      if (placementMode === 'resource') {
+      removeTempMarker('resource');
+      updateMarkerStatus();
+      if (!document.getElementById('shelter-check')?.checked) {
         stopPlacementMode();
+      } else {
+        activePlacementType = 'shelter';
+        startPlacementMode('shelter');
       }
     }
   });
   
   document.getElementById('shelter-check')?.addEventListener('change', function() {
     if (this.checked) {
-      if (placementMode && placementMode !== 'shelter') {
-        var otherCheckbox = document.getElementById(placementMode + '-check');
-        if (otherCheckbox) {
-          otherCheckbox.checked = false;
-        }
-      }
+      activePlacementType = 'shelter';
       startPlacementMode('shelter');
     } else {
-      if (placementMode === 'shelter') {
+      removeTempMarker('shelter');
+      updateMarkerStatus();
+      if (!document.getElementById('resource-check')?.checked) {
         stopPlacementMode();
+      } else {
+        activePlacementType = 'resource';
+        startPlacementMode('resource');
       }
     }
   });
   
   addDeceasedField();
   updateKeeperDisplay();
+  updateMarkerStatus();
   
   if (isAuthorized) {
     section.style.display = 'block';
@@ -334,18 +339,32 @@ function updateKeeperDisplay() {
   }
 }
 
+function updateMarkerStatus() {
+  var resourceCheck = document.getElementById('resource-check');
+  var shelterCheck = document.getElementById('shelter-check');
+  var resourceStatus = document.getElementById('resource-status');
+  var shelterStatus = document.getElementById('shelter-status');
+  
+  if (resourceStatus) {
+    var hasResource = resourceCheck && resourceCheck.checked;
+    var hasResourcePos = tempMarkers.resource !== null;
+    resourceStatus.textContent = 'Ресурс: ' + (hasResource ? (hasResourcePos ? 'размещён' : 'выберите место на карте') : 'не выбран');
+    resourceStatus.style.color = hasResource ? (hasResourcePos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
+  }
+  
+  if (shelterStatus) {
+    var hasShelter = shelterCheck && shelterCheck.checked;
+    var hasShelterPos = tempMarkers.shelter !== null;
+    shelterStatus.textContent = 'Ночлег: ' + (hasShelter ? (hasShelterPos ? 'размещён' : 'выберите место на карте') : 'не выбран');
+    shelterStatus.style.color = hasShelter ? (hasShelterPos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
+  }
+}
+
 // ============================================================
 // РЕЖИМ РАЗМЕЩЕНИЯ МЕТКИ НА КАРТЕ
 // ============================================================
 
 function startPlacementMode(type) {
-  if (placementMode && placementMode !== type) {
-    var otherCheckbox = document.getElementById(placementMode + '-check');
-    if (otherCheckbox) {
-      otherCheckbox.checked = false;
-    }
-  }
-  
   placementMode = type;
   
   var hint = document.getElementById('marker-placement-hint');
@@ -358,8 +377,6 @@ function startPlacementMode(type) {
   if (mapElement) {
     mapElement.style.cursor = 'crosshair';
   }
-  
-  removeTempMarker();
   
   if (mapClickListener) {
     map.un('click', mapClickListener);
@@ -377,6 +394,8 @@ function startPlacementMode(type) {
     
     var hint = document.getElementById('marker-placement-hint');
     if (hint) hint.style.display = 'none';
+    
+    updateMarkerStatus();
   };
   
   map.on('click', mapClickListener);
@@ -386,6 +405,7 @@ function startPlacementMode(type) {
 
 function stopPlacementMode() {
   placementMode = null;
+  activePlacementType = null;
   
   var hint = document.getElementById('marker-placement-hint');
   if (hint) hint.style.display = 'none';
@@ -407,23 +427,24 @@ function stopPlacementMode() {
 }
 
 function updateTempMarker(x, y, type) {
-  removeTempMarker();
-  
   var iconSrc = type === 'resource' 
     ? '/CHERTOGI_MAP/icons/resurs.png' 
     : '/CHERTOGI_MAP/icons/Nochleg.png';
   
   var tooltipText = type === 'resource' ? 'Место ресурса' : 'Место безопасного ночлега';
   
+  // Удаляем старую метку этого типа
+  removeTempMarker(type);
+  
   var element = document.createElement('div');
-  element.className = 'marker-button temp-marker';
+  element.className = 'marker-button temp-marker temp-marker-' + type;
   element.innerHTML = `
     <img src="${iconSrc}" alt="${tooltipText}" width="28" height="28">
     <span class="marker-tooltip">${tooltipText}</span>
   `;
   element.style.opacity = '0.7';
   
-  tempMarkerOverlay = new ol.Overlay({
+  var overlay = new ol.Overlay({
     element: element,
     position: [x, y],
     positioning: 'bottom-center',
@@ -431,32 +452,42 @@ function updateTempMarker(x, y, type) {
     stopEvent: false
   });
   
-  map.addOverlay(tempMarkerOverlay);
-  tempMarkerPosition = { x: x, y: y };
+  map.addOverlay(overlay);
+  tempMarkers[type] = {
+    overlay: overlay,
+    position: { x: x, y: y }
+  };
   
-  console.log('Временная метка размещена на:', x, y);
+  console.log('Временная метка ' + type + ' размещена на:', x, y);
+  updateMarkerStatus();
 }
 
-function removeTempMarker() {
-  if (tempMarkerOverlay) {
-    map.removeOverlay(tempMarkerOverlay);
-    tempMarkerOverlay = null;
-    tempMarkerPosition = null;
+function removeTempMarker(type) {
+  if (tempMarkers[type] && tempMarkers[type].overlay) {
+    map.removeOverlay(tempMarkers[type].overlay);
+    tempMarkers[type] = null;
+    console.log('Временная метка ' + type + ' удалена');
   }
 }
 
-function getTempMarkerPosition() {
-  return tempMarkerPosition;
+function getTempMarkerPosition(type) {
+  if (tempMarkers[type]) {
+    return tempMarkers[type].position;
+  }
+  return null;
 }
 
 function resetPlacementState() {
   stopPlacementMode();
-  removeTempMarker();
+  removeTempMarker('resource');
+  removeTempMarker('shelter');
   
   var resourceCheck = document.getElementById('resource-check');
   var shelterCheck = document.getElementById('shelter-check');
   if (resourceCheck) resourceCheck.checked = false;
   if (shelterCheck) shelterCheck.checked = false;
+  
+  updateMarkerStatus();
 }
 
 // ============================================================
@@ -497,12 +528,12 @@ async function submitReportHandler() {
     return;
   }
 
-  if (hasResource && !tempMarkerPosition) {
+  if (hasResource && !tempMarkers.resource) {
     alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
     return;
   }
   
-  if (hasShelter && !tempMarkerPosition) {
+  if (hasShelter && !tempMarkers.shelter) {
     alert('Кликните на карту, чтобы разместить метку для "Место ночлега"');
     return;
   }
@@ -522,45 +553,57 @@ async function submitReportHandler() {
       return;
     }
     
-    var insertData = {
-      region_id: currentRegionId,
-      keeper_name: keeperName || null,
-      content: content,
-      deceased_names: deceasedNames && deceasedNames.length > 0 ? deceasedNames : null,
-      has_resource: hasResource || false,
-      has_shelter: hasShelter || false,
-      game_date: new Date().toISOString().split('T')[0]
-    };
+    // Если выбраны оба типа, создаём два отчёта
+    var reportsToInsert = [];
     
-    var markerType = null;
-    var markerX = null;
-    var markerY = null;
-    
-    if (hasResource && tempMarkerPosition) {
-      markerType = 'resource';
-      markerX = tempMarkerPosition.x;
-      markerY = tempMarkerPosition.y;
-    } else if (hasShelter && tempMarkerPosition) {
-      markerType = 'shelter';
-      markerX = tempMarkerPosition.x;
-      markerY = tempMarkerPosition.y;
+    if (hasResource && tempMarkers.resource) {
+      var pos = tempMarkers.resource.position;
+      reportsToInsert.push({
+        region_id: currentRegionId,
+        keeper_name: keeperName || null,
+        content: content + ' (Место ресурса)',
+        deceased_names: deceasedNames && deceasedNames.length > 0 ? deceasedNames : null,
+        has_resource: true,
+        has_shelter: false,
+        marker_type: 'resource',
+        marker_x: pos.x,
+        marker_y: pos.y,
+        game_date: new Date().toISOString().split('T')[0]
+      });
     }
     
-    insertData.marker_type = markerType;
-    insertData.marker_x = markerX;
-    insertData.marker_y = markerY;
+    if (hasShelter && tempMarkers.shelter) {
+      var pos2 = tempMarkers.shelter.position;
+      reportsToInsert.push({
+        region_id: currentRegionId,
+        keeper_name: keeperName || null,
+        content: content + ' (Место ночлега)',
+        deceased_names: deceasedNames && deceasedNames.length > 0 ? deceasedNames : null,
+        has_resource: false,
+        has_shelter: true,
+        marker_type: 'shelter',
+        marker_x: pos2.x,
+        marker_y: pos2.y,
+        game_date: new Date().toISOString().split('T')[0]
+      });
+    }
     
-    var result = await _supabase
-      .from('game_reports')
-      .insert([insertData]);
-
-    if (result.error) {
-      console.error('Ошибка отправки отчёта:', result.error);
-      alert('Ошибка: ' + result.error.message);
-      return;
+    // Вставляем все отчёты
+    var allResults = [];
+    for (var i = 0; i < reportsToInsert.length; i++) {
+      var result = await _supabase
+        .from('game_reports')
+        .insert([reportsToInsert[i]]);
+      
+      if (result.error) {
+        console.error('Ошибка отправки отчёта:', result.error);
+        alert('Ошибка: ' + result.error.message);
+        return;
+      }
+      allResults.push(result);
     }
 
-    alert('Отчёт сохранён!');
+    alert('Отчёт сохранён! (' + reportsToInsert.length + ' меток создано)');
     
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
@@ -766,13 +809,12 @@ if (isAuthorized) {
 }
 
 // ============================================================
-// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ (С ПРОВЕРКОЙ РЕЖИМА РАЗМЕЩЕНИЯ)
+// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
 // ============================================================
 
 function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
     map.on('click', function(event) {
-      // Если активен режим размещения метки, не закрываем сайдбар
       if (placementMode) {
         return;
       }
