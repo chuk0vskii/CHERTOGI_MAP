@@ -4,16 +4,15 @@
 
 var reportMarkerOverlays = [];
 
-// ============================================================
-// ЗАГРУЗКА МЕТОК ИЗ ОТЧЁТОВ
-// ============================================================
-
 async function loadReportMarkers() {
-  // Очищаем старые метки
   reportMarkerOverlays.forEach(function(overlay) {
     map.removeOverlay(overlay);
   });
   reportMarkerOverlays = [];
+
+  if (typeof clearMarkerPositionsCache === 'function') {
+    clearMarkerPositionsCache();
+  }
 
   try {
     var result = await _supabase
@@ -28,21 +27,32 @@ async function loadReportMarkers() {
     }
 
     var reports = result.data || [];
-    console.log('📌 Загружено ' + reports.length + ' меток');
+    console.log('Загружено ' + reports.length + ' меток отчётов');
+
+    if (typeof usedMarkerPositions !== 'undefined') {
+      reports.forEach(function(report) {
+        if (report.marker_x !== null && report.marker_y !== null) {
+          usedMarkerPositions.push({
+            x: report.marker_x,
+            y: report.marker_y
+          });
+        }
+      });
+      console.log('Загружено ' + usedMarkerPositions.length + ' позиций в кэш');
+    }
 
     reports.forEach(function(report) {
-      // Определяем иконку и подпись
       var iconSrc = '';
       var tooltipText = '';
       
       if (report.marker_type === 'resource' || report.has_resource) {
         iconSrc = '/CHERTOGI_MAP/icons/resurs.png';
-        tooltipText = '🏕️ Место ресурса';
+        tooltipText = 'Место ресурса';
       } else if (report.marker_type === 'shelter' || report.has_shelter) {
         iconSrc = '/CHERTOGI_MAP/icons/Nochleg.png';
-        tooltipText = '🛏️ Место безопасного ночлега';
+        tooltipText = 'Место безопасного ночлега';
       } else {
-        return; // Пропускаем, если тип не определён
+        return;
       }
 
       createReportMarker(
@@ -60,10 +70,6 @@ async function loadReportMarkers() {
   }
 }
 
-// ============================================================
-// СОЗДАНИЕ ОДНОЙ МЕТКИ
-// ============================================================
-
 function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
   var element = document.createElement('div');
   element.className = 'marker-button report-marker';
@@ -72,7 +78,6 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
     <span class="marker-tooltip">${tooltipText}</span>
   `;
 
-  // Увеличение при наведении
   element.addEventListener('mouseenter', function() {
     var img = this.querySelector('img');
     if (img) {
@@ -88,12 +93,9 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
     }
   });
 
-  // Клик — открываем отчёт в сайдбаре
   element.addEventListener('click', function(e) {
     e.stopPropagation();
-    // Открываем регион и показываем отчёт
     if (typeof openSidebar === 'function') {
-      // Сначала получаем данные региона
       _supabase
         .from('regions')
         .select('name, description, difficulty')
@@ -102,7 +104,6 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
         .then(function(result) {
           if (!result.error && result.data) {
             openSidebar(regionId, result.data.name, result.data.description, result.data.difficulty);
-            // После открытия сайдбара показываем нужный отчёт
             setTimeout(function() {
               var reportElement = document.getElementById('report-' + reportId);
               if (reportElement) {
@@ -129,22 +130,4 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
   reportMarkerOverlays.push(overlay);
 }
 
-// ============================================================
-// ЗАПУСК
-// ============================================================
-
-// Загружаем метки после загрузки карты
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    if (typeof map !== 'undefined' && map) {
-      loadReportMarkers();
-    }
-  }, 1000);
-});
-
-// Перезагружаем метки при возвращении на страницу
-window.addEventListener('focus', function() {
-  if (typeof map !== 'undefined' && map) {
-    loadReportMarkers();
-  }
-});
+console.log('report-markers.js загружен');
