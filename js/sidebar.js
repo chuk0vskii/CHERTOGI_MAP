@@ -18,6 +18,15 @@ const STORAGE_KEY = 'chertogi_report_auth';
 let isAuthorized = false;
 let currentKeeper = '';
 
+// ============================================================
+// СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
+// ============================================================
+
+let placementMode = null; // 'resource' или 'shelter'
+let tempMarkerOverlay = null;
+let tempMarkerPosition = null;
+let mapClickListener = null;
+
 function loadAuthState() {
   try {
     var saved = sessionStorage.getItem(STORAGE_KEY);
@@ -229,6 +238,12 @@ function addReportSection() {
               Место ночлега
             </label>
           </div>
+          <div id="marker-placement-hint" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border: 1px solid rgba(255,215,0,0.2); font-size: 13px; color: #ffd700;">
+            Кликните на карту в то место, где хотите разместить метку
+          </div>
+          <div id="marker-placed-info" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(81,207,102,0.1); border-radius: 6px; border: 1px solid rgba(81,207,102,0.2); font-size: 13px; color: #51cf66;">
+            Метка размещена. Вы можете переместить её, кликнув в другое место.
+          </div>
         </div>
         
         <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
@@ -254,6 +269,27 @@ function addReportSection() {
   document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
   document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
   
+  // Обработчики для чекбоксов
+  document.getElementById('resource-check')?.addEventListener('change', function() {
+    if (this.checked) {
+      startPlacementMode('resource');
+    } else {
+      if (placementMode === 'resource') {
+        stopPlacementMode();
+      }
+    }
+  });
+  
+  document.getElementById('shelter-check')?.addEventListener('change', function() {
+    if (this.checked) {
+      startPlacementMode('shelter');
+    } else {
+      if (placementMode === 'shelter') {
+        stopPlacementMode();
+      }
+    }
+  });
+  
   addDeceasedField();
   updateKeeperDisplay();
   
@@ -277,54 +313,138 @@ function updateKeeperDisplay() {
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ СЛУЧАЙНЫХ КООРДИНАТ С ПРОВЕРКОЙ КОЛЛИЗИЙ
+// РЕЖИМ РАЗМЕЩЕНИЯ МЕТКИ НА КАРТЕ
 // ============================================================
 
-var usedMarkerPositions = [];
-
-function clearMarkerPositionsCache() {
-  usedMarkerPositions = [];
-}
-
-function isPositionTooClose(x, y, minDistance) {
-  for (var i = 0; i < usedMarkerPositions.length; i++) {
-    var pos = usedMarkerPositions[i];
-    var dx = x - pos.x;
-    var dy = y - pos.y;
-    var distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < minDistance) {
-      return true;
+function startPlacementMode(type) {
+  // Если уже активен другой режим, отключаем его
+  if (placementMode && placementMode !== type) {
+    var otherCheckbox = document.getElementById(placementMode + '-check');
+    if (otherCheckbox) {
+      otherCheckbox.checked = false;
     }
   }
-  return false;
-}
-
-function generateRandomMarkerPosition(centerX, centerY, minDist, maxDist, minDistanceBetween) {
-  var maxAttempts = 50;
-  var attempts = 0;
   
-  while (attempts < maxAttempts) {
-    var distance = minDist + Math.random() * (maxDist - minDist);
-    var angle = Math.random() * 2 * Math.PI;
-    
-    var x = centerX + Math.cos(angle) * distance;
-    var y = centerY + Math.sin(angle) * distance;
-    
-    if (!isPositionTooClose(x, y, minDistanceBetween)) {
-      usedMarkerPositions.push({ x: x, y: y });
-      return { x: x, y: y };
-    }
-    
-    attempts++;
+  placementMode = type;
+  
+  // Показываем подсказку
+  var hint = document.getElementById('marker-placement-hint');
+  if (hint) hint.style.display = 'block';
+  
+  var info = document.getElementById('marker-placed-info');
+  if (info) info.style.display = 'none';
+  
+  // Меняем курсор карты
+  var mapElement = document.getElementById('map');
+  if (mapElement) {
+    mapElement.style.cursor = 'crosshair';
   }
   
-  console.warn('Не удалось найти свободную позицию, увеличиваем радиус поиска');
-  var distance = maxDist + 50 + Math.random() * 100;
-  var angle = Math.random() * 2 * Math.PI;
-  var x = centerX + Math.cos(angle) * distance;
-  var y = centerY + Math.sin(angle) * distance;
-  usedMarkerPositions.push({ x: x, y: y });
-  return { x: x, y: y };
+  // Удаляем старый временный маркер
+  removeTempMarker();
+  
+  // Добавляем слушатель клика на карту
+  if (mapClickListener) {
+    map.un('click', mapClickListener);
+  }
+  
+  mapClickListener = function(event) {
+    var coord = event.coordinate;
+    var x = coord[0];
+    var y = coord[1];
+    
+    // Обновляем позицию временного маркера
+    updateTempMarker(x, y, type);
+    
+    // Показываем информацию о размещении
+    var info = document.getElementById('marker-placed-info');
+    if (info) info.style.display = 'block';
+    
+    var hint = document.getElementById('marker-placement-hint');
+    if (hint) hint.style.display = 'none';
+  };
+  
+  map.on('click', mapClickListener);
+  
+  console.log('Режим размещения метки активирован:', type);
+}
+
+function stopPlacementMode() {
+  placementMode = null;
+  
+  var hint = document.getElementById('marker-placement-hint');
+  if (hint) hint.style.display = 'none';
+  
+  var info = document.getElementById('marker-placed-info');
+  if (info) info.style.display = 'none';
+  
+  var mapElement = document.getElementById('map');
+  if (mapElement) {
+    mapElement.style.cursor = '';
+  }
+  
+  if (mapClickListener) {
+    map.un('click', mapClickListener);
+    mapClickListener = null;
+  }
+  
+  // Не удаляем временный маркер, чтобы пользователь видел где поставил
+  // removeTempMarker();
+  
+  console.log('Режим размещения метки деактивирован');
+}
+
+function updateTempMarker(x, y, type) {
+  removeTempMarker();
+  
+  var iconSrc = type === 'resource' 
+    ? '/CHERTOGI_MAP/icons/resurs.png' 
+    : '/CHERTOGI_MAP/icons/Nochleg.png';
+  
+  var tooltipText = type === 'resource' ? 'Место ресурса' : 'Место безопасного ночлега';
+  
+  var element = document.createElement('div');
+  element.className = 'marker-button temp-marker';
+  element.innerHTML = `
+    <img src="${iconSrc}" alt="${tooltipText}" width="28" height="28">
+    <span class="marker-tooltip">${tooltipText} (временная метка)</span>
+  `;
+  element.style.opacity = '0.7';
+  
+  tempMarkerOverlay = new ol.Overlay({
+    element: element,
+    position: [x, y],
+    positioning: 'bottom-center',
+    offset: [0, -8],
+    stopEvent: false
+  });
+  
+  map.addOverlay(tempMarkerOverlay);
+  tempMarkerPosition = { x: x, y: y };
+  
+  console.log('Временная метка размещена на:', x, y);
+}
+
+function removeTempMarker() {
+  if (tempMarkerOverlay) {
+    map.removeOverlay(tempMarkerOverlay);
+    tempMarkerOverlay = null;
+    tempMarkerPosition = null;
+  }
+}
+
+function getTempMarkerPosition() {
+  return tempMarkerPosition;
+}
+
+function resetPlacementState() {
+  stopPlacementMode();
+  removeTempMarker();
+  
+  var resourceCheck = document.getElementById('resource-check');
+  var shelterCheck = document.getElementById('shelter-check');
+  if (resourceCheck) resourceCheck.checked = false;
+  if (shelterCheck) shelterCheck.checked = false;
 }
 
 // ============================================================
@@ -365,6 +485,17 @@ async function submitReportHandler() {
     return;
   }
 
+  // Проверяем, что для выбранных точек есть позиция на карте
+  if (hasResource && !tempMarkerPosition) {
+    alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
+    return;
+  }
+  
+  if (hasShelter && !tempMarkerPosition) {
+    alert('Кликните на карту, чтобы разместить метку для "Место ночлега"');
+    return;
+  }
+
   var keeperName = getCurrentKeeper();
 
   try {
@@ -380,9 +511,6 @@ async function submitReportHandler() {
       return;
     }
     
-    var regionX = regionResult.data.x;
-    var regionY = regionResult.data.y;
-    
     var insertData = {
       region_id: currentRegionId,
       keeper_name: keeperName || null,
@@ -393,24 +521,19 @@ async function submitReportHandler() {
       game_date: new Date().toISOString().split('T')[0]
     };
     
+    // Определяем тип метки и координаты
     var markerType = null;
     var markerX = null;
     var markerY = null;
     
-    var minDistanceBetween = 40;
-    
-    if (hasResource) {
-      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180, minDistanceBetween);
+    if (hasResource && tempMarkerPosition) {
       markerType = 'resource';
-      markerX = pos.x;
-      markerY = pos.y;
-    }
-    
-    if (hasShelter && !hasResource) {
-      var pos2 = generateRandomMarkerPosition(regionX, regionY, 70, 180, minDistanceBetween);
+      markerX = tempMarkerPosition.x;
+      markerY = tempMarkerPosition.y;
+    } else if (hasShelter && tempMarkerPosition) {
       markerType = 'shelter';
-      markerX = pos2.x;
-      markerY = pos2.y;
+      markerX = tempMarkerPosition.x;
+      markerY = tempMarkerPosition.y;
     }
     
     insertData.marker_type = markerType;
@@ -429,11 +552,15 @@ async function submitReportHandler() {
 
     alert('Отчёт сохранён!');
     
+    // Очищаем форму
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
     document.getElementById('shelter-check').checked = false;
     addDeceasedField();
+    
+    // Сбрасываем состояние размещения меток
+    resetPlacementState();
     
     await loadReports(currentRegionId);
     
@@ -454,6 +581,7 @@ function resetAuthorization() {
     updateReportButton();
     updateKeeperDisplay();
     updateReportSectionVisibility();
+    resetPlacementState();
     
     var section = document.getElementById('report-section');
     if (section) {
@@ -505,6 +633,7 @@ function updateReportButton() {
       openPasswordModal();
     };
     updateReportSectionVisibility();
+    resetPlacementState();
     
     var changeBtn = document.getElementById('change-keeper-btn');
     if (changeBtn) {
