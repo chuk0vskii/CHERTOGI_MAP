@@ -689,5 +689,114 @@
     }
   })();
 </script>
+  <script>
+  // ============================================================
+  // ОБРАБОТКА ПЕРЕХОДА С ДРЕВА СМЕРТИ
+  // ============================================================
+
+  (function() {
+    // Проверяем sessionStorage при загрузке
+    function checkForReportFromTree() {
+      try {
+        var reportId = sessionStorage.getItem('open_report_id');
+        var regionId = sessionStorage.getItem('open_region_id');
+        var name = sessionStorage.getItem('open_name');
+        
+        if (!reportId || !regionId) {
+          return;
+        }
+        
+        console.log('Открытие отчёта с Древа смерти:', { reportId, regionId, name });
+        
+        // Очищаем sessionStorage после чтения
+        sessionStorage.removeItem('open_report_id');
+        sessionStorage.removeItem('open_region_id');
+        sessionStorage.removeItem('open_name');
+        
+        // Ждём загрузки карты и функций
+        var checkInterval = setInterval(function() {
+          if (typeof map !== 'undefined' && map && typeof openSidebar === 'function' && typeof _supabase !== 'undefined') {
+            clearInterval(checkInterval);
+            
+            var reportIdNum = parseInt(reportId);
+            var regionIdNum = parseInt(regionId);
+            
+            if (isNaN(reportIdNum) || isNaN(regionIdNum)) {
+              console.warn('Неверные ID отчёта или региона');
+              return;
+            }
+            
+            // Получаем данные региона
+            _supabase
+              .from('regions')
+              .select('name, description, difficulty')
+              .eq('id', regionIdNum)
+              .single()
+              .then(function(result) {
+                if (result.error) {
+                  console.error('Ошибка получения региона:', result.error);
+                  return;
+                }
+                
+                if (!result.data) {
+                  console.warn('Регион не найден');
+                  return;
+                }
+                
+                // Открываем сайдбар
+                openSidebar(regionIdNum, result.data.name, result.data.description, result.data.difficulty);
+                
+                // Ждём загрузки отчётов и раскрываем нужный
+                var reportCheck = setInterval(function() {
+                  var reportElement = document.getElementById('report-' + reportIdNum);
+                  if (reportElement) {
+                    clearInterval(reportCheck);
+                    reportElement.style.display = 'block';
+                    reportElement.style.background = 'rgba(255,215,0,0.15)';
+                    reportElement.style.borderLeft = '3px solid #ffd700';
+                    
+                    // Прокручиваем к отчёту
+                    setTimeout(function() {
+                      reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                    
+                    // Убираем подсветку через 5 секунд
+                    setTimeout(function() {
+                      reportElement.style.background = '';
+                      reportElement.style.borderLeft = '';
+                    }, 5000);
+                    
+                    console.log('Отчёт #' + reportIdNum + ' раскрыт');
+                  }
+                }, 500);
+                
+                // Таймаут для поиска отчёта
+                setTimeout(function() {
+                  clearInterval(reportCheck);
+                }, 5000);
+              });
+          }
+        }, 500);
+        
+        // Таймаут, чтобы не ждать вечно
+        setTimeout(function() {
+          clearInterval(checkInterval);
+        }, 10000);
+        
+      } catch (err) {
+        console.error('Ошибка при открытии отчёта с Древа смерти:', err);
+      }
+    }
+
+    // Запускаем после загрузки страницы
+    if (document.readyState === 'complete') {
+      setTimeout(checkForReportFromTree, 1000);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(checkForReportFromTree, 1000);
+      });
+    }
+  })();
+</script>
 </body>
 </html>
