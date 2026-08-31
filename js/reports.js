@@ -36,33 +36,27 @@ async function loadReports(regionId) {
     var report = data[i];
     var reportId = 'report-' + report.id;
     
-    // Формируем полное содержимое отчёта (скрыто по умолчанию)
     var fullContent = '';
     
-    // Хранитель
     if (report.keeper_name) {
       fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + report.keeper_name + '</div>';
     }
     
-    // Текст отчёта
     if (report.content) {
       fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + report.content + '</div>';
     }
     
-    // Умершие
     if (report.deceased_names && report.deceased_names.length > 0) {
       fullContent += '<div style="color: #ff6b6b; font-size: 13px; margin-top: 4px;"><span style="color: #888;">Умершие:</span> ' + report.deceased_names.join(', ') + '</div>';
     }
     
-    // Точки интереса
     var points = [];
-    if (report.has_resource) points.push('Место ресурса');
-    if (report.has_shelter) points.push('Место ночлега');
+    if (report.has_resource) points.push('🏕️ Место ресурса');
+    if (report.has_shelter) points.push('🛏️ Место ночлега');
     if (points.length > 0) {
       fullContent += '<div style="color: #51cf66; font-size: 13px; margin-top: 2px;"><span style="color: #888;">Точки интереса:</span> ' + points.join(', ') + '</div>';
     }
     
-    // Если нет дополнительной информации
     if (!fullContent) {
       fullContent = '<div style="color: #888; font-size: 13px; margin-top: 4px;">Нет дополнительной информации</div>';
     }
@@ -102,10 +96,44 @@ function toggleReport(reportId) {
 }
 
 // ============================================================
-// ОТПРАВКА ОТЧЁТА
+// ГЕНЕРАЦИЯ СЛУЧАЙНЫХ КООРДИНАТ В ДИАПАЗОНЕ ОТ ТОЧКИ
+// ============================================================
+
+function generateRandomMarkerPosition(centerX, centerY, minDist, maxDist) {
+  // Генерируем случайное расстояние и угол
+  var distance = minDist + Math.random() * (maxDist - minDist);
+  var angle = Math.random() * 2 * Math.PI;
+  
+  var dx = Math.cos(angle) * distance;
+  var dy = Math.sin(angle) * distance;
+  
+  return {
+    x: centerX + dx,
+    y: centerY + dy
+  };
+}
+
+// ============================================================
+// ОТПРАВКА ОТЧЁТА (с созданием меток)
 // ============================================================
 
 async function submitReport(regionId, content, keeperName, deceasedNames, hasResource, hasShelter) {
+  // Получаем координаты региона для размещения меток
+  var regionResult = await _supabase
+    .from('regions')
+    .select('x, y')
+    .eq('id', regionId)
+    .single();
+  
+  if (regionResult.error) {
+    console.error('Ошибка получения координат региона:', regionResult.error);
+    return { success: false, error: 'Не удалось получить координаты региона' };
+  }
+  
+  var regionX = regionResult.data.x;
+  var regionY = regionResult.data.y;
+  
+  // Подготавливаем данные для вставки
   var insertData = {
     region_id: regionId,
     keeper_name: keeperName || null,
@@ -115,7 +143,25 @@ async function submitReport(regionId, content, keeperName, deceasedNames, hasRes
     has_shelter: hasShelter || false,
     game_date: new Date().toISOString().split('T')[0]
   };
-
+  
+  // Если выбран ресурс, генерируем координаты
+  if (hasResource) {
+    var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+    insertData.marker_type = 'resource';
+    insertData.marker_x = pos.x;
+    insertData.marker_y = pos.y;
+  }
+  // Если выбран ночлег (и нет ресурса) или выбран только ночлег
+  else if (hasShelter) {
+    var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+    insertData.marker_type = 'shelter';
+    insertData.marker_x = pos.x;
+    insertData.marker_y = pos.y;
+  }
+  // Если выбраны и ресурс, и ночлег — создаём две записи?
+  // В текущей реализации — только одна метка (приоритет у ресурса)
+  // Можно создать две метки, но тогда нужно дублировать отчёт или создать отдельную таблицу для меток
+  
   var result = await _supabase
     .from('game_reports')
     .insert([insertData]);
@@ -123,6 +169,14 @@ async function submitReport(regionId, content, keeperName, deceasedNames, hasRes
   if (result.error) {
     console.error('Ошибка отправки отчёта:', result.error);
     return { success: false, error: result.error.message };
+  }
+
+  // После сохранения отчёта обновляем карту
+  if (typeof loadMarkers === 'function') {
+    await loadMarkers();
+  }
+  if (typeof loadReportMarkers === 'function') {
+    await loadReportMarkers();
   }
 
   return { success: true, data: result.data };
