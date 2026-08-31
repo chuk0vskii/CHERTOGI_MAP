@@ -22,7 +22,7 @@ let currentKeeper = '';
 // СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
 // ============================================================
 
-let placementMode = null; // 'resource' или 'shelter'
+let placementMode = null;
 let tempMarkerOverlay = null;
 let tempMarkerPosition = null;
 let mapClickListener = null;
@@ -176,6 +176,12 @@ function openSidebar(regionId, name, description, difficulty) {
 }
 
 function closeSidebar() {
+  // Если активен режим размещения метки, не закрываем сайдбар
+  if (placementMode) {
+    console.log('Режим размещения метки активен, сайдбар не закрывается');
+    return;
+  }
+  
   sidebar.classList.remove('open');
   sidebar.style.transform = 'translateX(100%)';
   setTimeout(() => { sidebar.style.display = 'none'; }, 300);
@@ -183,6 +189,10 @@ function closeSidebar() {
 
 document.getElementById('close-icon').addEventListener('click', function(e) {
   e.stopPropagation();
+  // Если активен режим размещения метки, сначала отключаем его
+  if (placementMode) {
+    resetPlacementState();
+  }
   closeSidebar();
 });
 
@@ -269,9 +279,15 @@ function addReportSection() {
   document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
   document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
   
-  // Обработчики для чекбоксов
   document.getElementById('resource-check')?.addEventListener('change', function() {
     if (this.checked) {
+      // Если уже выбрано другое, снимаем его
+      if (placementMode && placementMode !== 'resource') {
+        var otherCheckbox = document.getElementById(placementMode + '-check');
+        if (otherCheckbox) {
+          otherCheckbox.checked = false;
+        }
+      }
       startPlacementMode('resource');
     } else {
       if (placementMode === 'resource') {
@@ -282,6 +298,12 @@ function addReportSection() {
   
   document.getElementById('shelter-check')?.addEventListener('change', function() {
     if (this.checked) {
+      if (placementMode && placementMode !== 'shelter') {
+        var otherCheckbox = document.getElementById(placementMode + '-check');
+        if (otherCheckbox) {
+          otherCheckbox.checked = false;
+        }
+      }
       startPlacementMode('shelter');
     } else {
       if (placementMode === 'shelter') {
@@ -317,7 +339,6 @@ function updateKeeperDisplay() {
 // ============================================================
 
 function startPlacementMode(type) {
-  // Если уже активен другой режим, отключаем его
   if (placementMode && placementMode !== type) {
     var otherCheckbox = document.getElementById(placementMode + '-check');
     if (otherCheckbox) {
@@ -327,23 +348,19 @@ function startPlacementMode(type) {
   
   placementMode = type;
   
-  // Показываем подсказку
   var hint = document.getElementById('marker-placement-hint');
   if (hint) hint.style.display = 'block';
   
   var info = document.getElementById('marker-placed-info');
   if (info) info.style.display = 'none';
   
-  // Меняем курсор карты
   var mapElement = document.getElementById('map');
   if (mapElement) {
     mapElement.style.cursor = 'crosshair';
   }
   
-  // Удаляем старый временный маркер
   removeTempMarker();
   
-  // Добавляем слушатель клика на карту
   if (mapClickListener) {
     map.un('click', mapClickListener);
   }
@@ -353,10 +370,8 @@ function startPlacementMode(type) {
     var x = coord[0];
     var y = coord[1];
     
-    // Обновляем позицию временного маркера
     updateTempMarker(x, y, type);
     
-    // Показываем информацию о размещении
     var info = document.getElementById('marker-placed-info');
     if (info) info.style.display = 'block';
     
@@ -388,9 +403,6 @@ function stopPlacementMode() {
     mapClickListener = null;
   }
   
-  // Не удаляем временный маркер, чтобы пользователь видел где поставил
-  // removeTempMarker();
-  
   console.log('Режим размещения метки деактивирован');
 }
 
@@ -407,7 +419,7 @@ function updateTempMarker(x, y, type) {
   element.className = 'marker-button temp-marker';
   element.innerHTML = `
     <img src="${iconSrc}" alt="${tooltipText}" width="28" height="28">
-    <span class="marker-tooltip">${tooltipText} (временная метка)</span>
+    <span class="marker-tooltip">${tooltipText}</span>
   `;
   element.style.opacity = '0.7';
   
@@ -485,7 +497,6 @@ async function submitReportHandler() {
     return;
   }
 
-  // Проверяем, что для выбранных точек есть позиция на карте
   if (hasResource && !tempMarkerPosition) {
     alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
     return;
@@ -521,7 +532,6 @@ async function submitReportHandler() {
       game_date: new Date().toISOString().split('T')[0]
     };
     
-    // Определяем тип метки и координаты
     var markerType = null;
     var markerX = null;
     var markerY = null;
@@ -552,14 +562,12 @@ async function submitReportHandler() {
 
     alert('Отчёт сохранён!');
     
-    // Очищаем форму
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
     document.getElementById('shelter-check').checked = false;
     addDeceasedField();
     
-    // Сбрасываем состояние размещения меток
     resetPlacementState();
     
     await loadReports(currentRegionId);
@@ -757,9 +765,18 @@ if (isAuthorized) {
   });
 }
 
+// ============================================================
+// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ (С ПРОВЕРКОЙ РЕЖИМА РАЗМЕЩЕНИЯ)
+// ============================================================
+
 function closeSidebarOnMapClick() {
   if (typeof map !== 'undefined') {
     map.on('click', function(event) {
+      // Если активен режим размещения метки, не закрываем сайдбар
+      if (placementMode) {
+        return;
+      }
+      
       var target = event.originalEvent.target;
       var isOverlay = target.closest('.ol-overlay-container') !== null;
       
