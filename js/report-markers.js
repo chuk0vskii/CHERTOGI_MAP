@@ -83,4 +83,35 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
       _supabase
         .from('regions')
         .select('name, description, difficulty')
-        .eq('
+        .eq('id', regionId)
+        .single()
+        .then(function(result) {
+          if (!result.error && result.data) {
+            openSidebar(regionId, result.data.name, result.data.description, result.data.difficulty);
+            setTimeout(function() {
+              var reportElement = document.getElementById('report-' + reportId);
+              if (reportElement) {
+                reportElement.style.display = 'block';
+                reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 300);
+          }
+        });
+    } else {
+      console.warn('Функция openSidebar не найдена');
+    }
+  });
+
+  var overlay = new ol.Overlay({
+    element: element,
+    position: [x, y],
+    positioning: 'bottom-center',
+    offset: [0, -8],
+    stopEvent: false
+  });
+
+  map.addOverlay(overlay);
+  reportMarkerOverlays.push(overlay);
+}
+
+console.log('report-markers.js загружен');
