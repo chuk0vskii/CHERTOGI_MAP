@@ -98,53 +98,21 @@ function addDeceasedField() {
 }
 
 // ============================================================
-// МАППИНГ ID РЕГИОНА → НОМЕР ФАЙЛА
-// ============================================================
-
-// ⚠️ ИЗМЕНИТЕ ЭТОТ МАППИНГ НА ПРАВИЛЬНЫЙ!
-// Сначала посмотрите в консоли, какие ID у каких регионов,
-// а потом исправьте этот маппинг
-
-function getRegionImageNumber(regionId, regionName) {
-  // ВЫВОДИМ В КОНСОЛЬ, ЧТОБЫ УВИДЕТЬ ID И НАЗВАНИЕ РЕГИОНА
-  console.log('🔍 Регион ID:', regionId, 'Название:', regionName);
-  
-  // Сопоставление ID региона с номером файла
-  // ИЗМЕНИТЕ ЭТИ ЦИФРЫ НА ПРАВИЛЬНЫЕ!
-  var mapping = {
-    // Если в базе ID=1, а картинка должна быть 1.png
-    1: 2,
-    // Если в базе ID=2, а картинка должна быть 2.jpg
-    2: 1,
-    // Если в базе ID=3, а картинка должна быть 3.png
-    3: 3,
-    // Если в базе ID=4, а картинка должна быть 4.png
-    4: 4
-  };
-  
-  var imageNumber = mapping[regionId] || regionId;
-  console.log('📸 Будет загружено изображение:', imageNumber + '.png или .jpg');
-  return imageNumber;
-}
-
-// ============================================================
 // ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
 // ============================================================
 
-function getRegionImagePath(regionId, regionName) {
-  var imageNumber = getRegionImageNumber(regionId, regionName);
-  return `/CHERTOGI_MAP/images/${imageNumber}`;
+function getRegionImagePath(regionId) {
+  return `/CHERTOGI_MAP/images/${regionId}`;
 }
 
 // ============================================================
 // ЗАГРУЗКА ИЗОБРАЖЕНИЯ С ПРОВЕРКОЙ СУЩЕСТВОВАНИЯ
 // ============================================================
 
-function loadRegionImage(regionId, regionName) {
+function loadRegionImage(regionId) {
   var imgContainer = document.getElementById('region-image-placeholder');
   if (!imgContainer) return;
   
-  // Очищаем контейнер
   imgContainer.textContent = '';
   imgContainer.style.display = 'flex';
   imgContainer.style.alignItems = 'center';
@@ -152,15 +120,12 @@ function loadRegionImage(regionId, regionName) {
   imgContainer.style.overflow = 'hidden';
   imgContainer.style.backgroundColor = '#4a0e0e';
   
-  var basePath = getRegionImagePath(regionId, regionName);
-  
-  // Список расширений для проверки
+  var basePath = getRegionImagePath(regionId);
   var extensions = ['.png', '.jpg', '.jpeg', '.webp'];
   var currentIndex = 0;
   
   function tryLoadNext() {
     if (currentIndex >= extensions.length) {
-      // Все расширения проверены, файл не найден
       imgContainer.style.backgroundImage = 'none';
       imgContainer.textContent = '🖼️ Нет изображения';
       imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
@@ -174,7 +139,6 @@ function loadRegionImage(regionId, regionName) {
     
     var img = new Image();
     img.onload = function() {
-      // Файл загрузился успешно
       imgContainer.style.backgroundImage = 'url(' + fullPath + ')';
       imgContainer.style.backgroundSize = 'cover';
       imgContainer.style.backgroundPosition = 'center';
@@ -183,14 +147,12 @@ function loadRegionImage(regionId, regionName) {
       console.log('✅ Загружено изображение:', fullPath);
     };
     img.onerror = function() {
-      // Этот файл не найден, пробуем следующее расширение
       currentIndex++;
       tryLoadNext();
     };
     img.src = fullPath;
   }
   
-  // Начинаем проверку с первого расширения
   tryLoadNext();
 }
 
@@ -203,8 +165,7 @@ function openSidebar(regionId, name, description, difficulty) {
   sidebarTitle.textContent = name;
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
-  // --- УСТАНОВКА ИЗОБРАЖЕНИЯ ---
-  loadRegionImage(regionId, name);
+  loadRegionImage(regionId);
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
@@ -289,11 +250,11 @@ function addReportSection() {
           <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              Место ресурса
+              🏕️ Место ресурса
             </label>
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              Место ночлега
+              🛏️ Место ночлега
             </label>
           </div>
         </div>
@@ -352,14 +313,33 @@ function updateKeeperDisplay() {
 }
 
 // ============================================================
-// ОТПРАВКА ОТЧЁТА
+// ГЕНЕРАЦИЯ СЛУЧАЙНЫХ КООРДИНАТ В ДИАПАЗОНЕ ОТ ТОЧКИ
+// ============================================================
+
+function generateRandomMarkerPosition(centerX, centerY, minDist, maxDist) {
+  var distance = minDist + Math.random() * (maxDist - minDist);
+  var angle = Math.random() * 2 * Math.PI;
+  
+  return {
+    x: centerX + Math.cos(angle) * distance,
+    y: centerY + Math.sin(angle) * distance
+  };
+}
+
+// ============================================================
+// ОТПРАВКА ОТЧЁТА (создание меток)
 // ============================================================
 
 async function submitReportHandler() {
-  console.log('Отправка отчёта');
+  console.log('📝 Отправка отчёта...');
   
   if (!isAuthorized) {
     alert('Сначала введите пароль!');
+    return;
+  }
+  
+  if (!currentRegionId) {
+    alert('Регион не выбран!');
     return;
   }
   
@@ -379,27 +359,99 @@ async function submitReportHandler() {
   var hasResource = document.getElementById('resource-check')?.checked || false;
   var hasShelter = document.getElementById('shelter-check')?.checked || false;
 
+  if (!hasResource && !hasShelter) {
+    alert('Отметьте хотя бы одну точку интереса: Место ресурса или Место ночлега');
+    return;
+  }
+
   var keeperName = getCurrentKeeper();
 
-  var result = await submitReport(
-    currentRegionId, 
-    content, 
-    keeperName, 
-    deceasedNames, 
-    hasResource, 
-    hasShelter
-  );
-  
-  if (result.success) {
-    alert('Отчёт сохранён!');
+  try {
+    // Получаем координаты региона
+    var regionResult = await _supabase
+      .from('regions')
+      .select('x, y')
+      .eq('id', currentRegionId)
+      .single();
+    
+    if (regionResult.error) {
+      console.error('Ошибка получения координат региона:', regionResult.error);
+      alert('Не удалось получить координаты региона');
+      return;
+    }
+    
+    var regionX = regionResult.data.x;
+    var regionY = regionResult.data.y;
+    
+    // Подготавливаем данные для вставки
+    var insertData = {
+      region_id: currentRegionId,
+      keeper_name: keeperName || null,
+      content: content,
+      deceased_names: deceasedNames && deceasedNames.length > 0 ? deceasedNames : null,
+      has_resource: hasResource || false,
+      has_shelter: hasShelter || false,
+      game_date: new Date().toISOString().split('T')[0]
+    };
+    
+    // Генерируем координаты для меток
+    var markerType = null;
+    var markerX = null;
+    var markerY = null;
+    
+    if (hasResource && hasShelter) {
+      // Если выбраны оба — создаём метку ресурса (приоритет)
+      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+      markerType = 'resource';
+      markerX = pos.x;
+      markerY = pos.y;
+    } else if (hasResource) {
+      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+      markerType = 'resource';
+      markerX = pos.x;
+      markerY = pos.y;
+    } else if (hasShelter) {
+      var pos = generateRandomMarkerPosition(regionX, regionY, 70, 180);
+      markerType = 'shelter';
+      markerX = pos.x;
+      markerY = pos.y;
+    }
+    
+    insertData.marker_type = markerType;
+    insertData.marker_x = markerX;
+    insertData.marker_y = markerY;
+    
+    // Сохраняем отчёт
+    var result = await _supabase
+      .from('game_reports')
+      .insert([insertData]);
+
+    if (result.error) {
+      console.error('Ошибка отправки отчёта:', result.error);
+      alert('Ошибка: ' + result.error.message);
+      return;
+    }
+
+    alert('✅ Отчёт сохранён!');
+    
+    // Очищаем форму
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
     document.getElementById('shelter-check').checked = false;
     addDeceasedField();
-    loadReports(currentRegionId);
-  } else {
-    alert('Ошибка: ' + result.error);
+    
+    // Обновляем список отчётов
+    await loadReports(currentRegionId);
+    
+    // Обновляем метки на карте
+    if (typeof loadReportMarkers === 'function') {
+      await loadReportMarkers();
+    }
+    
+  } catch (err) {
+    console.error('Критическая ошибка:', err);
+    alert('Ошибка: ' + err.message);
   }
 }
 
@@ -422,7 +474,7 @@ function resetAuthorization() {
     
     var reportBtn = document.getElementById('report-btn');
     if (reportBtn) {
-      reportBtn.textContent = 'Введите пароль для создания отчёта';
+      reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
       reportBtn.style.opacity = '0.6';
       reportBtn.style.cursor = 'pointer';
       reportBtn.onclick = function() {
@@ -444,7 +496,7 @@ function updateReportButton() {
   
   if (isAuthorized) {
     var keeper = getCurrentKeeper();
-    reportBtn.textContent = keeper ? 'Составить отчёт (' + keeper + ')' : 'Составить отчёт';
+    reportBtn.textContent = keeper ? '📝 Составить отчёт (' + keeper + ')' : '📝 Составить отчёт';
     reportBtn.style.opacity = '1';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = null;
@@ -454,7 +506,7 @@ function updateReportButton() {
     if (!changeBtn) {
       var btn = document.createElement('button');
       btn.id = 'change-keeper-btn';
-      btn.textContent = 'Сменить Хранителя';
+      btn.textContent = '🔄 Сменить Хранителя';
       btn.style.cssText = 'width: 100%; padding: 6px; margin-top: 6px; background: rgba(74,14,14,0.3); border: 1px solid rgba(74,14,14,0.3); border-radius: 4px; color: rgba(255,255,255,0.5); cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px; transition: all 0.3s;';
       btn.onmouseover = function() { this.style.background = 'rgba(74,14,14,0.6)'; this.style.color = '#ffffff'; };
       btn.onmouseout = function() { this.style.background = 'rgba(74,14,14,0.3)'; this.style.color = 'rgba(255,255,255,0.5)'; };
@@ -462,7 +514,7 @@ function updateReportButton() {
       reportBtn.parentNode.insertBefore(btn, reportBtn.nextSibling);
     }
   } else {
-    reportBtn.textContent = 'Введите пароль для создания отчёта';
+    reportBtn.textContent = '🔑 Введите пароль для создания отчёта';
     reportBtn.style.opacity = '0.6';
     reportBtn.style.cursor = 'pointer';
     reportBtn.onclick = function() {
@@ -498,7 +550,7 @@ passwordModal.style.cssText = `
 `;
 passwordModal.innerHTML = `
   <div style="background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; color: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.8);">
-    <h3 style="font-family: 'Calypso', serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">Введите пароль</h3>
+    <h3 style="font-family: 'Calypso', serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">🔑 Введите пароль</h3>
     <p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 16px;">Введите пароль для доступа к созданию отчётов</p>
     <input id="password-input" type="password" placeholder="Введите пароль..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
     <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: 'Philosopher', sans-serif; box-sizing: border-box; font-size: 16px;">
@@ -555,8 +607,14 @@ passwordSubmitBtn.addEventListener('click', function() {
     closePasswordModal();
     updateReportButton();
     updateKeeperDisplay();
+    updateReportSectionVisibility();
+    
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'block';
+    }
   } else {
-    passwordError.textContent = 'Неверный пароль';
+    passwordError.textContent = '❌ Неверный пароль';
     passwordError.style.display = 'block';
     passwordInput.value = '';
     passwordInput.focus();
