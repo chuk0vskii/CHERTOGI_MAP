@@ -6,7 +6,6 @@
   <title>Огненные чертоги — Древо смерти</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ===== */
     * {
       margin: 0;
       padding: 0;
@@ -308,54 +307,6 @@
   ];
 
   var allNodePositions = DEFAULT_NODES;
-  var STORAGE_KEY = 'tree_node_assignments';
-
-  function loadAssignments() {
-    try {
-      var saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.warn('Ошибка загрузки назначений:', e);
-    }
-    return {};
-  }
-
-  function saveAssignments(assignments) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments));
-    } catch (e) {
-      console.warn('Ошибка сохранения назначений:', e);
-    }
-  }
-
-  // ============================================================
-  // ПОИСК ОТЧЁТА ПО ИМЕНИ
-  // ============================================================
-
-  async function findReportByDeceasedName(name) {
-    try {
-      var result = await _supabase
-        .from('game_reports')
-        .select('id, region_id')
-        .contains('deceased_names', [name])
-        .limit(1);
-      
-      if (result.error) {
-        console.error('Ошибка поиска отчёта:', result.error);
-        return null;
-      }
-      
-      if (result.data && result.data.length > 0) {
-        return result.data[0];
-      }
-      return null;
-    } catch (err) {
-      console.error('Ошибка:', err);
-      return null;
-    }
-  }
 
   // ============================================================
   // ЗАГРУЗКА ДАННЫХ
@@ -386,8 +337,8 @@
       var allDeceased = [];
       var lastDeceasedName = null;
       var lastDeceasedTime = null;
-      var nameToReportMap = {};
 
+      // Собираем ВСЕ имена из ВСЕХ отчётов (включая повторяющиеся)
       for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
         var names = report.deceased_names;
@@ -401,22 +352,14 @@
         for (var j = 0; j < names.length; j++) {
           var name = names[j];
           if (name && name.trim()) {
-            var trimmedName = name.trim();
-            // Сохраняем только уникальные имена, но запоминаем отчёт
-            if (!nameToReportMap[trimmedName]) {
-              nameToReportMap[trimmedName] = {
-                report_id: report.id,
-                region_id: report.region_id
-              };
-              allDeceased.push({
-                name: trimmedName,
-                created_at: report.created_at,
-                report_id: report.id,
-                region_id: report.region_id
-              });
-            }
+            allDeceased.push({
+              name: name.trim(),
+              created_at: report.created_at,
+              report_id: report.id,
+              region_id: report.region_id
+            });
             if (!lastDeceasedName) {
-              lastDeceasedName = trimmedName;
+              lastDeceasedName = name.trim();
               lastDeceasedTime = report.created_at;
             }
           }
@@ -440,13 +383,14 @@
   }
 
   // ============================================================
-  // ОТРИСОВКА УЗЛОВ С ПЕРЕХОДОМ НА КАРТУ
+  // ОТРИСОВКА УЗЛОВ
   // ============================================================
 
   function renderFilledNodes(deceased) {
     var container = document.getElementById('nodesContainer');
     container.innerHTML = '';
 
+    // Перемешиваем для случайного распределения по древу
     var shuffled = deceased.slice();
     for (var i = shuffled.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -479,16 +423,24 @@
         <span class="node-tooltip">${tooltipText}</span>
       `;
       
-      // Клик по узлу - переход на карту и открытие отчёта
+      // Клик по узлу - переход на карту
       node.addEventListener('click', function(e) {
         e.stopPropagation();
         var name = person.name;
         var reportId = person.report_id;
         var regionId = person.region_id;
         
-        // Переходим на страницу карты с параметрами
-        var url = 'index.html?report_id=' + reportId + '&region_id=' + regionId + '&name=' + encodeURIComponent(name);
-        window.location.href = url;
+        // Сохраняем данные в sessionStorage для передачи между страницами
+        try {
+          sessionStorage.setItem('open_report_id', reportId);
+          sessionStorage.setItem('open_region_id', regionId);
+          sessionStorage.setItem('open_name', name);
+        } catch (err) {
+          console.warn('Ошибка сохранения в sessionStorage:', err);
+        }
+        
+        // Переходим на страницу карты
+        window.location.href = 'index.html';
       });
       
       container.appendChild(node);
