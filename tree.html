@@ -20,7 +20,6 @@
       overflow: hidden;
     }
 
-    /* ===== КОНТЕЙНЕР НА ВЕСЬ ЭКРАН ===== */
     .container {
       width: 100vw;
       height: 100vh;
@@ -32,7 +31,6 @@
       background: #ffffff;
     }
 
-    /* ===== КОНТЕЙНЕР С КАРТИНКОЙ (на весь экран) ===== */
     .tree-container {
       position: relative;
       width: 100%;
@@ -54,7 +52,6 @@
       pointer-events: none;
     }
 
-    /* ===== КОНТЕЙНЕР ДЛЯ УЗЛОВ ===== */
     .nodes-container {
       position: absolute;
       top: 0;
@@ -64,7 +61,6 @@
       pointer-events: none;
     }
 
-    /* ===== УЗЕЛ (только заполненные) ===== */
     .node-point {
       position: absolute;
       width: 24px;
@@ -91,7 +87,6 @@
       filter: drop-shadow(0 2px 16px rgba(0, 0, 0, 0.7));
     }
     
-    /* ===== ПОДПИСЬ ПРИ НАВЕДЕНИИ ===== */
     .node-point .node-tooltip {
       position: absolute;
       bottom: 130%;
@@ -139,7 +134,6 @@
       }
     }
 
-    /* ===== СТАТИСТИКА (слева, столбиком, без фона) ===== */
     .tree-stats {
       position: absolute;
       left: 30px;
@@ -182,7 +176,6 @@
       max-width: 160px;
     }
 
-    /* ===== ЗАГРУЗКА ===== */
     .loading {
       position: absolute;
       top: 50%;
@@ -193,7 +186,6 @@
       z-index: 5;
     }
 
-    /* ===== АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .node-point { width: 20px; height: 20px; }
       .node-point .node-tooltip { font-size: 11px; padding: 4px 10px; }
@@ -222,7 +214,6 @@
 </head>
 <body>
 
-<!-- БАННЕР -->
 <div class="top-banner">
   <span class="title">Огненные чертоги</span>
   <div class="nav-links">
@@ -238,7 +229,6 @@
     <img src="/CHERTOGI_MAP/znakiimg/drevo_smerty.jpg" alt="Древо смерти" class="tree-image" id="treeImage">
     <div class="nodes-container" id="nodesContainer"></div>
     
-    <!-- СТАТИСТИКА СЛЕВА (без фона) -->
     <div class="tree-stats" id="treeStats">
       <div class="stat-item">
         <span class="stat-label">Всего павших</span>
@@ -246,7 +236,7 @@
       </div>
       <div class="stat-item">
         <span class="stat-label">Последний павший</span>
-        <strong id="lastDeceased" class="sub-text">—</strong>
+        <strong id="lastDeceased" class="sub-text">-</strong>
       </div>
     </div>
     
@@ -259,7 +249,7 @@
 
 <script>
   // ============================================================
-  // ФИКСИРОВАННЫЕ КООРДИНАТЫ УЗЛОВ (52 штуки)
+  // КОНФИГУРАЦИЯ УЗЛОВ
   // ============================================================
 
   var DEFAULT_NODES = [
@@ -318,13 +308,6 @@
   ];
 
   var allNodePositions = DEFAULT_NODES;
-
-  console.log('✅ Загружено ' + allNodePositions.length + ' узлов');
-
-  // ============================================================
-  // ХРАНЕНИЕ СООТВЕТСТВИЙ ИМЯ → НОМЕР УЗЛА
-  // ============================================================
-
   var STORAGE_KEY = 'tree_node_assignments';
 
   function loadAssignments() {
@@ -348,7 +331,34 @@
   }
 
   // ============================================================
-  // ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
+  // ПОИСК ОТЧЁТА ПО ИМЕНИ
+  // ============================================================
+
+  async function findReportByDeceasedName(name) {
+    try {
+      var result = await _supabase
+        .from('game_reports')
+        .select('id, region_id')
+        .contains('deceased_names', [name])
+        .limit(1);
+      
+      if (result.error) {
+        console.error('Ошибка поиска отчёта:', result.error);
+        return null;
+      }
+      
+      if (result.data && result.data.length > 0) {
+        return result.data[0];
+      }
+      return null;
+    } catch (err) {
+      console.error('Ошибка:', err);
+      return null;
+    }
+  }
+
+  // ============================================================
+  // ЗАГРУЗКА ДАННЫХ
   // ============================================================
 
   async function loadDeceased() {
@@ -361,7 +371,7 @@
     try {
       var result = await _supabase
         .from('game_reports')
-        .select('deceased_names, created_at')
+        .select('deceased_names, created_at, id, region_id')
         .not('deceased_names', 'is', null)
         .order('created_at', { ascending: false });
 
@@ -373,10 +383,10 @@
 
       var reports = result.data || [];
       
-      // Собираем ВСЕ имена умерших из ВСЕХ отчётов
-      var allDeceasedNames = [];
+      var allDeceased = [];
       var lastDeceasedName = null;
       var lastDeceasedTime = null;
+      var nameToReportMap = {};
 
       for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
@@ -391,90 +401,29 @@
         for (var j = 0; j < names.length; j++) {
           var name = names[j];
           if (name && name.trim()) {
-            allDeceasedNames.push(name.trim());
+            var trimmedName = name.trim();
+            // Сохраняем только уникальные имена, но запоминаем отчёт
+            if (!nameToReportMap[trimmedName]) {
+              nameToReportMap[trimmedName] = {
+                report_id: report.id,
+                region_id: report.region_id
+              };
+              allDeceased.push({
+                name: trimmedName,
+                created_at: report.created_at,
+                report_id: report.id,
+                region_id: report.region_id
+              });
+            }
             if (!lastDeceasedName) {
-              lastDeceasedName = name.trim();
+              lastDeceasedName = trimmedName;
               lastDeceasedTime = report.created_at;
             }
           }
         }
       }
 
-      // Убираем дубликаты имён (если один персонаж упомянут в нескольких отчётах)
-      var uniqueNames = [];
-      var seen = {};
-      for (var k = 0; k < allDeceasedNames.length; k++) {
-        var name = allDeceasedNames[k];
-        if (!seen[name]) {
-          seen[name] = true;
-          uniqueNames.push(name);
-        }
-      }
-
-      // Загружаем сохранённые назначения
-      var assignments = loadAssignments();
-      
-      // Назначаем новым именам свободные узлы
-      var nextNodeId = 1;
-      var assignedCount = Object.keys(assignments).length;
-      
-      // Находим следующий свободный ID
-      var usedIds = {};
-      for (var key in assignments) {
-        usedIds[assignments[key]] = true;
-      }
-      
-      // Для каждого уникального имени проверяем, есть ли у него назначение
-      var updatedAssignments = {};
-      var namesWithoutNode = [];
-      
-      for (var m = 0; m < uniqueNames.length; m++) {
-        var name = uniqueNames[m];
-        // Проверяем, есть ли уже назначение для этого имени
-        var found = false;
-        for (var key in assignments) {
-          if (key === name) {
-            updatedAssignments[name] = assignments[key];
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          namesWithoutNode.push(name);
-        }
-      }
-      
-      // Назначаем новые имена на свободные узлы
-      for (var n = 0; n < namesWithoutNode.length; n++) {
-        var newName = namesWithoutNode[n];
-        // Находим первый свободный ID
-        var freeId = null;
-        for (var id = 1; id <= allNodePositions.length; id++) {
-          var isUsed = false;
-          for (var key in updatedAssignments) {
-            if (updatedAssignments[key] === id) {
-              isUsed = true;
-              break;
-            }
-          }
-          if (!isUsed) {
-            freeId = id;
-            break;
-          }
-        }
-        if (freeId !== null) {
-          updatedAssignments[newName] = freeId;
-          console.log('📌 Назначен узел #' + freeId + ' для "' + newName + '"');
-        } else {
-          console.warn('⚠️ Нет свободных узлов для "' + newName + '"');
-        }
-      }
-      
-      // Сохраняем обновлённые назначения
-      saveAssignments(updatedAssignments);
-      
-      // Обновляем статистику
-      document.getElementById('totalDeceased').textContent = uniqueNames.length;
+      document.getElementById('totalDeceased').textContent = allDeceased.length;
       
       if (lastDeceasedName) {
         var date = new Date(lastDeceasedTime);
@@ -482,9 +431,7 @@
       }
 
       loading.style.display = 'none';
-      
-      // Отрисовываем узлы на основе назначений
-      renderNodesFromAssignments(updatedAssignments);
+      renderFilledNodes(allDeceased);
 
     } catch (err) {
       console.error('Ошибка:', err);
@@ -493,49 +440,65 @@
   }
 
   // ============================================================
-  // ОТРИСОВКА УЗЛОВ НА ОСНОВЕ НАЗНАЧЕНИЙ
+  // ОТРИСОВКА УЗЛОВ С ПЕРЕХОДОМ НА КАРТУ
   // ============================================================
 
-  function renderNodesFromAssignments(assignments) {
+  function renderFilledNodes(deceased) {
     var container = document.getElementById('nodesContainer');
     container.innerHTML = '';
 
-    var assignedCount = Object.keys(assignments).length;
-    
-    if (assignedCount === 0) {
-      var emptyMsg = document.createElement('div');
-      emptyMsg.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(0,0,0,0.15); font-family: "Philosopher", sans-serif; font-size: 20px; letter-spacing: 2px; pointer-events: none; z-index: 5;';
-      emptyMsg.textContent = 'Нет павших...';
-      container.appendChild(emptyMsg);
-      return;
+    var shuffled = deceased.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = temp;
     }
 
-    console.log('🟢 Отображаем ' + assignedCount + ' узлов');
+    var nodesToShow = Math.min(shuffled.length, allNodePositions.length);
+    
+    console.log('Отображаем ' + nodesToShow + ' узлов из ' + allNodePositions.length + ' доступных');
 
-    var index = 0;
-    for (var name in assignments) {
-      var nodeId = assignments[name];
-      var pos = allNodePositions[nodeId - 1]; // -1 потому что ID начинаются с 1
+    for (var m = 0; m < nodesToShow; m++) {
+      var pos = allNodePositions[m];
+      var person = shuffled[m];
       
-      if (!pos) {
-        console.warn('⚠️ Узел #' + nodeId + ' не найден для "' + name + '"');
-        continue;
-      }
+      if (!person) continue;
       
       var node = document.createElement('div');
       node.className = 'node-point';
       
       node.style.left = pos.x + '%';
       node.style.top = pos.y + '%';
-      node.style.animationDelay = (index * 0.05) + 's';
+      node.style.animationDelay = (m * 0.05) + 's';
+      
+      var tooltipText = '#' + pos.id + ' - ' + person.name;
       
       node.innerHTML = `
         <img src="/CHERTOGI_MAP/icons/uzelsmerty.png" alt="узел">
-        <span class="node-tooltip">#${nodeId} — ${name}</span>
+        <span class="node-tooltip">${tooltipText}</span>
       `;
       
+      // Клик по узлу - переход на карту и открытие отчёта
+      node.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var name = person.name;
+        var reportId = person.report_id;
+        var regionId = person.region_id;
+        
+        // Переходим на страницу карты с параметрами
+        var url = 'index.html?report_id=' + reportId + '&region_id=' + regionId + '&name=' + encodeURIComponent(name);
+        window.location.href = url;
+      });
+      
       container.appendChild(node);
-      index++;
+    }
+    
+    if (nodesToShow === 0) {
+      var emptyMsg = document.createElement('div');
+      emptyMsg.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(0,0,0,0.15); font-family: "Philosopher", sans-serif; font-size: 20px; letter-spacing: 2px; pointer-events: none; z-index: 5;';
+      emptyMsg.textContent = 'Нет павших...';
+      container.appendChild(emptyMsg);
     }
   }
 
