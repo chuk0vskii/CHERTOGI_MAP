@@ -598,6 +598,96 @@
     <div id="admin-regions-list"></div>
     <button id="admin-close-btn" style="margin-top: 12px; padding: 6px 16px; background: #4a0e0e; border: 1px solid #ffd700; border-radius: 6px; color: #ffd700; cursor: pointer;">Закрыть</button>
   </div>
+<script>
+  // ============================================================
+  // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ ОТЧЁТА
+  // ============================================================
 
+  (function() {
+    // Функция получения параметров из URL
+    function getUrlParams() {
+      var params = {};
+      var query = window.location.search.substring(1);
+      if (query) {
+        var pairs = query.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split('=');
+          params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        }
+      }
+      return params;
+    }
+
+    // Функция открытия отчёта после загрузки карты
+    function openReportFromUrl() {
+      var params = getUrlParams();
+      
+      if (!params.report_id && !params.region_id) {
+        return;
+      }
+      
+      console.log('Открытие отчёта из URL:', params);
+      
+      var reportId = parseInt(params.report_id);
+      var regionId = parseInt(params.region_id);
+      var name = params.name || '';
+      
+      if (!reportId || !regionId) {
+        return;
+      }
+      
+      // Ждём загрузки карты и маркеров
+      var checkInterval = setInterval(function() {
+        if (typeof map !== 'undefined' && map && typeof openSidebar === 'function') {
+          clearInterval(checkInterval);
+          
+          // Получаем данные региона
+          _supabase
+            .from('regions')
+            .select('name, description, difficulty')
+            .eq('id', regionId)
+            .single()
+            .then(function(result) {
+              if (!result.error && result.data) {
+                // Открываем сайдбар
+                openSidebar(regionId, result.data.name, result.data.description, result.data.difficulty);
+                
+                // Ждём загрузки отчётов и раскрываем нужный
+                setTimeout(function() {
+                  var reportElement = document.getElementById('report-' + reportId);
+                  if (reportElement) {
+                    reportElement.style.display = 'block';
+                    reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Подсвечиваем отчёт
+                    reportElement.style.background = 'rgba(255,215,0,0.1)';
+                    reportElement.style.borderLeft = '2px solid #ffd700';
+                    setTimeout(function() {
+                      reportElement.style.background = '';
+                      reportElement.style.borderLeft = '';
+                    }, 3000);
+                  }
+                }, 500);
+              }
+            });
+        }
+      }, 500);
+      
+      // Таймаут, чтобы не ждать вечно
+      setTimeout(function() {
+        clearInterval(checkInterval);
+      }, 10000);
+    }
+
+    // Запускаем после загрузки страницы
+    if (document.readyState === 'complete') {
+      setTimeout(openReportFromUrl, 1500);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(openReportFromUrl, 1500);
+      });
+    }
+  })();
+</script>
 </body>
 </html>
