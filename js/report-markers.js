@@ -10,14 +10,10 @@ async function loadReportMarkers() {
   });
   reportMarkerOverlays = [];
 
-  if (typeof clearMarkerPositionsCache === 'function') {
-    clearMarkerPositionsCache();
-  }
-
   try {
     var result = await _supabase
       .from('game_reports')
-      .select('id, region_id, marker_type, marker_x, marker_y, has_resource, has_shelter')
+      .select('id, region_id, marker_type, marker_x, marker_y')
       .not('marker_x', 'is', null)
       .not('marker_y', 'is', null);
 
@@ -29,26 +25,14 @@ async function loadReportMarkers() {
     var reports = result.data || [];
     console.log('Загружено ' + reports.length + ' меток отчётов');
 
-    if (typeof usedMarkerPositions !== 'undefined') {
-      reports.forEach(function(report) {
-        if (report.marker_x !== null && report.marker_y !== null) {
-          usedMarkerPositions.push({
-            x: report.marker_x,
-            y: report.marker_y
-          });
-        }
-      });
-      console.log('Загружено ' + usedMarkerPositions.length + ' позиций в кэш');
-    }
-
     reports.forEach(function(report) {
       var iconSrc = '';
       var tooltipText = '';
       
-      if (report.marker_type === 'resource' || report.has_resource) {
+      if (report.marker_type === 'resource') {
         iconSrc = '/CHERTOGI_MAP/icons/resurs.png';
         tooltipText = 'Место ресурса';
-      } else if (report.marker_type === 'shelter' || report.has_shelter) {
+      } else if (report.marker_type === 'shelter') {
         iconSrc = '/CHERTOGI_MAP/icons/Nochleg.png';
         tooltipText = 'Место безопасного ночлега';
       } else {
@@ -99,35 +83,4 @@ function createReportMarker(reportId, regionId, x, y, iconSrc, tooltipText) {
       _supabase
         .from('regions')
         .select('name, description, difficulty')
-        .eq('id', regionId)
-        .single()
-        .then(function(result) {
-          if (!result.error && result.data) {
-            openSidebar(regionId, result.data.name, result.data.description, result.data.difficulty);
-            setTimeout(function() {
-              var reportElement = document.getElementById('report-' + reportId);
-              if (reportElement) {
-                reportElement.style.display = 'block';
-                reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }
-            }, 300);
-          }
-        });
-    } else {
-      console.warn('Функция openSidebar не найдена');
-    }
-  });
-
-  var overlay = new ol.Overlay({
-    element: element,
-    position: [x, y],
-    positioning: 'bottom-center',
-    offset: [0, -8],
-    stopEvent: false
-  });
-
-  map.addOverlay(overlay);
-  reportMarkerOverlays.push(overlay);
-}
-
-console.log('report-markers.js загружен');
+        .eq('
