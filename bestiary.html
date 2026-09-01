@@ -291,9 +291,11 @@
   // ============================================================
 
   function getCreatureImagePath(name) {
-    // Приводим имя к нижнему регистру и убираем пробелы
-    var normalizedName = name.toLowerCase().replace(/\s+/g, '_');
-    return '/CHERTOGI_MAP/images/bestiarii/' + normalizedName;
+    // Убираем лишние пробелы и заменяем на подчёркивания
+    var normalizedName = name.trim().replace(/\s+/g, '_');
+    // Кодируем для URL (чтобы русские буквы корректно передавались)
+    var encodedName = encodeURIComponent(normalizedName);
+    return '/CHERTOGI_MAP/images/bestiarii/' + encodedName;
   }
 
   // ============================================================
@@ -395,7 +397,7 @@
     var imagePath = getCreatureImagePath(creatureName);
     var imageExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
     
-    // Создаём HTML для картинки с проверкой существования
+    // Создаём HTML для картинки
     var imageHTML = '';
     for (var k = 0; k < imageExtensions.length; k++) {
       var ext = imageExtensions[k];
@@ -437,12 +439,10 @@
       statsFull.classList.toggle('open');
       btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
       
-      // Показываем картинку, когда открываются характеристики
       var imageContainer = card.querySelector('.creature-image-container');
       if (imageContainer) {
         imageContainer.classList.toggle('open');
         
-        // Пытаемся показать первую картинку, которая загрузилась
         if (imageContainer.classList.contains('open')) {
           var images = imageContainer.querySelectorAll('img');
           var placeholder = imageContainer.querySelector('.image-placeholder');
@@ -450,6 +450,7 @@
           
           for (var i = 0; i < images.length; i++) {
             var img = images[i];
+            // Проверяем, загрузилась ли картинка
             if (img.complete && img.naturalWidth > 0) {
               img.style.display = 'block';
               if (placeholder) placeholder.style.display = 'none';
@@ -458,7 +459,6 @@
             }
           }
           
-          // Если ни одна картинка не загрузилась, показываем placeholder
           if (!found && placeholder) {
             placeholder.style.display = 'block';
           }
