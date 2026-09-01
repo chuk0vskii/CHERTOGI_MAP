@@ -291,9 +291,8 @@
   // ============================================================
 
   function getCreatureImagePath(name) {
-    // Убираем лишние пробелы и заменяем на подчёркивания
-    var normalizedName = name.trim().replace(/\s+/g, '_');
-    // Кодируем для URL (чтобы русские буквы корректно передавались)
+    // Приводим к нижнему регистру, убираем лишние пробелы, заменяем на подчёркивания
+    var normalizedName = name.trim().toLowerCase().replace(/\s+/g, '_');
     var encodedName = encodeURIComponent(normalizedName);
     return '/CHERTOGI_MAP/images/bestiarii/' + encodedName;
   }
@@ -450,7 +449,6 @@
           
           for (var i = 0; i < images.length; i++) {
             var img = images[i];
-            // Проверяем, загрузилась ли картинка
             if (img.complete && img.naturalWidth > 0) {
               img.style.display = 'block';
               if (placeholder) placeholder.style.display = 'none';
