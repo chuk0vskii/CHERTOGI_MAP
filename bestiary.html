@@ -138,6 +138,7 @@
     .creature-card .creature-stats .stat strong {
       color: #ffffff;
     }
+
     .creature-card .btn-toggle-stats {
       background: transparent;
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -155,6 +156,7 @@
       color: #ffffff;
       border-color: rgba(74, 14, 14, 0.5);
     }
+
     .creature-card .stats-full {
       display: none;
       margin-top: 12px;
@@ -183,6 +185,36 @@
       color: #e0d5c0;
     }
 
+    /* ===== ИЗОБРАЖЕНИЕ СУЩЕСТВА ===== */
+    .creature-card .creature-image-container {
+      display: none;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .creature-card .creature-image-container.open {
+      display: block;
+    }
+    .creature-card .creature-image-container img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto;
+      object-fit: contain;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .creature-card .creature-image-container .image-placeholder {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
     .loading {
       color: rgba(255, 255, 255, 0.3);
       text-align: center;
@@ -202,6 +234,7 @@
       .creature-card { padding: 18px 20px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
       .creature-card .stats-full .stat-row { flex-direction: column; gap: 2px; }
+      .creature-card .creature-image-container img { max-height: 300px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -209,6 +242,7 @@
       .section-header .title { font-size: 17px; }
       .creature-card { padding: 14px 16px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+      .creature-card .creature-image-container img { max-height: 200px; }
     }
   </style>
 </head>
@@ -251,6 +285,20 @@
     { id: 'insectoids', title: 'Инсектоиды Чертогов', table: 'insectoids' },
     { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' }
   ];
+
+  // ============================================================
+  // ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К ИЗОБРАЖЕНИЮ СУЩЕСТВА
+  // ============================================================
+
+  function getCreatureImagePath(name) {
+    // Приводим имя к нижнему регистру и убираем пробелы
+    var normalizedName = name.toLowerCase().replace(/\s+/g, '_');
+    return '/CHERTOGI_MAP/images/bestiarii/' + normalizedName;
+  }
+
+  // ============================================================
+  // ЗАГРУЗКА ДАННЫХ
+  // ============================================================
 
   async function loadSection(section) {
     try {
@@ -302,6 +350,10 @@
     return labels[field] || field;
   }
 
+  // ============================================================
+  // ОТРИСОВКА КАРТОЧКИ СУЩЕСТВА
+  // ============================================================
+
   function renderCreatureCard(creature) {
     var description = creature.description || '';
 
@@ -338,22 +390,86 @@
     var descHTML = description ? '<div class="creature-description">' + description + '</div>' : '';
     var statsContainerHTML = statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : '';
 
+    // Формируем путь к картинке
+    var creatureName = creature.name || 'Без имени';
+    var imagePath = getCreatureImagePath(creatureName);
+    var imageExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    
+    // Создаём HTML для картинки с проверкой существования
+    var imageHTML = '';
+    for (var k = 0; k < imageExtensions.length; k++) {
+      var ext = imageExtensions[k];
+      imageHTML += `
+        <img src="${imagePath}${ext}" 
+             onerror="this.style.display='none'" 
+             style="display:none;"
+             data-ext="${ext}"
+             alt="${creatureName}">
+      `;
+    }
+    imageHTML += `
+      <div class="image-placeholder" id="placeholder-${creature.id || 'unknown'}">
+        Нет изображения для "${creatureName}"
+      </div>
+    `;
+
     return '<div class="creature-card" data-id="' + (creature.id || '') + '">' +
-      '<div class="creature-name">' + (creature.name || 'Без имени') + '</div>' +
+      '<div class="creature-name">' + creatureName + '</div>' +
       (metaHTML ? '<div class="creature-meta">' + metaHTML + '</div>' : '') +
       descHTML +
       statsContainerHTML +
       extraHTML +
+      '<div class="creature-image-container" id="image-container-' + (creature.id || 'unknown') + '">' +
+        imageHTML +
+      '</div>' +
     '</div>';
   }
 
+  // ============================================================
+  // ПЕРЕКЛЮЧЕНИЕ ХАРАКТЕРИСТИК И ПОКАЗ КАРТИНКИ
+  // ============================================================
+
   function toggleStats(btn) {
+    var card = btn.closest('.creature-card');
     var statsFull = btn.nextElementSibling;
+    
     if (statsFull && statsFull.classList.contains('stats-full')) {
       statsFull.classList.toggle('open');
       btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
+      
+      // Показываем картинку, когда открываются характеристики
+      var imageContainer = card.querySelector('.creature-image-container');
+      if (imageContainer) {
+        imageContainer.classList.toggle('open');
+        
+        // Пытаемся показать первую картинку, которая загрузилась
+        if (imageContainer.classList.contains('open')) {
+          var images = imageContainer.querySelectorAll('img');
+          var placeholder = imageContainer.querySelector('.image-placeholder');
+          var found = false;
+          
+          for (var i = 0; i < images.length; i++) {
+            var img = images[i];
+            if (img.complete && img.naturalWidth > 0) {
+              img.style.display = 'block';
+              if (placeholder) placeholder.style.display = 'none';
+              found = true;
+              break;
+            }
+          }
+          
+          // Если ни одна картинка не загрузилась, показываем placeholder
+          if (!found && placeholder) {
+            placeholder.style.display = 'block';
+          }
+        }
+      }
     }
   }
+
+  // ============================================================
+  // ОТРИСОВКА СЕКЦИИ
+  // ============================================================
 
   function renderSection(section, creatures) {
     var sectionDiv = document.createElement('div');
@@ -393,6 +509,10 @@
     }
   }
 
+  // ============================================================
+  // ИНИЦИАЛИЗАЦИЯ
+  // ============================================================
+
   async function init() {
     console.log('Загрузка бестиария...');
 
@@ -416,9 +536,6 @@
     if (totalCreatures === 0) {
       container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
     }
-
-    // НЕ ОТКРЫВАЕМ НИ ОДИН РАЗДЕЛ АВТОМАТИЧЕСКИ
-    // Все разделы закрыты по умолчанию
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
   }
