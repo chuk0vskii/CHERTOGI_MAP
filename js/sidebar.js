@@ -97,56 +97,104 @@ function addDeceasedField() {
   container.appendChild(div);
 }
 
+// ============================================================
+// ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
+// ============================================================
+
 function getRegionImagePath(regionId) {
-  return '/CHERTOGI_MAP/images/' + regionId;
+  var mapping = {
+    0: 0,
+    1: 2,
+    2: 1,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10
+  };
+  
+  var imageNumber = mapping[regionId] !== undefined ? mapping[regionId] : regionId;
+  return '/CHERTOGI_MAP/images/' + imageNumber;
 }
+
+// ============================================================
+// ЗАГРУЗКА ИЗОБРАЖЕНИЯ (адаптивная)
+// ============================================================
 
 function loadRegionImage(regionId) {
   var imgContainer = document.getElementById('region-image-placeholder');
   if (!imgContainer) return;
   
-  imgContainer.textContent = '';
+  imgContainer.innerHTML = '';
   imgContainer.style.display = 'flex';
   imgContainer.style.alignItems = 'center';
   imgContainer.style.justifyContent = 'center';
   imgContainer.style.overflow = 'hidden';
   imgContainer.style.backgroundColor = '#4a0e0e';
+  imgContainer.style.position = 'relative';
+  imgContainer.style.width = '100%';
+  imgContainer.style.minHeight = '150px';
+  imgContainer.style.maxHeight = '350px';
+  imgContainer.style.height = 'auto';
+  imgContainer.style.padding = '0';
   
   var basePath = getRegionImagePath(regionId);
   var extensions = ['.png', '.jpg', '.jpeg', '.webp'];
   var currentIndex = 0;
   
+  var imgElement = document.createElement('img');
+  imgElement.style.width = '100%';
+  imgElement.style.height = '100%';
+  imgElement.style.objectFit = 'contain';
+  imgElement.style.maxHeight = '350px';
+  imgElement.style.minHeight = '150px';
+  imgElement.style.display = 'none';
+  imgElement.alt = 'Изображение региона';
+  imgElement.style.background = '#4a0e0e';
+  
+  imgContainer.appendChild(imgElement);
+  
   function tryLoadNext() {
     if (currentIndex >= extensions.length) {
-      imgContainer.style.backgroundImage = 'none';
-      imgContainer.textContent = 'Нет изображения';
-      imgContainer.style.color = 'rgba(255, 255, 255, 0.3)';
-      imgContainer.style.fontSize = '14px';
-      imgContainer.style.fontFamily = 'Philosopher, sans-serif';
+      imgElement.style.display = 'none';
+      var placeholder = document.createElement('div');
+      placeholder.textContent = 'Нет изображения';
+      placeholder.style.color = 'rgba(255, 255, 255, 0.3)';
+      placeholder.style.fontSize = '14px';
+      placeholder.style.fontFamily = 'Philosopher, sans-serif';
+      placeholder.style.display = 'flex';
+      placeholder.style.alignItems = 'center';
+      placeholder.style.justifyContent = 'center';
+      placeholder.style.width = '100%';
+      placeholder.style.height = '100%';
+      placeholder.style.minHeight = '150px';
+      imgContainer.appendChild(placeholder);
       return;
     }
     
     var ext = extensions[currentIndex];
     var fullPath = basePath + ext;
     
-    var img = new Image();
-    img.onload = function() {
-      imgContainer.style.backgroundImage = 'url(' + fullPath + ')';
-      imgContainer.style.backgroundSize = 'cover';
-      imgContainer.style.backgroundPosition = 'center';
-      imgContainer.style.backgroundRepeat = 'no-repeat';
-      imgContainer.textContent = '';
+    imgElement.onload = function() {
+      imgElement.style.display = 'block';
       console.log('Загружено изображение:', fullPath);
     };
-    img.onerror = function() {
+    imgElement.onerror = function() {
       currentIndex++;
       tryLoadNext();
     };
-    img.src = fullPath;
+    imgElement.src = fullPath;
   }
   
   tryLoadNext();
 }
+
+// ============================================================
+// ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ
+// ============================================================
 
 function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
@@ -197,6 +245,10 @@ document.getElementById('close-icon').addEventListener('click', function(e) {
   closeSidebar();
 });
 
+// ============================================================
+// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ
+// ============================================================
+
 function addReportSection() {
   var panelContent = document.querySelector('.panel-content');
   if (!panelContent) return;
@@ -242,7 +294,8 @@ function addReportSection() {
           <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              Место ресурса            </label>
+              Место ресурса
+            </label>
             <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
               Место ночлега
@@ -553,7 +606,6 @@ async function submitReportHandler() {
     
     var reportsToInsert = [];
     
-    // Создаём основной отчёт с именами (если есть)
     if (deceasedNames.length > 0) {
       var reportData = {
         region_id: currentRegionId,
@@ -570,7 +622,6 @@ async function submitReportHandler() {
       reportsToInsert.push(reportData);
     }
     
-    // Если выбран ресурс и нет отчёта с именами, создаём отдельный отчёт
     if (hasResource && tempMarkers.resource && deceasedNames.length === 0) {
       var pos = tempMarkers.resource.position;
       reportsToInsert.push({
@@ -587,7 +638,6 @@ async function submitReportHandler() {
       });
     }
     
-    // Если выбран ночлег и нет отчёта с именами, создаём отдельный отчёт
     if (hasShelter && tempMarkers.shelter && deceasedNames.length === 0) {
       var pos2 = tempMarkers.shelter.position;
       reportsToInsert.push({
@@ -604,7 +654,6 @@ async function submitReportHandler() {
       });
     }
     
-    // Если есть имена и выбран ресурс, добавляем метку к основному отчёту
     if (hasResource && tempMarkers.resource && deceasedNames.length > 0) {
       var pos = tempMarkers.resource.position;
       reportsToInsert[0].has_resource = true;
@@ -613,18 +662,14 @@ async function submitReportHandler() {
       reportsToInsert[0].marker_y = pos.y;
     }
     
-    // Если есть имена и выбран ночлег, добавляем метку к основному отчёту
     if (hasShelter && tempMarkers.shelter && deceasedNames.length > 0) {
       var pos2 = tempMarkers.shelter.position;
       reportsToInsert[0].has_shelter = true;
-      // Если ещё нет ресурса, ставим тип shelter
       if (!reportsToInsert[0].marker_type) {
         reportsToInsert[0].marker_type = 'shelter';
         reportsToInsert[0].marker_x = pos2.x;
         reportsToInsert[0].marker_y = pos2.y;
-      }
-      // Если уже есть ресурс, создаём отдельный отчёт для ночлега
-      else {
+      } else {
         reportsToInsert.push({
           region_id: currentRegionId,
           keeper_name: keeperName || null,
@@ -640,7 +685,6 @@ async function submitReportHandler() {
       }
     }
     
-    // Вставляем все отчёты
     var allResults = [];
     for (var i = 0; i < reportsToInsert.length; i++) {
       var result = await _supabase
