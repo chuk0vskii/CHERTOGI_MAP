@@ -18,16 +18,15 @@ html, body {
 
 /* ===== СКРЫВАЕМ ПОЛОСУ ПРОКРУТКИ ===== */
 html {
-  overflow-y: scroll; /* всегда показывать область прокрутки, но без полосы */
+  overflow-y: scroll;
 }
 
 body {
-  overflow-y: scroll; /* убираем полосу, но скролл работает */
+  overflow-y: scroll;
 }
 
-/* Для Chrome, Safari, Edge */
 ::-webkit-scrollbar {
-  width: 0px;        /* ширина полосы = 0 */
+  width: 0px;
   background: transparent;
 }
 
@@ -39,9 +38,8 @@ body {
   background: transparent;
 }
 
-/* Для Firefox */
 * {
-  scrollbar-width: none; /* убираем полосу в Firefox */
+  scrollbar-width: none;
 }
 
 /* ================================================================
@@ -104,7 +102,6 @@ body {
   border-bottom-color: #ffd700;
 }
 
-/* ===== АДАПТАЦИЯ БАННЕРА ДЛЯ МОБИЛЬНЫХ ===== */
 @media (max-width: 768px) {
   .top-banner {
     padding: 0 16px;
@@ -176,7 +173,7 @@ body {
   transform: translateX(0);
 }
 
-/* ===== КОНТЕЙНЕР ДЛЯ ЗАГЛУШКИ И КРЕСТИКА ===== */
+/* ===== КОНТЕЙНЕР ДЛЯ ИЗОБРАЖЕНИЯ ===== */
 #image-container {
   position: relative;
   width: 100%;
@@ -184,11 +181,12 @@ body {
   overflow: hidden;
 }
 
-/* ===== КРАСНАЯ ЗАГЛУШКА ===== */
+/* ===== ИЗОБРАЖЕНИЕ РЕГИОНА (адаптивное) ===== */
 #region-image-placeholder {
   width: 100%;
-  height: 200px;
-  max-height: 200px;
+  min-height: 150px;
+  max-height: 350px;
+  height: auto;
   flex-shrink: 0;
   background: #4a0e0e;
   display: flex;
@@ -202,6 +200,17 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative;
+}
+
+#region-image-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 350px;
+  min-height: 150px;
+  background: #4a0e0e;
+  display: block;
 }
 
 /* ===== КРЕСТИК ===== */
@@ -509,7 +518,10 @@ body {
 .cloud-marker:hover img {
   transform: none !important;
 }
-/* Временная метка при размещении */
+
+/* ================================================================
+   ВРЕМЕННАЯ МЕТКА ПРИ РАЗМЕЩЕНИИ
+   ================================================================ */
 .temp-marker {
   opacity: 0.8;
   transition: opacity 0.3s ease;
@@ -523,4 +535,52 @@ body {
   background: rgba(0, 0, 0, 0.8);
   color: #ffd700;
   border-color: rgba(255, 215, 0, 0.3);
+}
+
+/* ================================================================
+   АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ
+   ================================================================ */
+@media (max-width: 768px) {
+  #region-sidebar {
+    width: 320px;
+  }
+  
+  #region-image-placeholder {
+    min-height: 120px;
+    max-height: 250px;
+  }
+  
+  #region-image-placeholder img {
+    min-height: 120px;
+    max-height: 250px;
+  }
+  
+  .panel-content {
+    padding: 16px 20px 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  #region-sidebar {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  #region-image-placeholder {
+    min-height: 100px;
+    max-height: 200px;
+  }
+  
+  #region-image-placeholder img {
+    min-height: 100px;
+    max-height: 200px;
+  }
+  
+  .panel-content {
+    padding: 12px 16px 20px 16px;
+  }
+  
+  #sidebar-title {
+    font-size: 18px;
+  }
 }
