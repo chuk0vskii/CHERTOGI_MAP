@@ -193,7 +193,65 @@
       flex: 1;
     }
 
-    /* ===== БЛОК РЕСУРСОВ ===== */
+    /* ===== БЛОК УМЕНИЙ (полупрозрачная красная граница) ===== */
+    .creature-card .abilities-block {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      border: 1px solid rgba(255, 50, 50, 0.3);
+      border-radius: 10px;
+      background: transparent;
+    }
+    .creature-card .abilities-block.open {
+      display: block;
+    }
+    .creature-card .abilities-block .abilities-label {
+      color: rgba(255, 100, 100, 0.7);
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-family: 'Philosopher', sans-serif;
+      text-transform: uppercase;
+    }
+    .creature-card .abilities-block .abilities-content {
+      color: #e0d5c0;
+      font-size: 14px;
+      white-space: pre-line;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    /* ===== БЛОК ДЕЙСТВИЙ (полупрозрачная красная граница) ===== */
+    .creature-card .actions-block {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      border: 1px solid rgba(255, 50, 50, 0.3);
+      border-radius: 10px;
+      background: transparent;
+    }
+    .creature-card .actions-block.open {
+      display: block;
+    }
+    .creature-card .actions-block .actions-label {
+      color: rgba(255, 100, 100, 0.7);
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-family: 'Philosopher', sans-serif;
+      text-transform: uppercase;
+    }
+    .creature-card .actions-block .actions-content {
+      color: #e0d5c0;
+      font-size: 14px;
+      white-space: pre-line;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    /* ===== БЛОК РЕСУРСОВ (золотой) ===== */
     .creature-card .resource-block {
       display: none;
       margin-top: 12px;
@@ -220,11 +278,6 @@
       white-space: pre-line;
       word-wrap: break-word;
       line-height: 1.4;
-    }
-    .creature-card .resource-block .resource-content br {
-      display: block;
-      content: '';
-      margin: 0;
     }
     .creature-card .resource-block .resource-content .resource-item {
       display: block;
@@ -282,6 +335,8 @@
       .creature-card .stats-full .stat-row { flex-direction: column; gap: 2px; }
       .creature-card .creature-image-container img { max-height: 300px; }
       .creature-card .resource-block { padding: 10px 14px; }
+      .creature-card .abilities-block { padding: 10px 14px; }
+      .creature-card .actions-block { padding: 10px 14px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -291,8 +346,14 @@
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 200px; }
       .creature-card .resource-block { padding: 8px 12px; }
+      .creature-card .abilities-block { padding: 8px 12px; }
+      .creature-card .actions-block { padding: 8px 12px; }
       .creature-card .resource-block .resource-label { font-size: 12px; }
       .creature-card .resource-block .resource-content { font-size: 12px; }
+      .creature-card .abilities-block .abilities-label { font-size: 11px; }
+      .creature-card .abilities-block .abilities-content { font-size: 12px; }
+      .creature-card .actions-block .actions-label { font-size: 11px; }
+      .creature-card .actions-block .actions-content { font-size: 12px; }
     }
   </style>
 </head>
@@ -392,9 +453,6 @@
       'damage_resistances': 'Сопротивление к урону',
       'damage_vulnerabilities': 'Уязвимость к урону',
       'condition_immunities': 'Иммунитет к состоянию',
-      'abilities': 'Умения',
-      'actions': 'Действия',
-      'description': 'Описание',
       'treasure': 'Сокровище'
     };
     return labels[field] || field;
@@ -410,16 +468,14 @@
   }
 
   // ============================================================
-  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ РЕСУРСОВ (убираем лишние интервалы)
+  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ РЕСУРСОВ
   // ============================================================
 
   function formatResource(text) {
     if (!text) return null;
-    // Разбиваем по строкам, убираем пустые строки
     var lines = String(text).split('\n').filter(function(line) {
       return line.trim() !== '';
     });
-    // Объединяем с <br> без лишних интервалов
     return lines.join('<br>');
   }
 
@@ -433,7 +489,7 @@
     var statsFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
     var extraFields = ['saving_throws', 'skills', 'senses', 'proficiency_bonus', 
                        'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 
-                       'abilities', 'actions', 'treasure'];
+                       'treasure'];
 
     var statsHTML = '';
     for (var i = 0; i < statsFields.length; i++) {
@@ -453,13 +509,36 @@
       }
     }
 
-    // ===== БЛОК РЕСУРСОВ (отдельно) =====
+    // ===== БЛОК УМЕНИЙ (отдельно с красной границей) =====
+    var abilitiesHTML = '';
+    var abilitiesData = creature.abilities;
+    if (abilitiesData && abilitiesData !== '') {
+      abilitiesHTML = `
+        <div class="abilities-block open">
+          <div class="abilities-label">⚔ Умения</div>
+          <div class="abilities-content">${formatText(abilitiesData)}</div>
+        </div>
+      `;
+    }
+
+    // ===== БЛОК ДЕЙСТВИЙ (отдельно с красной границей) =====
+    var actionsHTML = '';
+    var actionsData = creature.actions;
+    if (actionsData && actionsData !== '') {
+      actionsHTML = `
+        <div class="actions-block open">
+          <div class="actions-label">⚔ Действия</div>
+          <div class="actions-content">${formatText(actionsData)}</div>
+        </div>
+      `;
+    }
+
+    // ===== БЛОК РЕСУРСОВ (золотой) =====
     var resourceHTML = '';
     var resourceData = creature.resource;
     if (resourceData && resourceData !== '') {
       var formattedResource = formatResource(resourceData);
       if (formattedResource) {
-        // Разбиваем ресурсы по строкам для отдельного оформления
         var resourceItems = formattedResource.split('<br>').map(function(item) {
           return '<span class="resource-item">' + item + '</span>';
         }).join('');
@@ -512,6 +591,8 @@
       descHTML +
       statsContainerHTML +
       extraHTML +
+      abilitiesHTML +
+      actionsHTML +
       resourceHTML +
       '<div class="creature-image-container" id="image-container-' + (creature.id || 'unknown') + '">' +
         imageHTML +
