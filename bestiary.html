@@ -193,7 +193,6 @@
       flex: 1;
     }
 
-    /* ===== БЛОК УМЕНИЙ ===== */
     .creature-card .abilities-block {
       display: none;
       margin-top: 12px;
@@ -222,7 +221,6 @@
       line-height: 1.6;
     }
 
-    /* ===== БЛОК ДЕЙСТВИЙ ===== */
     .creature-card .actions-block {
       display: none;
       margin-top: 12px;
@@ -251,7 +249,6 @@
       line-height: 1.6;
     }
 
-    /* ===== БЛОК РЕСУРСОВ ===== */
     .creature-card .resource-block {
       display: none;
       margin-top: 12px;
@@ -284,7 +281,6 @@
       padding: 1px 0;
     }
 
-    /* ===== ИЗОБРАЖЕНИЕ СУЩЕСТВА ===== */
     .creature-card .creature-image-container {
       display: none;
       margin-top: 16px;
@@ -489,7 +485,6 @@
       }
     }
 
-    // ===== БЛОК УМЕНИЙ (скрыт изначально) =====
     var abilitiesHTML = '';
     var abilitiesData = creature.abilities;
     if (abilitiesData && abilitiesData !== '') {
@@ -501,7 +496,6 @@
       `;
     }
 
-    // ===== БЛОК ДЕЙСТВИЙ (скрыт изначально) =====
     var actionsHTML = '';
     var actionsData = creature.actions;
     if (actionsData && actionsData !== '') {
@@ -513,7 +507,6 @@
       `;
     }
 
-    // ===== БЛОК РЕСУРСОВ (скрыт изначально) =====
     var resourceHTML = '';
     var resourceData = creature.resource;
     if (resourceData && resourceData !== '') {
@@ -565,7 +558,7 @@
       </div>
     `;
 
-    return '<div class="creature-card" data-id="' + (creature.id || '') + '">' +
+    return '<div class="creature-card" data-id="' + (creature.id || '') + '" data-name="' + encodeURIComponent(creatureName) + '">' +
       '<div class="creature-name">' + creatureName + '</div>' +
       (metaHTML ? '<div class="creature-meta">' + metaHTML + '</div>' : '') +
       descHTML +
@@ -580,10 +573,6 @@
     '</div>';
   }
 
-  // ============================================================
-  // ПЕРЕКЛЮЧЕНИЕ ХАРАКТЕРИСТИК (раскрывает всё)
-  // ============================================================
-
   function toggleStats(btn) {
     var card = btn.closest('.creature-card');
     var statsFull = btn.nextElementSibling;
@@ -594,25 +583,21 @@
       statsFull.classList.toggle('open');
       btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
       
-      // Раскрываем/скрываем Умения
       var abilitiesBlock = card.querySelector('.abilities-block');
       if (abilitiesBlock) {
         abilitiesBlock.classList.toggle('open', isOpening);
       }
       
-      // Раскрываем/скрываем Действия
       var actionsBlock = card.querySelector('.actions-block');
       if (actionsBlock) {
         actionsBlock.classList.toggle('open', isOpening);
       }
       
-      // Раскрываем/скрываем Ресурсы
       var resourceBlock = card.querySelector('.resource-block');
       if (resourceBlock) {
         resourceBlock.classList.toggle('open', isOpening);
       }
       
-      // Раскрываем/скрываем изображение
       var imageContainer = card.querySelector('.creature-image-container');
       if (imageContainer) {
         imageContainer.classList.toggle('open', isOpening);
@@ -703,6 +688,100 @@
     }
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
+
+    // Запускаем обработку URL после загрузки
+    setTimeout(openBeastFromUrl, 500);
+  }
+
+  // ============================================================
+  // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ КОНКРЕТНОГО СУЩЕСТВА
+  // ============================================================
+
+  function getUrlParams() {
+    var params = {};
+    var query = window.location.search.substring(1);
+    if (query) {
+      var pairs = query.split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      }
+    }
+    return params;
+  }
+
+  function openBeastFromUrl() {
+    var params = getUrlParams();
+    
+    console.log('Параметры URL:', params);
+    
+    if (!params.section && !params.beast) {
+      return;
+    }
+    
+    var sectionId = params.section || 'great_beasts';
+    var beastName = params.beast || '';
+    
+    console.log('Открытие существа из URL:', { sectionId, beastName });
+    
+    if (!beastName) {
+      return;
+    }
+    
+    var sectionContent = document.getElementById('content-' + sectionId);
+    var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
+    
+    if (!sectionContent || !sectionHeader) {
+      console.warn('Раздел не найден:', sectionId);
+      return;
+    }
+    
+    // Открываем раздел
+    sectionContent.classList.add('open');
+    var arrow = document.getElementById('arrow-' + sectionId);
+    if (arrow) arrow.classList.add('open');
+    
+    // Ищем карточку с нужным существом
+    var cards = sectionContent.querySelectorAll('.creature-card');
+    var targetCard = null;
+    var decodedName = decodeURIComponent(beastName);
+    
+    console.log('Ищем существо:', decodedName);
+    console.log('Всего карточек:', cards.length);
+    
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var nameEl = card.querySelector('.creature-name');
+      if (nameEl && nameEl.textContent.trim() === decodedName) {
+        targetCard = card;
+        console.log('Найдена карточка:', decodedName);
+        break;
+      }
+    }
+    
+    if (targetCard) {
+      setTimeout(function() {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
+        targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
+        targetCard.style.borderColor = '#ffd700';
+        
+        var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
+        if (toggleBtn) {
+          setTimeout(function() {
+            toggleBtn.click();
+          }, 500);
+        }
+        
+        setTimeout(function() {
+          targetCard.style.background = '';
+          targetCard.style.borderColor = '';
+        }, 5000);
+      }, 300);
+    } else {
+      console.warn('Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
+    }
   }
 
   window.toggleSection = toggleSection;
@@ -712,103 +791,4 @@
 </script>
 
 </body>
-  <script>
-  // ============================================================
-  // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ КОНКРЕТНОГО СУЩЕСТВА
-  // ============================================================
-
-  (function() {
-    function getUrlParams() {
-      var params = {};
-      var query = window.location.search.substring(1);
-      if (query) {
-        var pairs = query.split('&');
-        for (var i = 0; i < pairs.length; i++) {
-          var pair = pairs[i].split('=');
-          params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-        }
-      }
-      return params;
-    }
-
-    function openBeastFromUrl() {
-      var params = getUrlParams();
-      
-      if (!params.section && !params.beast) {
-        return;
-      }
-      
-      var sectionId = params.section || 'great_beasts';
-      var beastName = params.beast || '';
-      
-      console.log('Открытие существа из URL:', { sectionId, beastName });
-      
-      if (!beastName) {
-        return;
-      }
-      
-      var checkInterval = setInterval(function() {
-        var sectionContent = document.getElementById('content-' + sectionId);
-        var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
-        
-        if (sectionContent && sectionHeader) {
-          clearInterval(checkInterval);
-          
-          sectionContent.classList.add('open');
-          var arrow = document.getElementById('arrow-' + sectionId);
-          if (arrow) arrow.classList.add('open');
-          
-          var cards = sectionContent.querySelectorAll('.creature-card');
-          var targetCard = null;
-          var decodedName = decodeURIComponent(beastName);
-          
-          for (var i = 0; i < cards.length; i++) {
-            var card = cards[i];
-            var nameEl = card.querySelector('.creature-name');
-            if (nameEl && nameEl.textContent.trim() === decodedName) {
-              targetCard = card;
-              break;
-            }
-          }
-          
-          if (targetCard) {
-            setTimeout(function() {
-              targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              
-              targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
-              targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
-              targetCard.style.borderColor = '#ffd700';
-              
-              var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
-              if (toggleBtn) {
-                setTimeout(function() {
-                  toggleBtn.click();
-                }, 500);
-              }
-              
-              setTimeout(function() {
-                targetCard.style.background = '';
-                targetCard.style.borderColor = '';
-              }, 5000);
-            }, 300);
-          } else {
-            console.warn('Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
-          }
-        }
-      }, 500);
-      
-      setTimeout(function() {
-        clearInterval(checkInterval);
-      }, 10000);
-    }
-
-    if (document.readyState === 'complete') {
-      setTimeout(openBeastFromUrl, 1000);
-    } else {
-      window.addEventListener('load', function() {
-        setTimeout(openBeastFromUrl, 1000);
-      });
-    }
-  })();
-</script>
 </html>
