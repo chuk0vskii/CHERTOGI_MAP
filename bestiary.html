@@ -193,7 +193,7 @@
       flex: 1;
     }
 
-    /* ===== БЛОК УМЕНИЙ (полупрозрачная красная граница) ===== */
+    /* ===== БЛОК УМЕНИЙ ===== */
     .creature-card .abilities-block {
       display: none;
       margin-top: 12px;
@@ -222,7 +222,7 @@
       line-height: 1.6;
     }
 
-    /* ===== БЛОК ДЕЙСТВИЙ (полупрозрачная красная граница) ===== */
+    /* ===== БЛОК ДЕЙСТВИЙ ===== */
     .creature-card .actions-block {
       display: none;
       margin-top: 12px;
@@ -251,7 +251,7 @@
       line-height: 1.6;
     }
 
-    /* ===== БЛОК РЕСУРСОВ (золотой) ===== */
+    /* ===== БЛОК РЕСУРСОВ ===== */
     .creature-card .resource-block {
       display: none;
       margin-top: 12px;
@@ -397,18 +397,10 @@
     { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' }
   ];
 
-  // ============================================================
-  // ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К ИЗОБРАЖЕНИЮ СУЩЕСТВА
-  // ============================================================
-
   function getCreatureImagePath(name) {
     var fileName = name.trim().toLowerCase().replace(/\s+/g, '_');
     return '/CHERTOGI_MAP/images/bestiarii/' + fileName;
   }
-
-  // ============================================================
-  // ЗАГРУЗКА ДАННЫХ
-  // ============================================================
 
   async function loadSection(section) {
     try {
@@ -458,18 +450,10 @@
     return labels[field] || field;
   }
 
-  // ============================================================
-  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ ТЕКСТА
-  // ============================================================
-
   function formatText(text) {
     if (!text) return '—';
     return String(text).replace(/\n/g, '<br>');
   }
-
-  // ============================================================
-  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ РЕСУРСОВ
-  // ============================================================
 
   function formatResource(text) {
     if (!text) return null;
@@ -478,10 +462,6 @@
     });
     return lines.join('<br>');
   }
-
-  // ============================================================
-  // ОТРИСОВКА КАРТОЧКИ СУЩЕСТВА
-  // ============================================================
 
   function renderCreatureCard(creature) {
     var description = creature.description || '';
@@ -509,31 +489,31 @@
       }
     }
 
-    // ===== БЛОК УМЕНИЙ (отдельно с красной границей) =====
+    // ===== БЛОК УМЕНИЙ (скрыт изначально) =====
     var abilitiesHTML = '';
     var abilitiesData = creature.abilities;
     if (abilitiesData && abilitiesData !== '') {
       abilitiesHTML = `
-        <div class="abilities-block open">
+        <div class="abilities-block" id="abilities-${creature.id || 'unknown'}">
           <div class="abilities-label">⚔ Умения</div>
           <div class="abilities-content">${formatText(abilitiesData)}</div>
         </div>
       `;
     }
 
-    // ===== БЛОК ДЕЙСТВИЙ (отдельно с красной границей) =====
+    // ===== БЛОК ДЕЙСТВИЙ (скрыт изначально) =====
     var actionsHTML = '';
     var actionsData = creature.actions;
     if (actionsData && actionsData !== '') {
       actionsHTML = `
-        <div class="actions-block open">
+        <div class="actions-block" id="actions-${creature.id || 'unknown'}">
           <div class="actions-label">⚔ Действия</div>
           <div class="actions-content">${formatText(actionsData)}</div>
         </div>
       `;
     }
 
-    // ===== БЛОК РЕСУРСОВ (золотой) =====
+    // ===== БЛОК РЕСУРСОВ (скрыт изначально) =====
     var resourceHTML = '';
     var resourceData = creature.resource;
     if (resourceData && resourceData !== '') {
@@ -544,7 +524,7 @@
         }).join('');
         
         resourceHTML = `
-          <div class="resource-block open">
+          <div class="resource-block" id="resource-${creature.id || 'unknown'}">
             <div class="resource-label">✦ Ресурсы</div>
             <div class="resource-content">${resourceItems}</div>
           </div>
@@ -601,7 +581,7 @@
   }
 
   // ============================================================
-  // ПЕРЕКЛЮЧЕНИЕ ХАРАКТЕРИСТИК И ПОКАЗ КАРТИНКИ
+  // ПЕРЕКЛЮЧЕНИЕ ХАРАКТЕРИСТИК (раскрывает всё)
   // ============================================================
 
   function toggleStats(btn) {
@@ -609,14 +589,35 @@
     var statsFull = btn.nextElementSibling;
     
     if (statsFull && statsFull.classList.contains('stats-full')) {
+      var isOpening = !statsFull.classList.contains('open');
+      
       statsFull.classList.toggle('open');
       btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
       
+      // Раскрываем/скрываем Умения
+      var abilitiesBlock = card.querySelector('.abilities-block');
+      if (abilitiesBlock) {
+        abilitiesBlock.classList.toggle('open', isOpening);
+      }
+      
+      // Раскрываем/скрываем Действия
+      var actionsBlock = card.querySelector('.actions-block');
+      if (actionsBlock) {
+        actionsBlock.classList.toggle('open', isOpening);
+      }
+      
+      // Раскрываем/скрываем Ресурсы
+      var resourceBlock = card.querySelector('.resource-block');
+      if (resourceBlock) {
+        resourceBlock.classList.toggle('open', isOpening);
+      }
+      
+      // Раскрываем/скрываем изображение
       var imageContainer = card.querySelector('.creature-image-container');
       if (imageContainer) {
-        imageContainer.classList.toggle('open');
+        imageContainer.classList.toggle('open', isOpening);
         
-        if (imageContainer.classList.contains('open')) {
+        if (isOpening) {
           var images = imageContainer.querySelectorAll('img');
           var placeholder = imageContainer.querySelector('.image-placeholder');
           var found = false;
@@ -638,10 +639,6 @@
       }
     }
   }
-
-  // ============================================================
-  // ОТРИСОВКА СЕКЦИИ
-  // ============================================================
 
   function renderSection(section, creatures) {
     var sectionDiv = document.createElement('div');
@@ -680,10 +677,6 @@
       if (arrow) arrow.classList.toggle('open');
     }
   }
-
-  // ============================================================
-  // ИНИЦИАЛИЗАЦИЯ
-  // ============================================================
 
   async function init() {
     console.log('Загрузка бестиария...');
