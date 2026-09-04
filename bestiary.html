@@ -118,7 +118,6 @@
       margin-right: 18px;
     }
 
-    /* ===== ОПИСАНИЕ С ПЕРЕНОСАМИ СТРОК ===== */
     .creature-card .creature-description {
       font-size: 14px;
       line-height: 1.8;
@@ -344,6 +343,7 @@
       'intelligence': 'Инт',
       'wisdom': 'Мдр',
       'charisma': 'Хур',
+      'saving_throws': 'Спасброски',
       'skills': 'Навыки',
       'senses': 'Чувства',
       'proficiency_bonus': 'Бонус мастерства',
@@ -353,7 +353,8 @@
       'abilities': 'Умения',
       'actions': 'Действия',
       'description': 'Описание',
-      'treasure': 'Сокровище'
+      'treasure': 'Сокровище',
+      'resource': 'Ресурс'
     };
     return labels[field] || field;
   }
@@ -364,7 +365,6 @@
 
   function formatText(text) {
     if (!text) return '—';
-    // Заменяем \n на <br> для переносов строк
     return String(text).replace(/\n/g, '<br>');
   }
 
@@ -375,8 +375,13 @@
   function renderCreatureCard(creature) {
     var description = creature.description || '';
 
+    // Основные статы (выводятся в сетке)
     var statsFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
-    var extraFields = ['skills', 'senses', 'proficiency_bonus', 'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 'abilities', 'actions', 'treasure'];
+    
+    // Дополнительные поля (выводятся в раскрывающемся блоке)
+    var extraFields = ['saving_throws', 'skills', 'senses', 'proficiency_bonus', 
+                       'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 
+                       'abilities', 'actions', 'treasure', 'resource'];
 
     var statsHTML = '';
     for (var i = 0; i < statsFields.length; i++) {
