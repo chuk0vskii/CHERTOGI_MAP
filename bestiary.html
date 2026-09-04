@@ -117,12 +117,17 @@
     .creature-card .creature-meta span {
       margin-right: 18px;
     }
+
+    /* ===== ОПИСАНИЕ С ПЕРЕНОСАМИ СТРОК ===== */
     .creature-card .creature-description {
       font-size: 14px;
       line-height: 1.8;
       color: #ccc;
       margin-bottom: 12px;
+      white-space: pre-line;
+      word-wrap: break-word;
     }
+
     .creature-card .creature-stats {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -183,6 +188,10 @@
     }
     .creature-card .stats-full .stat-row .value {
       color: #e0d5c0;
+      white-space: pre-line;
+      word-wrap: break-word;
+      max-width: 100%;
+      flex: 1;
     }
 
     /* ===== ИЗОБРАЖЕНИЕ СУЩЕСТВА ===== */
@@ -350,6 +359,16 @@
   }
 
   // ============================================================
+  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ ТЕКСТА (замена \n на <br>)
+  // ============================================================
+
+  function formatText(text) {
+    if (!text) return '—';
+    // Заменяем \n на <br> для переносов строк
+    return String(text).replace(/\n/g, '<br>');
+  }
+
+  // ============================================================
   // ОТРИСОВКА КАРТОЧКИ СУЩЕСТВА
   // ============================================================
 
@@ -372,7 +391,7 @@
       var f = extraFields[j];
       if (creature[f] !== undefined && creature[f] !== null && creature[f] !== '') {
         var label = getFieldLabel(f);
-        var value = creature[f] || '—';
+        var value = formatText(creature[f]);
         extraRows += '<div class="stat-row"><span class="label">' + label + ':</span> <span class="value">' + value + '</span></div>';
       }
     }
@@ -386,7 +405,7 @@
     if (creature.hit_points) metaHTML += '<span>Хиты ' + creature.hit_points + '</span>';
     if (creature.speed) metaHTML += '<span>Скорость ' + creature.speed + '</span>';
 
-    var descHTML = description ? '<div class="creature-description">' + description + '</div>' : '';
+    var descHTML = description ? '<div class="creature-description">' + formatText(description) + '</div>' : '';
     var statsContainerHTML = statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : '';
 
     var creatureName = creature.name || 'Без имени';
