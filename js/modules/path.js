@@ -129,7 +129,6 @@ export async function generatePathEvents() {
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
-  // Загружаем великих зверей для события "Следы Великих"
   await loadGreatBeasts();
 
   let roleCount = 0;
@@ -173,7 +172,6 @@ async function generateEventList(commonCount, roleCount) {
     const eventData = roleEvents[roll];
     const eventCopy = createEventCopy(eventData, role, roll + 1);
     
-    // Если это событие "Следы Великих" — добавляем случайного великого зверя
     if (eventData.isGreatBeast) {
       const beast = getRandomGreatBeast();
       if (beast) {
@@ -217,26 +215,26 @@ function renderEvents(events) {
   }
 
   eventsContainer.innerHTML = events.map(function(event, index) {
-    const tableContainerId = 'table-result-' + index + '-' + Date.now();
-    
-    let tableHTML = '';
-    if (event.data.hasTable && event.data.tableName) {
-      tableHTML = '<div style="margin-top: 8px;">' +
-        '<button class="btn-roll-table" data-table="' + event.data.tableName + '" data-container="' + tableContainerId + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
-          (event.data.tableIcon || '') + ' Бросить по ' + (event.data.tableLabel || 'таблице') +
-        '</button>' +
-        '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>' +
-      '</div>';
-    }
-    
     // Ссылка на великого зверя
     let greatBeastHTML = '';
     if (event.greatBeast) {
       const beastName = event.greatBeast.name;
       const encodedName = encodeURIComponent(beastName);
-      const url = '/CHERTOGI_MAP/bestiary.html?section=great_beasts&beast=' + encodedName;
+      const url = 'bestiary.html?section=great_beasts&beast=' + encodedName;
       greatBeastHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">' +
         'Великий зверь: <a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + beastName + '</a>' +
+      '</div>';
+    }
+    
+    // Таблица — пропускаем great_beasts, если есть greatBeast
+    let tableHTML = '';
+    if (event.data.hasTable && event.data.tableName && !(event.data.isGreatBeast && event.greatBeast)) {
+      const tableContainerId = 'table-result-' + index + '-' + Date.now();
+      tableHTML = '<div style="margin-top: 8px;">' +
+        '<button class="btn-roll-table" data-table="' + event.data.tableName + '" data-container="' + tableContainerId + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
+          (event.data.tableIcon || '') + ' Бросить по ' + (event.data.tableLabel || 'таблице') +
+        '</button>' +
+        '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>' +
       '</div>';
     }
     
