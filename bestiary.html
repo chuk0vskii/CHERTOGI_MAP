@@ -193,6 +193,44 @@
       flex: 1;
     }
 
+    /* ===== БЛОК РЕСУРСОВ ===== */
+    .creature-card .resource-block {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: rgba(255, 215, 0, 0.08);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 8px;
+      border-left: 3px solid #ffd700;
+    }
+    .creature-card .resource-block.open {
+      display: block;
+    }
+    .creature-card .resource-block .resource-label {
+      color: #ffd700;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-family: 'Philosopher', sans-serif;
+    }
+    .creature-card .resource-block .resource-content {
+      color: #e0d5c0;
+      font-size: 14px;
+      white-space: pre-line;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+    .creature-card .resource-block .resource-content br {
+      display: block;
+      content: '';
+      margin: 0;
+    }
+    .creature-card .resource-block .resource-content .resource-item {
+      display: block;
+      padding: 1px 0;
+    }
+
     /* ===== ИЗОБРАЖЕНИЕ СУЩЕСТВА ===== */
     .creature-card .creature-image-container {
       display: none;
@@ -243,6 +281,7 @@
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
       .creature-card .stats-full .stat-row { flex-direction: column; gap: 2px; }
       .creature-card .creature-image-container img { max-height: 300px; }
+      .creature-card .resource-block { padding: 10px 14px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -251,6 +290,9 @@
       .creature-card { padding: 14px 16px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 200px; }
+      .creature-card .resource-block { padding: 8px 12px; }
+      .creature-card .resource-block .resource-label { font-size: 12px; }
+      .creature-card .resource-block .resource-content { font-size: 12px; }
     }
   </style>
 </head>
@@ -353,19 +395,32 @@
       'abilities': 'Умения',
       'actions': 'Действия',
       'description': 'Описание',
-      'treasure': 'Сокровище',
-      'resource': 'Ресурс'
+      'treasure': 'Сокровище'
     };
     return labels[field] || field;
   }
 
   // ============================================================
-  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ ТЕКСТА (замена \n на <br>)
+  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ ТЕКСТА
   // ============================================================
 
   function formatText(text) {
     if (!text) return '—';
     return String(text).replace(/\n/g, '<br>');
+  }
+
+  // ============================================================
+  // ФУНКЦИЯ ФОРМАТИРОВАНИЯ РЕСУРСОВ (убираем лишние интервалы)
+  // ============================================================
+
+  function formatResource(text) {
+    if (!text) return null;
+    // Разбиваем по строкам, убираем пустые строки
+    var lines = String(text).split('\n').filter(function(line) {
+      return line.trim() !== '';
+    });
+    // Объединяем с <br> без лишних интервалов
+    return lines.join('<br>');
   }
 
   // ============================================================
@@ -375,13 +430,10 @@
   function renderCreatureCard(creature) {
     var description = creature.description || '';
 
-    // Основные статы (выводятся в сетке)
     var statsFields = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
-    
-    // Дополнительные поля (выводятся в раскрывающемся блоке)
     var extraFields = ['saving_throws', 'skills', 'senses', 'proficiency_bonus', 
                        'damage_resistances', 'damage_vulnerabilities', 'condition_immunities', 
-                       'abilities', 'actions', 'treasure', 'resource'];
+                       'abilities', 'actions', 'treasure'];
 
     var statsHTML = '';
     for (var i = 0; i < statsFields.length; i++) {
@@ -398,6 +450,26 @@
         var label = getFieldLabel(f);
         var value = formatText(creature[f]);
         extraRows += '<div class="stat-row"><span class="label">' + label + ':</span> <span class="value">' + value + '</span></div>';
+      }
+    }
+
+    // ===== БЛОК РЕСУРСОВ (отдельно) =====
+    var resourceHTML = '';
+    var resourceData = creature.resource;
+    if (resourceData && resourceData !== '') {
+      var formattedResource = formatResource(resourceData);
+      if (formattedResource) {
+        // Разбиваем ресурсы по строкам для отдельного оформления
+        var resourceItems = formattedResource.split('<br>').map(function(item) {
+          return '<span class="resource-item">' + item + '</span>';
+        }).join('');
+        
+        resourceHTML = `
+          <div class="resource-block open">
+            <div class="resource-label">✦ Ресурсы</div>
+            <div class="resource-content">${resourceItems}</div>
+          </div>
+        `;
       }
     }
 
@@ -440,6 +512,7 @@
       descHTML +
       statsContainerHTML +
       extraHTML +
+      resourceHTML +
       '<div class="creature-image-container" id="image-container-' + (creature.id || 'unknown') + '">' +
         imageHTML +
       '</div>' +
