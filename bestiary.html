@@ -712,4 +712,103 @@
 </script>
 
 </body>
+  <script>
+  // ============================================================
+  // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ КОНКРЕТНОГО СУЩЕСТВА
+  // ============================================================
+
+  (function() {
+    function getUrlParams() {
+      var params = {};
+      var query = window.location.search.substring(1);
+      if (query) {
+        var pairs = query.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split('=');
+          params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        }
+      }
+      return params;
+    }
+
+    function openBeastFromUrl() {
+      var params = getUrlParams();
+      
+      if (!params.section && !params.beast) {
+        return;
+      }
+      
+      var sectionId = params.section || 'great_beasts';
+      var beastName = params.beast || '';
+      
+      console.log('Открытие существа из URL:', { sectionId, beastName });
+      
+      if (!beastName) {
+        return;
+      }
+      
+      var checkInterval = setInterval(function() {
+        var sectionContent = document.getElementById('content-' + sectionId);
+        var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
+        
+        if (sectionContent && sectionHeader) {
+          clearInterval(checkInterval);
+          
+          sectionContent.classList.add('open');
+          var arrow = document.getElementById('arrow-' + sectionId);
+          if (arrow) arrow.classList.add('open');
+          
+          var cards = sectionContent.querySelectorAll('.creature-card');
+          var targetCard = null;
+          var decodedName = decodeURIComponent(beastName);
+          
+          for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            var nameEl = card.querySelector('.creature-name');
+            if (nameEl && nameEl.textContent.trim() === decodedName) {
+              targetCard = card;
+              break;
+            }
+          }
+          
+          if (targetCard) {
+            setTimeout(function() {
+              targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              
+              targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
+              targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
+              targetCard.style.borderColor = '#ffd700';
+              
+              var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
+              if (toggleBtn) {
+                setTimeout(function() {
+                  toggleBtn.click();
+                }, 500);
+              }
+              
+              setTimeout(function() {
+                targetCard.style.background = '';
+                targetCard.style.borderColor = '';
+              }, 5000);
+            }, 300);
+          } else {
+            console.warn('Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
+          }
+        }
+      }, 500);
+      
+      setTimeout(function() {
+        clearInterval(checkInterval);
+      }, 10000);
+    }
+
+    if (document.readyState === 'complete') {
+      setTimeout(openBeastFromUrl, 1000);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(openBeastFromUrl, 1000);
+      });
+    }
+  })();
+</script>
 </html>
