@@ -279,7 +279,7 @@
 
   var SECTIONS = [
     { id: 'beasts', title: 'Звери', table: 'beasts' },
-    { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts_extended' },
+    { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts' },
     { id: 'monsters', title: 'Монстры', table: 'monsters' },
     { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
     { id: 'insectoids', title: 'Инсектоиды Чертогов', table: 'insectoids' },
@@ -291,10 +291,8 @@
   // ============================================================
 
   function getCreatureImagePath(name) {
-    // Приводим к нижнему регистру, убираем лишние пробелы, заменяем на подчёркивания
-    var normalizedName = name.trim().toLowerCase().replace(/\s+/g, '_');
-    var encodedName = encodeURIComponent(normalizedName);
-    return '/CHERTOGI_MAP/images/bestiarii/' + encodedName;
+    var fileName = name.trim().toLowerCase().replace(/\s+/g, '_');
+    return '/CHERTOGI_MAP/images/bestiarii/' + fileName;
   }
 
   // ============================================================
@@ -391,12 +389,10 @@
     var descHTML = description ? '<div class="creature-description">' + description + '</div>' : '';
     var statsContainerHTML = statsHTML ? '<div class="creature-stats">' + statsHTML + '</div>' : '';
 
-    // Формируем путь к картинке
     var creatureName = creature.name || 'Без имени';
     var imagePath = getCreatureImagePath(creatureName);
     var imageExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
     
-    // Создаём HTML для картинки
     var imageHTML = '';
     for (var k = 0; k < imageExtensions.length; k++) {
       var ext = imageExtensions[k];
