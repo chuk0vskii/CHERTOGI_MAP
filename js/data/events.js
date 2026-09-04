@@ -2,6 +2,8 @@
 // ОБЩИЕ СОБЫТИЯ
 // ============================================================
 
+import { _supabase } from '../config-module.js';
+
 export const COMMON_EVENTS = [
   { 
     id: 1, 
