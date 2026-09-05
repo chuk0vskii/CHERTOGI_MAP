@@ -3,7 +3,11 @@
 // ============================================================
 
 import { _supabase } from '../config-module.js';
-import { COMMON_EVENTS, ROLES, ROLE_EVENTS, loadGreatBeasts, getRandomGreatBeast, generateEncounter } from '../data/events.js';
+import { 
+  COMMON_EVENTS, ROLES, ROLE_EVENTS, 
+  loadGreatBeasts, getRandomGreatBeast, 
+  generateEncounter, TABLE_TO_SECTION 
+} from '../data/events.js';
 import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
 import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod, addArrivalBonus, getArrivalBonus } from './region.js';
 
@@ -50,31 +54,35 @@ async function getTableData(tableName) {
 }
 
 // ============================================================
+// ФУНКЦИЯ ПОЛУЧЕНИЯ РЕГИОНАЛЬНОЙ ТАБЛИЦЫ
+// ============================================================
+
+function getRegionalTableName(terrainType) {
+  const mapping = {
+    'пустыня': 'opasnost_pustini',
+    'степи': 'opasnost_stepi',
+    'горы': 'opasnost_gor',
+    'джунгли': 'opasnost_jungle'
+  };
+  return mapping[terrainType] || null;
+}
+
+// ============================================================
 // ФУНКЦИЯ СОЗДАНИЯ ССЫЛКИ НА СУЩЕСТВО В БЕСТИАРИИ
 // ============================================================
 
-function createBeastLink(name, table) {
+function createBeastLink(name, tableName) {
   const encodedName = encodeURIComponent(name);
-  let sectionId = 'dangerous_creatures';
-  if (table === 'opasnost_pustini') sectionId = 'dangerous_desert';
-  else if (table === 'opasnost_stepi') sectionId = 'dangerous_steppes';
-  else if (table === 'opasnost_gor') sectionId = 'dangerous_mountains';
-  else if (table === 'opasnost_jungle') sectionId = 'dangerous_swamps';
-  else if (table === 'great_beasts') sectionId = 'great_beasts';
-  else if (table === 'insectoids') sectionId = 'insectoids';
-  else if (table === 'veil_aberrations') sectionId = 'veil_aberrations';
-  
+  let sectionId = TABLE_TO_SECTION[tableName] || 'dangerous_creatures';
   const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
   return '<a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + name + '</a>';
 }
 
 // ============================================================
-// РОЛЛ ТАБЛИЦЫ
+// ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ И ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА
 // ============================================================
 
-export async function rollTable(tableName, containerId) {
-  console.log('rollTable вызван: tableName="' + tableName + '"');
-  
+async function rollTableAndDisplay(tableName, containerId, isRegional, isDeadlyEncounter) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error('Контейнер не найден: ' + containerId);
@@ -82,23 +90,34 @@ export async function rollTable(tableName, containerId) {
   }
 
   try {
-    console.log('Делаю запрос к таблице: ' + tableName);
+    // Для региональных таблиц — определяем по типу местности
+    let actualTableName = tableName;
+    if (isRegional) {
+      const selectedOption = regionSelect.options[regionSelect.selectedIndex];
+      const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
+      actualTableName = getRegionalTableName(terrainType);
+      if (!actualTableName) {
+        container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Не удалось определить региональную таблицу для типа местности: ' + terrainType + '</div>';
+        container.style.display = 'block';
+        return;
+      }
+    }
+
+    console.log('Ролл таблицы: ' + actualTableName);
     
     const { data, error } = await _supabase
-      .from(tableName)
+      .from(actualTableName)
       .select('*');
     
     if (error) {
-      console.error('Ошибка запроса к ' + tableName + ':', error);
+      console.error('Ошибка запроса к ' + actualTableName + ':', error);
       container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Ошибка: ' + error.message + '</div>';
       container.style.display = 'block';
       return;
     }
     
-    console.log('Получено данных из ' + tableName + ': ' + (data?.length || 0));
-    
     if (!data || data.length === 0) {
-      container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">В таблице "' + tableName + '" нет данных</div>';
+      container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">В таблице "' + actualTableName + '" нет данных</div>';
       container.style.display = 'block';
       return;
     }
@@ -107,20 +126,21 @@ export async function rollTable(tableName, containerId) {
     const item = data[randomIndex];
     
     console.log('Выбрана запись #' + (randomIndex + 1) + ':', item);
-    
+
     let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
     html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
     
     if (item.name) {
-      html += '<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">' + item.name + '</div>';
+      const link = createBeastLink(item.name, actualTableName);
+      html += '<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">' + link + '</div>';
     }
     
     if (item.description) {
       html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + item.description + '</div>';
     }
     
-    // ===== СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ СМЕРТЕЛЬНОЙ ВСТРЕЧИ =====
-    if (tableName === 'deadly_encounters' && item.id >= 5 && item.id <= 8) {
+    // Специальная обработка для Смертельной встречи (результаты 5-8)
+    if (isDeadlyEncounter && item.id >= 5 && item.id <= 8) {
       const selectedOption = regionSelect.options[regionSelect.selectedIndex];
       const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
       
@@ -165,7 +185,7 @@ export async function rollTable(tableName, containerId) {
       if (!veilResult.error && veilResult.data && veilResult.data.length > 0) {
         const veilIndex = Math.floor(Math.random() * veilResult.data.length);
         const veilItem = veilResult.data[veilIndex];
-        const link = createBeastLink(veilItem.name, 'veil_aberrations');
+        const link = createBeastLink(veilItem.name, 'veil_children');
         veilHTML = '<div style="margin-top: 4px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700; font-size: 14px; color: #e0d5c0;">' +
           'Дети Вуали: ' + link +
         '</div>';
@@ -249,15 +269,16 @@ async function generateEventList(commonCount, roleCount) {
     const eventData = roleEvents[roll];
     const eventCopy = createEventCopy(eventData, role, roll + 1);
     
-    if (eventData.isGreatBeast) {
+    // Для великих зверей — сразу генерируем
+    if (eventData.tables && eventData.tables.some(t => t.isGreatBeast)) {
       const beast = getRandomGreatBeast();
       if (beast) {
         eventCopy.greatBeast = beast;
       }
     }
     
-    // Генерация встречи для событий с needsZoneCreatures при генерации
-    if (eventData.needsZoneCreatures && terrainType !== 'неизвестно') {
+    // Для региональных встреч — сразу генерируем
+    if (eventData.tables && eventData.tables.some(t => t.isRegional) && terrainType !== 'неизвестно') {
       const encounter = generateEncounter(terrainType);
       if (encounter) {
         eventCopy.encounter = encounter;
@@ -286,7 +307,9 @@ function createEventCopy(eventData, type, roll) {
     secondChecked: false,
     secondResult: null,
     greatBeast: null,
-    encounter: null
+    encounter: null,
+    tableResults: {},
+    secondTableResults: {}
   };
 }
 
@@ -305,14 +328,11 @@ function renderEvents(events) {
     let greatBeastHTML = '';
     if (event.greatBeast) {
       const beastName = event.greatBeast.name;
-      const encodedName = encodeURIComponent(beastName);
-      const url = 'bestiary.html?section=great_beasts&beast=' + encodedName;
-      greatBeastHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">' +
-        'Великий зверь: <a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + beastName + '</a>' +
-      '</div>';
+      const link = createBeastLink(beastName, 'great_beasts');
+      greatBeastHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Великий зверь: ' + link + '</div>';
     }
     
-    // Генерация встречи по типу местности
+    // Встреча по типу местности
     let encounterHTML = '';
     if (event.encounter) {
       const enc = event.encounter;
@@ -341,22 +361,60 @@ function renderEvents(events) {
       '</div>';
     }
     
-    // Таблица — пропускаем great_beasts и события с needsZoneCreatures
-    let tableHTML = '';
-    if (event.data.hasTable && event.data.tableName && 
-        !(event.data.isGreatBeast && event.greatBeast) &&
-        !event.data.needsZoneCreatures) {
-      const tableContainerId = 'table-result-' + index + '-' + Date.now();
-      tableHTML = '<div style="margin-top: 8px;">' +
-        '<button class="btn-roll-table" data-table="' + event.data.tableName + '" data-container="' + tableContainerId + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
-          (event.data.tableIcon || '') + ' Бросить по ' + (event.data.tableLabel || 'таблице') +
-        '</button>' +
-        '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>' +
-      '</div>';
+    // Кнопки для таблиц (появляются после проверки)
+    let tableButtonsHTML = '';
+    if (event.checked && event.data.tables) {
+      const tables = event.data.tables.filter(t => {
+        if (t.trigger === 'always') return true;
+        if (t.trigger === 'fail' && (event.result === 'fail' || event.result === 'crit_fail')) return true;
+        if (t.trigger === 'fail_5' && event.result === 'crit_fail') return true;
+        if (t.trigger === 'success' && (event.result === 'success' || event.result === 'crit_success')) return true;
+        if (t.trigger === 'crit_success' && event.result === 'crit_success') return true;
+        return false;
+      });
+      
+      tables.forEach(function(table, idx) {
+        const containerId = 'table-result-' + index + '-' + idx + '-' + Date.now();
+        const isRegional = table.isRegional || false;
+        const isDeadlyEncounter = table.isDeadlyEncounter || false;
+        const tableName = table.tableName || 'opasnost_pustini';
+        
+        tableButtonsHTML += '<div style="margin-top: 8px;">' +
+          '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-regional="' + isRegional + '" data-deadly="' + isDeadlyEncounter + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
+            'Бросить по ' + table.name +
+          '</button>' +
+          '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>' +
+        '</div>';
+      });
+    }
+    
+    // Вторые проверки (для Древних Руин)
+    let secondTableButtonsHTML = '';
+    if (event.secondChecked && event.data.secondTables) {
+      const secondTables = event.data.secondTables.filter(t => {
+        if (t.trigger === 'always') return true;
+        if (t.trigger === 'fail' && (event.secondResult === 'fail' || event.secondResult === 'crit_fail')) return true;
+        if (t.trigger === 'fail_5' && event.secondResult === 'crit_fail') return true;
+        if (t.trigger === 'success' && (event.secondResult === 'success' || event.secondResult === 'crit_success')) return true;
+        return false;
+      });
+      
+      secondTables.forEach(function(table, idx) {
+        const containerId = 'second-table-result-' + index + '-' + idx + '-' + Date.now();
+        const isRegional = table.isRegional || false;
+        const tableName = table.tableName || 'opasnost_pustini';
+        
+        secondTableButtonsHTML += '<div style="margin-top: 8px;">' +
+          '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-regional="' + isRegional + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
+            'Бросить по ' + table.name +
+          '</button>' +
+          '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>' +
+        '</div>';
+      });
     }
     
     let secondCheckHTML = '';
-    if (event.data.hasSecondCheck) {
+    if (event.data.hasSecondCheck || event.data.secondCheckInfo) {
       secondCheckHTML = '<div class="second-check-section">' +
         '<div class="event-check-row">' +
           '<label for="second-check-' + index + '" style="color: rgba(255,215,0,0.6);">Значение проверки (Тень Нарара):</label>' +
@@ -365,6 +423,7 @@ function renderEvents(events) {
         '</div>' +
         '<div class="event-result" id="second-result-' + index + '"></div>' +
         '<div class="event-effect" id="second-effect-' + index + '"></div>' +
+        secondTableButtonsHTML +
       '</div>';
     }
     
@@ -381,7 +440,7 @@ function renderEvents(events) {
         greatBeastHTML +
         encounterHTML +
       '</div>' +
-      tableHTML +
+      tableButtonsHTML +
       '<div class="event-check-row">' +
         '<label for="check-' + index + '">Значение проверки:</label>' +
         '<input type="number" id="check-' + index + '" min="1" max="30" value="10" class="check-input">' +
@@ -419,7 +478,9 @@ function attachEventHandlers() {
     btn.addEventListener('click', function() {
       const tableName = this.dataset.table;
       const containerId = this.dataset.container;
-      rollTable(tableName, containerId);
+      const isRegional = this.dataset.regional === 'true';
+      const isDeadly = this.dataset.deadly === 'true';
+      rollTableAndDisplay(tableName, containerId, isRegional, isDeadly);
     });
   });
 
@@ -546,7 +607,7 @@ function handleCheck(index, type) {
       effectDiv.appendChild(notif);
     }
     
-    // ===== ГЕНЕРАЦИЯ ВСТРЕЧИ ПРИ ПРОВАЛЕ =====
+    // Генерация встречи при провале для событий с needsZoneCreatures
     if (effects && effects.needsZoneCreatures && (result === 'fail' || result === 'crit_fail')) {
       const selectedOption = regionSelect.options[regionSelect.selectedIndex];
       const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
@@ -586,6 +647,9 @@ function handleCheck(index, type) {
       }
     }
   }
+  
+  // Перерендериваем событие, чтобы показать кнопки таблиц
+  renderEvents(currentEvents);
 }
 
 // ============================================================
