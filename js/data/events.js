@@ -590,3 +590,256 @@ export const ROLE_EVENTS = {
     }
   ]
 };
+// ============================================================
+// ГЕНЕРАЦИЯ ВСТРЕЧ ПО ТИПАМ МЕСТНОСТИ
+// ============================================================
+
+export const ENCOUNTER_TABLES = {
+  'пустыня': [
+    { 
+      range: [1, 2],
+      text: 'Аймак - Двуглавый песчаный змей',
+      creatures: [
+        { name: 'Аймак - Двуглавый песчаный змей', table: 'opasnost_pustini' }
+      ],
+      extra: '4d8+4 гигантских ядовитых змей [Giant poisonous snake]',
+      extraCreatures: [
+        { name: 'Гигантская ядовитая змея', table: 'opasnost_jungle' }
+      ]
+    },
+    { 
+      range: [3, 4],
+      text: '1d6+2 Канов',
+      creatures: [
+        { name: 'Кан', table: 'insectoids' }
+      ]
+    },
+    { 
+      range: [5, 6],
+      text: 'Ондра, Львиный Гнев',
+      creatures: [
+        { name: 'Ондра, Львиный Гнев', table: 'opasnost_pustini' }
+      ],
+      extra: '2d4 пятнистых львов [Spotted Lion]',
+      extraCreatures: [
+        { name: 'Пятнистый лев', table: 'opasnost_pustini' }
+      ]
+    },
+    { 
+      range: [7, 8],
+      text: 'Хозяин зыбучих песков краб Каракша',
+      creatures: [
+        { name: 'Каракша', table: 'opasnost_pustini' }
+      ],
+      extra: 'Гигантский краб [Giant crab]',
+      extraCreatures: [
+        { name: 'Гигантский краб', table: 'opasnost_pustini' }
+      ]
+    },
+    { 
+      range: [9, 10],
+      text: 'Ал - Падальщик',
+      creatures: [
+        { name: 'Ал - Падальщик', table: 'opasnost_pustini' }
+      ],
+      extra: '3d6+3 Гигантских гиен [Giant hyena] или вдвое больше обычных гиен [Hyena]',
+      extraCreatures: [
+        { name: 'Гигантская гиена', table: 'opasnost_pustini' },
+        { name: 'Гиена', table: 'opasnost_pustini' }
+      ]
+    }
+  ],
+  'степи': [
+    { 
+      range: [1, 2],
+      text: 'Аташар - трехглавый айур мутант',
+      creatures: [
+        { name: 'Аташар - трехглавый айур мутант', table: 'opasnost_stepi' }
+      ],
+      extra: 'стадо из 4d4 безумных от голода айуров',
+      extraCreatures: [
+        { name: 'Аюр', table: 'opasnost_stepi' }
+      ]
+    },
+    { 
+      range: [3, 4],
+      text: 'Золотой айур Батрины - Оншоха',
+      creatures: [
+        { name: 'Оншоха', table: 'opasnost_stepi' }
+      ],
+      extra: '4d4 бешеных айуров',
+      extraCreatures: [
+        { name: 'Аюр', table: 'opasnost_stepi' }
+      ]
+    },
+    { 
+      range: [5, 6],
+      text: 'Алакрус - Зверь Нарара',
+      creatures: [
+        { name: 'Алакрус - Зверь Нарара', table: 'opasnost_stepi' }
+      ],
+      extra: '4 воздушных элементалей [Air Elemental] в виде гепардов',
+      extraCreatures: [
+        { name: 'Воздушный элементаль', table: 'opasnost_stepi' }
+      ]
+    },
+    { 
+      range: [7, 8],
+      text: 'Чинга - Око степей',
+      creatures: [
+        { name: 'Чинга - Око степей', table: 'opasnost_stepi' }
+      ],
+      extra: '2d10 ястребов разорителей [Harrow Hawk]',
+      extraCreatures: [
+        { name: 'Ястреб разорителей', table: 'opasnost_stepi' }
+      ]
+    },
+    { 
+      range: [9, 10],
+      text: 'Вожак всех стай - Лавгаш',
+      creatures: [
+        { name: 'Лавгаш', table: 'opasnost_stepi' }
+      ],
+      extra: '3d4 лютых волков [Dire wolf]',
+      extraCreatures: [
+        { name: 'Лютый волк', table: 'opasnost_stepi' }
+      ]
+    }
+  ],
+  'горы': [
+    { 
+      range: [1, 2],
+      text: 'Каменная черепаха',
+      creatures: [
+        { name: 'Каменная черепаха', table: 'opasnost_gor' }
+      ],
+      extra: '3d4 гигантских щелкающих черепах [Giant snapping turtle]',
+      extraCreatures: [
+        { name: 'Гигантская щёлкающая черепаха', table: 'opasnost_gor' }
+      ]
+    },
+    { 
+      range: [3, 4],
+      text: 'Ястреб Чинхау - охотник вершин',
+      creatures: [
+        { name: 'Ястреб Чинхау - охотник вершин', table: 'opasnost_gor' }
+      ],
+      extra: '4 Гигантских орла [Giant eagle] и 8 Кровавых ястребов [Blood Hawk]',
+      extraCreatures: [
+        { name: 'Гигантский орёл', table: 'opasnost_gor' },
+        { name: 'Кровавый ястреб', table: 'opasnost_gor' }
+      ]
+    },
+    { 
+      range: [5, 6],
+      text: 'Слепец Урари - хозяин пещер',
+      creatures: [
+        { name: 'Урари', table: 'opasnost_gor' }
+      ],
+      extra: '2d4 Грияров',
+      extraCreatures: [
+        { name: 'Грияр', table: 'opasnost_gor' }
+      ]
+    },
+    { 
+      range: [7, 8],
+      text: 'Ашока - страж хребтов',
+      creatures: [
+        { name: 'Ашока - страж хребтов', table: 'opasnost_gor' }
+      ],
+      extra: '1d8+4 тура [Aurochs]',
+      extraCreatures: [
+        { name: 'Тур', table: 'opasnost_gor' }
+      ]
+    },
+    { 
+      range: [9, 10],
+      text: 'Варакша - роющая норы',
+      creatures: [
+        { name: 'Варакша - роющая норы', table: 'opasnost_gor' }
+      ],
+      extra: '4 панцирницы [Bulette]',
+      extraCreatures: [
+        { name: 'Панцирница', table: 'opasnost_gor' }
+      ]
+    }
+  ],
+  'джунгли': [
+    { 
+      range: [1, 2],
+      text: 'Король всех жаб Вэнсдар',
+      creatures: [
+        { name: 'Вэнсдар', table: 'opasnost_jungle' }
+      ],
+      extra: '3d4 гигантских лягушек [Giant frog] или 5 роев ядовитых змей [Swarm of poisonous snakes]',
+      extraCreatures: [
+        { name: 'Гигантская лягушка', table: 'opasnost_jungle' },
+        { name: 'Рой ядовитых змей', table: 'opasnost_jungle' }
+      ]
+    },
+    { 
+      range: [3, 4],
+      text: 'Цареубийца Уцк',
+      creatures: [
+        { name: 'Уцк', table: 'opasnost_jungle' }
+      ],
+      extra: '2d6 гигантских ядовитых змей [Giant poisonous snake]',
+      extraCreatures: [
+        { name: 'Гигантская ядовитая змея', table: 'opasnost_jungle' }
+      ]
+    },
+    { 
+      range: [5, 6],
+      text: 'Феникс [Phoenix]',
+      creatures: [
+        { name: 'Феникс', table: 'opasnost_jungle' }
+      ]
+    },
+    { 
+      range: [7, 8],
+      text: 'Окига - сокрытый зуб',
+      creatures: [
+        { name: 'Окига - сокрытый зуб', table: 'opasnost_jungle' }
+      ],
+      extra: '4d4 крокодила [Crocodile] или 4 гигантских крокодила [Giant crocodile]',
+      extraCreatures: [
+        { name: 'Крокодил', table: 'opasnost_jungle' },
+        { name: 'Гигантский крокодил', table: 'opasnost_jungle' }
+      ]
+    },
+    { 
+      range: [9, 10],
+      text: 'Хибачи - алый рой',
+      creatures: [
+        { name: 'Хибачи - алый рой', table: 'opasnost_jungle' }
+      ],
+      extra: '8 роев насекомых [Swarm of insects] (комары/москиты)',
+      extraCreatures: [
+        { name: 'Рой насекомых', table: 'opasnost_jungle' }
+      ]
+    }
+  ]
+};
+
+// ============================================================
+// ФУНКЦИЯ ГЕНЕРАЦИИ ВСТРЕЧИ ПО ТИПУ МЕСТНОСТИ
+// ============================================================
+
+export function generateEncounter(terrainType) {
+  const table = ENCOUNTER_TABLES[terrainType];
+  if (!table) return null;
+  
+  const roll = Math.floor(Math.random() * 10) + 1;
+  
+  for (var i = 0; i < table.length; i++) {
+    const entry = table[i];
+    if (roll >= entry.range[0] && roll <= entry.range[1]) {
+      return {
+        roll: roll,
+        entry: entry,
+        terrainType: terrainType
+      };
+    }
+  }
+  return null;
+}
