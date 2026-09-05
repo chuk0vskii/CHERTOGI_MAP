@@ -3,7 +3,7 @@
 // ============================================================
 
 import { _supabase } from '../config-module.js';
-import { COMMON_EVENTS, ROLES, ROLE_EVENTS, loadGreatBeasts, getRandomGreatBeast } from '../data/events.js';
+import { COMMON_EVENTS, ROLES, ROLE_EVENTS, loadGreatBeasts, getRandomGreatBeast, generateEncounter } from '../data/events.js';
 import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
 import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod, addArrivalBonus, getArrivalBonus } from './region.js';
 
@@ -56,10 +56,10 @@ async function getTableData(tableName) {
 
 export function getDangerousTableName(terrainType) {
   const mapping = {
-    'горы': 'Opasnost_gor',
-    'степи': 'Opasnost_stepi',
-    'пустыня': 'Opasnost_pustini',
-    'джунгли': 'Opasnost_jungle'
+    'горы': 'opasnost_gor',
+    'степи': 'opasnost_stepi',
+    'пустыня': 'opasnost_pustini',
+    'джунгли': 'opasnost_jungle'
   };
   return mapping[terrainType] || 'dangerous_creatures';
 }
@@ -97,6 +97,25 @@ export function getRandomDangerousCreature(creatures) {
   }
   const randomIndex = Math.floor(Math.random() * creatures.length);
   return creatures[randomIndex];
+}
+
+// ============================================================
+// ФУНКЦИЯ СОЗДАНИЯ ССЫЛКИ НА СУЩЕСТВО В БЕСТИАРИИ
+// ============================================================
+
+function createBeastLink(name, table) {
+  const encodedName = encodeURIComponent(name);
+  let sectionId = 'dangerous_creatures';
+  if (table === 'opasnost_pustini') sectionId = 'dangerous_desert';
+  else if (table === 'opasnost_stepi') sectionId = 'dangerous_steppes';
+  else if (table === 'opasnost_gor') sectionId = 'dangerous_mountains';
+  else if (table === 'opasnost_jungle') sectionId = 'dangerous_swamps';
+  else if (table === 'great_beasts') sectionId = 'great_beasts';
+  else if (table === 'insectoids') sectionId = 'insectoids';
+  else if (table === 'veil_aberrations') sectionId = 'veil_aberrations';
+  
+  const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
+  return '<a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + name + '</a>';
 }
 
 // ============================================================
@@ -242,6 +261,14 @@ async function generateEventList(commonCount, roleCount) {
       }
     }
     
+    // Генерация встречи для событий с needsZoneCreatures
+    if (eventData.needsZoneCreatures && terrainType !== 'неизвестно') {
+      const encounter = generateEncounter(terrainType);
+      if (encounter) {
+        eventCopy.encounter = encounter;
+      }
+    }
+    
     events.push(eventCopy);
   }
 
@@ -265,7 +292,8 @@ function createEventCopy(eventData, type, roll) {
     secondResult: null,
     greatBeast: null,
     dangerousCreature: null,
-    dangerousTableName: null
+    dangerousTableName: null,
+    encounter: null
   };
 }
 
@@ -299,14 +327,45 @@ function renderEvents(events) {
       const tableName = event.dangerousTableName || 'dangerous_creatures';
       
       let sectionId = 'dangerous_creatures';
-      if (tableName === 'Opasnost_pustini') sectionId = 'dangerous_desert';
-      else if (tableName === 'Opasnost_stepi') sectionId = 'dangerous_steppes';
-      else if (tableName === 'Opasnost_gor') sectionId = 'dangerous_mountains';
-      else if (tableName === 'Opasnost_jungle') sectionId = 'dangerous_swamps';
+      if (tableName === 'opasnost_pustini') sectionId = 'dangerous_desert';
+      else if (tableName === 'opasnost_stepi') sectionId = 'dangerous_steppes';
+      else if (tableName === 'opasnost_gor') sectionId = 'dangerous_mountains';
+      else if (tableName === 'opasnost_jungle') sectionId = 'dangerous_swamps';
       
       const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
       dangerousCreatureHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ff6b6b;">' +
         'Опасное существо: <a href="' + url + '" target="_blank" style="color: #ff6b6b; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ff6b6b\'">' + creatureName + '</a>' +
+      '</div>';
+    }
+    
+    // Генерация встречи по типу местности
+    let encounterHTML = '';
+    if (event.encounter) {
+      const enc = event.encounter;
+      const entry = enc.entry;
+      
+      // Основное существо
+      let mainText = entry.text;
+      for (var j = 0; j < entry.creatures.length; j++) {
+        const c = entry.creatures[j];
+        const link = createBeastLink(c.name, c.table);
+        mainText = mainText.replace(c.name, link);
+      }
+      
+      // Дополнительные существа
+      let extraLinks = '';
+      if (entry.extraCreatures && entry.extraCreatures.length > 0) {
+        let extraText = entry.extra;
+        for (var k = 0; k < entry.extraCreatures.length; k++) {
+          const c = entry.extraCreatures[k];
+          const link = createBeastLink(c.name, c.table);
+          extraText = extraText.replace(c.name, link);
+        }
+        extraLinks = ' (' + extraText + ')';
+      }
+      
+      encounterHTML = '<div style="margin-top: 6px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ff6b6b; font-size: 14px; color: #e0d5c0;">' +
+        'Встреча (бросок ' + enc.roll + '): ' + mainText + extraLinks +
       '</div>';
     }
     
@@ -349,6 +408,7 @@ function renderEvents(events) {
         (event.data.secondCheckInfo ? '<br><span class="check-info">' + event.data.secondCheckInfo + '</span>' : '') +
         greatBeastHTML +
         dangerousCreatureHTML +
+        encounterHTML +
       '</div>' +
       tableHTML +
       '<div class="event-check-row">' +
