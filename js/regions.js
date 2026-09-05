@@ -1,80 +1,191 @@
-// ===== РЕГИОНЫ КАК ИКОНКИ + НЕВИДИМАЯ ЗОНА ДЛЯ КЛИКА =====
-let regionLayer = new ol.layer.Vector({
-  source: new ol.source.Vector(),
-  zIndex: 5,
-  style: function(feature) {
-    const isHover = feature.get('hover') || false;
-    const baseScale = 0.22;
-    const scale = isHover ? baseScale * 1.3 : baseScale;
+// ============================================================
+// УПРАВЛЕНИЕ РЕГИОНОМ И СЛОЖНОСТЬЮ
+// ============================================================
 
-    // Радиус: было 20-25, стало 26-31 (+6)
-    const baseRadius = 35;
-    const hoverRadius = 40;
+import { _supabase } from '../config-module.js';
 
-    // Смещение вверх: 10 пикселей
-    const offsetY = 10;
+let currentRegionId = null;
+let baseDifficulty = 0;
+let currentSignMod = 0;
+let arrivalBonus = 0;
 
-    return [
-      // Иконка
-      new ol.style.Style({
-        image: new ol.style.Icon({
-          src: '/CHERTOGI_MAP/icons/marker3.png',
-          scale: scale,
-          anchor: [0.5, 0.5],
-          anchorXUnits: 'fraction',
-          anchorYUnits: 'fraction'
-        })
-      }),
-      // НЕВИДИМЫЙ КРУГ ДЛЯ КЛИКА (увеличен на 6, поднят на 10)
-      new ol.style.Style({
-        image: new ol.style.Circle({
-          radius: isHover ? hoverRadius : baseRadius,
-          fill: new ol.style.Fill({
-            color: 'rgba(255,255,255,0)'
-          }),
-          stroke: new ol.style.Stroke({
-            color: 'rgba(255,255,255,0)',
-            width: 0
-          })
-        }),
-        geometry: function(feature) {
-          const coords = feature.getGeometry().getCoordinates();
-          // Смещаем круг вверх на 10 пикселей
-          return new ol.geom.Point([coords[0], coords[1] + offsetY]);
-        }
-      })
-    ];
+const regionSelect = document.getElementById('regionSelect');
+const difficultyDisplay = document.getElementById('difficultyValue');
+const pathDifficultyDisplay = document.getElementById('pathDifficultyDisplay');
+const arrivalDisplay = document.getElementById('arrivalValue');
+
+// ============================================================
+// ОБНОВЛЕНИЕ
+// ============================================================
+
+function updateDifficulty() {
+  const total = baseDifficulty + currentSignMod;
+  const display = total < 0 ? 0 : total;
+  
+  if (difficultyDisplay) {
+    difficultyDisplay.textContent = display;
+    const color = currentSignMod > 0 ? '#ff6b6b' : currentSignMod < 0 ? '#51cf66' : '#ffd700';
+    difficultyDisplay.style.color = color;
   }
-});
-
-map.addLayer(regionLayer);
-
-// ===== ЗАГРУЗКА РЕГИОНОВ =====
-async function loadRegions() {
-  const { data, error } = await _supabase
-    .from('regions')
-    .select('*')
-    .eq('is_active', true);
-
-  if (error) {
-    console.error('❌ Ошибка загрузки регионов:', error);
-    return;
+  
+  if (pathDifficultyDisplay) {
+    pathDifficultyDisplay.textContent = display;
+    const color = currentSignMod > 0 ? '#ff6b6b' : currentSignMod < 0 ? '#51cf66' : '#ffd700';
+    pathDifficultyDisplay.style.color = color;
   }
-
-  console.log(`✅ Загружено ${data.length} регионов`);
-
-  const features = data.map(region => {
-    return new ol.Feature({
-      geometry: new ol.geom.Point([region.x, region.y]),
-      id: region.id,
-      name: region.name,
-      description: region.description,
-      hover: false
-    });
-  });
-
-  regionLayer.getSource().addFeatures(features);
-  console.log('✅ Регионы добавлены на карту');
+  
+  updateArrivalDisplay();
 }
 
-loadRegions();
+function updateArrivalDisplay() {
+  if (arrivalDisplay) {
+    arrivalDisplay.textContent = arrivalBonus;
+    const color = arrivalBonus > 0 ? '#51cf66' : arrivalBonus < 0 ? '#ff6b6b' : '#ffd700';
+    arrivalDisplay.style.color = color;
+  }
+}
+
+// ============================================================
+// ГЕТТЕРЫ И СЕТТЕРЫ
+// ============================================================
+
+export function getRegionId() { return currentRegionId; }
+export function setRegionId(id) { currentRegionId = id; }
+
+export function getBaseDifficulty() { return baseDifficulty; }
+export function setBaseDifficulty(val) { baseDifficulty = val; updateDifficulty(); }
+
+export function getCurrentSignMod() { return currentSignMod; }
+export function setCurrentSignMod(val) { currentSignMod = val; updateDifficulty(); }
+
+export function addSignMod(val) { currentSignMod += val; updateDifficulty(); }
+export function resetSignMod() { currentSignMod = 0; updateDifficulty(); }
+
+export function getArrivalBonus() { return arrivalBonus; }
+export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(); }
+export function addArrivalBonus(val) { 
+  arrivalBonus += val; 
+  updateArrivalDisplay();
+  console.log('Бонус кварны изменён: ' + arrivalBonus);
+}
+export function resetArrivalBonus() { 
+  arrivalBonus = 0; 
+  updateArrivalDisplay();
+}
+
+// ============================================================
+// ЗАГРУЗКА РЕГИОНОВ
+// ============================================================
+
+export async function loadRegions() {
+  console.log('Загрузка регионов...');
+  
+  if (!regionSelect) {
+    console.error('regionSelect не найден');
+    return;
+  }
+  
+  try {
+    const { data, error } = await _supabase
+      .from('regions')
+      .select('id, name, difficulty, common_events, max_role_events, role_bonus, terrain_type')
+      .eq('is_active', true)
+      .eq('is_open', true)
+      .order('name');
+
+    if (error) {
+      console.error('Ошибка загрузки регионов:', error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      regionSelect.innerHTML = '<option value="">— Нет доступных краев —</option>';
+      return;
+    }
+
+    regionSelect.innerHTML = '<option value="">— Выберите край —</option>';
+    data.forEach(function(region) {
+      const option = document.createElement('option');
+      option.value = region.id;
+      option.textContent = region.name;
+      option.dataset.difficulty = region.difficulty || 0;
+      option.dataset.commonEvents = region.common_events || 0;
+      option.dataset.maxRoleEvents = region.max_role_events || 0;
+      option.dataset.roleBonus = region.role_bonus || 0;
+      option.dataset.terrainType = region.terrain_type || 'неизвестно';
+      regionSelect.appendChild(option);
+    });
+
+    console.log('Загружено ' + data.length + ' открытых регионов');
+  } catch (err) {
+    console.error('Ошибка при загрузке регионов:', err);
+  }
+}
+
+// ============================================================
+// ОБРАБОТЧИК СМЕНЫ РЕГИОНА
+// ============================================================
+
+export function initRegionChangeHandler() {
+  if (!regionSelect) return;
+  
+  regionSelect.addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    
+    if (this.value && this.value !== '') {
+      const id = parseInt(this.value);
+      const difficulty = parseInt(selected.dataset.difficulty) || 0;
+      const terrainType = selected.dataset.terrainType || 'неизвестно';
+      
+      console.log('Выбран регион ID:', id, 'Сложность:', difficulty, 'Тип местности:', terrainType);
+      
+      setRegionId(id);
+      setBaseDifficulty(difficulty);
+      resetSignMod();
+      resetArrivalBonus();
+      
+      const signResult = document.getElementById('signResult');
+      const signPlaceholder = document.getElementById('signPlaceholder');
+      if (signResult) signResult.classList.remove('visible');
+      if (signPlaceholder) signPlaceholder.style.display = 'block';
+      
+      const eventsContainer = document.getElementById('eventsContainer');
+      if (eventsContainer) {
+        eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+      }
+      
+      document.getElementById('commonEventsCount').textContent = '—';
+      document.getElementById('maxRoleEvents').textContent = '—';
+      document.getElementById('roleEventsCount').textContent = '—';
+      document.getElementById('totalEventsCount').textContent = '—';
+    } else {
+      console.log('Регион сброшен');
+      setRegionId(null);
+      setBaseDifficulty(0);
+      resetSignMod();
+      resetArrivalBonus();
+      
+      if (difficultyDisplay) {
+        difficultyDisplay.textContent = '—';
+        difficultyDisplay.style.color = '#ffd700';
+      }
+      if (pathDifficultyDisplay) {
+        pathDifficultyDisplay.textContent = '—';
+        pathDifficultyDisplay.style.color = '#ffd700';
+      }
+      if (arrivalDisplay) {
+        arrivalDisplay.textContent = '0';
+        arrivalDisplay.style.color = '#ffd700';
+      }
+    }
+  });
+}
+
+// ============================================================
+// ЭКСПОРТ ВСЕХ ФУНКЦИЙ
+// ============================================================
+
+export { 
+  updateDifficulty,
+  updateArrivalDisplay
+};
