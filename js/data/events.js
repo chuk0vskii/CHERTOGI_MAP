@@ -430,6 +430,7 @@ export const ROLE_EVENTS = {
       tableName: 'dangerous_creatures',
       tableLabel: 'Таблица Опасных Существ Зоны',
       tableIcon: '🐾',
+      isDangerousCreature: true,
       effects: {
         success: 'Группа замечает опасность и может совершить 1 действие.',
         fail: 'Бой начинается сразу.',
