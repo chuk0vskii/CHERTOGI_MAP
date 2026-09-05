@@ -17,7 +17,6 @@ const regionSelect = document.getElementById('regionSelect');
 
 let currentEvents = [];
 let tableCache = {};
-let dangerousCreaturesCache = {};
 
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
@@ -48,55 +47,6 @@ async function getTableData(tableName) {
     console.error('Ошибка:', error);
     return null;
   }
-}
-
-// ============================================================
-// ЗАГРУЗКА ОПАСНЫХ СУЩЕСТВ ПО ТИПУ МЕСТНОСТИ
-// ============================================================
-
-export function getDangerousTableName(terrainType) {
-  const mapping = {
-    'горы': 'opasnost_gor',
-    'степи': 'opasnost_stepi',
-    'пустыня': 'opasnost_pustini',
-    'джунгли': 'opasnost_jungle'
-  };
-  return mapping[terrainType] || 'dangerous_creatures';
-}
-
-export async function loadDangerousCreatures(tableName) {
-  try {
-    if (dangerousCreaturesCache[tableName]) {
-      return dangerousCreaturesCache[tableName];
-    }
-    
-    console.log('Загрузка таблицы: ' + tableName);
-    
-    const { data, error } = await _supabase
-      .from(tableName)
-      .select('*')
-      .order('name');
-    
-    if (error) {
-      console.error('Ошибка загрузки ' + tableName + ':', error);
-      return [];
-    }
-    
-    dangerousCreaturesCache[tableName] = data || [];
-    console.log('Загружено ' + dangerousCreaturesCache[tableName].length + ' записей из ' + tableName);
-    return dangerousCreaturesCache[tableName];
-  } catch (err) {
-    console.error('Критическая ошибка загрузки ' + tableName + ':', err);
-    return [];
-  }
-}
-
-export function getRandomDangerousCreature(creatures) {
-  if (!creatures || creatures.length === 0) {
-    return null;
-  }
-  const randomIndex = Math.floor(Math.random() * creatures.length);
-  return creatures[randomIndex];
 }
 
 // ============================================================
@@ -169,6 +119,61 @@ export async function rollTable(tableName, containerId) {
       html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + item.description + '</div>';
     }
     
+    // ===== СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ СМЕРТЕЛЬНОЙ ВСТРЕЧИ =====
+    if (tableName === 'deadly_encounters' && item.id >= 5 && item.id <= 8) {
+      const selectedOption = regionSelect.options[regionSelect.selectedIndex];
+      const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
+      
+      // Генерация 1: Существа зоны
+      let zoneHTML = '';
+      if (terrainType !== 'неизвестно') {
+        const encounter = generateEncounter(terrainType);
+        if (encounter) {
+          const enc = encounter;
+          const entry = enc.entry;
+          
+          let mainText = entry.text;
+          for (var j = 0; j < entry.creatures.length; j++) {
+            const c = entry.creatures[j];
+            const link = createBeastLink(c.name, c.table);
+            mainText = mainText.replace(c.name, link);
+          }
+          
+          let extraLinks = '';
+          if (entry.extraCreatures && entry.extraCreatures.length > 0) {
+            let extraText = entry.extra;
+            for (var k = 0; k < entry.extraCreatures.length; k++) {
+              const c = entry.extraCreatures[k];
+              const link = createBeastLink(c.name, c.table);
+              extraText = extraText.replace(c.name, link);
+            }
+            extraLinks = ' (' + extraText + ')';
+          }
+          
+          zoneHTML = '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700; font-size: 14px; color: #e0d5c0;">' +
+            'Существа зоны (бросок ' + enc.roll + '): ' + mainText + extraLinks +
+          '</div>';
+        }
+      }
+      
+      // Генерация 2: Дети Вуали
+      const veilResult = await _supabase
+        .from('veil_children')
+        .select('*');
+      
+      let veilHTML = '';
+      if (!veilResult.error && veilResult.data && veilResult.data.length > 0) {
+        const veilIndex = Math.floor(Math.random() * veilResult.data.length);
+        const veilItem = veilResult.data[veilIndex];
+        const link = createBeastLink(veilItem.name, 'veil_aberrations');
+        veilHTML = '<div style="margin-top: 4px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700; font-size: 14px; color: #e0d5c0;">' +
+          'Дети Вуали: ' + link +
+        '</div>';
+      }
+      
+      html += zoneHTML + veilHTML;
+    }
+    
     html += '</div>';
     container.innerHTML = html;
     container.style.display = 'block';
@@ -235,7 +240,6 @@ async function generateEventList(commonCount, roleCount) {
 
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
   const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
-  const dangerousTableName = getDangerousTableName(terrainType);
 
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, ROLES.length - 1);
@@ -252,16 +256,7 @@ async function generateEventList(commonCount, roleCount) {
       }
     }
     
-    if (eventData.isDangerousCreature) {
-      const creatures = await loadDangerousCreatures(dangerousTableName);
-      const creature = getRandomDangerousCreature(creatures);
-      if (creature) {
-        eventCopy.dangerousCreature = creature;
-        eventCopy.dangerousTableName = dangerousTableName;
-      }
-    }
-    
-    // Генерация встречи для событий с needsZoneCreatures
+    // Генерация встречи для событий с needsZoneCreatures при генерации
     if (eventData.needsZoneCreatures && terrainType !== 'неизвестно') {
       const encounter = generateEncounter(terrainType);
       if (encounter) {
@@ -291,8 +286,6 @@ function createEventCopy(eventData, type, roll) {
     secondChecked: false,
     secondResult: null,
     greatBeast: null,
-    dangerousCreature: null,
-    dangerousTableName: null,
     encounter: null
   };
 }
@@ -319,32 +312,12 @@ function renderEvents(events) {
       '</div>';
     }
     
-    // Ссылка на опасное существо
-    let dangerousCreatureHTML = '';
-    if (event.dangerousCreature) {
-      const creatureName = event.dangerousCreature.name;
-      const encodedName = encodeURIComponent(creatureName);
-      const tableName = event.dangerousTableName || 'dangerous_creatures';
-      
-      let sectionId = 'dangerous_creatures';
-      if (tableName === 'opasnost_pustini') sectionId = 'dangerous_desert';
-      else if (tableName === 'opasnost_stepi') sectionId = 'dangerous_steppes';
-      else if (tableName === 'opasnost_gor') sectionId = 'dangerous_mountains';
-      else if (tableName === 'opasnost_jungle') sectionId = 'dangerous_swamps';
-      
-      const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
-      dangerousCreatureHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ff6b6b;">' +
-        'Опасное существо: <a href="' + url + '" target="_blank" style="color: #ff6b6b; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ff6b6b\'">' + creatureName + '</a>' +
-      '</div>';
-    }
-    
     // Генерация встречи по типу местности
     let encounterHTML = '';
     if (event.encounter) {
       const enc = event.encounter;
       const entry = enc.entry;
       
-      // Основное существо
       let mainText = entry.text;
       for (var j = 0; j < entry.creatures.length; j++) {
         const c = entry.creatures[j];
@@ -352,7 +325,6 @@ function renderEvents(events) {
         mainText = mainText.replace(c.name, link);
       }
       
-      // Дополнительные существа
       let extraLinks = '';
       if (entry.extraCreatures && entry.extraCreatures.length > 0) {
         let extraText = entry.extra;
@@ -369,11 +341,11 @@ function renderEvents(events) {
       '</div>';
     }
     
-    // Таблица — пропускаем great_beasts и dangerous_creatures, если есть выбранное существо
+    // Таблица — пропускаем great_beasts и события с needsZoneCreatures
     let tableHTML = '';
     if (event.data.hasTable && event.data.tableName && 
-        !(event.data.isGreatBeast && event.greatBeast) && 
-        !(event.data.isDangerousCreature && event.dangerousCreature)) {
+        !(event.data.isGreatBeast && event.greatBeast) &&
+        !event.data.needsZoneCreatures) {
       const tableContainerId = 'table-result-' + index + '-' + Date.now();
       tableHTML = '<div style="margin-top: 8px;">' +
         '<button class="btn-roll-table" data-table="' + event.data.tableName + '" data-container="' + tableContainerId + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
@@ -407,7 +379,6 @@ function renderEvents(events) {
         (event.data.checkInfo ? '<br><span class="check-info">' + event.data.checkInfo + '</span>' : '') +
         (event.data.secondCheckInfo ? '<br><span class="check-info">' + event.data.secondCheckInfo + '</span>' : '') +
         greatBeastHTML +
-        dangerousCreatureHTML +
         encounterHTML +
       '</div>' +
       tableHTML +
@@ -573,6 +544,46 @@ function handleCheck(index, type) {
       notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
       notif.textContent = 'Бонус кварны изменён: ' + getArrivalBonus();
       effectDiv.appendChild(notif);
+    }
+    
+    // ===== ГЕНЕРАЦИЯ ВСТРЕЧИ ПРИ ПРОВАЛЕ =====
+    if (effects && effects.needsZoneCreatures && (result === 'fail' || result === 'crit_fail')) {
+      const selectedOption = regionSelect.options[regionSelect.selectedIndex];
+      const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
+      
+      if (terrainType !== 'неизвестно') {
+        const encounter = generateEncounter(terrainType);
+        if (encounter) {
+          event.encounter = encounter;
+          
+          const enc = encounter;
+          const entry = enc.entry;
+          
+          let mainText = entry.text;
+          for (var j = 0; j < entry.creatures.length; j++) {
+            const c = entry.creatures[j];
+            const link = createBeastLink(c.name, c.table);
+            mainText = mainText.replace(c.name, link);
+          }
+          
+          let extraLinks = '';
+          if (entry.extraCreatures && entry.extraCreatures.length > 0) {
+            let extraText = entry.extra;
+            for (var k = 0; k < entry.extraCreatures.length; k++) {
+              const c = entry.extraCreatures[k];
+              const link = createBeastLink(c.name, c.table);
+              extraText = extraText.replace(c.name, link);
+            }
+            extraLinks = ' (' + extraText + ')';
+          }
+          
+          var encounterHTML = '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ff6b6b; font-size: 14px; color: #e0d5c0;">' +
+            'Встреча (бросок ' + enc.roll + '): ' + mainText + extraLinks +
+          '</div>';
+          
+          effectDiv.innerHTML += encounterHTML;
+        }
+      }
     }
   }
 }
