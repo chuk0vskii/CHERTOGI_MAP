@@ -10,6 +10,7 @@ export const COMMON_EVENTS = [
     title: 'Знаменье Темной Нити', 
     description: 'От судьбы не уйдет никто. Ведь началась Темная Нить и она тянет искателей за собой. Группу ожидает их предназначение.',
     checkInfo: 'Хранитель Узлов получает 1 Кость Проклятья за каждого члена группы. Киньте заново по таблице и выберите наихудший результат.',
+    tables: [],
     effects: {
       success: 'Хранитель Узлов получает 1 Кость Проклятья за каждого члена группы.',
       fail: 'Киньте заново по таблице и выберите наихудший результат.',
@@ -22,10 +23,15 @@ export const COMMON_EVENTS = [
     title: 'Ловушка', 
     description: 'Что-то здесь не так. Вся группа должна совершить бросок роли, выбирая наименьший показатель из своих навыков.',
     checkInfo: 'Вся группа совершает бросок роли, выбирая наименьший показатель из своих навыков.',
-    hasTable: true,
-    tableName: 'traps',
-    tableLabel: 'Таблица Ловушек',
-    tableIcon: '⚔️',
+    tables: [
+      {
+        id: 'traps',
+        name: 'Таблица Ловушек',
+        tableName: 'traps',
+        trigger: 'always',
+        sectionId: 'traps'
+      }
+    ],
     effects: {
       success: 'Группа может разрядить ловушку или напасть с сюрпризом.',
       fail: 'Ловушка сработает.',
@@ -38,19 +44,32 @@ export const COMMON_EVENTS = [
     title: 'Древние Руины', 
     description: 'Группа набредает на древнее строение.',
     checkInfo: 'Все в группе совершают Проверку Искры.',
-    hasTable: true,
-    tableName: 'ruins',
-    tableLabel: 'Таблица Руин',
-    tableIcon: '🏛️',
-    hasSecondCheck: true,
+    tables: [
+      {
+        id: 'ruins',
+        name: 'Таблица Руин',
+        tableName: 'ruins',
+        trigger: 'always',
+        sectionId: 'ruins'
+      }
+    ],
     secondCheckInfo: 'Тень Нарара может совершить проверку Ловкости рук, чтобы быстро исследовать руины.',
     effects: {
       success: 'Группа вдохновляется невероятными строениями древней цивилизации и получает +1 на Прибытие.',
       fail: 'Мораль группы начинает разваливаться, они получают -1 на Прибытие.',
       crit_success: 'Все в группе преуспели! Группа вдохновляется и получает +1 на Прибытие.',
-      crit_fail: 'Что за кошмары могут обитать в этой местности. Группа в удвоенном темпе сбегает с места.',
-      needsZoneCreatures: true
+      crit_fail: 'Что за кошмары могут обитать в этой местности. Группа в удвоенном темпе сбегает с места.'
     },
+    secondTables: [
+      {
+        id: 'dangerous_zone',
+        name: 'Таблица Опасных Существ Зоны',
+        tableName: null, // будет определяться по региону
+        trigger: 'fail_5',
+        sectionId: null,
+        isRegional: true
+      }
+    ],
     secondEffects: {
       success: 'Тень находит магический предмет редкостью редкий или ниже и будет знать что это за предмет.',
       fail: 'Группа задерживается и ей приходится совершать отдых у руин, получая эффект Сравнения Искры повторно.',
@@ -64,6 +83,7 @@ export const COMMON_EVENTS = [
     title: 'Бескрайние Пейзажи', 
     description: 'Группа проходит невероятные бескрайние пейзажи. Все совершают Проверку Искры.',
     checkInfo: 'Все в группе совершают Проверку Искры.',
+    tables: [],
     effects: {
       success: 'Группа вдохновляется и получает +1 на Прибытие и 1 Кость Удачи.',
       fail: 'Пейзаж угнетает, группа получает -1 на Прибытие.',
@@ -76,10 +96,15 @@ export const COMMON_EVENTS = [
     title: 'Невероятный Оазис', 
     description: 'Группа прибывает в безопасный на вид оазис.',
     checkInfo: 'Все в группе совершают Проверку Искры.',
-    hasTable: true,
-    tableName: 'oasis_mysteries',
-    tableLabel: 'Таблица Загадок Оазисов',
-    tableIcon: '🌴',
+    tables: [
+      {
+        id: 'oasis_mysteries',
+        name: 'Таблица Загадок Оазисов',
+        tableName: 'oasis_mysteries',
+        trigger: 'always',
+        sectionId: 'oasis_mysteries'
+      }
+    ],
     effects: {
       success: 'Группа может сделать длинный отдых и каждый получает 1 Кость Удачи.',
       fail: 'Группа может сделать длинный отдых, но что-то шепчет в этом странном месте.',
@@ -92,6 +117,7 @@ export const COMMON_EVENTS = [
     title: 'Вмешательство звезд', 
     description: 'Сами боги вмешиваются в судьбу группы. Все члены группы должны совершить проверку Традиций.',
     checkInfo: 'Все члены группы совершают проверку Традиций. Хранитель узлов сравнивает общий результат.',
+    tables: [],
     effects: {
       success: 'Боги благословляют группу. Все негативные эффекты знака снимаются.',
       fail: 'Боги недовольны. Бросьте по таблице Знаков с помехой.',
@@ -377,10 +403,6 @@ export const ENCOUNTER_TABLES = {
   ]
 };
 
-// ============================================================
-// ФУНКЦИЯ ГЕНЕРАЦИИ ВСТРЕЧИ ПО ТИПУ МЕСТНОСТИ
-// ============================================================
-
 export function generateEncounter(terrainType) {
   const table = ENCOUNTER_TABLES[terrainType];
   if (!table) return null;
@@ -401,6 +423,30 @@ export function generateEncounter(terrainType) {
 }
 
 // ============================================================
+// МАППИНГ ТАБЛИЦ → РАЗДЕЛЫ БЕСТИАРИЯ
+// ============================================================
+
+export const TABLE_TO_SECTION = {
+  'traps': 'traps',
+  'ruins': 'ruins',
+  'oasis_mysteries': 'oasis_mysteries',
+  'region_curses': 'region_curses',
+  'region_obstacles': 'region_obstacles',
+  'great_beasts': 'great_beasts',
+  'zone_conflicts': 'zone_conflicts',
+  'veil_children': 'veil_aberrations',
+  'reality_tears': 'reality_tears',
+  'parasitic_creatures': 'parasitic_creatures',
+  'slaughter_zones': 'slaughter_zones',
+  'storm_eyes': 'storm_eyes',
+  'deadly_encounters': 'deadly_encounters',
+  'opasnost_pustini': 'dangerous_desert',
+  'opasnost_stepi': 'dangerous_steppes',
+  'opasnost_gor': 'dangerous_mountains',
+  'opasnost_jungle': 'dangerous_swamps'
+};
+
+// ============================================================
 // СОБЫТИЯ ПО РОЛЯМ
 // ============================================================
 
@@ -411,10 +457,15 @@ export const ROLE_EVENTS = {
       title: 'Проклятые земли', 
       description: 'Группа забрела в темные земли с бушующими в них неизвестными силами.',
       checkInfo: 'Чтец знаков совершает проверку Традиции.',
-      hasTable: true,
-      tableName: 'region_curses',
-      tableLabel: 'Таблица Проклятий области',
-      tableIcon: '💀',
+      tables: [
+        {
+          id: 'region_curses',
+          name: 'Таблица Проклятий области',
+          tableName: 'region_curses',
+          trigger: 'always',
+          sectionId: 'region_curses'
+        }
+      ],
       effects: {
         success: 'Группа получает +1 на Прибытие, обходя темные земли.',
         fail: 'Группа заходит в темные земли, получая -1 на Прибытие.',
@@ -427,10 +478,15 @@ export const ROLE_EVENTS = {
       title: 'Преграда', 
       description: 'Что-то мешает группе пройти дальше.',
       checkInfo: 'Чтец Знаков совершает проверку Расследования.',
-      hasTable: true,
-      tableName: 'region_obstacles',
-      tableLabel: 'Таблица Преград Области',
-      tableIcon: '⛰️',
+      tables: [
+        {
+          id: 'region_obstacles',
+          name: 'Таблица Преград Области',
+          tableName: 'region_obstacles',
+          trigger: 'always',
+          sectionId: 'region_obstacles'
+        }
+      ],
       effects: {
         success: 'Группа обходит преграду и получает +1 на Прибытие.',
         fail: 'Группа обходит преграду с трудом. Проверка Кремня и -1 на Прибытие.',
@@ -443,6 +499,7 @@ export const ROLE_EVENTS = {
       title: 'Поющие Знаки', 
       description: 'Похоже, что нити судьбы пытаются обречь группу на провал.',
       checkInfo: 'Чтец Знаков совершает проверку Традиции.',
+      tables: [],
       effects: {
         success: 'Группа избегает опасностей и получает +1 на Прибытие и -1 событие в фазе Путь.',
         fail: 'Происходит событие Опасная Встреча.',
@@ -455,6 +512,7 @@ export const ROLE_EVENTS = {
       title: 'Это должно было произойти!', 
       description: 'Нити судьбы были связаны еще перед началом пути.',
       checkInfo: 'Чтец Знаков делает проверку Традиций.',
+      tables: [],
       effects: {
         success: 'Чтец узнает о грядущем событии и может подготовить группу.',
         fail: 'Чтец путается в чтении. Повторный бросок по таблице Знаков.',
@@ -467,6 +525,7 @@ export const ROLE_EVENTS = {
       title: 'Ложные Нити', 
       description: 'Иллюзия судьбы в виде удачных путей ведёт группу в неверном направлении.',
       checkInfo: 'Чтец Знаков бросает проверку Расследования.',
+      tables: [],
       effects: {
         success: 'Чтец распознает обман и находит истинный путь. +1 к Прибытию.',
         fail: 'Группа отклоняется от маршрута. +1 событие в фазе Путь.',
@@ -479,6 +538,7 @@ export const ROLE_EVENTS = {
       title: 'Шепчущий обо', 
       description: 'Группа останавливается у древнего обо, на котором вырезаны знаки.',
       checkInfo: 'Чтец Знаков совершает проверку Традиций.',
+      tables: [],
       effects: {
         success: 'Группа получает +1 к Прибытию.',
         fail: 'Чтение сбивает Чтеца с толку. -1 к Искре.',
@@ -493,10 +553,15 @@ export const ROLE_EVENTS = {
       title: 'Опасная Встреча', 
       description: 'Что-то есть на вашем пути.',
       checkInfo: 'Тень Нарара совершает проверку Скрытности.',
-      hasTable: true,
-      tableName: 'zone_conflicts',
-      tableLabel: 'Таблица Конфликт Зоны',
-      tableIcon: '⚔️',
+      tables: [
+        {
+          id: 'zone_conflicts',
+          name: 'Таблица Конфликт Зоны',
+          tableName: 'zone_conflicts',
+          trigger: 'always',
+          sectionId: 'zone_conflicts'
+        }
+      ],
       effects: {
         success: 'Группа обходит опасность на безопасной дистанции.',
         fail: 'Группа замечена.',
@@ -509,10 +574,15 @@ export const ROLE_EVENTS = {
       title: 'Плачь Вуали', 
       description: 'Движение вуали в регионе привлекает существ вуали.',
       checkInfo: 'Тень Нарара совершает проверку Скрытности.',
-      hasTable: true,
-      tableName: 'veil_children',
-      tableLabel: 'Таблица Дети Вуали',
-      tableIcon: '👻',
+      tables: [
+        {
+          id: 'veil_children',
+          name: 'Таблица Дети Вуали',
+          tableName: 'veil_children',
+          trigger: 'always',
+          sectionId: 'veil_aberrations'
+        }
+      ],
       effects: {
         success: 'Тень ускользает и проводит группу безопасно.',
         fail: 'Сражение неизбежно.',
@@ -525,6 +595,7 @@ export const ROLE_EVENTS = {
       title: 'Безопасный Ночлег', 
       description: 'Группа в поисках безопасного ночлега.',
       checkInfo: 'Тень Нарара совершает проверку Расследования.',
+      tables: [],
       effects: {
         success: 'Группа находит место для ночлега. +1 уровень Кремня или Искры.',
         fail: 'Группа не может уснуть. Проверка Кремня и Проверка Искры.',
@@ -538,10 +609,15 @@ export const ROLE_EVENTS = {
       title: 'Пролом реальности', 
       description: 'Реальность изламывается. Киньте по Таблице Пролома чтобы определить его природу.',
       checkInfo: 'Тень Нарара совершает проверку Скрытности.',
-      hasTable: true,
-      tableName: 'reality_tears',
-      tableLabel: 'Таблица Пролома реальности',
-      tableIcon: '🌀',
+      tables: [
+        {
+          id: 'reality_tears',
+          name: 'Таблица Пролома реальности',
+          tableName: 'reality_tears',
+          trigger: 'always',
+          sectionId: 'reality_tears'
+        }
+      ],
       effects: {
         success: 'Группа скрытно наблюдает за разломом.',
         fail: 'Существа замечают группу.',
@@ -554,10 +630,15 @@ export const ROLE_EVENTS = {
       title: 'Следопыты', 
       description: 'Тень замечает следы другого отряда или неизвестных существ.',
       checkInfo: 'Тень совершает проверку Скрытности или Ловкости рук.',
-      hasTable: true,
-      tableName: 'zone_conflicts',
-      tableLabel: 'Таблица Конфликтов Области',
-      tableIcon: '⚔️',
+      tables: [
+        {
+          id: 'zone_conflicts',
+          name: 'Таблица Конфликтов Области',
+          tableName: 'zone_conflicts',
+          trigger: 'always',
+          sectionId: 'zone_conflicts'
+        }
+      ],
       effects: {
         success: 'Тень прослеживает путь и избегает контакта. +1 к Прибытию.',
         fail: 'Незнакомцы замечают группу. Смертельная встреча.',
@@ -570,6 +651,7 @@ export const ROLE_EVENTS = {
       title: 'Потайной тайник', 
       description: 'Тень замечает остатки укрытого схрона.',
       checkInfo: 'Тень совершает проверку Ловкости рук.',
+      tables: [],
       effects: {
         success: 'Найдены ресурсы. Куб провизии восстанавливается на 1 уровень.',
         fail: 'Тень срабатывает на ловушку. Проверка Искры.',
@@ -584,6 +666,7 @@ export const ROLE_EVENTS = {
       title: 'Духи пожирание', 
       description: 'Провизия кончается быстро.',
       checkInfo: 'Коготь Акрепы совершает проверку Выживание.',
+      tables: [],
       effects: {
         success: 'Провизия расходуется обычно.',
         fail: 'Группа теряет 2 уровня провизии. Проверка Кремня.',
@@ -596,6 +679,7 @@ export const ROLE_EVENTS = {
       title: 'Золотая Добыча', 
       description: 'Группа натыкается на кучу следов великой добычи.',
       checkInfo: 'Коготь Акрепы совершает проверку Выживание.',
+      tables: [],
       effects: {
         success: '+1 уровень Кремня и +1 уровень Искры.',
         fail: 'Группа тратит время. Проверка Кремня.',
@@ -608,11 +692,16 @@ export const ROLE_EVENTS = {
       title: 'Следы Великих', 
       description: 'Группа наталкивается на огромные следы.',
       checkInfo: 'Коготь Акрепы совершает проверку Выживание.',
-      hasTable: true,
-      tableName: 'great_beasts',
-      tableLabel: 'Таблица Великих Странствующих Зверей',
-      tableIcon: '🐉',
-      isGreatBeast: true,
+      tables: [
+        {
+          id: 'great_beasts',
+          name: 'Таблица Великих Странствующих Зверей',
+          tableName: 'great_beasts',
+          trigger: 'always',
+          sectionId: 'great_beasts',
+          isGreatBeast: true
+        }
+      ],
       effects: {
         success: 'Можно выследить зверя и узнать, что это за зверь. Группа получает +1 к Искре.',
         fail: 'Группа видит зверя вдалеке, но не знает что это.',
@@ -625,10 +714,15 @@ export const ROLE_EVENTS = {
       title: 'Ядовитая трапеза', 
       description: 'Охота удачна, но мясо оказывается ядовитым.',
       checkInfo: 'Коготь Акрепы совершает проверку Природы.',
-      hasTable: true,
-      tableName: 'parasitic_creatures',
-      tableLabel: 'Таблица Паразитов',
-      tableIcon: '🪱',
+      tables: [
+        {
+          id: 'parasitic_creatures',
+          name: 'Таблица Паразитов',
+          tableName: 'parasitic_creatures',
+          trigger: 'always',
+          sectionId: 'parasitic_creatures'
+        }
+      ],
       effects: {
         success: 'Коготь замечает отравление до готовки. +1 к Провизии.',
         fail: 'Вся группа отравлена до конца фазы Путь.',
@@ -641,6 +735,7 @@ export const ROLE_EVENTS = {
       title: 'Засада на охоте', 
       description: 'Во время охоты Коготь попадает в засаду.',
       checkInfo: 'Коготь Акрепы совершает проверку Выживания.',
+      tables: [],
       effects: {
         success: 'Коготь сбегает, но добычу приходится оставить.',
         fail: 'Коготь приводит опасность к группе. Смертельная Встреча.',
@@ -653,10 +748,15 @@ export const ROLE_EVENTS = {
       title: 'Запретное место', 
       description: 'Коготь следует за добычей и приходит к странному месту.',
       checkInfo: 'Коготь Акрепы совершает проверку Выживания.',
-      hasTable: true,
-      tableName: 'slaughter_zones',
-      tableLabel: 'Таблица Бойня области',
-      tableIcon: '💀',
+      tables: [
+        {
+          id: 'slaughter_zones',
+          name: 'Таблица Бойня области',
+          tableName: 'slaughter_zones',
+          trigger: 'always',
+          sectionId: 'slaughter_zones'
+        }
+      ],
       effects: {
         success: 'Добыча не замечает Когтя. +1 к Провизии.',
         fail: 'Добыча теряется в месте.',
@@ -671,6 +771,7 @@ export const ROLE_EVENTS = {
       title: 'Смертельная схватка', 
       description: 'Слишком тихо в неизведанных землях.',
       checkInfo: 'Глаза Звезд совершает проверку Внимательности.',
+      tables: [],
       effects: {
         success: 'Группа может подготовиться к схватке.',
         fail: 'Сражение начинается прямо сейчас.',
@@ -683,7 +784,16 @@ export const ROLE_EVENTS = {
       title: 'Они Пришли за Вами!', 
       description: 'Что-то опасное двигается прямо в вашу сторону.',
       checkInfo: 'Глаза Звезд совершает проверку Внимательности.',
-      needsZoneCreatures: true,
+      tables: [
+        {
+          id: 'dangerous_zone',
+          name: 'Таблица Опасных Существ Зоны',
+          tableName: null,
+          trigger: 'fail_5',
+          sectionId: null,
+          isRegional: true
+        }
+      ],
       effects: {
         success: 'Группа замечает опасность и может совершить 1 действие.',
         fail: 'Бой начинается сразу.',
@@ -697,10 +807,15 @@ export const ROLE_EVENTS = {
       title: 'Испытание на Горизонте', 
       description: 'Группа проходит около событий конфликта местности.',
       checkInfo: 'Глаз Звезд совершает проверку Внимательности.',
-      hasTable: true,
-      tableName: 'slaughter_zones',
-      tableLabel: 'Таблица Бойня Области',
-      tableIcon: '💀',
+      tables: [
+        {
+          id: 'slaughter_zones',
+          name: 'Таблица Бойня Области',
+          tableName: 'slaughter_zones',
+          trigger: 'always',
+          sectionId: 'slaughter_zones'
+        }
+      ],
       effects: {
         success: 'Группа остаётся скрытой.',
         fail: 'Группу замечают.',
@@ -713,10 +828,15 @@ export const ROLE_EVENTS = {
       title: 'Смертельная погода', 
       description: 'Что-то назревает на горизонте.',
       checkInfo: 'Глаз Звезд совершает проверку Внимательности.',
-      hasTable: true,
-      tableName: 'storm_eyes',
-      tableLabel: 'Таблица Око Штормов Области',
-      tableIcon: '🌪️',
+      tables: [
+        {
+          id: 'storm_eyes',
+          name: 'Таблица Око Штормов Области',
+          tableName: 'storm_eyes',
+          trigger: 'fail_5',
+          sectionId: 'storm_eyes'
+        }
+      ],
       effects: {
         success: 'Группа избегает плохой погоды. +1 на Прибытие.',
         fail: 'Группа попадает в смертельную погоду. Проверка Кремня и -1 на Прибытие.',
@@ -729,10 +849,15 @@ export const ROLE_EVENTS = {
       title: 'Свет среди тьмы', 
       description: 'Глаза замечают странное сияние вдали.',
       checkInfo: 'Глаза Звезд совершает проверку Внимательности.',
-      hasTable: true,
-      tableName: 'traps',
-      tableLabel: 'Таблица Ловушки',
-      tableIcon: '⚔️',
+      tables: [
+        {
+          id: 'traps',
+          name: 'Таблица Ловушки',
+          tableName: 'traps',
+          trigger: 'always',
+          sectionId: 'traps'
+        }
+      ],
       effects: {
         success: 'Группа находит ценный предмет.',
         fail: 'Это оказывается ловушкой.',
@@ -745,10 +870,15 @@ export const ROLE_EVENTS = {
       title: 'Движение теней', 
       description: 'Глаза замечают странные тени.',
       checkInfo: 'Глаза Звезд совершает проверку Внимательности.',
-      hasTable: true,
-      tableName: 'veil_children',
-      tableLabel: 'Таблица Дети Вуали',
-      tableIcon: '👻',
+      tables: [
+        {
+          id: 'veil_children',
+          name: 'Таблица Дети Вуали',
+          tableName: 'veil_children',
+          trigger: 'always',
+          sectionId: 'veil_aberrations'
+        }
+      ],
       effects: {
         success: 'Группа избегает встречи.',
         fail: 'Происходит событие Дети Вуали.',
@@ -763,10 +893,15 @@ export const ROLE_EVENTS = {
       title: 'Бешенство', 
       description: 'С животными что-то не так.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за животными.',
-      hasTable: true,
-      tableName: 'parasitic_creatures',
-      tableLabel: 'Таблица Паразиты Чертог',
-      tableIcon: '🪱',
+      tables: [
+        {
+          id: 'parasitic_creatures',
+          name: 'Таблица Паразиты Чертог',
+          tableName: 'parasitic_creatures',
+          trigger: 'fail_5',
+          sectionId: 'parasitic_creatures'
+        }
+      ],
       effects: {
         success: 'Длань спасает животных от бешенства.',
         fail: 'Животное умирает.',
@@ -776,14 +911,19 @@ export const ROLE_EVENTS = {
     },
     { 
       id: 2, 
-      title: 'Смертельная встреча', 
+      title: 'Нарушенный Баланс', 
       description: 'Что-то не так вокруг с животными.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за Животными.',
-      hasTable: true,
-      tableName: 'deadly_encounters',
-      tableLabel: 'Таблица Смертельная Встреча',
-      tableIcon: '⚰️',
-      isDeadlyEncounter: true,
+      tables: [
+        {
+          id: 'deadly_encounters',
+          name: 'Таблица Смертельная Встреча',
+          tableName: 'deadly_encounters',
+          trigger: 'always',
+          sectionId: 'deadly_encounters',
+          isDeadlyEncounter: true
+        }
+      ],
       effects: {
         success: 'Длань определяет что обитает в этих землях и есть возможность обойти опасность.',
         fail: 'Тревожность сказывается на группе. Проверка Искры.',
@@ -796,6 +936,16 @@ export const ROLE_EVENTS = {
       title: 'Страх стада', 
       description: 'Животные группы в ужасе останавливаются.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за Животными.',
+      tables: [
+        {
+          id: 'dangerous_zone',
+          name: 'Таблица Опасных Существ Зоны',
+          tableName: null,
+          trigger: 'fail_5',
+          sectionId: null,
+          isRegional: true
+        }
+      ],
       effects: {
         success: 'Животные успокаиваются. +1 к Прибытию.',
         fail: 'Животные с трудом идут дальше. -1 на Прибытие.',
@@ -809,10 +959,16 @@ export const ROLE_EVENTS = {
       title: 'Исчезновение', 
       description: 'Животное группы исчезает ночью.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за животными.',
-      hasTable: true,
-      tableName: 'dangerous_creatures',
-      tableLabel: 'Таблица Опасных Существ',
-      tableIcon: '🐾',
+      tables: [
+        {
+          id: 'dangerous_zone',
+          name: 'Таблица Опасных Существ',
+          tableName: null,
+          trigger: 'fail',
+          sectionId: null,
+          isRegional: true
+        }
+      ],
       effects: {
         success: 'Длань находит животное раненым.',
         fail: 'Животное утащено тварью.',
@@ -825,6 +981,7 @@ export const ROLE_EVENTS = {
       title: 'Обострение чувств', 
       description: 'Животное ощущает опасность заранее.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за животными.',
+      tables: [],
       effects: {
         success: 'Животное предупреждает группу вовремя. Преимущество на Внимательность.',
         fail: 'Группа отвлекается на поведение животного. +1 событие, -1 к Прибытию.',
@@ -837,6 +994,7 @@ export const ROLE_EVENTS = {
       title: 'Дары Сумуга', 
       description: 'Одно из животных начинает рожать.',
       checkInfo: 'Длань Батрины совершает проверку Ухода за животными.',
+      tables: [],
       effects: {
         success: 'Пополнение в стаде поднимает дух. +1 к Искре.',
         fail: 'Животное или дитя умирает. Проверка Искры.',
