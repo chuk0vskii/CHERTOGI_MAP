@@ -1,13 +1,34 @@
 // ============================================================
-// РЕГИСТРАЦИЯ ОБЩИХ СОБЫТИЙ
+// РЕГИСТРАЦИЯ ВСЕХ СОБЫТИЙ
 // ============================================================
 
+// --- ОБЩИЕ СОБЫТИЯ ---
 import event1 from './common/event-1-sign.js';
 import event2 from './common/event-2-trap.js';
 import event3 from './common/event-3-ruins.js';
 import event4 from './common/event-4-landscapes.js';
 import event5 from './common/event-5-oasis.js';
 import event6 from './common/event-6-stars.js';
+
+// --- СОБЫТИЯ ЧТЕЦА ЗНАКОВ ---
+import reader1 from './reader/event-1-cursed-lands.js';
+import reader2 from './reader/event-2-obstacle.js';
+import reader3 from './reader/event-3-singing-signs.js';
+import reader4 from './reader/event-4-fate.js';
+import reader5 from './reader/event-5-false-threads.js';
+import reader6 from './reader/event-6-whispering-obo.js';
+
+// --- СОБЫТИЯ ТЕНИ НАРАРА ---
+import shadow1 from './shadow/event-1-dangerous-meeting.js';
+import shadow2 from './shadow/event-2-veil-cry.js';
+import shadow3 from './shadow/event-3-safe-camp.js';
+import shadow4 from './shadow/event-4-reality-tear.js';
+import shadow5 from './shadow/event-5-trackers.js';
+import shadow6 from './shadow/event-6-secret-cache.js';
+
+// ============================================================
+// РЕЕСТРЫ
+// ============================================================
 
 export const COMMON_EVENTS_MODULES = {
   1: event1,
@@ -18,9 +39,23 @@ export const COMMON_EVENTS_MODULES = {
   6: event6
 };
 
-// Сюда позже добавятся Чтец и Тень
-export const READER_EVENTS_MODULES = {};
-export const SHADOW_EVENTS_MODULES = {};
+export const READER_EVENTS_MODULES = {
+  1: reader1,
+  2: reader2,
+  3: reader3,
+  4: reader4,
+  5: reader5,
+  6: reader6
+};
+
+export const SHADOW_EVENTS_MODULES = {
+  1: shadow1,
+  2: shadow2,
+  3: shadow3,
+  4: shadow4,
+  5: shadow5,
+  6: shadow6
+};
 
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
