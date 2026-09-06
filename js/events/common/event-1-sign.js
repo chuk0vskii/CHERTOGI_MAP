@@ -6,10 +6,10 @@ export default {
   type: 'simple',
   
   render: function(event, helpers) {
-    return ''; // Простое событие без дополнительных элементов
+    return '';
   },
   
-  handleCheck: function(event, values, type) {
-    return null; // Нет проверки
+  handleCheck: function(event, values, type, difficulty) {
+    return null;
   }
 };
