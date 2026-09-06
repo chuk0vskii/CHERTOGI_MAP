@@ -4,9 +4,8 @@
 
 import { _supabase } from '../config-module.js';
 import { 
-  COMMON_EVENTS, ROLES, ROLE_EVENTS, 
-  loadGreatBeasts, getRandomGreatBeast, 
-  generateEncounter, TABLE_TO_SECTION 
+  COMMON_EVENTS, READER_EVENTS, SHADOW_EVENTS,
+  getRegionalTableName, TABLE_TO_SECTION 
 } from '../data/events.js';
 import { getRandomInt, getEventResult, getResultLabel, getResultClass } from './utils.js';
 import { addSignMod, updateDifficulty, getBaseDifficulty, getCurrentSignMod, addArrivalBonus, getArrivalBonus } from './region.js';
@@ -21,6 +20,8 @@ const regionSelect = document.getElementById('regionSelect');
 
 let currentEvents = [];
 let tableCache = {};
+let arrivalBonus = 0;
+let eventCounter = 0;
 
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
@@ -54,20 +55,6 @@ async function getTableData(tableName) {
 }
 
 // ============================================================
-// ФУНКЦИЯ ПОЛУЧЕНИЯ РЕГИОНАЛЬНОЙ ТАБЛИЦЫ
-// ============================================================
-
-function getRegionalTableName(terrainType) {
-  const mapping = {
-    'пустыня': 'opasnost_pustini',
-    'степи': 'opasnost_stepi',
-    'горы': 'opasnost_gor',
-    'джунгли': 'opasnost_jungle'
-  };
-  return mapping[terrainType] || null;
-}
-
-// ============================================================
 // ФУНКЦИЯ СОЗДАНИЯ ССЫЛКИ НА СУЩЕСТВО В БЕСТИАРИИ
 // ============================================================
 
@@ -79,10 +66,10 @@ function createBeastLink(name, tableName) {
 }
 
 // ============================================================
-// ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ И ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА
+// ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ
 // ============================================================
 
-async function rollTableAndDisplay(tableName, containerId, isRegional, isDeadlyEncounter) {
+async function rollTable(tableName, containerId, fields, isCreature, sectionId) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error('Контейнер не найден: ' + containerId);
@@ -90,34 +77,26 @@ async function rollTableAndDisplay(tableName, containerId, isRegional, isDeadlyE
   }
 
   try {
-    // Для региональных таблиц — определяем по типу местности
     let actualTableName = tableName;
-    if (isRegional) {
+    
+    // Региональная таблица
+    if (tableName === 'opasnost_regional') {
       const selectedOption = regionSelect.options[regionSelect.selectedIndex];
       const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
       actualTableName = getRegionalTableName(terrainType);
       if (!actualTableName) {
-        container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Не удалось определить региональную таблицу для типа местности: ' + terrainType + '</div>';
+        container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Не удалось определить региональную таблицу</div>';
         container.style.display = 'block';
         return;
       }
     }
 
-    console.log('Ролл таблицы: ' + actualTableName);
-    
     const { data, error } = await _supabase
       .from(actualTableName)
       .select('*');
     
-    if (error) {
-      console.error('Ошибка запроса к ' + actualTableName + ':', error);
-      container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Ошибка: ' + error.message + '</div>';
-      container.style.display = 'block';
-      return;
-    }
-    
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">В таблице "' + actualTableName + '" нет данных</div>';
+    if (error || !data || data.length === 0) {
+      container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Нет данных в таблице</div>';
       container.style.display = 'block';
       return;
     }
@@ -125,73 +104,20 @@ async function rollTableAndDisplay(tableName, containerId, isRegional, isDeadlyE
     const randomIndex = Math.floor(Math.random() * data.length);
     const item = data[randomIndex];
     
-    console.log('Выбрана запись #' + (randomIndex + 1) + ':', item);
-
     let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
     html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
     
-    if (item.name) {
-      const link = createBeastLink(item.name, actualTableName);
-      html += '<div style="font-size: 15px; color: #ffffff; font-weight: bold; margin-bottom: 4px;">' + link + '</div>';
-    }
-    
-    if (item.description) {
-      html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + item.description + '</div>';
-    }
-    
-    // Специальная обработка для Смертельной встречи (результаты 5-8)
-    if (isDeadlyEncounter && item.id >= 5 && item.id <= 8) {
-      const selectedOption = regionSelect.options[regionSelect.selectedIndex];
-      const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
-      
-      // Генерация 1: Существа зоны
-      let zoneHTML = '';
-      if (terrainType !== 'неизвестно') {
-        const encounter = generateEncounter(terrainType);
-        if (encounter) {
-          const enc = encounter;
-          const entry = enc.entry;
-          
-          let mainText = entry.text;
-          for (var j = 0; j < entry.creatures.length; j++) {
-            const c = entry.creatures[j];
-            const link = createBeastLink(c.name, c.table);
-            mainText = mainText.replace(c.name, link);
+    if (fields && fields.length > 0) {
+      fields.forEach(function(field) {
+        if (item[field] !== undefined && item[field] !== null) {
+          let value = item[field];
+          if (isCreature) {
+            value = createBeastLink(value, actualTableName);
           }
-          
-          let extraLinks = '';
-          if (entry.extraCreatures && entry.extraCreatures.length > 0) {
-            let extraText = entry.extra;
-            for (var k = 0; k < entry.extraCreatures.length; k++) {
-              const c = entry.extraCreatures[k];
-              const link = createBeastLink(c.name, c.table);
-              extraText = extraText.replace(c.name, link);
-            }
-            extraLinks = ' (' + extraText + ')';
-          }
-          
-          zoneHTML = '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700; font-size: 14px; color: #e0d5c0;">' +
-            'Существа зоны (бросок ' + enc.roll + '): ' + mainText + extraLinks +
-          '</div>';
+          const label = field === 'name' ? '' : field === 'pass_method' ? 'Как пройти: ' : field === 'reward_type' ? 'Что хранят: ' : field === 'oasis_type' ? 'Оазис: ' : field === 'mystery' ? 'Тайна: ' : '';
+          html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
         }
-      }
-      
-      // Генерация 2: Дети Вуали
-      const veilResult = await _supabase
-        .from('veil_children')
-        .select('*');
-      
-      let veilHTML = '';
-      if (!veilResult.error && veilResult.data && veilResult.data.length > 0) {
-        const veilIndex = Math.floor(Math.random() * veilResult.data.length);
-        const veilItem = veilResult.data[veilIndex];
-        const link = createBeastLink(veilItem.name, 'veil_children');
-        veilHTML = '<div style="margin-top: 4px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700; font-size: 14px; color: #e0d5c0;">' +
-          'Дети Вуали: ' + link +
-        '</div>';
-      }
-      
-      html += zoneHTML + veilHTML;
+      });
     }
     
     html += '</div>';
@@ -199,8 +125,8 @@ async function rollTableAndDisplay(tableName, containerId, isRegional, isDeadlyE
     container.style.display = 'block';
     
   } catch (err) {
-    console.error('Критическая ошибка:', err);
-    container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Ошибка: ' + err.message + '</div>';
+    console.error('Ошибка:', err);
+    container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Ошибка</div>';
     container.style.display = 'block';
   }
 }
@@ -223,8 +149,6 @@ export async function generatePathEvents() {
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
-  await loadGreatBeasts();
-
   let roleCount = 0;
   let roleDisplay = '0';
   let rollResult = 0;
@@ -244,13 +168,14 @@ export async function generatePathEvents() {
   roleEventsCount.textContent = roleDisplay;
   totalEventsCount.textContent = totalEvents;
 
-  currentEvents = await generateEventList(common, roleCount);
+  currentEvents = generateEventList(common, roleCount);
   renderEvents(currentEvents);
 }
 
-async function generateEventList(commonCount, roleCount) {
+function generateEventList(commonCount, roleCount) {
   const events = [];
 
+  // Общие события
   for (var i = 0; i < commonCount; i++) {
     const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
     const eventData = COMMON_EVENTS[roll];
@@ -258,36 +183,24 @@ async function generateEventList(commonCount, roleCount) {
     events.push(eventCopy);
   }
 
-  const selectedOption = regionSelect.options[regionSelect.selectedIndex];
-  const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
+  // Ролевые события
+  const roles = ['Чтец_Знаков', 'Тень_Нарара'];
+  const roleEventsMap = {
+    'Чтец_Знаков': READER_EVENTS,
+    'Тень_Нарара': SHADOW_EVENTS
+  };
 
   for (var j = 0; j < roleCount; j++) {
-    const roleIndex = getRandomInt(0, ROLES.length - 1);
-    const role = ROLES[roleIndex];
-    const roleEvents = ROLE_EVENTS[role] || ROLE_EVENTS['Чтец_Знаков'];
+    const roleIndex = getRandomInt(0, roles.length - 1);
+    const role = roles[roleIndex];
+    const roleEvents = roleEventsMap[role] || READER_EVENTS;
     const roll = getRandomInt(0, roleEvents.length - 1);
     const eventData = roleEvents[roll];
     const eventCopy = createEventCopy(eventData, role, roll + 1);
-    
-    // Для великих зверей — сразу генерируем
-    if (eventData.tables && eventData.tables.some(t => t.isGreatBeast)) {
-      const beast = getRandomGreatBeast();
-      if (beast) {
-        eventCopy.greatBeast = beast;
-      }
-    }
-    
-    // Для региональных встреч — сразу генерируем
-    if (eventData.tables && eventData.tables.some(t => t.isRegional) && terrainType !== 'неизвестно') {
-      const encounter = generateEncounter(terrainType);
-      if (encounter) {
-        eventCopy.encounter = encounter;
-      }
-    }
-    
     events.push(eventCopy);
   }
 
+  // Перемешиваем
   for (var k = events.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [events[k], events[j2]] = [events[j2], events[k]];
@@ -301,15 +214,15 @@ function createEventCopy(eventData, type, roll) {
     type: type,
     data: { ...eventData },
     roll: roll,
-    isCommon: type === 'Общее',
     checked: false,
     result: null,
     secondChecked: false,
     secondResult: null,
-    greatBeast: null,
-    encounter: null,
     tableResults: {},
-    secondTableResults: {}
+    bars: [],
+    secondBars: [],
+    isBonus: false,
+    color: ''
   };
 }
 
@@ -324,343 +237,124 @@ function renderEvents(events) {
   }
 
   eventsContainer.innerHTML = events.map(function(event, index) {
-    // Ссылка на великого зверя
-    let greatBeastHTML = '';
-    if (event.greatBeast) {
-      const beastName = event.greatBeast.name;
-      const link = createBeastLink(beastName, 'great_beasts');
-      greatBeastHTML = '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Великий зверь: ' + link + '</div>';
+    const config = event.data.config;
+    const bgColor = event.color || (event.isBonus ? 'rgba(255,215,0,0.08)' : '');
+    const borderColor = event.isBonus ? '2px solid rgba(255,215,0,0.3)' : '1px solid rgba(74,14,14,0.2)';
+    
+    let html = '<div class="event-card" data-index="' + index + '" style="background: ' + bgColor + '; border: ' + borderColor + ';">';
+    html += '<div class="event-header">';
+    html += '<span class="event-type">' + (event.isBonus ? '⭐ ' : '') + event.type + '</span>';
+    html += '<span class="event-roll">Бросок: <strong>' + event.roll + '</strong></span>';
+    html += '</div>';
+    html += '<div class="event-text">';
+    html += '<strong>' + event.data.title + '</strong><br>';
+    html += event.data.description;
+    if (event.data.checkInfo) {
+      html += '<br><span class="check-info">' + event.data.checkInfo + '</span>';
+    }
+    html += '</div>';
+    
+    // Генерация контента в зависимости от типа события
+    if (config) {
+      html += renderEventContent(event, index, config);
     }
     
-    // Встреча по типу местности
-    let encounterHTML = '';
-    if (event.encounter) {
-      const enc = event.encounter;
-      const entry = enc.entry;
-      
-      let mainText = entry.text;
-      for (var j = 0; j < entry.creatures.length; j++) {
-        const c = entry.creatures[j];
-        const link = createBeastLink(c.name, c.table);
-        mainText = mainText.replace(c.name, link);
-      }
-      
-      let extraLinks = '';
-      if (entry.extraCreatures && entry.extraCreatures.length > 0) {
-        let extraText = entry.extra;
-        for (var k = 0; k < entry.extraCreatures.length; k++) {
-          const c = entry.extraCreatures[k];
-          const link = createBeastLink(c.name, c.table);
-          extraText = extraText.replace(c.name, link);
-        }
-        extraLinks = ' (' + extraText + ')';
-      }
-      
-      encounterHTML = '<div style="margin-top: 6px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ff6b6b; font-size: 14px; color: #e0d5c0;">' +
-        'Встреча (бросок ' + enc.roll + '): ' + mainText + extraLinks +
-      '</div>';
+    // Основная проверка
+    if (config && config.check && config.check.bars) {
+      html += renderCheckBars(event, index, 'main', config.check);
     }
     
-    // Кнопки для таблиц (появляются после проверки)
-    let tableButtonsHTML = '';
-    if (event.checked && event.data.tables) {
-      const tables = event.data.tables.filter(t => {
-        if (t.trigger === 'always') return true;
-        if (t.trigger === 'fail' && (event.result === 'fail' || event.result === 'crit_fail')) return true;
-        if (t.trigger === 'fail_5' && event.result === 'crit_fail') return true;
-        if (t.trigger === 'success' && (event.result === 'success' || event.result === 'crit_success')) return true;
-        if (t.trigger === 'crit_success' && event.result === 'crit_success') return true;
-        return false;
-      });
-      
-      tables.forEach(function(table, idx) {
-        const containerId = 'table-result-' + index + '-' + idx + '-' + Date.now();
-        const isRegional = table.isRegional || false;
-        const isDeadlyEncounter = table.isDeadlyEncounter || false;
-        const tableName = table.tableName || 'opasnost_pustini';
-        
-        tableButtonsHTML += '<div style="margin-top: 8px;">' +
-          '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-regional="' + isRegional + '" data-deadly="' + isDeadlyEncounter + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
-            'Бросить по ' + table.name +
-          '</button>' +
-          '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>' +
-        '</div>';
-      });
+    // Вторая проверка (для Древних Руин)
+    if (config && config.secondCheck) {
+      html += renderSecondCheck(event, index, config.secondCheck);
     }
     
-    // Вторые проверки (для Древних Руин)
-    let secondTableButtonsHTML = '';
-    if (event.secondChecked && event.data.secondTables) {
-      const secondTables = event.data.secondTables.filter(t => {
-        if (t.trigger === 'always') return true;
-        if (t.trigger === 'fail' && (event.secondResult === 'fail' || event.secondResult === 'crit_fail')) return true;
-        if (t.trigger === 'fail_5' && event.secondResult === 'crit_fail') return true;
-        if (t.trigger === 'success' && (event.secondResult === 'success' || event.secondResult === 'crit_success')) return true;
-        return false;
-      });
-      
-      secondTables.forEach(function(table, idx) {
-        const containerId = 'second-table-result-' + index + '-' + idx + '-' + Date.now();
-        const isRegional = table.isRegional || false;
-        const tableName = table.tableName || 'opasnost_pustini';
-        
-        secondTableButtonsHTML += '<div style="margin-top: 8px;">' +
-          '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-regional="' + isRegional + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px; transition: all 0.3s;">' +
-            'Бросить по ' + table.name +
-          '</button>' +
-          '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>' +
-        '</div>';
-      });
-    }
-    
-    let secondCheckHTML = '';
-    if (event.data.hasSecondCheck || event.data.secondCheckInfo) {
-      secondCheckHTML = '<div class="second-check-section">' +
-        '<div class="event-check-row">' +
-          '<label for="second-check-' + index + '" style="color: rgba(255,215,0,0.6);">Значение проверки (Тень Нарара):</label>' +
-          '<input type="number" id="second-check-' + index + '" min="1" max="30" value="10" class="check-input second-check">' +
-          '<button class="btn-check-second" data-index="' + index + '">Проверить</button>' +
-        '</div>' +
-        '<div class="event-result" id="second-result-' + index + '"></div>' +
-        '<div class="event-effect" id="second-effect-' + index + '"></div>' +
-        secondTableButtonsHTML +
-      '</div>';
-    }
-    
-    return '<div class="event-card" data-index="' + index + '">' +
-      '<div class="event-header">' +
-        '<span class="event-type">' + event.type + '</span>' +
-        '<span class="event-roll">Бросок: <strong>' + event.roll + '</strong></span>' +
-      '</div>' +
-      '<div class="event-text">' +
-        '<strong>' + event.data.title + '</strong><br>' +
-        event.data.description +
-        (event.data.checkInfo ? '<br><span class="check-info">' + event.data.checkInfo + '</span>' : '') +
-        (event.data.secondCheckInfo ? '<br><span class="check-info">' + event.data.secondCheckInfo + '</span>' : '') +
-        greatBeastHTML +
-        encounterHTML +
-      '</div>' +
-      tableButtonsHTML +
-      '<div class="event-check-row">' +
-        '<label for="check-' + index + '">Значение проверки:</label>' +
-        '<input type="number" id="check-' + index + '" min="1" max="30" value="10" class="check-input">' +
-        '<button class="btn-check" data-index="' + index + '">Проверить</button>' +
-      '</div>' +
-      '<div class="event-result" id="result-' + index + '"></div>' +
-      '<div class="event-effect" id="effect-' + index + '"></div>' +
-      secondCheckHTML +
-    '</div>';
+    html += '</div>';
+    return html;
   }).join('');
 
   attachEventHandlers();
 }
 
-// ============================================================
-// ОБРАБОТЧИКИ
-// ============================================================
-
-function attachEventHandlers() {
-  eventsContainer.querySelectorAll('.btn-check').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      handleCheck(index, 'main');
-    });
-  });
-
-  eventsContainer.querySelectorAll('.btn-check-second').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      handleCheck(index, 'second');
-    });
-  });
-
-  eventsContainer.querySelectorAll('.btn-roll-table').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      const tableName = this.dataset.table;
-      const containerId = this.dataset.container;
-      const isRegional = this.dataset.regional === 'true';
-      const isDeadly = this.dataset.deadly === 'true';
-      rollTableAndDisplay(tableName, containerId, isRegional, isDeadly);
-    });
-  });
-
-  eventsContainer.querySelectorAll('.check-input:not(.second-check)').forEach(function(input) {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const index = parseInt(this.id.split('-')[1]);
-        handleCheck(index, 'main');
-      }
-    });
-  });
-
-  eventsContainer.querySelectorAll('.second-check').forEach(function(input) {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const index = parseInt(this.id.split('-')[2]);
-        handleCheck(index, 'second');
-      }
-    });
-  });
-}
-
-// ============================================================
-// ОБРАБОТКА ПРОВЕРКИ
-// ============================================================
-
-function handleCheck(index, type) {
-  var event = currentEvents[index];
-  if (!event) return;
-
-  var isSecond = type === 'second';
-  var inputId = isSecond ? 'second-check-' + index : 'check-' + index;
-  var resultId = isSecond ? 'second-result-' + index : 'result-' + index;
-  var effectId = isSecond ? 'second-effect-' + index : 'effect-' + index;
-
-  var input = document.getElementById(inputId);
-  if (!input) {
-    console.error('Инпут не найден: ' + inputId);
-    return;
+function renderEventContent(event, index, config) {
+  let html = '';
+  
+  // Кнопка таблицы
+  if (config.table) {
+    const containerId = 'table-result-' + index + '-' + Date.now();
+    const isCreature = config.table.isCreature || false;
+    const fields = config.table.fields || ['name'];
+    const tableName = config.table.name;
+    const label = config.table.label || 'Таблица';
+    
+    html += '<div style="margin-top: 8px;">';
+    html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+    html += 'Бросить по ' + label;
+    html += '</button>';
+    html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
+    html += '</div>';
   }
   
-  var value = parseInt(input.value);
-  if (isNaN(value) || value < 1) {
-    alert('Введите корректное значение проверки (минимум 1)');
-    return;
-  }
-
-  var result = getEventResult(value);
-  
-  if (isSecond) {
-    event.secondResult = result;
-    event.secondChecked = true;
-  } else {
-    event.result = result;
-    event.checked = true;
-  }
-
-  var resultDiv = document.getElementById(resultId);
-  var effectDiv = document.getElementById(effectId);
-
-  if (!resultDiv || !effectDiv) return;
-
-  resultDiv.textContent = 'Результат: ' + value + ' — ' + getResultLabel(result);
-  resultDiv.className = 'event-result visible ' + getResultClass(result);
-
-  var effects;
-  if (isSecond && event.data.secondEffects) {
-    effects = event.data.secondEffects;
-  } else if (!isSecond && event.data.effects) {
-    effects = event.data.effects;
-  } else {
-    effects = event.data.effects;
-  }
-  
-  if (effects) {
-    var effectText = '';
-    var effectClass = '';
+  // Результаты проверки
+  if (event.checked && config.check && config.check.results) {
+    const result = event.result;
+    const results = config.check.results;
+    let matched = false;
     
-    switch(result) {
-      case 'crit_success':
-        effectText = effects.crit_success || effects.success || 'Критический успех!';
-        effectClass = 'effect-crit';
+    for (var i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.condition === 'all_success' && result === 'all_success') {
+        html += '<div class="event-result visible success">' + r.message + '</div>';
+        matched = true;
         break;
-      case 'success':
-        effectText = effects.success || 'Успех!';
-        effectClass = 'effect-success';
+      } else if (r.condition === 'half_success' && result === 'half_success') {
+        html += '<div class="event-result visible success">' + r.message + '</div>';
+        matched = true;
         break;
-      case 'fail':
-        effectText = effects.fail || 'Провал...';
-        effectClass = 'effect-fail';
+      } else if (r.condition === 'all_or_half_success' && (result === 'all_success' || result === 'half_success')) {
+        html += '<div class="event-result visible success">' + r.message + '</div>';
+        matched = true;
         break;
-      case 'crit_fail':
-        effectText = effects.crit_fail || effects.fail || 'Критический провал!';
-        effectClass = 'effect-fail';
+      } else if (r.condition === 'half_fail' && result === 'half_fail') {
+        html += '<div class="event-result visible fail">' + r.message + '</div>';
+        matched = true;
         break;
-    }
-    
-    effectDiv.innerHTML = '<span class="' + effectClass + '">' + effectText + '</span>';
-    effectDiv.className = 'event-effect visible';
-    
-    var diffMatch = effectText.match(/сложность\s*пути\s*([+-])\s*(\d+)/i);
-    if (diffMatch) {
-      var sign = diffMatch[1] === '+' ? 1 : -1;
-      var amount = parseInt(diffMatch[2]);
-      addSignMod(sign * amount);
-      
-      var notif = document.createElement('div');
-      notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #ffd700;';
-      notif.textContent = 'Сложность пути изменена: ' + (getBaseDifficulty() + getCurrentSignMod());
-      effectDiv.appendChild(notif);
-    }
-    
-    var arrivalRegex = /([+-])\s*(\d+)\s*(?:на\s*|к\s*)?(?:бросок\s*|проверк[ау]\s*)?Прибыти[ею]/i;
-    var arrivalMatch = effectText.match(arrivalRegex);
-    
-    if (arrivalMatch) {
-      var sign = arrivalMatch[1] === '+' ? 1 : -1;
-      var amount = parseInt(arrivalMatch[2]);
-      addArrivalBonus(sign * amount);
-      
-      var notif = document.createElement('div');
-      notif.style.cssText = 'margin-top: 6px; font-size: 13px; color: #51cf66;';
-      notif.textContent = 'Бонус кварны изменён: ' + getArrivalBonus();
-      effectDiv.appendChild(notif);
-    }
-    
-    // Генерация встречи при провале для событий с needsZoneCreatures
-    if (effects && effects.needsZoneCreatures && (result === 'fail' || result === 'crit_fail')) {
-      const selectedOption = regionSelect.options[regionSelect.selectedIndex];
-      const terrainType = selectedOption?.dataset?.terrainType || 'неизвестно';
-      
-      if (terrainType !== 'неизвестно') {
-        const encounter = generateEncounter(terrainType);
-        if (encounter) {
-          event.encounter = encounter;
-          
-          const enc = encounter;
-          const entry = enc.entry;
-          
-          let mainText = entry.text;
-          for (var j = 0; j < entry.creatures.length; j++) {
-            const c = entry.creatures[j];
-            const link = createBeastLink(c.name, c.table);
-            mainText = mainText.replace(c.name, link);
-          }
-          
-          let extraLinks = '';
-          if (entry.extraCreatures && entry.extraCreatures.length > 0) {
-            let extraText = entry.extra;
-            for (var k = 0; k < entry.extraCreatures.length; k++) {
-              const c = entry.extraCreatures[k];
-              const link = createBeastLink(c.name, c.table);
-              extraText = extraText.replace(c.name, link);
-            }
-            extraLinks = ' (' + extraText + ')';
-          }
-          
-          var encounterHTML = '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ff6b6b; font-size: 14px; color: #e0d5c0;">' +
-            'Встреча (бросок ' + enc.roll + '): ' + mainText + extraLinks +
-          '</div>';
-          
-          effectDiv.innerHTML += encounterHTML;
-        }
+      } else if (r.condition === 'all_fail' && result === 'all_fail') {
+        html += '<div class="event-result visible crit-fail">' + r.message + '</div>';
+        matched = true;
+        break;
+      } else if (r.condition === 'success' && (result === 'success' || result === 'crit_success')) {
+        html += '<div class="event-result visible success">' + r.message + '</div>';
+        matched = true;
+        break;
+      } else if (r.condition === 'fail' && (result === 'fail' || result === 'crit_fail')) {
+        html += '<div class="event-result visible fail">' + r.message + '</div>';
+        matched = true;
+        break;
+      } else if (r.condition === 'success_5' && result === 'crit_success') {
+        html += '<div class="event-result visible crit-success">' + r.message + '</div>';
+        matched = true;
+        break;
+      } else if (r.condition === 'fail_5' && result === 'crit_fail') {
+        html += '<div class="event-result visible crit-fail">' + r.message + '</div>';
+        matched = true;
+        break;
       }
     }
   }
   
-  // Перерендериваем событие, чтобы показать кнопки таблиц
-  renderEvents(currentEvents);
+  return html;
 }
 
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.addEventListener('click', generatePathEvents);
-    console.log('Кнопка "Сгенерировать события" подключена');
-  }
-}
-
-initPath();
+function renderCheckBars(event, index, type, checkConfig) {
+  const isSecond = type === 'second';
+  const prefix = isSecond ? 'second-' : '';
+  const bars = isSecond ? event.secondBars || [] : event.bars || [];
+  const config = checkConfig || {};
+  const barsConfig = config.bars || { type: 'single' };
+  
+  let html = '<div class="event-check-row">';
+  
+  if (barsConfig.type === 'single') {
+    html += '<label for="' + prefix + 'check-' + index + '">' + (config.label || 'Значение проверки:') + '</label>';
+    html += '<input type="number" id="' + prefix
