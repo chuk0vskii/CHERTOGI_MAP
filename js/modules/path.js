@@ -30,6 +30,10 @@ function getUniqueId() {
   return ++eventIdCounter;
 }
 
+function findEventById(id) {
+  return currentEvents.find(e => e.id === id);
+}
+
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ
 // ============================================================
@@ -70,6 +74,48 @@ function createBeastLink(name, tableName) {
 }
 
 // ============================================================
+// ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА ТАБЛИЦЫ (СОХРАНЯЕТСЯ В СОБЫТИИ)
+// ============================================================
+
+function displayTableResult(container, item, fields, isCreature, actualTableName, randomIndex, eventId, resultKey) {
+  let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
+  html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
+  
+  fields.forEach(function(field) {
+    if (item[field] !== undefined && item[field] !== null) {
+      let value = item[field];
+      if (isCreature) {
+        value = createBeastLink(value, actualTableName);
+      }
+      const label = field === 'name' ? '' : 
+                    field === 'pass_method' ? 'Как пройти: ' : 
+                    field === 'reward_type' ? 'Что хранят: ' : 
+                    field === 'oasis_type' ? 'Оазис: ' : 
+                    field === 'mystery' ? 'Тайна: ' : '';
+      html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
+    }
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
+  
+  // Сохраняем результат в событие
+  const event = findEventById(eventId);
+  if (event) {
+    if (!event.tableResults) event.tableResults = {};
+    event.tableResults[resultKey] = {
+      html: html,
+      item: item,
+      actualTableName: actualTableName,
+      randomIndex: randomIndex,
+      fields: fields,
+      isCreature: isCreature
+    };
+  }
+}
+
+// ============================================================
 // РОЛЛ ТАБЛИЦЫ
 // ============================================================
 
@@ -101,47 +147,35 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
     const randomIndex = Math.floor(Math.random() * data.length);
     const item = data[randomIndex];
     
-    // Сохраняем результат в событие
-    const event = currentEvents.find(e => e.id === eventId);
-    if (event) {
-      if (!event.tableResults) event.tableResults = {};
-      event.tableResults[resultKey] = {
-        item: item,
-        actualTableName: actualTableName,
-        randomIndex: randomIndex,
-        fields: fields,
-        isCreature: isCreature
-      };
-    }
-    
-    // Отображаем результат
-    let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
-    html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
-    
-    fields.forEach(function(field) {
-      if (item[field] !== undefined && item[field] !== null) {
-        let value = item[field];
-        if (isCreature) {
-          value = createBeastLink(value, actualTableName);
-        }
-        const label = field === 'name' ? '' : 
-                      field === 'pass_method' ? 'Как пройти: ' : 
-                      field === 'reward_type' ? 'Что хранят: ' : 
-                      field === 'oasis_type' ? 'Оазис: ' : 
-                      field === 'mystery' ? 'Тайна: ' : '';
-        html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
-      }
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-    container.style.display = 'block';
+    displayTableResult(container, item, fields, isCreature, actualTableName, randomIndex, eventId, resultKey);
     
   } catch (err) {
     console.error('Ошибка:', err);
     container.innerHTML = '<div style="color: #ff6b6b;">Ошибка</div>';
     container.style.display = 'block';
   }
+}
+
+// ============================================================
+// ВОССТАНОВЛЕНИЕ РЕЗУЛЬТАТОВ ТАБЛИЦ ПРИ РЕНДЕРЕ
+// ============================================================
+
+function restoreTableResults(event) {
+  if (!event.tableResults) return '';
+  
+  let html = '';
+  for (var key in event.tableResults) {
+    const result = event.tableResults[key];
+    // Извлекаем containerId из ключа или генерируем новый
+    const containerId = key.startsWith('main_') ? 'table-result-' + event.id : 
+                        key.startsWith('effect_') ? 'result-table-' + event.id + '-' + key.replace('effect_', '') :
+                        key.startsWith('second_') ? 'second-table-result-' + event.id : '';
+    
+    if (containerId) {
+      html += '<div id="' + containerId + '" style="display: block; margin-top: 6px;">' + result.html + '</div>';
+    }
+  }
+  return html;
 }
 
 // ============================================================
@@ -179,7 +213,6 @@ export async function generatePathEvents() {
   currentEvents = [];
   const events = generateEventList(common, roleCount);
   
-  // Присваиваем ID каждому событию
   events.forEach(function(e) {
     e.id = getUniqueId();
     e.tableResults = {};
@@ -233,6 +266,30 @@ function generateEventList(commonCount, roleCount) {
   return events;
 }
 
+function addBonusEvent() {
+  const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
+  const eventData = COMMON_EVENTS[roll];
+  const eventCopy = { 
+    data: eventData, 
+    type: 'Общее (бонусное)', 
+    roll: roll + 1, 
+    isBonus: true,
+    id: getUniqueId(),
+    tableResults: {},
+    secondTableResults: {},
+    bars: [],
+    secondBars: [],
+    checked: false,
+    result: null,
+    resultText: null,
+    secondChecked: false,
+    secondResult: null,
+    secondResultText: null
+  };
+  currentEvents.push(eventCopy);
+  renderEvents();
+}
+
 // ============================================================
 // ОТРИСОВКА
 // ============================================================
@@ -245,13 +302,13 @@ function renderEvents() {
 
   let html = '';
   
-  currentEvents.forEach(function(event, index) {
+  currentEvents.forEach(function(event) {
     const config = event.data.config;
     const bgColor = event.isBonus ? 'rgba(255,215,0,0.08)' : '';
     const borderColor = event.isBonus ? '2px solid rgba(255,215,0,0.3)' : '1px solid rgba(74,14,14,0.2)';
     const eventId = event.id;
     
-    html += '<div class="event-card" data-index="' + index + '" data-id="' + eventId + '" style="background: ' + bgColor + '; border: ' + borderColor + ';">';
+    html += '<div class="event-card" data-id="' + eventId + '" style="background: ' + bgColor + '; border: ' + borderColor + ';">';
     html += '<div class="event-header">';
     html += '<span class="event-type">' + (event.isBonus ? '⭐ ' : '') + event.type + '</span>';
     html += '<span class="event-roll">Бросок: <strong>' + event.roll + '</strong></span>';
@@ -277,7 +334,12 @@ function renderEvents() {
       html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-id="' + eventId + '" data-result-key="' + resultKey + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
       html += 'Бросить по ' + label;
       html += '</button>';
-      html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
+      // Восстанавливаем результат таблицы
+      if (event.tableResults && event.tableResults[resultKey]) {
+        html += '<div id="' + containerId + '" style="display: block; margin-top: 6px;">' + event.tableResults[resultKey].html + '</div>';
+      } else {
+        html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
+      }
       html += '</div>';
     }
     
@@ -323,7 +385,12 @@ function renderEvents() {
               html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + tableContainerId + '" data-fields="' + fieldsTable.join(',') + '" data-creature="' + isCreatureTable + '" data-event-id="' + eventId + '" data-result-key="' + resultKeyTable + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
               html += 'Бросить по ' + labelTable;
               html += '</button>';
-              html += '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>';
+              // Восстанавливаем результат таблицы эффекта
+              if (event.tableResults && event.tableResults[resultKeyTable]) {
+                html += '<div id="' + tableContainerId + '" style="display: block; margin-top: 6px;">' + event.tableResults[resultKeyTable].html + '</div>';
+              } else {
+                html += '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>';
+              }
               html += '</div>';
             }
             break;
@@ -386,6 +453,35 @@ function renderCheckBars(event, type, checkConfig) {
   }
   
   html += '</div>';
+  
+  // Результат второй проверки
+  if (isSecond && event.secondChecked) {
+    const resultType = event.secondResult;
+    const resultText = event.secondResultText || getResultLabel(resultType);
+    const resultClass = getResultClass(resultType);
+    if (resultText) {
+      html += '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
+    }
+    if (config && config.results) {
+      const results = config.results;
+      for (var i = 0; i < results.length; i++) {
+        const r = results[i];
+        let conditionMet = false;
+        
+        if (r.condition === resultType) conditionMet = true;
+        else if (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) conditionMet = true;
+        else if (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) conditionMet = true;
+        else if (r.condition === 'success_5' && resultType === 'crit_success') conditionMet = true;
+        else if (r.condition === 'fail_5' && resultType === 'crit_fail') conditionMet = true;
+        
+        if (conditionMet) {
+          html += '<div class="event-effect visible">' + r.message + '</div>';
+          break;
+        }
+      }
+    }
+  }
+  
   return html;
 }
 
@@ -405,39 +501,16 @@ function renderSecondCheck(event, secondConfig) {
     html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-id="' + eventId + '" data-result-key="' + resultKey + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
     html += 'Бросить по ' + label;
     html += '</button>';
-    html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
+    // Восстанавливаем результат таблицы второй проверки
+    if (event.secondTableResults && event.secondTableResults[resultKey]) {
+      html += '<div id="' + containerId + '" style="display: block; margin-top: 6px;">' + event.secondTableResults[resultKey].html + '</div>';
+    } else {
+      html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
+    }
     html += '</div>';
   }
   
   html += renderCheckBars(event, 'second', secondConfig);
-  
-  // Результат второй проверки
-  if (event.secondChecked) {
-    const resultType = event.secondResult;
-    const resultText = event.secondResultText || getResultLabel(resultType);
-    const resultClass = getResultClass(resultType);
-    if (resultText) {
-      html += '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
-    }
-    if (secondConfig && secondConfig.results) {
-      const results = secondConfig.results;
-      for (var i = 0; i < results.length; i++) {
-        const r = results[i];
-        let conditionMet = false;
-        
-        if (r.condition === resultType) conditionMet = true;
-        else if (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) conditionMet = true;
-        else if (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) conditionMet = true;
-        else if (r.condition === 'success_5' && resultType === 'crit_success') conditionMet = true;
-        else if (r.condition === 'fail_5' && resultType === 'crit_fail') conditionMet = true;
-        
-        if (conditionMet) {
-          html += '<div class="event-effect visible">' + r.message + '</div>';
-          break;
-        }
-      }
-    }
-  }
   
   html += '</div>';
   return html;
@@ -460,7 +533,7 @@ function attachEventHandlers() {
 function handleClick(e) {
   const target = e.target;
   
-  // Кнопка проверки
+  // Кнопка проверки (один бар)
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -468,12 +541,14 @@ function handleClick(e) {
     return;
   }
   
+  // Кнопка проверки (второй бар)
   if (target.classList.contains('btn-check-second')) {
     const eventId = parseInt(target.dataset.eventId);
     handleCheck(eventId, 'second');
     return;
   }
   
+  // Кнопка множественной проверки
   if (target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -517,7 +592,7 @@ function handleInput(e) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
     const barIdx = parseInt(target.dataset.bar);
-    const event = currentEvents.find(ev => ev.id === eventId);
+    const event = findEventById(eventId);
     if (!event) return;
     
     const isSecond = type === 'second';
@@ -543,17 +618,14 @@ function handleKeydown(e) {
 // ============================================================
 
 function handleCheck(eventId, type) {
-  const event = currentEvents.find(ev => ev.id === eventId);
+  const event = findEventById(eventId);
   if (!event) return;
   
   const isSecond = type === 'second';
   const prefix = isSecond ? 'second-' : '';
   
   const input = document.getElementById(prefix + 'check-' + eventId);
-  if (!input) {
-    console.error('Инпут не найден');
-    return;
-  }
+  if (!input) return;
   
   const value = parseInt(input.value);
   if (isNaN(value) || value < 1) {
@@ -565,7 +637,7 @@ function handleCheck(eventId, type) {
 }
 
 function handleMultipleCheck(eventId, type) {
-  const event = currentEvents.find(ev => ev.id === eventId);
+  const event = findEventById(eventId);
   if (!event) return;
   
   const inputs = document.querySelectorAll('.bar-input[data-event-id="' + eventId + '"][data-type="' + type + '"]');
@@ -587,7 +659,7 @@ function handleMultipleCheck(eventId, type) {
 }
 
 function addBar(eventId, type) {
-  const event = currentEvents.find(ev => ev.id === eventId);
+  const event = findEventById(eventId);
   if (!event) return;
   
   const isSecond = type === 'second';
@@ -604,7 +676,7 @@ function addBar(eventId, type) {
 }
 
 function removeBar(eventId, type, barIdx) {
-  const event = currentEvents.find(ev => ev.id === eventId);
+  const event = findEventById(eventId);
   if (!event) return;
   
   const isSecond = type === 'second';
@@ -616,15 +688,12 @@ function removeBar(eventId, type, barIdx) {
 }
 
 function processCheck(eventId, type, values) {
-  const event = currentEvents.find(ev => ev.id === eventId);
+  const event = findEventById(eventId);
   if (!event) return;
   
   const isSecond = type === 'second';
   const config = isSecond ? event.data.config?.secondCheck : event.data.config?.check;
-  if (!config) {
-    console.error('Конфиг проверки не найден');
-    return;
-  }
+  if (!config) return;
   
   const difficulty = config.difficulty || 12;
   const results = config.results || [];
@@ -703,29 +772,6 @@ function processCheck(eventId, type, values) {
   });
   
   renderEvents();
-}
-
-function addBonusEvent() {
-  const roll = getRandomInt(0, COMMON_EVENTS.length - 1);
-  const eventData = COMMON_EVENTS[roll];
-  const eventCopy = { 
-    data: eventData, 
-    type: 'Общее (бонусное)', 
-    roll: roll + 1, 
-    isBonus: true,
-    id: getUniqueId(),
-    tableResults: {},
-    secondTableResults: {},
-    bars: [],
-    secondBars: [],
-    checked: false,
-    result: null,
-    resultText: null,
-    secondChecked: false,
-    secondResult: null,
-    secondResultText: null
-  };
-  currentEvents.push(eventCopy);
 }
 
 // ============================================================
