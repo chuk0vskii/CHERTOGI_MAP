@@ -10,11 +10,12 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createMultipleBars, createResult, createEffect } = helpers;
+    const { createTableButton, createMultipleBars, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createTableButton('oasis_mysteries', event.id, 'main_oasis', event);
-    html += createMultipleBars(event, 'main', 'Проверка Искры', 12);
+    html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -29,8 +30,7 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
-    const difficulty = 12;
+  handleCheck: function(event, values, type, difficulty) {
     const successes = values.filter(v => v >= difficulty).length;
     const failures = values.filter(v => v < difficulty).length;
     const total = values.length;
