@@ -1,5 +1,5 @@
 // ============================================================
-// ФАЗА ПУТЬ - ПОЛНАЯ ПЕРЕПИСЬ
+// ФАЗА ПУТЬ - ПОЛНАЯ ВЕРСИЯ
 // ============================================================
 
 import { _supabase } from '../config-module.js';
@@ -22,10 +22,6 @@ let currentEvents = [];
 let tableCache = {};
 let eventIdCounter = 0;
 
-// ============================================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// ============================================================
-
 function getUniqueId() {
   return ++eventIdCounter;
 }
@@ -33,10 +29,6 @@ function getUniqueId() {
 function findEventById(id) {
   return currentEvents.find(e => e.id === id);
 }
-
-// ============================================================
-// ЗАГРУЗКА ТАБЛИЦ
-// ============================================================
 
 async function getTableData(tableName) {
   try {
@@ -62,20 +54,12 @@ async function getTableData(tableName) {
   }
 }
 
-// ============================================================
-// ССЫЛКА НА БЕСТИАРИЙ
-// ============================================================
-
 function createBeastLink(name, tableName) {
   const encodedName = encodeURIComponent(name);
   let sectionId = TABLE_TO_SECTION[tableName] || 'dangerous_creatures';
   const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
   return '<a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + name + '</a>';
 }
-
-// ============================================================
-// ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА ТАБЛИЦЫ
-// ============================================================
 
 function displayTableResult(container, item, fields, isCreature, actualTableName, randomIndex, eventId, resultKey) {
   let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
@@ -114,10 +98,6 @@ function displayTableResult(container, item, fields, isCreature, actualTableName
   }
 }
 
-// ============================================================
-// РОЛЛ ТАБЛИЦЫ
-// ============================================================
-
 async function rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -154,10 +134,6 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
     container.style.display = 'block';
   }
 }
-
-// ============================================================
-// ГЕНЕРАЦИЯ СОБЫТИЙ
-// ============================================================
 
 export async function generatePathEvents() {
   const selectedOption = regionSelect.options[regionSelect.selectedIndex];
@@ -266,10 +242,6 @@ function addBonusEvent() {
   renderEvents();
 }
 
-// ============================================================
-// ОТРИСОВКА
-// ============================================================
-
 function renderEvents() {
   if (!currentEvents || currentEvents.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
@@ -297,7 +269,6 @@ function renderEvents() {
     }
     html += '</div>';
     
-    // Основная таблица события
     if (config && config.table) {
       const containerId = 'table-result-' + eventId;
       const isCreature = config.table.isCreature || false;
@@ -328,7 +299,6 @@ function renderEvents() {
         html += '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
       }
       
-      // Эффекты проверки
       if (config && config.check && config.check.results) {
         const results = config.check.results;
         let foundEffect = false;
@@ -374,18 +344,13 @@ function renderEvents() {
             break;
           }
         }
-        if (!foundEffect && resultText) {
-          // Если нет эффекта, но есть результат — просто показываем результат
-        }
       }
     }
     
-    // Бары для проверки
     if (config && config.check && config.check.bars) {
       html += renderCheckBars(event, 'main', config.check);
     }
     
-    // Вторая проверка
     if (config && config.secondCheck) {
       html += renderSecondCheck(event, config.secondCheck);
     }
@@ -435,7 +400,6 @@ function renderCheckBars(event, type, checkConfig) {
   
   html += '</div>';
   
-  // Результат второй проверки
   if (isSecond && event.secondChecked) {
     const resultType = event.secondResult;
     const resultText = event.secondResultText || getResultLabel(resultType);
@@ -496,10 +460,6 @@ function renderSecondCheck(event, secondConfig) {
   return html;
 }
 
-// ============================================================
-// ОБРАБОТЧИКИ
-// ============================================================
-
 function attachEventHandlers() {
   eventsContainer.removeEventListener('click', handleClick);
   eventsContainer.removeEventListener('input', handleInput);
@@ -513,7 +473,6 @@ function attachEventHandlers() {
 function handleClick(e) {
   const target = e.target;
   
-  // Кнопка проверки (один бар)
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -521,14 +480,12 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка проверки (второй бар)
   if (target.classList.contains('btn-check-second')) {
     const eventId = parseInt(target.dataset.eventId);
     handleCheck(eventId, 'second');
     return;
   }
   
-  // Кнопка множественной проверки
   if (target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -536,7 +493,6 @@ function handleClick(e) {
     return;
   }
   
-  // Добавление/удаление баров
   if (target.classList.contains('btn-add-bar')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -552,7 +508,6 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка таблицы
   if (target.classList.contains('btn-roll-table')) {
     const tableName = target.dataset.table;
     const containerId = target.dataset.container;
@@ -592,10 +547,6 @@ function handleKeydown(e) {
     }
   }
 }
-
-// ============================================================
-// ЛОГИКА ПРОВЕРОК
-// ============================================================
 
 function handleCheck(eventId, type) {
   const event = findEventById(eventId);
@@ -667,10 +618,6 @@ function removeBar(eventId, type, barIdx) {
   renderEvents();
 }
 
-// ============================================================
-// ОБРАБОТКА ПРОВЕРКИ
-// ============================================================
-
 function processCheck(eventId, type, values) {
   const event = findEventById(eventId);
   if (!event) return;
@@ -682,6 +629,21 @@ function processCheck(eventId, type, values) {
   const difficulty = config.difficulty || 12;
   const results = config.results || [];
   
+  // Дефолтные сообщения
+  const defaultMessages = {
+    'all_success': 'Все успешно!',
+    'half_success': 'Больше половины успешно!',
+    'half_fail': 'Больше половины провалили!',
+    'all_fail': 'Все провалили!',
+    'crit_success': 'Критический успех!',
+    'crit_fail': 'Критический провал!',
+    'success': 'Успех!',
+    'fail': 'Провал...',
+    'total_80': '80 и более — Боги благословляют группу!',
+    'total_60': '60 и более — Боги в раздумье!',
+    'total_40': '40 и менее — Боги недовольны!'
+  };
+  
   let resultType = '';
   
   // Проверка типа total_check (Вмешательство звезд)
@@ -691,8 +653,6 @@ function processCheck(eventId, type, values) {
       resultType = 'total_80';
     } else if (totalValue >= 60) {
       resultType = 'total_60';
-    } else if (totalValue < 40) {
-      resultType = 'total_40';
     } else {
       resultType = 'total_40';
     }
@@ -711,31 +671,33 @@ function processCheck(eventId, type, values) {
       resultType = 'half_fail';
     } else if (failures === total) {
       resultType = 'all_fail';
+    } else {
+      // fallback для одиночных проверок
+      const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
+      if (avgValue >= difficulty) {
+        resultType = 'success';
+      } else {
+        resultType = 'fail';
+      }
     }
     
     const hasCritSuccess = values.some(v => v >= difficulty + 5);
     const hasCritFail = values.some(v => v <= difficulty - 5);
     
-    if (hasCritSuccess && (resultType === 'all_success' || resultType === 'half_success')) {
+    if (hasCritSuccess && (resultType === 'all_success' || resultType === 'half_success' || resultType === 'success')) {
       resultType = 'crit_success';
     }
-    if (hasCritFail && (resultType === 'all_fail' || resultType === 'half_fail')) {
+    if (hasCritFail && (resultType === 'all_fail' || resultType === 'half_fail' || resultType === 'fail')) {
       resultType = 'crit_fail';
     }
   }
   
-  if (isSecond) {
-    event.secondResult = resultType;
-    event.secondResultText = getResultLabel(resultType);
-    event.secondChecked = true;
-  } else {
-    event.result = resultType;
-    event.resultText = getResultLabel(resultType);
-    event.checked = true;
-  }
+  // Ищем сообщение в конфиге или используем дефолтное
+  let resultMessage = defaultMessages[resultType] || getResultLabel(resultType);
   
-  // Применяем эффекты
-  results.forEach(function(r) {
+  // Ищем в конфиге подходящее сообщение
+  for (var i = 0; i < results.length; i++) {
+    const r = results[i];
     let conditionMet = false;
     
     if (r.condition === resultType) {
@@ -763,25 +725,33 @@ function processCheck(eventId, type, values) {
     }
     
     if (conditionMet) {
+      resultMessage = r.message;
       if (r.effects) {
         if (r.effects.arrival) {
           addArrivalBonus(r.effects.arrival);
         }
         if (r.effects.events) {
-          for (var i = 0; i < r.effects.events; i++) {
+          for (var j = 0; j < r.effects.events; j++) {
             addBonusEvent();
           }
         }
       }
+      break;
     }
-  });
+  }
+  
+  if (isSecond) {
+    event.secondResult = resultType;
+    event.secondResultText = resultMessage;
+    event.secondChecked = true;
+  } else {
+    event.result = resultType;
+    event.resultText = resultMessage;
+    event.checked = true;
+  }
   
   renderEvents();
 }
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
 
 export function initPath() {
   if (generateBtn) {
