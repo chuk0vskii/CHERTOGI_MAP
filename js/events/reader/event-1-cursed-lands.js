@@ -11,23 +11,30 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createTableButton('region_curses', event.id, 'main_curses', event);
-    html += createSingleBar(event, 'main', 'Проверка Традиции', 12);
+    html += createSingleBar(event, 'main', 'Проверка Традиции (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
       const effects = {
-        'success_5': 'Чтец замечает следы поверженного зверя, зараженного тьмой, но что-то гораздо больше и сильнее убило его. Видя это поверженное создание тьмы, группа получает преимущество на проверку Искры до конца фазы Путь и +1 на Прибытие.',
-        'success': 'Группа получает +1 на Прибытие, обходя темные земли.',
-        'fail': 'Группа заходит в темные земли, но успешно замечает это перед тем, как становится слишком поздно, получая -1 на Прибытие.',
-        'fail_5': 'Группа получает штраф -1 на Прибытие. Они забрели слишком далеко в логово зла, не заметив этого и пробуждая то, что спит в этих землях.'
+        'success_5': 'Чтец замечает следы поверженного зверя, зараженного тьмой, но что-то гораздо больше и сильнее убило его. Видя это поверженное создание тьмы, группа получает преимущество на проверку Искры до конца фазы Путь и +1 к Прибытию.',
+        'success': 'Группа получает +1 к Прибытию, обходя темные земли.',
+        'fail': 'Группа заходит в темные земли, но успешно замечает это перед тем, как становится слишком поздно, получая -1 к Прибытию.',
+        'fail_5': 'Группа получает штраф -1 к Прибытию. Они забрели слишком далеко в логово зла, не заметив этого и пробуждая то, что спит в этих землях.'
       };
       html += createEffect(event.result, effects);
       
-      // Дополнительная таблица для успеха_5
+      if (event.result === 'success_5' || event.result === 'success') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      }
+      if (event.result === 'fail' || event.result === 'fail_5') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(-1);
+      }
+      
       if (event.result === 'success_5') {
         html += createTableButton('great_beasts', event.id, 'extra_great_beasts', event);
       }
@@ -36,9 +43,8 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
