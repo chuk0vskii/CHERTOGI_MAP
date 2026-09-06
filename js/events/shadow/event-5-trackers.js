@@ -10,10 +10,10 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Выбор навыка
     html += '<div style="margin-top: 8px;">';
     html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px;">Выберите навык:</label>';
     html += '<select id="skill-select-' + event.id + '" style="width:100%; padding:8px 12px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid #4a0e0e; border-radius:6px; color:#ffffff; font-family:\'Philosopher\', sans-serif;">';
@@ -22,7 +22,7 @@ export default {
     html += '</select>';
     html += '</div>';
     
-    html += createSingleBar(event, 'main', 'Результат проверки', 12);
+    html += createSingleBar(event, 'main', 'Результат проверки (сложность ' + difficulty + ')', difficulty);
     html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
     
     if (event.checked) {
@@ -33,14 +33,17 @@ export default {
         'fail_5': 'Группа заходит в засаду. Начинается бой с раундом сюрприза.'
       };
       html += createEffect(event.result, effects);
+      
+      if (event.result === 'success') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      }
     }
     
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
