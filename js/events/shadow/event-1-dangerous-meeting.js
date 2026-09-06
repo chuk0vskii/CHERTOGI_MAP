@@ -1,0 +1,47 @@
+export default {
+  id: 1,
+  title: 'Опасная Встреча',
+  description: 'Что-то есть на вашем пути.',
+  checkInfo: 'Тень Нарара совершает проверку Скрытности.',
+  type: 'dangerous_meeting',
+  
+  tables: {
+    'zone_conflicts': { label: 'Таблица Конфликт Зоны', fields: ['name', 'description'] }
+  },
+  
+  render: function(event, helpers) {
+    const { createTableButton, createSingleBar, createResult, createEffect } = helpers;
+    let html = '';
+    
+    html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
+    html += createSingleBar(event, 'main', 'Проверка Скрытности', 12);
+    
+    if (event.checked) {
+      html += createResult(event.result, event.resultText);
+      const effects = {
+        'success': 'Группа может обойти встречу на безопасной дистанции.',
+        'fail': 'Группа замечена.'
+      };
+      html += createEffect(event.result, effects);
+    }
+    
+    return html;
+  },
+  
+  handleCheck: function(event, values, type) {
+    const value = values[0] || 0;
+    const difficulty = 12;
+    let resultType = '';
+    let resultText = '';
+    
+    if (value >= difficulty) {
+      resultType = 'success';
+      resultText = 'Успех!';
+    } else {
+      resultType = 'fail';
+      resultText = 'Провал...';
+    }
+    
+    return { resultType, resultText };
+  }
+};
