@@ -6,10 +6,11 @@ export default {
   type: 'whispering_obo',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    html += createSingleBar(event, 'main', 'Проверка Традиций', 12);
+    html += createSingleBar(event, 'main', 'Проверка Традиций (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -20,14 +21,17 @@ export default {
         'fail_5': 'Группа принимает знак за проклятие. Проверка Искры, и +1 событие в фазе Путь.'
       };
       html += createEffect(event.result, effects);
+      
+      if (event.result === 'success_5' || event.result === 'success') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      }
     }
     
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
