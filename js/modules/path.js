@@ -65,10 +65,10 @@ function createBeastLink(name, tableName) {
 }
 
 // ============================================================
-// ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ
+// ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ С СОХРАНЕНИЕМ РЕЗУЛЬТАТА
 // ============================================================
 
-async function rollTable(tableName, containerId, fields, isCreature) {
+async function rollTable(tableName, containerId, fields, isCreature, eventIndex, resultKey, isSecond) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error('Контейнер не найден: ' + containerId);
@@ -102,31 +102,53 @@ async function rollTable(tableName, containerId, fields, isCreature) {
     const randomIndex = Math.floor(Math.random() * data.length);
     const item = data[randomIndex];
     
-    let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
-    html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
-    
-    if (fields && fields.length > 0) {
-      fields.forEach(function(field) {
-        if (item[field] !== undefined && item[field] !== null) {
-          let value = item[field];
-          if (isCreature) {
-            value = createBeastLink(value, actualTableName);
-          }
-          const label = field === 'name' ? '' : field === 'pass_method' ? 'Как пройти: ' : field === 'reward_type' ? 'Что хранят: ' : field === 'oasis_type' ? 'Оазис: ' : field === 'mystery' ? 'Тайна: ' : '';
-          html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
-        }
-      });
+    // Сохраняем результат в событие
+    if (eventIndex !== undefined && currentEvents[eventIndex]) {
+      const event = currentEvents[eventIndex];
+      const storage = isSecond ? 'secondTableResults' : 'tableResults';
+      if (!event[storage]) {
+        event[storage] = {};
+      }
+      event[storage][resultKey || containerId] = {
+        item: item,
+        actualTableName: actualTableName,
+        randomIndex: randomIndex,
+        fields: fields,
+        isCreature: isCreature,
+        html: null // будет заполнено при отображении
+      };
     }
     
-    html += '</div>';
-    container.innerHTML = html;
-    container.style.display = 'block';
+    // Отображаем результат
+    displayTableResult(container, item, fields, isCreature, actualTableName, randomIndex);
     
   } catch (err) {
     console.error('Ошибка:', err);
     container.innerHTML = '<div style="color: #ff6b6b; padding: 8px 12px; background: rgba(255,107,107,0.1); border-radius: 6px; border-left: 2px solid #ff6b6b;">Ошибка</div>';
     container.style.display = 'block';
   }
+}
+
+function displayTableResult(container, item, fields, isCreature, actualTableName, randomIndex) {
+  let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
+  html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
+  
+  if (fields && fields.length > 0) {
+    fields.forEach(function(field) {
+      if (item[field] !== undefined && item[field] !== null) {
+        let value = item[field];
+        if (isCreature) {
+          value = createBeastLink(value, actualTableName);
+        }
+        const label = field === 'name' ? '' : field === 'pass_method' ? 'Как пройти: ' : field === 'reward_type' ? 'Что хранят: ' : field === 'oasis_type' ? 'Оазис: ' : field === 'mystery' ? 'Тайна: ' : '';
+        html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
+      }
+    });
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
 }
 
 // ============================================================
@@ -281,21 +303,33 @@ function renderEvents(events) {
 function renderEventContent(event, index, config) {
   let html = '';
   
+  // Основная таблица события
   if (config.table) {
     const containerId = 'table-result-' + index + '-' + Date.now();
     const isCreature = config.table.isCreature || false;
     const fields = config.table.fields || ['name'];
     const tableName = config.table.name;
     const label = config.table.label || 'Таблица';
+    const resultKey = 'main_' + config.table.name;
     
     html += '<div style="margin-top: 8px;">';
-    html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+    html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-index="' + index + '" data-result-key="' + resultKey + '" data-second="false" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
     html += 'Бросить по ' + label;
     html += '</button>';
     html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
     html += '</div>';
+    
+    // Восстанавливаем сохранённый результат
+    if (event.tableResults && event.tableResults[resultKey]) {
+      const saved = event.tableResults[resultKey];
+      const savedContainer = document.getElementById(containerId);
+      if (savedContainer) {
+        displayTableResult(savedContainer, saved.item, saved.fields, saved.isCreature, saved.actualTableName, saved.randomIndex);
+      }
+    }
   }
   
+  // Результат основной проверки
   if (event.checked) {
     const resultType = event.result;
     const resultText = event.resultText || getResultLabel(resultType);
@@ -305,6 +339,7 @@ function renderEventContent(event, index, config) {
       html += '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
     }
     
+    // Эффекты основной проверки с кнопками таблиц
     if (config.check && config.check.results) {
       const results = config.check.results;
       for (var i = 0; i < results.length; i++) {
@@ -332,19 +367,30 @@ function renderEventContent(event, index, config) {
         if (conditionMet) {
           html += '<div class="event-effect visible">' + r.message + '</div>';
           
+          // Если есть таблица для генерации в эффекте
           if (r.table) {
             const tableContainerId = 'result-table-' + index + '-' + Date.now();
             const isCreatureTable = r.isCreature || false;
             const fieldsTable = r.fields || ['name'];
             const tableName = r.table;
             const labelTable = r.label || 'Таблица';
+            const resultKeyTable = 'effect_' + tableName;
             
             html += '<div style="margin-top: 8px;">';
-            html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + tableContainerId + '" data-fields="' + fieldsTable.join(',') + '" data-creature="' + isCreatureTable + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+            html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + tableContainerId + '" data-fields="' + fieldsTable.join(',') + '" data-creature="' + isCreatureTable + '" data-event-index="' + index + '" data-result-key="' + resultKeyTable + '" data-second="false" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
             html += 'Бросить по ' + labelTable;
             html += '</button>';
             html += '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>';
             html += '</div>';
+            
+            // Восстанавливаем сохранённый результат для эффекта
+            if (event.tableResults && event.tableResults[resultKeyTable]) {
+              const saved = event.tableResults[resultKeyTable];
+              const savedContainer = document.getElementById(tableContainerId);
+              if (savedContainer) {
+                displayTableResult(savedContainer, saved.item, saved.fields, saved.isCreature, saved.actualTableName, saved.randomIndex);
+              }
+            }
           }
           break;
         }
@@ -392,6 +438,7 @@ function renderCheckBars(event, index, type, checkConfig) {
   
   html += '</div>';
   
+  // Результаты второй проверки
   if (isSecond && event.secondChecked) {
     const resultType = event.secondResult;
     const resultText = event.secondResultText || getResultLabel(resultType);
@@ -431,19 +478,30 @@ function renderCheckBars(event, index, type, checkConfig) {
 function renderSecondCheck(event, index, secondConfig) {
   let html = '<div class="second-check-section">';
   
+  // Таблица для второй проверки
   if (secondConfig.table) {
     const containerId = 'second-table-result-' + index + '-' + Date.now();
     const isCreature = secondConfig.table.isCreature || false;
     const fields = secondConfig.table.fields || ['name'];
     const tableName = secondConfig.table.name;
     const label = secondConfig.table.label || 'Таблица';
+    const resultKey = 'second_' + tableName;
     
     html += '<div style="margin-top: 8px;">';
-    html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+    html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-index="' + index + '" data-result-key="' + resultKey + '" data-second="true" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
     html += 'Бросить по ' + label;
     html += '</button>';
     html += '<div id="' + containerId + '" style="display: none; margin-top: 6px;"></div>';
     html += '</div>';
+    
+    // Восстанавливаем сохранённый результат для второй проверки
+    if (event.secondTableResults && event.secondTableResults[resultKey]) {
+      const saved = event.secondTableResults[resultKey];
+      const savedContainer = document.getElementById(containerId);
+      if (savedContainer) {
+        displayTableResult(savedContainer, saved.item, saved.fields, saved.isCreature, saved.actualTableName, saved.randomIndex);
+      }
+    }
   }
   
   html += renderCheckBars(event, index, 'second', secondConfig);
@@ -469,6 +527,7 @@ function attachEventHandlers() {
 function handleContainerClick(e) {
   const target = e.target;
   
+  // Кнопка проверки (один бар)
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -476,12 +535,14 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка проверки (второй бар)
   if (target.classList.contains('btn-check-second')) {
     const index = parseInt(target.dataset.index);
     handleSingleCheckSecondClick(index);
     return;
   }
   
+  // Кнопка множественной проверки
   if (target.classList.contains('btn-check-multiple')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -489,6 +550,7 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка добавления бара
   if (target.classList.contains('btn-add-bar')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -496,6 +558,7 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка удаления бара
   if (target.classList.contains('btn-remove-bar')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -504,13 +567,17 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка таблицы
   if (target.classList.contains('btn-roll-table')) {
     const tableName = target.dataset.table;
     const containerId = target.dataset.container;
     const fieldsStr = target.dataset.fields || 'name';
     const fields = fieldsStr.split(',');
     const isCreature = target.dataset.creature === 'true';
-    rollTable(tableName, containerId, fields, isCreature);
+    const eventIndex = parseInt(target.dataset.eventIndex);
+    const resultKey = target.dataset.resultKey || containerId;
+    const isSecond = target.dataset.second === 'true';
+    rollTable(tableName, containerId, fields, isCreature, eventIndex, resultKey, isSecond);
     return;
   }
 }
@@ -680,6 +747,7 @@ function processCheck(index, type, values) {
     event.checked = true;
   }
   
+  // Применяем эффекты
   results.forEach(function(r) {
     let conditionMet = false;
     
@@ -712,6 +780,10 @@ function processCheck(index, type, values) {
             addBonusEvent();
           }
         }
+      }
+      // Сохраняем сообщение эффекта для отображения
+      if (r.message && !event._effectMessage) {
+        event._effectMessage = r.message;
       }
     }
   });
