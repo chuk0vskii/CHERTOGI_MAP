@@ -10,11 +10,12 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
-    html += createSingleBar(event, 'main', 'Проверка Скрытности', 12);
+    html += createSingleBar(event, 'main', 'Проверка Скрытности (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -28,20 +29,6 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
-    let resultType = '';
-    let resultText = '';
-    
-    if (value >= difficulty) {
-      resultType = 'success';
-      resultText = 'Успех!';
-    } else {
-      resultType = 'fail';
-      resultText = 'Провал...';
-    }
-    
-    return { resultType, resultText };
-  }
-};
+    let resultType
