@@ -31,4 +31,17 @@ export default {
   
   handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    let resultType
+    let resultType = '';
+    let resultText = '';
+    
+    if (value >= difficulty) {
+      resultType = 'success';
+      resultText = 'Успех!';
+    } else {
+      resultType = 'fail';
+      resultText = 'Провал...';
+    }
+    
+    return { resultType, resultText };
+  }
+};
