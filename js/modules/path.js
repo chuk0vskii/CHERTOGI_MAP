@@ -8,7 +8,11 @@ import {
   TABLE_TO_SECTION, getRegionalTableName, getEventModule
 } from '../events/index.js';
 import { getRandomInt, getResultLabel, getResultClass } from './utils.js';
-import { addArrivalBonus, getArrivalBonus } from './region.js';
+import { 
+  addArrivalBonus, getArrivalBonus, 
+  getCurrentDifficulty, getBaseDifficulty, getCurrentSignMod,
+  addSignMod, updateDifficulty
+} from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
 const eventsContainer = document.getElementById('eventsContainer');
@@ -55,10 +59,10 @@ function createBeastLink(name, tableName) {
 }
 
 // ============================================================
-// РОЛЛ ТАБЛИЦЫ
+// РОЛЛ ТАБЛИЦЫ С СОХРАНЕНИЕМ РЕЗУЛЬТАТА
 // ============================================================
 
-async function rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey) {
+async function rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey, count) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -82,33 +86,46 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
       return;
     }
     
-    const randomIndex = Math.floor(Math.random() * data.length);
-    const item = data[randomIndex];
+    // Определяем количество результатов (по умолчанию 1)
+    const resultsCount = count || 1;
+    let html = '';
+    const results = [];
     
-    let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
-    html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат: <strong>' + (randomIndex + 1) + '</strong></div>';
+    for (var i = 0; i < resultsCount; i++) {
+      const randomIndex = Math.floor(Math.random() * data.length);
+      const item = data[randomIndex];
+      results.push({ item, randomIndex });
+      
+      html += '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
+      html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат #' + (i + 1) + ': <strong>' + (randomIndex + 1) + '</strong></div>';
+      
+      fields.forEach(function(field) {
+        if (item[field] !== undefined && item[field] !== null) {
+          let value = item[field];
+          if (isCreature) value = createBeastLink(value, actualTableName);
+          const label = field === 'name' ? '' : 
+                        field === 'pass_method' ? 'Как пройти: ' : 
+                        field === 'reward_type' ? 'Что хранят: ' : 
+                        field === 'oasis_type' ? 'Оазис: ' : 
+                        field === 'mystery' ? 'Тайна: ' : '';
+          html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
+        }
+      });
+      html += '</div>';
+    }
     
-    fields.forEach(function(field) {
-      if (item[field] !== undefined && item[field] !== null) {
-        let value = item[field];
-        if (isCreature) value = createBeastLink(value, actualTableName);
-        const label = field === 'name' ? '' : 
-                      field === 'pass_method' ? 'Как пройти: ' : 
-                      field === 'reward_type' ? 'Что хранят: ' : 
-                      field === 'oasis_type' ? 'Оазис: ' : 
-                      field === 'mystery' ? 'Тайна: ' : '';
-        html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
-      }
-    });
-    
-    html += '</div>';
     container.innerHTML = html;
     container.style.display = 'block';
     
+    // Сохраняем результат в событие
     const event = findEventById(eventId);
     if (event) {
       if (!event.tableResults) event.tableResults = {};
-      event.tableResults[resultKey] = { html: html, item: item };
+      event.tableResults[resultKey] = { 
+        html: html, 
+        results: results,
+        count: resultsCount
+      };
     }
     
   } catch (err) {
@@ -185,7 +202,6 @@ export async function generatePathEvents() {
     e.secondChecked = false;
     e.secondResult = null;
     e.secondResultText = null;
-    // Сохраняем модуль события
     e.module = e.eventModule;
   });
   
@@ -196,7 +212,6 @@ export async function generatePathEvents() {
 function generateEventList(commonCount, roleCount) {
   const events = [];
 
-  // Общие события
   for (var i = 0; i < commonCount; i++) {
     const module = getRandomEvent('Общее');
     const eventCopy = { 
@@ -209,7 +224,6 @@ function generateEventList(commonCount, roleCount) {
     events.push(eventCopy);
   }
 
-  // Ролевые события
   const roles = ['Чтец_Знаков', 'Тень_Нарара'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
@@ -225,7 +239,6 @@ function generateEventList(commonCount, roleCount) {
     events.push(eventCopy);
   }
 
-  // Перемешиваем
   for (var k = events.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [events[k], events[j2]] = [events[j2], events[k]];
@@ -264,22 +277,22 @@ function renderEvents() {
     }
     html += '</div>';
     
-    // Вызываем уникальный render события
     if (module && module.render) {
       const helpers = {
-        createTableButton: function(tableName, eventId, resultKey, ev) {
+        createTableButton: function(tableName, eventId, resultKey, ev, count) {
           const moduleTables = module.tables || {};
           const tableConfig = moduleTables[tableName];
           if (!tableConfig) return '';
           
-          const containerId = 'table-result-' + eventId + '-' + tableName;
+          const containerId = 'table-result-' + eventId + '-' + tableName + '-' + (count || 1);
           const fields = tableConfig.fields || ['name'];
           const isCreature = tableConfig.isCreature || false;
           const label = tableConfig.label || 'Таблица';
+          const resultsCount = count || 1;
           
           let h = '<div style="margin-top: 8px;">';
-          h += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-id="' + eventId + '" data-result-key="' + resultKey + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
-          h += 'Бросить по ' + label;
+          h += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + containerId + '" data-fields="' + fields.join(',') + '" data-creature="' + isCreature + '" data-event-id="' + eventId + '" data-result-key="' + resultKey + '" data-count="' + resultsCount + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+          h += 'Бросить по ' + label + (resultsCount > 1 ? ' (' + resultsCount + ' раза)' : '');
           h += '</button>';
           if (ev && ev.tableResults && ev.tableResults[resultKey]) {
             h += '<div id="' + containerId + '" style="display: block; margin-top: 6px;">' + ev.tableResults[resultKey].html + '</div>';
@@ -336,6 +349,9 @@ function renderEvents() {
         createEffect: function(resultType, effects) {
           if (!effects || !effects[resultType]) return '';
           return '<div class="event-effect visible">' + effects[resultType] + '</div>';
+        },
+        getCurrentDifficulty: function() {
+          return getCurrentDifficulty();
         }
       };
       
@@ -366,7 +382,6 @@ function attachEventHandlers() {
 function handleClick(e) {
   const target = e.target;
   
-  // Кнопка проверки (один бар)
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -374,14 +389,12 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка проверки (второй бар)
   if (target.classList.contains('btn-check-second')) {
     const eventId = parseInt(target.dataset.eventId);
     handleCheck(eventId, 'second');
     return;
   }
   
-  // Кнопка множественной проверки
   if (target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -389,7 +402,6 @@ function handleClick(e) {
     return;
   }
   
-  // Добавление/удаление баров
   if (target.classList.contains('btn-add-bar')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
@@ -405,7 +417,6 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка таблицы
   if (target.classList.contains('btn-roll-table')) {
     const tableName = target.dataset.table;
     const containerId = target.dataset.container;
@@ -414,11 +425,11 @@ function handleClick(e) {
     const isCreature = target.dataset.creature === 'true';
     const eventId = parseInt(target.dataset.eventId);
     const resultKey = target.dataset.resultKey || containerId;
-    rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey);
+    const count = parseInt(target.dataset.count) || 1;
+    rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey, count);
     return;
   }
   
-  // Кнопка определения природы пролома
   if (target.classList.contains('btn-reality-tear')) {
     const eventId = parseInt(target.dataset.eventId);
     handleRealityTear(eventId);
@@ -541,10 +552,13 @@ function processCheck(eventId, type, values) {
     return;
   }
   
-  const result = module.handleCheck(event, values, type);
+  // Получаем текущую сложность
+  const difficulty = getCurrentDifficulty();
+  
+  // Передаём сложность в модуль
+  const result = module.handleCheck(event, values, type, difficulty);
   
   if (!result) {
-    // Событие без проверки (type: 'simple')
     return;
   }
   
@@ -558,6 +572,16 @@ function processCheck(eventId, type, values) {
     event.result = result.resultType;
     event.resultText = result.resultText;
     event.checked = true;
+  }
+  
+  // Применяем эффекты из модуля
+  if (result.effects) {
+    if (result.effects.arrival) {
+      addArrivalBonus(result.effects.arrival);
+    }
+    if (result.effects.signMod) {
+      addSignMod(result.effects.signMod);
+    }
   }
   
   renderEvents();
