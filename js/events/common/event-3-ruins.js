@@ -12,25 +12,36 @@ export default {
   hasSecondCheck: true,
   
   render: function(event, helpers) {
-    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect } = helpers;
+    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createTableButton('ruins', event.id, 'main_ruins', event);
-    html += createMultipleBars(event, 'main', 'Проверка Искры', 12);
+    html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
       const effects = {
-        'all_or_half_success': 'Группа вдохновляется невероятными строениями древней цивилизации и получает +1 на Прибытие.',
-        'half_fail': 'Что разрушило строение? Что это за знаки? Что их ждёт дальше? Мораль группы начинает разваливаться, они получают -1 на Прибытие.',
+        'all_or_half_success': 'Группа вдохновляется невероятными строениями древней цивилизации и получает +1 к Прибытию.',
+        'half_fail': 'Что разрушило строение? Что это за знаки? Что их ждёт дальше? Мораль группы начинает разваливаться, они получают -1 к Прибытию.',
         'all_fail': 'Что за кошмары могут обитать в этой местности? Группа начинает в удвоенном темпе сбегать с места. Если же группа решит исследовать руины, ее члены будут считаться Испуганными любыми существами находящимися рядом на все время исследования.'
       };
       html += createEffect(event.result, effects);
+      
+      // Эффекты с изменением прибытия
+      if (event.result === 'all_or_half_success') {
+        // +1 к Прибытию
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      }
+      if (event.result === 'half_fail') {
+        // -1 к Прибытию
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(-1);
+      }
     }
     
     // Вторая проверка
     html += '<div class="second-check-section">';
-    html += createSingleBar(event, 'second', 'Проверка Ловкости рук (Тень Нарара)', 12);
+    html += createSingleBar(event, 'second', 'Проверка Ловкости рук (Тень Нарара) (сложность ' + difficulty + ')', difficulty);
     if (event.secondChecked) {
       html += createResult(event.secondResult, event.secondResultText);
       const secondEffects = {
@@ -46,9 +57,8 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const isSecond = type === 'second';
-    const difficulty = 12;
     
     if (isSecond) {
       const value = values[0] || 0;
