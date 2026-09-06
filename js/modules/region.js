@@ -66,11 +66,20 @@ export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(
 export function addArrivalBonus(val) { 
   arrivalBonus += val; 
   updateArrivalDisplay();
-  console.log('Бонус кварны изменён: ' + arrivalBonus);
+  console.log('Бонус прибытия изменён: ' + arrivalBonus);
 }
 export function resetArrivalBonus() { 
   arrivalBonus = 0; 
   updateArrivalDisplay();
+}
+
+// ============================================================
+// ПОЛУЧЕНИЕ ТЕКУЩЕЙ СЛОЖНОСТИ
+// ============================================================
+
+export function getCurrentDifficulty() {
+  const total = baseDifficulty + currentSignMod;
+  return total < 0 ? 0 : total;
 }
 
 // ============================================================
@@ -95,7 +104,6 @@ export async function loadRegions() {
 
     if (error) {
       console.error('Ошибка загрузки регионов:', error);
-      regionSelect.innerHTML = '<option value="">— Ошибка загрузки —</option>';
       return;
     }
 
@@ -120,7 +128,6 @@ export async function loadRegions() {
     console.log('Загружено ' + data.length + ' открытых регионов');
   } catch (err) {
     console.error('Ошибка при загрузке регионов:', err);
-    regionSelect.innerHTML = '<option value="">— Ошибка загрузки —</option>';
   }
 }
 
@@ -129,67 +136,58 @@ export async function loadRegions() {
 // ============================================================
 
 export function initRegionChangeHandler() {
-  if (!regionSelect) {
-    console.error('regionSelect не найден для обработчика');
-    return;
-  }
+  if (!regionSelect) return;
   
-  // Удаляем старый обработчик, чтобы не было дублирования
-  regionSelect.removeEventListener('change', handleRegionChange);
-  regionSelect.addEventListener('change', handleRegionChange);
-  
-  console.log('Обработчик смены региона инициализирован');
-}
-
-function handleRegionChange() {
-  const selected = this.options[this.selectedIndex];
-  
-  if (this.value && this.value !== '') {
-    const id = parseInt(this.value);
-    const difficulty = parseInt(selected.dataset.difficulty) || 0;
-    const terrainType = selected.dataset.terrainType || 'неизвестно';
+  regionSelect.addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
     
-    console.log('Выбран регион ID:', id, 'Сложность:', difficulty, 'Тип местности:', terrainType);
-    
-    setRegionId(id);
-    setBaseDifficulty(difficulty);
-    resetSignMod();
-    resetArrivalBonus();
-    
-    const signResult = document.getElementById('signResult');
-    const signPlaceholder = document.getElementById('signPlaceholder');
-    if (signResult) signResult.classList.remove('visible');
-    if (signPlaceholder) signPlaceholder.style.display = 'block';
-    
-    const eventsContainer = document.getElementById('eventsContainer');
-    if (eventsContainer) {
-      eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+    if (this.value && this.value !== '') {
+      const id = parseInt(this.value);
+      const difficulty = parseInt(selected.dataset.difficulty) || 0;
+      const terrainType = selected.dataset.terrainType || 'неизвестно';
+      
+      console.log('Выбран регион ID:', id, 'Сложность:', difficulty, 'Тип местности:', terrainType);
+      
+      setRegionId(id);
+      setBaseDifficulty(difficulty);
+      resetSignMod();
+      resetArrivalBonus();
+      
+      const signResult = document.getElementById('signResult');
+      const signPlaceholder = document.getElementById('signPlaceholder');
+      if (signResult) signResult.classList.remove('visible');
+      if (signPlaceholder) signPlaceholder.style.display = 'block';
+      
+      const eventsContainer = document.getElementById('eventsContainer');
+      if (eventsContainer) {
+        eventsContainer.innerHTML = '<div class="no-events">Выберите край и нажмите «Сгенерировать события пути»</div>';
+      }
+      
+      document.getElementById('commonEventsCount').textContent = '—';
+      document.getElementById('maxRoleEvents').textContent = '—';
+      document.getElementById('roleEventsCount').textContent = '—';
+      document.getElementById('totalEventsCount').textContent = '—';
+    } else {
+      console.log('Регион сброшен');
+      setRegionId(null);
+      setBaseDifficulty(0);
+      resetSignMod();
+      resetArrivalBonus();
+      
+      if (difficultyDisplay) {
+        difficultyDisplay.textContent = '—';
+        difficultyDisplay.style.color = '#ffd700';
+      }
+      if (pathDifficultyDisplay) {
+        pathDifficultyDisplay.textContent = '—';
+        pathDifficultyDisplay.style.color = '#ffd700';
+      }
+      if (arrivalDisplay) {
+        arrivalDisplay.textContent = '0';
+        arrivalDisplay.style.color = '#ffd700';
+      }
     }
-    
-    document.getElementById('commonEventsCount').textContent = '—';
-    document.getElementById('maxRoleEvents').textContent = '—';
-    document.getElementById('roleEventsCount').textContent = '—';
-    document.getElementById('totalEventsCount').textContent = '—';
-  } else {
-    console.log('Регион сброшен');
-    setRegionId(null);
-    setBaseDifficulty(0);
-    resetSignMod();
-    resetArrivalBonus();
-    
-    if (difficultyDisplay) {
-      difficultyDisplay.textContent = '—';
-      difficultyDisplay.style.color = '#ffd700';
-    }
-    if (pathDifficultyDisplay) {
-      pathDifficultyDisplay.textContent = '—';
-      pathDifficultyDisplay.style.color = '#ffd700';
-    }
-    if (arrivalDisplay) {
-      arrivalDisplay.textContent = '0';
-      arrivalDisplay.style.color = '#ffd700';
-    }
-  }
+  });
 }
 
 export { 
