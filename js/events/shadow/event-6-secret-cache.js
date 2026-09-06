@@ -1,0 +1,58 @@
+export default {
+  id: 6,
+  title: 'Потайной тайник',
+  description: 'Тень замечает остатки укрытого схрона — возможно, брошенного искателями или погибшими кочевниками.',
+  checkInfo: 'Тень совершает проверку Ловкости рук.',
+  type: 'secret_cache',
+  
+  tables: {
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] }
+  },
+  
+  render: function(event, helpers) {
+    const { createTableButton, createSingleBar, createResult, createEffect } = helpers;
+    let html = '';
+    
+    html += createSingleBar(event, 'main', 'Проверка Ловкости рук', 12);
+    
+    if (event.checked) {
+      html += createResult(event.result, event.resultText);
+      const effects = {
+        'success_5': 'В тайнике обнаружено ценное. Группа также получает +1 к Искре.',
+        'success': 'Найдены редкие ресурсы — куб провизии восстанавливается на 1 уровень, и группа получает +1 на Прибытие.',
+        'fail': 'Тень случайно заставляет сработать ловушку, тень Нарара получает 5к6 урона с любым типом на усмотрение Хранителя узлов.',
+        'fail_5': 'Тайник оказался приманкой. Срабатывает событие «Опасная встреча».'
+      };
+      html += createEffect(event.result, effects);
+      
+      if (event.result === 'success_5' || event.result === 'success') {
+        html += createTableButton('artefacts', event.id, 'extra_artefacts', event);
+      }
+    }
+    
+    return html;
+  },
+  
+  handleCheck: function(event, values, type) {
+    const value = values[0] || 0;
+    const difficulty = 12;
+    let resultType = '';
+    let resultText = '';
+    
+    if (value >= difficulty + 5) {
+      resultType = 'success_5';
+      resultText = 'Критический успех!';
+    } else if (value >= difficulty) {
+      resultType = 'success';
+      resultText = 'Успех!';
+    } else if (value >= difficulty - 5) {
+      resultType = 'fail';
+      resultText = 'Провал...';
+    } else {
+      resultType = 'fail_5';
+      resultText = 'Критический провал!';
+    }
+    
+    return { resultType, resultText };
+  }
+};
