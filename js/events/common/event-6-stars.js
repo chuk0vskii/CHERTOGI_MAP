@@ -6,25 +6,30 @@ export default {
   type: 'total_check',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    html += createSingleBar(event, 'main', 'Общий результат проверки Традиций', 12);
+    html += createSingleBar(event, 'main', 'Общий результат проверки Традиций', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
       const effects = {
         'total_80': 'Боги благословляют группу и их нити судьбы изгибаются в лучшую сторону. Все негативные эффекты знака из фазы Чтение знаков перестают действовать, а все положительные эффекты удваиваются.',
         'total_60': 'Боги в раздумье и посему судьба группы натягивается как струна. Чтец знаков делает еще один бросок по таблице знаков, у группы +1 событие в фазе Путь.',
-        'total_40': 'Боги недовольны малым поклонением и группу настигает их разочарование. Бросьте по таблице Знаков из фазы Чтение знаков с помехой. У группы также -2 в фазе Прибытие.'
+        'total_40': 'Боги недовольны малым поклонением и группу настигает их разочарование. Бросьте по таблице Знаков из фазы Чтение знаков с помехой. У группы также -2 к Прибытию.'
       };
       html += createEffect(event.result, effects);
+      
+      if (event.result === 'total_40') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(-2);
+      }
     }
     
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const totalValue = values[0] || 0;
     let resultType = '';
     let resultText = '';
