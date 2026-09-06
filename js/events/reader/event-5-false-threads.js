@@ -10,10 +10,11 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, createTableButton } = helpers;
+    const { createSingleBar, createResult, createEffect, createTableButton, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    html += createSingleBar(event, 'main', 'Проверка Расследования', 12);
+    html += createSingleBar(event, 'main', 'Проверка Расследования (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -24,6 +25,10 @@ export default {
       };
       html += createEffect(event.result, effects);
       
+      if (event.result === 'success') {
+        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      }
+      
       if (event.result === 'fail_5') {
         html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
       }
@@ -32,9 +37,8 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
