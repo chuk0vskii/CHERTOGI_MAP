@@ -6,10 +6,10 @@ export default {
   type: 'fate',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Выпадающий список событий
     html += '<div style="margin-top: 8px;">';
     html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px;">Выберите событие:</label>';
     html += '<select id="fate-select-' + event.id + '" style="width:100%; padding:8px 12px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid #4a0e0e; border-radius:6px; color:#ffffff; font-family:\'Philosopher\', sans-serif;">';
@@ -22,7 +22,7 @@ export default {
     html += '</select>';
     html += '</div>';
     
-    html += createSingleBar(event, 'main', 'Проверка Традиций', 12);
+    html += createSingleBar(event, 'main', 'Проверка Традиций (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -38,9 +38,8 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
