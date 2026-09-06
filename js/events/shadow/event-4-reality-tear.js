@@ -6,10 +6,10 @@ export default {
   type: 'reality_tear',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Кнопка определения природы пролома
     html += '<div style="margin-top: 8px;">';
     html += '<button class="btn-reality-tear" data-event-id="' + event.id + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
     html += 'Определить природу пролома';
@@ -17,7 +17,7 @@ export default {
     html += '<div id="reality-result-' + event.id + '" style="margin-top: 6px; display: none;"></div>';
     html += '</div>';
     
-    html += createSingleBar(event, 'main', 'Проверка Скрытности', 12);
+    html += createSingleBar(event, 'main', 'Проверка Скрытности (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
       html += createResult(event.result, event.resultText);
@@ -31,9 +31,8 @@ export default {
     return html;
   },
   
-  handleCheck: function(event, values, type) {
+  handleCheck: function(event, values, type, difficulty) {
     const value = values[0] || 0;
-    const difficulty = 12;
     let resultType = '';
     let resultText = '';
     
