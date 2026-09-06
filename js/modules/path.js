@@ -20,6 +20,7 @@ const regionSelect = document.getElementById('regionSelect');
 
 let currentEvents = [];
 let tableCache = {};
+let isRendering = false;
 
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ ИЗ SUPABASE
@@ -67,7 +68,7 @@ function createBeastLink(name, tableName) {
 // ФУНКЦИЯ РОЛЛА ТАБЛИЦЫ
 // ============================================================
 
-async function rollTable(tableName, containerId, fields, isCreature, sectionId) {
+async function rollTable(tableName, containerId, fields, isCreature) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error('Контейнер не найден: ' + containerId);
@@ -210,13 +211,16 @@ function createEventCopy(eventData, type, roll) {
     roll: roll,
     checked: false,
     result: null,
+    resultText: null,
     secondChecked: false,
     secondResult: null,
-    tableResults: {},
+    secondResultText: null,
     bars: [],
     secondBars: [],
     isBonus: false,
-    color: ''
+    color: '',
+    tableResults: {},
+    secondTableResults: {}
   };
 }
 
@@ -225,8 +229,12 @@ function createEventCopy(eventData, type, roll) {
 // ============================================================
 
 function renderEvents(events) {
+  if (isRendering) return;
+  isRendering = true;
+  
   if (!events || events.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
+    isRendering = false;
     return;
   }
 
@@ -264,7 +272,11 @@ function renderEvents(events) {
     return html;
   }).join('');
 
-  attachEventHandlers();
+  // Навешиваем обработчики после рендера
+  setTimeout(function() {
+    attachEventHandlers();
+    isRendering = false;
+  }, 50);
 }
 
 function renderEventContent(event, index, config) {
@@ -285,39 +297,49 @@ function renderEventContent(event, index, config) {
     html += '</div>';
   }
   
-  if (event.checked && config.check && config.check.results) {
-    const result = event.result;
-    const results = config.check.results;
+  // Отображаем результат проверки
+  if (event.checked) {
+    const resultType = event.result;
+    const resultText = event.resultText || getResultText(resultType);
+    const resultClass = getResultClass(resultType);
     
-    for (var i = 0; i < results.length; i++) {
-      const r = results[i];
-      if (r.condition === 'all_success' && result === 'all_success') {
-        html += '<div class="event-result visible success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'half_success' && result === 'half_success') {
-        html += '<div class="event-result visible success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'all_or_half_success' && (result === 'all_success' || result === 'half_success')) {
-        html += '<div class="event-result visible success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'half_fail' && result === 'half_fail') {
-        html += '<div class="event-result visible fail">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'all_fail' && result === 'all_fail') {
-        html += '<div class="event-result visible crit-fail">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'success' && (result === 'success' || result === 'crit_success')) {
-        html += '<div class="event-result visible success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'fail' && (result === 'fail' || result === 'crit_fail')) {
-        html += '<div class="event-result visible fail">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'success_5' && result === 'crit_success') {
-        html += '<div class="event-result visible crit-success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'fail_5' && result === 'crit_fail') {
-        html += '<div class="event-result visible crit-fail">' + r.message + '</div>';
-        break;
+    if (resultText) {
+      html += '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
+    }
+    
+    // Дополнительные эффекты
+    if (config.check && config.check.results) {
+      const results = config.check.results;
+      for (var i = 0; i < results.length; i++) {
+        const r = results[i];
+        if (r.condition === resultType || 
+            (r.condition === 'all_or_half_success' && (resultType === 'all_success' || resultType === 'half_success' || resultType === 'crit_success')) ||
+            (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) ||
+            (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) ||
+            (r.condition === 'success_5' && resultType === 'crit_success') ||
+            (r.condition === 'fail_5' && resultType === 'crit_fail') ||
+            (r.condition === 'all_fail' && resultType === 'all_fail') ||
+            (r.condition === 'half_fail' && resultType === 'half_fail')) {
+          
+          html += '<div class="event-effect visible">' + r.message + '</div>';
+          
+          // Если есть таблица для генерации
+          if (r.table) {
+            const tableContainerId = 'result-table-' + index + '-' + Date.now();
+            const isCreatureTable = r.isCreature || false;
+            const fieldsTable = r.fields || ['name'];
+            const tableName = r.table;
+            const labelTable = r.label || 'Таблица';
+            
+            html += '<div style="margin-top: 8px;">';
+            html += '<button class="btn-roll-table" data-table="' + tableName + '" data-container="' + tableContainerId + '" data-fields="' + fieldsTable.join(',') + '" data-creature="' + isCreatureTable + '" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: \'Philosopher\', sans-serif; font-size: 13px;">';
+            html += 'Бросить по ' + labelTable;
+            html += '</button>';
+            html += '<div id="' + tableContainerId + '" style="display: none; margin-top: 6px;"></div>';
+            html += '</div>';
+          }
+          break;
+        }
       }
     }
   }
@@ -362,11 +384,29 @@ function renderCheckBars(event, index, type, checkConfig) {
   
   html += '</div>';
   
-  if (isSecond ? event.secondChecked : event.checked) {
-    const resultId = (isSecond ? 'second-result-' : 'result-') + index;
-    const effectId = (isSecond ? 'second-effect-' : 'effect-') + index;
-    html += '<div class="event-result visible" id="' + resultId + '"></div>';
-    html += '<div class="event-effect visible" id="' + effectId + '"></div>';
+  // Показываем результаты для второй проверки
+  if (isSecond && event.secondChecked) {
+    const resultType = event.secondResult;
+    const resultText = event.secondResultText || getResultText(resultType);
+    const resultClass = getResultClass(resultType);
+    if (resultText) {
+      html += '<div class="event-result visible ' + resultClass + '" id="second-result-' + index + '">' + resultText + '</div>';
+    }
+    // Эффекты второй проверки
+    if (config && config.results) {
+      const results = config.results;
+      for (var i = 0; i < results.length; i++) {
+        const r = results[i];
+        if (r.condition === resultType || 
+            (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) ||
+            (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) ||
+            (r.condition === 'success_5' && resultType === 'crit_success') ||
+            (r.condition === 'fail_5' && resultType === 'crit_fail')) {
+          html += '<div class="event-effect visible">' + r.message + '</div>';
+          break;
+        }
+      }
+    }
   }
   
   return html;
@@ -392,30 +432,36 @@ function renderSecondCheck(event, index, secondConfig) {
   
   html += renderCheckBars(event, index, 'second', secondConfig);
   
-  if (event.secondChecked && secondConfig.results) {
-    const result = event.secondResult;
-    const results = secondConfig.results;
-    
-    for (var i = 0; i < results.length; i++) {
-      const r = results[i];
-      if (r.condition === 'success_5' && result === 'crit_success') {
-        html += '<div class="event-result visible crit-success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'success' && (result === 'success' || result === 'crit_success')) {
-        html += '<div class="event-result visible success">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'fail' && (result === 'fail' || result === 'crit_fail')) {
-        html += '<div class="event-result visible fail">' + r.message + '</div>';
-        break;
-      } else if (r.condition === 'fail_5' && result === 'crit_fail') {
-        html += '<div class="event-result visible crit-fail">' + r.message + '</div>';
-        break;
-      }
-    }
-  }
-  
   html += '</div>';
   return html;
+}
+
+function getResultText(resultType) {
+  const map = {
+    'all_success': '✅ Все успешно!',
+    'half_success': '✅ Больше половины успешно!',
+    'half_fail': '❌ Больше половины провалили!',
+    'all_fail': '❌ Все провалили!',
+    'crit_success': '🌟 Критический успех!',
+    'crit_fail': '💀 Критический провал!',
+    'success': '✅ Успех!',
+    'fail': '❌ Провал!'
+  };
+  return map[resultType] || '';
+}
+
+function getResultClass(resultType) {
+  const map = {
+    'all_success': 'crit-success',
+    'half_success': 'success',
+    'half_fail': 'fail',
+    'all_fail': 'crit-fail',
+    'crit_success': 'crit-success',
+    'crit_fail': 'crit-fail',
+    'success': 'success',
+    'fail': 'fail'
+  };
+  return map[resultType] || '';
 }
 
 // ============================================================
@@ -423,19 +469,21 @@ function renderSecondCheck(event, index, secondConfig) {
 // ============================================================
 
 function attachEventHandlers() {
+  // Удаляем старые обработчики
   eventsContainer.removeEventListener('click', handleContainerClick);
-  eventsContainer.addEventListener('click', handleContainerClick);
-  
   eventsContainer.removeEventListener('input', handleContainerInput);
-  eventsContainer.addEventListener('input', handleContainerInput);
-  
   eventsContainer.removeEventListener('keydown', handleContainerKeydown);
+  
+  // Добавляем новые
+  eventsContainer.addEventListener('click', handleContainerClick);
+  eventsContainer.addEventListener('input', handleContainerInput);
   eventsContainer.addEventListener('keydown', handleContainerKeydown);
 }
 
 function handleContainerClick(e) {
   const target = e.target;
   
+  // Кнопка проверки (один бар)
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -443,12 +491,14 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка проверки (второй бар)
   if (target.classList.contains('btn-check-second')) {
     const index = parseInt(target.dataset.index);
     handleSingleCheckSecondClick(index);
     return;
   }
   
+  // Кнопка множественной проверки
   if (target.classList.contains('btn-check-multiple')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -456,6 +506,7 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка добавления бара
   if (target.classList.contains('btn-add-bar')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -463,6 +514,7 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка удаления бара
   if (target.classList.contains('btn-remove-bar')) {
     const index = parseInt(target.dataset.index);
     const type = target.dataset.type || 'main';
@@ -471,6 +523,7 @@ function handleContainerClick(e) {
     return;
   }
   
+  // Кнопка таблицы
   if (target.classList.contains('btn-roll-table')) {
     const tableName = target.dataset.table;
     const containerId = target.dataset.container;
@@ -630,32 +683,50 @@ function processCheck(index, type, values) {
   const hasCritSuccess = values.some(v => v >= difficulty + 5);
   const hasCritFail = values.some(v => v <= difficulty - 5);
   
-  if (hasCritSuccess && resultType === 'all_success') {
+  if (hasCritSuccess && (resultType === 'all_success' || resultType === 'half_success')) {
     resultType = 'crit_success';
   }
-  if (hasCritFail && resultType === 'all_fail') {
+  if (hasCritFail && (resultType === 'all_fail' || resultType === 'half_fail')) {
     resultType = 'crit_fail';
   }
   
   if (isSecond) {
     event.secondResult = resultType;
+    event.secondResultText = getResultText(resultType);
     event.secondChecked = true;
   } else {
     event.result = resultType;
+    event.resultText = getResultText(resultType);
     event.checked = true;
   }
   
+  // Применяем эффекты
   results.forEach(function(r) {
-    if (r.condition === resultType || 
-        (r.condition === 'all_or_half_success' && (resultType === 'all_success' || resultType === 'half_success' || resultType === 'crit_success')) ||
-        (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) ||
-        (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) ||
-        (r.condition === 'success_5' && resultType === 'crit_success') ||
-        (r.condition === 'fail_5' && resultType === 'crit_fail')) {
-      
+    let conditionMet = false;
+    
+    if (r.condition === resultType) {
+      conditionMet = true;
+    } else if (r.condition === 'all_or_half_success' && (resultType === 'all_success' || resultType === 'half_success' || resultType === 'crit_success')) {
+      conditionMet = true;
+    } else if (r.condition === 'success' && (resultType === 'success' || resultType === 'crit_success')) {
+      conditionMet = true;
+    } else if (r.condition === 'fail' && (resultType === 'fail' || resultType === 'crit_fail')) {
+      conditionMet = true;
+    } else if (r.condition === 'success_5' && resultType === 'crit_success') {
+      conditionMet = true;
+    } else if (r.condition === 'fail_5' && resultType === 'crit_fail') {
+      conditionMet = true;
+    } else if (r.condition === 'all_fail' && resultType === 'all_fail') {
+      conditionMet = true;
+    } else if (r.condition === 'half_fail' && resultType === 'half_fail') {
+      conditionMet = true;
+    }
+    
+    if (conditionMet) {
       if (r.effects) {
         if (r.effects.arrival) {
           addArrivalBonus(r.effects.arrival);
+          console.log('Прибытие изменено на:', getArrivalBonus());
         }
         if (r.effects.events) {
           for (var i = 0; i < r.effects.events; i++) {
