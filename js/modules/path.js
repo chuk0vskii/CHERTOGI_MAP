@@ -195,6 +195,8 @@ function addBonusEventInternal(eventId, parentEventId) {
     secondResultText: null,
     effectsApplied: false,
     secondEffectsApplied: false,
+    arrivalApplied: false,
+    arrivalAppliedSecond: false,
     color: 'rgba(255,215,0,0.08)'
   };
   
@@ -202,7 +204,7 @@ function addBonusEventInternal(eventId, parentEventId) {
 }
 
 // ============================================================
-// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА (ТОЛЬКО ОДИН РАЗ)
+// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА (ТОЛЬКО В processCheck)
 // ============================================================
 
 function applyArrivalBonusFromText(text, eventId, isSecond) {
@@ -218,7 +220,6 @@ function applyArrivalBonusFromText(text, eventId, isSecond) {
     if (event) {
       var key = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
       if (event[key]) {
-        console.log('Прибытие уже применено для события', eventId);
         return;
       }
       event[key] = true;
@@ -437,14 +438,7 @@ function renderEvents() {
         },
         createEffect: function(resultType, effects, eventId, isSecond) {
           if (!effects || !effects[resultType]) return '';
-          const effectText = effects[resultType];
-          
-          // Применяем прибытие из текста эффекта (только один раз)
-          if (effectText) {
-            applyArrivalBonusFromText(effectText, eventId, isSecond);
-          }
-          
-          return '<div class="event-effect visible">' + effectText + '</div>';
+          return '<div class="event-effect visible">' + effects[resultType] + '</div>';
         },
         getCurrentDifficulty: function() {
           return getCurrentDifficulty();
@@ -709,6 +703,7 @@ function processCheck(eventId, type, values) {
   
   const isSecond = type === 'second';
   const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
+  const arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
   
   if (isSecond) {
     event.secondResult = result.resultType;
@@ -720,9 +715,22 @@ function processCheck(eventId, type, values) {
     event.checked = true;
   }
   
-  // Применяем эффекты только один раз (только events, не arrival)
+  // Применяем эффекты только один раз
   if (result.effects && !event[effectsAppliedKey]) {
     event[effectsAppliedKey] = true;
+    
+    // Применяем прибытие из текста эффекта (если есть)
+    if (result.effects.arrivalText) {
+      var match = result.effects.arrivalText.match(/([+-])\s*(\d+)/);
+      if (match) {
+        var sign = match[1] === '+' ? 1 : -1;
+        var amount = parseInt(match[2]);
+        if (!event[arrivalKey]) {
+          event[arrivalKey] = true;
+          addArrivalBonus(sign * amount);
+        }
+      }
+    }
     
     if (result.effects.events) {
       for (var i = 0; i < result.effects.events; i++) {
