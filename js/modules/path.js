@@ -204,32 +204,6 @@ function addBonusEventInternal(eventId, parentEventId) {
 }
 
 // ============================================================
-// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА (ТОЛЬКО В processCheck)
-// ============================================================
-
-function applyArrivalBonusFromText(text, eventId, isSecond) {
-  if (!text) return;
-  
-  var match = text.match(/([+-])\s*(\d+)\s*(?:к\s*)?(?:Прибыти[ею]|Прибытия)/i);
-  if (match) {
-    var sign = match[1] === '+' ? 1 : -1;
-    var amount = parseInt(match[2]);
-    
-    // Проверяем, не применялось ли уже прибытие для этого события
-    var event = findEventById(eventId);
-    if (event) {
-      var key = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
-      if (event[key]) {
-        return;
-      }
-      event[key] = true;
-    }
-    
-    addArrivalBonus(sign * amount);
-  }
-}
-
-// ============================================================
 // ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
@@ -331,6 +305,29 @@ export async function generatePathEvents() {
   }
 
   renderEvents();
+}
+
+// ============================================================
+// ПРИМЕНЕНИЕ ПРИБЫТИЯ (ТОЛЬКО ЕСЛИ ЯВНО УКАЗАНО)
+// ============================================================
+
+function applyArrivalIfNeeded(event, resultEffects, isSecond) {
+  if (!resultEffects) return;
+  
+  var arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
+  
+  // Проверяем, есть ли явное указание на изменение прибытия
+  if (resultEffects.arrivalText) {
+    if (!event[arrivalKey]) {
+      event[arrivalKey] = true;
+      var match = resultEffects.arrivalText.match(/([+-])\s*(\d+)/);
+      if (match) {
+        var sign = match[1] === '+' ? 1 : -1;
+        var amount = parseInt(match[2]);
+        addArrivalBonus(sign * amount);
+      }
+    }
+  }
 }
 
 // ============================================================
@@ -436,7 +433,7 @@ function renderEvents() {
           const resultClass = getResultClass(resultType);
           return '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
         },
-        createEffect: function(resultType, effects, eventId, isSecond) {
+        createEffect: function(resultType, effects) {
           if (!effects || !effects[resultType]) return '';
           return '<div class="event-effect visible">' + effects[resultType] + '</div>';
         },
@@ -703,7 +700,6 @@ function processCheck(eventId, type, values) {
   
   const isSecond = type === 'second';
   const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
-  const arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
   
   if (isSecond) {
     event.secondResult = result.resultType;
@@ -719,12 +715,13 @@ function processCheck(eventId, type, values) {
   if (result.effects && !event[effectsAppliedKey]) {
     event[effectsAppliedKey] = true;
     
-    // Применяем прибытие из текста эффекта (если есть)
+    // Применяем прибытие ТОЛЬКО если явно указано
     if (result.effects.arrivalText) {
       var match = result.effects.arrivalText.match(/([+-])\s*(\d+)/);
       if (match) {
         var sign = match[1] === '+' ? 1 : -1;
         var amount = parseInt(match[2]);
+        var arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
         if (!event[arrivalKey]) {
           event[arrivalKey] = true;
           addArrivalBonus(sign * amount);
