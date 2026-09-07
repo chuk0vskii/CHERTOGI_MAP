@@ -1,5 +1,5 @@
 // ============================================================
-// path.js — ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ФАЗА ПУТЬ - ДИСПЕТЧЕР
 // ============================================================
 
 import { _supabase } from '../config-module.js';
@@ -168,10 +168,12 @@ function addBonusEventInternal(eventId, parentEventId) {
   
   if (!module) return;
   
+  // Проверяем, есть ли уже такое бонусное событие от этого родителя
   if (parentEventId) {
-    const oldBonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === parentEventId);
-    if (oldBonusIndex !== -1) {
-      currentEvents.splice(oldBonusIndex, 1);
+    const existingBonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === parentEventId);
+    if (existingBonusIndex !== -1) {
+      console.log('⚠️ Бонусное событие уже существует для этого родителя, пропускаем');
+      return;
     }
   }
   
@@ -201,6 +203,7 @@ function addBonusEventInternal(eventId, parentEventId) {
   };
   
   currentEvents.push(eventCopy);
+  console.log('✅ Добавлено бонусное событие:', module.title);
 }
 
 // ============================================================
@@ -232,6 +235,8 @@ export async function generatePathEvents() {
   roleEventsCount.textContent = roleDisplay;
   totalEventsCount.textContent = common + roleCount;
 
+  // Сбрасываем счётчик ID при генерации
+  eventIdCounter = 0;
   currentEvents = [];
   
   for (var i = 0; i < common; i++) {
@@ -364,11 +369,16 @@ function processCheck(eventId, type, values) {
     // ===== ДОБАВЛЯЕМ БОНУСНЫЕ СОБЫТИЯ =====
     if (result.effects.events) {
       const count = result.effects.events;
-      console.log('📌 Добавляем бонусных событий:', count);
-      for (var i = 0; i < count; i++) {
-        addBonusEventInternal(null);
+      console.log('📌 Нужно добавить бонусных событий:', count);
+      
+      // Добавляем ТОЛЬКО если count > 0
+      if (count > 0) {
+        for (var i = 0; i < count; i++) {
+          addBonusEventInternal(null);
+        }
+        // Перерисовываем после добавления
+        renderEvents();
       }
-      renderEvents();
     }
   }
   
@@ -491,6 +501,7 @@ function renderEvents() {
           // Ничего не делаем здесь — бонусы применяются только через processCheck()
         },
         addBonusEvent: function(eventId, parentEventId) {
+          // Используем проверку на дубли
           addBonusEventInternal(eventId, parentEventId);
           renderEvents();
         },
@@ -597,6 +608,11 @@ function handleClick(e) {
         const module = COMMON_EVENTS_MODULES[selectedId];
         const event = findEventById(eventId);
         if (event) {
+          // Проверяем, не выбрано ли уже это событие
+          if (event.selectedEventId === selectedId) {
+            console.log('⚠️ Это событие уже выбрано');
+            return;
+          }
           event.selectedEventId = selectedId;
           event.selectedEventModule = module;
           addBonusEventInternal(selectedId, eventId);
