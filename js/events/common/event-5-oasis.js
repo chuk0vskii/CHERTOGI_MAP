@@ -38,18 +38,22 @@ export default {
     
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (successes >= half) {
       resultType = 'all_or_half_success';
       resultText = 'Успех!';
+      effects = { arrival: 0 };
     } else if (failures >= half) {
       resultType = 'half_fail';
       resultText = 'Провал...';
+      effects = { arrival: 0 };
     } else if (failures === total) {
       resultType = 'all_fail';
       resultText = 'Все провалили!';
+      effects = { arrival: 0 };
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
