@@ -13,25 +13,27 @@ export default {
     html += createSingleBar(event, 'main', 'Проверка Традиций (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success_5': 'Знаки предвещают важную истину. +1 к Прибытию и 1 кость удачи.',
         'success': 'Группа получает +1 к Прибытию.',
         'fail': 'Чтение сбивает Чтеца с толку — он теряет -1 к Искре.',
         'fail_5': 'Группа принимает знак за проклятие. Проверка Искры, и +1 событие в фазе Путь.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success_5' || event.result === 'success') {
+      if (resultType === 'success_5' || resultType === 'success') {
         addArrivalBonus(1);
       }
       
-      if (event.result === 'fail_5') {
+      if (resultType === 'fail_5') {
         html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
         html += '⭐ Добавлено бонусное событие в фазе Путь';
         html += '</div>';
         if (typeof addBonusEvent === 'function') {
-          addBonusEvent(null); // случайное событие
+          addBonusEvent(null);
         }
       }
     }
