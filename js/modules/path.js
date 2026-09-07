@@ -211,6 +211,9 @@ function addBonusEventInternal(eventId, parentEventId) {
   
   currentEvents.push(eventCopy);
   console.log('✅ Добавлено бонусное событие:', module.title);
+  
+  // Сразу перерисовываем, чтобы бонусное событие появилось
+  renderEvents();
 }
 
 // ============================================================
@@ -660,13 +663,6 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка для события "Свет среди тьмы" (50/50)
-  if (target.classList.contains('btn-light-random')) {
-    const eventId = parseInt(target.dataset.eventId);
-    handleLightRandom(eventId);
-    return;
-  }
-  
   // Кнопка для события "Запретное место" (генерация по выбранной таблице)
   if (target.classList.contains('btn-place-generate')) {
     const eventId = parseInt(target.dataset.eventId);
@@ -837,76 +833,7 @@ function handleRealityTear(eventId) {
 }
 
 // ============================================================
-// ОБРАБОТКА "СВЕТ СРЕДИ ТЬМЫ" (50/50)
-// ============================================================
-
-function handleLightRandom(eventId) {
-  const event = findEventById(eventId);
-  if (!event) return;
-  
-  const roll = Math.random() < 0.5 ? 'artefact' : 'trap';
-  const container = document.getElementById('light-result-' + eventId);
-  
-  if (container) {
-    if (roll === 'artefact') {
-      container.innerHTML = '<div style="background: rgba(81,207,102,0.1); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #51cf66; margin-top: 4px; color: #51cf66;">✨ Это магический предмет! Нажмите "Проверить" для генерации.</div>';
-    } else {
-      container.innerHTML = '<div style="background: rgba(255,107,107,0.1); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ff6b6b; margin-top: 4px; color: #ff6b6b;">⚠️ Это ловушка! Нажмите "Проверить" для генерации.</div>';
-    }
-    container.style.display = 'block';
-  }
-}
-
-// ============================================================
 // ОБРАБОТКА "ЗАПРЕТНОЕ МЕСТО" (генерация по выбранной таблице)
 // ============================================================
 
-function handlePlaceGenerate(eventId) {
-  const event = findEventById(eventId);
-  if (!event) return;
-  
-  const select = document.getElementById('place-select-' + eventId);
-  if (!select) return;
-  
-  const tableName = select.value;
-  const container = document.getElementById('place-result-' + eventId);
-  if (!container) return;
-  
-  // Маппинг названий таблиц для отображения
-  const tableLabels = {
-    'reality_tears': 'Пролом Реальности',
-    'oasis_mysteries': 'Невероятный Оазис',
-    'ruins': 'Древние Руины',
-    'slaughter_zones': 'Бойня Области'
-  };
-  
-  const tableFields = {
-    'reality_tears': ['name', 'description', 'effect'],
-    'oasis_mysteries': ['oasis_type', 'mystery'],
-    'ruins': ['name', 'pass_method', 'reward_type'],
-    'slaughter_zones': ['name', 'description']
-  };
-  
-  const label = tableLabels[tableName] || tableName;
-  const fields = tableFields[tableName] || ['name'];
-  
-  // Используем существующую функцию rollTableInternal
-  const containerId = 'place-result-' + eventId;
-  const resultKey = 'place_generate_' + tableName;
-  
-  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
-}
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.removeEventListener('click', generatePathEvents);
-    generateBtn.addEventListener('click', generatePathEvents);
-    console.log('Кнопка "Сгенерировать события" подключена');
-  }
-}
-
-initPath();
+function handle
