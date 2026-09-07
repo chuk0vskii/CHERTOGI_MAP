@@ -153,7 +153,7 @@ function getRandomEventByType(type) {
 // ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ
 // ============================================================
 
-function addBonusEvent(eventId) {
+function addBonusEvent(eventId, parentEventId) {
   let module = null;
   let roll = 0;
   
@@ -167,6 +167,14 @@ function addBonusEvent(eventId) {
   
   if (!module) return;
   
+  // Удаляем старое бонусное событие, если оно было от этого родителя
+  if (parentEventId) {
+    const oldBonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === parentEventId);
+    if (oldBonusIndex !== -1) {
+      currentEvents.splice(oldBonusIndex, 1);
+    }
+  }
+  
   const eventCopy = { 
     data: { id: module.id }, 
     type: 'Общее (бонусное)', 
@@ -174,6 +182,7 @@ function addBonusEvent(eventId) {
     isBonus: true,
     module: module,
     id: getUniqueId(),
+    fateParentId: parentEventId || null,
     tableResults: {},
     secondTableResults: {},
     bars: [],
@@ -392,8 +401,8 @@ function renderEvents() {
         addArrivalBonus: function(value) {
           addArrivalBonus(value);
         },
-        addBonusEvent: function(eventId) {
-          addBonusEvent(eventId);
+        addBonusEvent: function(eventId, parentEventId) {
+          addBonusEvent(eventId, parentEventId);
         },
         getCommonEventsList: function() {
           return [
@@ -488,20 +497,39 @@ function handleClick(e) {
     return;
   }
   
+  // Кнопка для выбора события в "Это должно было произойти!"
   if (target.classList.contains('btn-fate-select')) {
     const eventId = parseInt(target.dataset.eventId);
     const select = document.getElementById('fate-select-' + eventId);
     if (select) {
       const selectedId = parseInt(select.value);
-      const module = COMMON_EVENTS_MODULES[selectedId];
-      if (module) {
-        addBonusEvent(selectedId);
+      if (selectedId && COMMON_EVENTS_MODULES[selectedId]) {
+        const module = COMMON_EVENTS_MODULES[selectedId];
         const event = findEventById(eventId);
         if (event) {
-          event.selectedEvent = module;
+          event.selectedEventId = selectedId;
+          event.selectedEventModule = module;
+          addBonusEvent(selectedId, eventId);
           renderEvents();
         }
       }
+    }
+    return;
+  }
+  
+  // Кнопка удаления бонусного события
+  if (target.classList.contains('btn-fate-remove')) {
+    const eventId = parseInt(target.dataset.eventId);
+    const event = findEventById(eventId);
+    if (event) {
+      // Удаляем бонусное событие
+      const bonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === eventId);
+      if (bonusIndex !== -1) {
+        currentEvents.splice(bonusIndex, 1);
+      }
+      event.selectedEventId = null;
+      event.selectedEventModule = null;
+      renderEvents();
     }
     return;
   }
