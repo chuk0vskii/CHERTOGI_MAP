@@ -37,15 +37,18 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = null;
     } else {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = null;
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
