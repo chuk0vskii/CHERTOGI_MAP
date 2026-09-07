@@ -14,6 +14,13 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
+    // Генерация по таблице storm_eyes (всегда доступна)
+    html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
+    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">🌪️ Что назревает на горизонте:</div>';
+    html += createTableButton('storm_eyes', event.id, 'main_storm_eyes', event);
+    html += '</div>';
+    
+    // Проверка Внимательности
     html += createSingleBar(event, 'main', 'Проверка Внимательности (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
@@ -27,10 +34,6 @@ export default {
         'fail_5': 'Группа получает -2 к Прибытию, Проверка Кремня и Проверка Искры от усталости. Искатели забредают прямо в око шторма.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'fail_5') {
-        html += createTableButton('storm_eyes', event.id, 'extra_storm_eyes', event);
-      }
     }
     
     return html;
