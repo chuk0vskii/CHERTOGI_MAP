@@ -488,7 +488,6 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка для выбора события в "Это должно было произойти!"
   if (target.classList.contains('btn-fate-select')) {
     const eventId = parseInt(target.dataset.eventId);
     const select = document.getElementById('fate-select-' + eventId);
@@ -497,7 +496,6 @@ function handleClick(e) {
       const module = COMMON_EVENTS_MODULES[selectedId];
       if (module) {
         addBonusEvent(selectedId);
-        // Отмечаем в событии
         const event = findEventById(eventId);
         if (event) {
           event.selectedEvent = module;
@@ -641,6 +639,18 @@ function processCheck(eventId, type, values) {
     event.result = result.resultType;
     event.resultText = result.resultText;
     event.checked = true;
+  }
+  
+  // ===== ПРИМЕНЯЕМ ЭФФЕКТЫ =====
+  if (result.effects) {
+    if (result.effects.arrival) {
+      addArrivalBonus(result.effects.arrival);
+    }
+    if (result.effects.events) {
+      for (var i = 0; i < result.effects.events; i++) {
+        addBonusEvent(null);
+      }
+    }
   }
   
   renderEvents();
