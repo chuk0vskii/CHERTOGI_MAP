@@ -6,26 +6,29 @@ export default {
   type: 'landscapes',
   
   render: function(event, helpers) {
-    const { createMultipleBars, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createMultipleBars, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'all_or_half_success': 'Путники чувствуют вдохновение от пейзажей и получают +1 к Прибытию и 1 Кость Удачи.',
-        'half_fail': 'Группа чувствует что она сможет покорить этот край, они получают +1 к Прибытию.',
+        'half_fail': 'Группа чувствует что она сможет покорить этот край, но потери неизбежны, они получают -1 к Прибытию.',
         'all_fail': 'Этот пейзаж угнетает, они получают -1 к Прибытию.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'all_or_half_success' || event.result === 'half_fail') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      // Обновляем счётчик Прибытия
+      if (resultType === 'all_or_half_success') {
+        addArrivalBonus(1);
       }
-      if (event.result === 'all_fail') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(-1);
+      if (resultType === 'half_fail' || resultType === 'all_fail') {
+        addArrivalBonus(-1);
       }
     }
     
