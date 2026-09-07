@@ -10,7 +10,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -35,10 +35,6 @@ export default {
         'fail_5': 'Группа заходит в засаду. Начинается бой с раундом сюрприза.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'success') {
-        addArrivalBonus(1);
-      }
     }
     
     return html;
@@ -48,18 +44,22 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = null;
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = null;
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
