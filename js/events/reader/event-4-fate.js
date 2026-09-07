@@ -6,7 +6,7 @@ export default {
   type: 'fate',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addBonusEvent, getCommonEventsList } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, getCommonEventsList } = helpers;
     const difficulty = getCurrentDifficulty();
     const commonEvents = getCommonEventsList();
     let html = '';
@@ -77,7 +77,7 @@ export default {
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
-      effects = { events: 1 };
+      effects = { events: 1 }; // ТОЛЬКО 1 событие
     }
     
     return { resultType, resultText, effects };
