@@ -151,7 +151,7 @@ function getRandomEventByType(type) {
 }
 
 // ============================================================
-// ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ (БЕЗ ВЫЗОВА renderEvents)
+// ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ
 // ============================================================
 
 function addBonusEventInternal(eventId, parentEventId) {
@@ -304,6 +304,7 @@ export async function generatePathEvents() {
     }
   }
 
+  // Перемешиваем события
   for (var k = currentEvents.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
@@ -376,12 +377,11 @@ function processCheck(eventId, type, values) {
         for (var i = 0; i < count; i++) {
           addBonusEventInternal(null);
         }
-        // Перерисовываем после добавления
-        renderEvents();
       }
     }
   }
   
+  // Перерисовываем всегда в конце
   renderEvents();
 }
 
