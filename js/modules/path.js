@@ -128,7 +128,7 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ СПИСКА СЛУЧАЙНЫХ СОБЫТИЙ
+// ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
 function getRandomEventByType(type) {
@@ -180,7 +180,6 @@ export async function generatePathEvents() {
 
   currentEvents = [];
   
-  // Генерируем ОБЩИЕ события (ровно common штук)
   for (var i = 0; i < common; i++) {
     const result = getRandomEventByType('Общее');
     if (result.module) {
@@ -206,7 +205,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // Генерируем РОЛЕВЫЕ события (ровно roleCount штук)
   const roles = ['Чтец_Знаков', 'Тень_Нарара'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
@@ -235,7 +233,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // Перемешиваем все события
   for (var k = currentEvents.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
@@ -249,6 +246,8 @@ export async function generatePathEvents() {
 // ============================================================
 
 function renderEvents() {
+  console.log('🔴 renderEvents вызван, событий:', currentEvents.length);
+  
   if (!currentEvents || currentEvents.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
     return;
@@ -256,8 +255,10 @@ function renderEvents() {
 
   let html = '';
   
-  currentEvents.forEach(function(event) {
+  currentEvents.forEach(function(event, idx) {
     const module = event.module;
+    console.log('🔴 Событие #' + idx + ':', module ? module.title : 'НЕТ МОДУЛЯ');
+    
     const bgColor = event.isBonus ? 'rgba(255,215,0,0.08)' : '';
     const borderColor = event.isBonus ? '2px solid rgba(255,215,0,0.3)' : '1px solid rgba(74,14,14,0.2)';
     
@@ -275,6 +276,7 @@ function renderEvents() {
     html += '</div>';
     
     if (module && typeof module.render === 'function') {
+      console.log('🔴 Вызов render для:', module.title);
       const helpers = {
         createTableButton: function(tableName, eventId, resultKey, ev, count) {
           const moduleTables = module.tables || {};
@@ -356,6 +358,8 @@ function renderEvents() {
       };
       
       html += module.render(event, helpers);
+    } else {
+      console.log('🔴 НЕТ render для:', module ? module.title : 'null');
     }
     
     html += '</div>';
@@ -539,7 +543,7 @@ function removeBar(eventId, type, barIdx) {
 }
 
 // ============================================================
-// ОБРАБОТКА ПРОВЕРКИ (ВЫЗОВ МОДУЛЯ)
+// ОБРАБОТКА ПРОВЕРКИ
 // ============================================================
 
 function processCheck(eventId, type, values) {
