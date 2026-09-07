@@ -6,7 +6,7 @@ export default {
   type: 'whispering_obo',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus, addBonusEvent } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addBonusEvent } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -23,10 +23,6 @@ export default {
         'fail_5': 'Группа принимает знак за проклятие. Проверка Искры, и +1 событие в фазе Путь.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'success_5' || resultType === 'success') {
-        addArrivalBonus(1);
-      }
       
       if (resultType === 'fail_5') {
         html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
@@ -45,21 +41,26 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty + 5) {
       resultType = 'success_5';
       resultText = 'Критический успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = null;
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = { events: 1 };
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
