@@ -6,7 +6,7 @@ export default {
   type: 'whispering_obo',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addBonusEvent } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -23,15 +23,6 @@ export default {
         'fail_5': 'Группа принимает знак за проклятие. Проверка Искры, и +1 событие в фазе Путь.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'fail_5') {
-        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
-        html += '⭐ Добавлено бонусное событие в фазе Путь';
-        html += '</div>';
-        if (typeof addBonusEvent === 'function') {
-          addBonusEvent(null);
-        }
-      }
     }
     
     return html;
@@ -58,7 +49,7 @@ export default {
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
-      effects = { events: 1 };
+      effects = { events: 1 }; // ТОЛЬКО 1 событие
     }
     
     return { resultType, resultText, effects };
