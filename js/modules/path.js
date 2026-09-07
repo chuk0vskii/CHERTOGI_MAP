@@ -349,35 +349,50 @@ function processCheck(eventId, type, values) {
     event.checked = true;
   }
   
-  // Применяем эффекты ТОЛЬКО ОДИН РАЗ
-  if (result.effects && !event[effectsAppliedKey]) {
-    event[effectsAppliedKey] = true;
+  // ПРИМЕНЯЕМ ЭФФЕКТЫ — СБРАСЫВАЕМ ФЛАГ ДЛЯ ПОВТОРНЫХ ПРОВЕРОК
+  // Если пользователь меняет значение и проверяет снова, применяем эффекты заново
+  // Но только если результат изменился
+  if (result.effects) {
+    // Проверяем, был ли уже применён эффект для этого результата
+    const effectKey = isSecond ? 'secondEffectResult' : 'effectResult';
+    const previousResult = event[effectKey];
     
-    console.log('📊 Применяем эффекты для события #' + eventId + ' (тип: ' + type + '):', result.effects);
-    
-    // ===== ПРИМЕНЯЕМ ПРИБЫТИЕ =====
-    if (result.effects.arrival !== undefined && result.effects.arrival !== null) {
-      if (!event[arrivalKey]) {
-        event[arrivalKey] = true;
+    // Если результат изменился или эффект ещё не применялся
+    if (previousResult !== result.resultType || !event[effectsAppliedKey]) {
+      event[effectsAppliedKey] = true;
+      event[effectKey] = result.resultType;
+      
+      console.log('📊 Применяем эффекты для события #' + eventId + ' (тип: ' + type + '):', result.effects);
+      
+      // ===== ПРИМЕНЯЕМ ПРИБЫТИЕ =====
+      if (result.effects.arrival !== undefined && result.effects.arrival !== null) {
+        // Сначала откатываем предыдущий бонус, если он был
+        if (event[arrivalKey] && event[arrivalKey + 'Value'] !== undefined) {
+          const oldValue = event[arrivalKey + 'Value'];
+          console.log('🔄 Откатываем предыдущий бонус прибытия:', -oldValue);
+          addArrivalBonus(-oldValue);
+        }
+        
         const value = result.effects.arrival;
+        event[arrivalKey] = true;
+        event[arrivalKey + 'Value'] = value;
         console.log('➕ Применяем бонус прибытия:', value, 'из эффектов');
         addArrivalBonus(value);
-      } else {
-        console.log('⚠️ Бонус прибытия уже применён для этого события');
       }
-    }
-    
-    // ===== ДОБАВЛЯЕМ БОНУСНЫЕ СОБЫТИЯ =====
-    if (result.effects.events) {
-      const count = result.effects.events;
-      console.log('📌 Нужно добавить бонусных событий:', count);
       
-      // Добавляем ТОЛЬКО если count > 0
-      if (count > 0) {
-        for (var i = 0; i < count; i++) {
-          addBonusEventInternal(null);
+      // ===== ДОБАВЛЯЕМ БОНУСНЫЕ СОБЫТИЯ =====
+      if (result.effects.events) {
+        const count = result.effects.events;
+        console.log('📌 Нужно добавить бонусных событий:', count);
+        
+        if (count > 0) {
+          for (var i = 0; i < count; i++) {
+            addBonusEventInternal(null);
+          }
         }
       }
+    } else {
+      console.log('⚠️ Эффекты для этого результата уже применены, пропускаем');
     }
   }
   
