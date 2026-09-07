@@ -10,7 +10,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, createTableButton, getCurrentDifficulty, addArrivalBonus } = helpers;
+    const { createSingleBar, createResult, createEffect, createTableButton, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -27,10 +27,6 @@ export default {
       };
       html += createEffect(resultType, effects);
       
-      if (resultType === 'success') {
-        addArrivalBonus(1);
-      }
-      
       if (resultType === 'fail_5') {
         html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
       }
@@ -43,18 +39,22 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = { events: 1 };
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = null;
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
