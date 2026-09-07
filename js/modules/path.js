@@ -836,4 +836,52 @@ function handleRealityTear(eventId) {
 // ОБРАБОТКА "ЗАПРЕТНОЕ МЕСТО" (генерация по выбранной таблице)
 // ============================================================
 
-function handle
+function handlePlaceGenerate(eventId) {
+  const event = findEventById(eventId);
+  if (!event) return;
+  
+  const select = document.getElementById('place-select-' + eventId);
+  if (!select) return;
+  
+  const tableName = select.value;
+  const container = document.getElementById('place-result-' + eventId);
+  if (!container) return;
+  
+  // Маппинг названий таблиц для отображения
+  const tableLabels = {
+    'reality_tears': 'Пролом Реальности',
+    'oasis_mysteries': 'Невероятный Оазис',
+    'ruins': 'Древние Руины',
+    'slaughter_zones': 'Бойня Области'
+  };
+  
+  const tableFields = {
+    'reality_tears': ['name', 'description', 'effect'],
+    'oasis_mysteries': ['oasis_type', 'mystery'],
+    'ruins': ['name', 'pass_method', 'reward_type'],
+    'slaughter_zones': ['name', 'description']
+  };
+  
+  const label = tableLabels[tableName] || tableName;
+  const fields = tableFields[tableName] || ['name'];
+  
+  // Используем существующую функцию rollTableInternal
+  const containerId = 'place-result-' + eventId;
+  const resultKey = 'place_generate_' + tableName;
+  
+  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+
+export function initPath() {
+  if (generateBtn) {
+    generateBtn.removeEventListener('click', generatePathEvents);
+    generateBtn.addEventListener('click', generatePathEvents);
+    console.log('Кнопка "Сгенерировать события" подключена');
+  }
+}
+
+initPath();
