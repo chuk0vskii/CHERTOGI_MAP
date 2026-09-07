@@ -6,30 +6,30 @@ export default {
   type: 'fate',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, getCommonEventsList } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addBonusEvent, getCommonEventsList } = helpers;
     const difficulty = getCurrentDifficulty();
     const commonEvents = getCommonEventsList();
     let html = '';
     
     // Выпадающий список всех общих событий
     html += '<div style="margin-top: 8px;">';
-    html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px;">Выберите событие для бонуса:</label>';
-    html += '<select id="fate-select-' + event.id + '" style="width:100%; padding:8px 12px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid #4a0e0e; border-radius:6px; color:#ffffff; font-family:\'Philosopher\', sans-serif;">';
-    html += '<option value="">— Выберите событие —</option>';
+    html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Выберите событие для бонуса:</label>';
+    html += '<select id="fate-select-' + event.id + '" style="width:100%; padding:12px 16px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#e0d5c0; font-size:16px; font-family:\'Philosopher\', sans-serif; cursor:pointer; transition:border-color 0.3s; appearance:none; -webkit-appearance:none; background-image:url(\'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%23ffd700\' stroke-width=\'2\' fill=\'none\'/%3E%3C/svg%3E\'); background-repeat:no-repeat; background-position:right 16px center;">';
+    html += '<option value="" style="background:#1a0a1a; color:#e0d5c0;">— Выберите событие —</option>';
     for (var i = 0; i < commonEvents.length; i++) {
       var ev = commonEvents[i];
       var selected = (event.selectedEventId && event.selectedEventId === ev.id) ? 'selected' : '';
-      html += '<option value="' + ev.id + '" ' + selected + '>' + ev.title + '</option>';
+      html += '<option value="' + ev.id + '" ' + selected + ' style="background:#1a0a1a; color:#e0d5c0; padding:8px;">' + ev.title + '</option>';
     }
     html += '</select>';
-    html += '<button class="btn-fate-select" data-event-id="' + event.id + '" style="margin-top:6px; background:transparent; border:1px solid rgba(255,215,0,0.3); color:#ffd700; padding:4px 14px; border-radius:6px; cursor:pointer; font-family:\'Philosopher\', sans-serif; font-size:13px;">Добавить бонусное событие</button>';
+    html += '<button class="btn-fate-select" data-event-id="' + event.id + '" style="margin-top:8px; background:transparent; border:1px solid rgba(255,215,0,0.3); color:#ffd700; padding:6px 18px; border-radius:6px; cursor:pointer; font-family:\'Philosopher\', sans-serif; font-size:13px; transition:all 0.3s ease;" onmouseover="this.style.background=\'rgba(255,215,0,0.1)\'; this.style.borderColor=\'#ffd700\'" onmouseout="this.style.background=\'transparent\'; this.style.borderColor=\'rgba(255,215,0,0.3)\'">Добавить бонусное событие</button>';
     html += '</div>';
     
     // Если выбрано бонусное событие — показываем его
     if (event.selectedEventId && event.selectedEventModule) {
       html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.15); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
       html += '⭐ Выбрано бонусное событие: <strong>' + event.selectedEventModule.title + '</strong>';
-      html += ' <button class="btn-fate-remove" data-event-id="' + event.id + '" style="background:transparent; border:none; color:#ff6b6b; cursor:pointer; font-size:16px;">✕</button>';
+      html += ' <button class="btn-fate-remove" data-event-id="' + event.id + '" style="background:transparent; border:none; color:#ff6b6b; cursor:pointer; font-size:16px; transition:all 0.3s ease;" onmouseover="this.style.color=\'#ff4444\'" onmouseout="this.style.color=\'#ff6b6b\'">✕</button>';
       html += '</div>';
     }
     
@@ -77,7 +77,7 @@ export default {
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
-      effects = { events: 1 }; // ТОЛЬКО 1 событие
+      effects = { events: 1 };
     }
     
     return { resultType, resultText, effects };
