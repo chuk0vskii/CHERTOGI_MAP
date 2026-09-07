@@ -13,7 +13,7 @@ export default {
   hasSecondCheck: true,
   
   render: function(event, helpers) {
-    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
+    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -31,12 +31,7 @@ export default {
       };
       html += createEffect(resultType, effects);
       
-      if (resultType === 'all_or_half_success' || resultType === 'crit_success') {
-        addArrivalBonus(1);
-      }
-      if (resultType === 'half_fail') {
-        addArrivalBonus(-1);
-      }
+      // В render НЕ вызываем addArrivalBonus
     }
     
     html += '<div class="second-check-section">';
@@ -102,30 +97,36 @@ export default {
     
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (successes >= half) {
       const hasCrit = values.some(v => v >= difficulty + 5);
       if (hasCrit && successes === total) {
         resultType = 'crit_success';
         resultText = 'Критический успех!';
+        effects = { arrival: 1 };
       } else {
         resultType = 'all_or_half_success';
         resultText = 'Успех!';
+        effects = { arrival: 1 };
       }
     } else if (failures >= half) {
       const hasCritFail = values.some(v => v <= difficulty - 5);
       if (hasCritFail && failures === total) {
         resultType = 'crit_fail';
         resultText = 'Критический провал!';
+        effects = { arrival: -1 };
       } else {
         resultType = 'half_fail';
         resultText = 'Провал...';
+        effects = { arrival: -1 };
       }
     } else if (failures === total) {
       resultType = 'all_fail';
       resultText = 'Все провалили!';
+      effects = { arrival: -1 };
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
