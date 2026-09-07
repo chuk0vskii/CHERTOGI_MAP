@@ -17,7 +17,6 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // ===== ОСНОВНАЯ ПРОВЕРКА (Искра) =====
     html += createTableButton('ruins', event.id, 'main_ruins', event);
     html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
@@ -40,7 +39,6 @@ export default {
       }
     }
     
-    // ===== ВТОРАЯ ПРОВЕРКА (Тень Нарара) =====
     html += '<div class="second-check-section">';
     html += createSingleBar(event, 'second', 'Проверка Ловкости рук (Тень Нарара) (сложность ' + difficulty + ')', difficulty);
     
@@ -56,7 +54,6 @@ export default {
       };
       html += createEffect(secondResult, secondEffects);
       
-      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ (ТОЛЬКО ОТ ПРОВЕРКИ ТЕНИ) =====
       if (secondResult === 'success_5') {
         html += '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Найдено 2 ценных артефакта:</div>';
         html += createTableButton('artefacts', event.id, 'artefact_second_crit_1', event);
@@ -76,7 +73,6 @@ export default {
   handleCheck: function(event, values, type, difficulty) {
     const isSecond = type === 'second';
     
-    // ===== ПРОВЕРКА ТЕНИ НАРАРА =====
     if (isSecond) {
       const value = values[0] || 0;
       let resultType = '';
@@ -99,7 +95,6 @@ export default {
       return { resultType, resultText };
     }
     
-    // ===== ПРОВЕРКА ИСКРЫ =====
     const successes = values.filter(v => v >= difficulty).length;
     const failures = values.filter(v => v < difficulty).length;
     const total = values.length;
