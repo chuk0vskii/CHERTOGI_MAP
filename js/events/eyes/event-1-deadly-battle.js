@@ -6,7 +6,7 @@ export default {
   type: 'eyes',
   
   tables: {
-    'zone_conflicts': { label: 'Таблица Конфликтов Зоны', fields: ['name', 'description'] }
+    'zone_conflicts': { label: 'Конфликт Зоны', fields: ['name', 'description'] }
   },
   
   render: function(event, helpers) {
@@ -14,6 +14,13 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
+    // Генерация по таблице zone_conflicts
+    html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
+    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">⚔️ Что скрывается в тишине:</div>';
+    html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
+    html += '</div>';
+    
+    // Проверка Внимательности
     html += createSingleBar(event, 'main', 'Проверка Внимательности (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
@@ -27,10 +34,6 @@ export default {
         'fail_5': 'У противника есть раунд сюрприза.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'fail_5') {
-        html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
-      }
     }
     
     return html;
