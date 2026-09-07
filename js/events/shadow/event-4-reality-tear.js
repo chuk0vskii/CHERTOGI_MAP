@@ -20,12 +20,14 @@ export default {
     html += createSingleBar(event, 'main', 'Проверка Скрытности (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success': 'Группа скрытно наблюдает за разломом, не привлекая ненужного внимания.',
         'fail': 'Группа видит приходящих из пролома существ, и они тоже видят группу.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
     }
     
     return html;
