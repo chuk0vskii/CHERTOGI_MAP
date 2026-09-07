@@ -5,6 +5,7 @@
 import { _supabase } from '../config-module.js';
 import { 
   COMMON_EVENTS_MODULES, READER_EVENTS_MODULES, SHADOW_EVENTS_MODULES,
+  CLAW_EVENTS_MODULES, EYES_EVENTS_MODULES,
   TABLE_TO_SECTION, getRegionalTableName, getEventModule
 } from '../events/index.js';
 import { getRandomInt, getResultLabel, getResultClass } from './utils.js';
@@ -145,6 +146,12 @@ function getRandomEventByType(type) {
   } else if (type === 'Тень_Нарара') {
     roll = getRandomInt(1, 6);
     module = SHADOW_EVENTS_MODULES[roll];
+  } else if (type === 'Коготь_Акрепы') {
+    roll = getRandomInt(1, 6);
+    module = CLAW_EVENTS_MODULES[roll];
+  } else if (type === 'Глаза_Звезд') {
+    roll = getRandomInt(1, 6);
+    module = EYES_EVENTS_MODULES[roll];
   }
   
   return { module: module, roll: roll };
@@ -270,7 +277,7 @@ export async function generatePathEvents() {
     }
   }
 
- const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы'];
+  const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
     const role = roles[roleIndex];
@@ -652,6 +659,27 @@ function handleClick(e) {
     }
     return;
   }
+  
+  // Кнопка для события "Свет среди тьмы" (50/50)
+  if (target.classList.contains('btn-light-random')) {
+    const eventId = parseInt(target.dataset.eventId);
+    handleLightRandom(eventId);
+    return;
+  }
+  
+  // Кнопка для события "Запретное место" (генерация по выбранной таблице)
+  if (target.classList.contains('btn-place-generate')) {
+    const eventId = parseInt(target.dataset.eventId);
+    handlePlaceGenerate(eventId);
+    return;
+  }
+  
+  // Кнопка для комбинированной проверки (Следы Великих)
+  if (target.classList.contains('btn-check-combined')) {
+    const eventId = parseInt(target.dataset.eventId);
+    handleCombinedCheck(eventId);
+    return;
+  }
 }
 
 function handleInput(e) {
@@ -726,6 +754,30 @@ function handleMultipleCheck(eventId, type) {
   processCheck(eventId, type, values);
 }
 
+// Комбинированная проверка для "Следы Великих"
+function handleCombinedCheck(eventId) {
+  const event = findEventById(eventId);
+  if (!event) return;
+  
+  const survivalInput = document.getElementById('check-' + eventId + '-survival');
+  const natureInput = document.getElementById('check-' + eventId + '-nature');
+  
+  if (!survivalInput || !natureInput) {
+    alert('Поля проверки не найдены');
+    return;
+  }
+  
+  const survivalValue = parseInt(survivalInput.value);
+  const natureValue = parseInt(natureInput.value);
+  
+  if (isNaN(survivalValue) || survivalValue < 1 || isNaN(natureValue) || natureValue < 1) {
+    alert('Введите корректные значения (минимум 1)');
+    return;
+  }
+  
+  processCheck(eventId, 'main', [survivalValue, natureValue]);
+}
+
 function addBar(eventId, type) {
   const event = findEventById(eventId);
   if (!event) return;
@@ -782,6 +834,67 @@ function handleRealityTear(eventId) {
     container.innerHTML = '<div style="background: rgba(255,215,0,0.05); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 4px;">Результат (1d8): <strong>' + roll + '</strong> — ' + resultText + '</div>';
     container.style.display = 'block';
   }
+}
+
+// ============================================================
+// ОБРАБОТКА "СВЕТ СРЕДИ ТЬМЫ" (50/50)
+// ============================================================
+
+function handleLightRandom(eventId) {
+  const event = findEventById(eventId);
+  if (!event) return;
+  
+  const roll = Math.random() < 0.5 ? 'artefact' : 'trap';
+  const container = document.getElementById('light-result-' + eventId);
+  
+  if (container) {
+    if (roll === 'artefact') {
+      container.innerHTML = '<div style="background: rgba(81,207,102,0.1); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #51cf66; margin-top: 4px; color: #51cf66;">✨ Это магический предмет! Нажмите "Проверить" для генерации.</div>';
+    } else {
+      container.innerHTML = '<div style="background: rgba(255,107,107,0.1); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ff6b6b; margin-top: 4px; color: #ff6b6b;">⚠️ Это ловушка! Нажмите "Проверить" для генерации.</div>';
+    }
+    container.style.display = 'block';
+  }
+}
+
+// ============================================================
+// ОБРАБОТКА "ЗАПРЕТНОЕ МЕСТО" (генерация по выбранной таблице)
+// ============================================================
+
+function handlePlaceGenerate(eventId) {
+  const event = findEventById(eventId);
+  if (!event) return;
+  
+  const select = document.getElementById('place-select-' + eventId);
+  if (!select) return;
+  
+  const tableName = select.value;
+  const container = document.getElementById('place-result-' + eventId);
+  if (!container) return;
+  
+  // Маппинг названий таблиц для отображения
+  const tableLabels = {
+    'reality_tears': 'Пролом Реальности',
+    'oasis_mysteries': 'Невероятный Оазис',
+    'ruins': 'Древние Руины',
+    'slaughter_zones': 'Бойня Области'
+  };
+  
+  const tableFields = {
+    'reality_tears': ['name', 'description', 'effect'],
+    'oasis_mysteries': ['oasis_type', 'mystery'],
+    'ruins': ['name', 'pass_method', 'reward_type'],
+    'slaughter_zones': ['name', 'description']
+  };
+  
+  const label = tableLabels[tableName] || tableName;
+  const fields = tableFields[tableName] || ['name'];
+  
+  // Используем существующую функцию rollTableInternal
+  const containerId = 'place-result-' + eventId;
+  const resultKey = 'place_generate_' + tableName;
+  
+  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
 }
 
 // ============================================================
