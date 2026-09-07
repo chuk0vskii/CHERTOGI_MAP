@@ -10,26 +10,28 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, createTableButton, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, createTableButton, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createSingleBar(event, 'main', 'Проверка Расследования (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success': 'Чтец распознает обман и находит истинный путь. Группа получает +1 к Прибытию.',
         'fail': 'Группа отклоняется от маршрута. +1 событие в фазе Путь.',
         'fail_5': 'Группа оказывается в враждебной зоне.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success') {
+        addArrivalBonus(1);
       }
       
-      if (event.result === 'fail_5') {
+      if (resultType === 'fail_5') {
         html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
       }
     }
