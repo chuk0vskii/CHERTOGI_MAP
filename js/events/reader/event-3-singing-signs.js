@@ -6,23 +6,34 @@ export default {
   type: 'singing_signs',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus, addBonusEvent } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createSingleBar(event, 'main', 'Проверка Традиции (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success': 'Группа избегает все опасности, верно прочитав знаки, и получает +1 к Прибытию и -1 событие в фазе Путь.',
         'fail': 'Добавлено новое общее событие в конце.',
         'fail_5': 'Группа начинает видеть знаки во всем вокруг, получает -1 к уровню Искры. Добавлено новое общее событие в конце.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success') {
+        addArrivalBonus(1);
+      }
+      
+      if (resultType === 'fail' || resultType === 'fail_5') {
+        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
+        html += '⭐ Добавлено бонусное общее событие в конце списка';
+        html += '</div>';
+        if (typeof addBonusEvent === 'function') {
+          addBonusEvent(null);
+        }
       }
     }
     
