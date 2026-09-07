@@ -137,22 +137,15 @@ function getRandomEventByType(type) {
   
   if (type === 'Общее') {
     roll = getRandomInt(1, 6);
-    console.log('🔍 Ищем общее событие с ID:', roll);
-    console.log('🔍 COMMON_EVENTS_MODULES:', COMMON_EVENTS_MODULES);
     module = COMMON_EVENTS_MODULES[roll];
   } else if (type === 'Чтец_Знаков') {
     roll = getRandomInt(1, 6);
-    console.log('🔍 Ищем событие Чтеца с ID:', roll);
-    console.log('🔍 READER_EVENTS_MODULES:', READER_EVENTS_MODULES);
     module = READER_EVENTS_MODULES[roll];
   } else if (type === 'Тень_Нарара') {
     roll = getRandomInt(1, 6);
-    console.log('🔍 Ищем событие Тени с ID:', roll);
-    console.log('🔍 SHADOW_EVENTS_MODULES:', SHADOW_EVENTS_MODULES);
     module = SHADOW_EVENTS_MODULES[roll];
   }
   
-  console.log('🔍 Результат поиска:', module ? module.title : 'НЕ НАЙДЕН');
   return { module: module, roll: roll };
 }
 
@@ -195,7 +188,7 @@ export async function generatePathEvents() {
         type: 'Общее', 
         roll: result.roll, 
         isBonus: false,
-        eventModule: result.module,
+        module: result.module,
         id: getUniqueId(),
         tableResults: {},
         secondTableResults: {},
@@ -223,7 +216,7 @@ export async function generatePathEvents() {
         type: role, 
         roll: result.roll, 
         isBonus: false,
-        eventModule: result.module,
+        module: result.module,
         id: getUniqueId(),
         tableResults: {},
         secondTableResults: {},
@@ -253,8 +246,6 @@ export async function generatePathEvents() {
 // ============================================================
 
 function renderEvents() {
-  console.log('🔴 renderEvents вызван, событий:', currentEvents.length);
-  
   if (!currentEvents || currentEvents.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
     return;
@@ -262,10 +253,8 @@ function renderEvents() {
 
   let html = '';
   
-  currentEvents.forEach(function(event, idx) {
+  currentEvents.forEach(function(event) {
     const module = event.module;
-    console.log('🔴 Событие #' + idx + ':', module ? module.title : 'НЕТ МОДУЛЯ');
-    
     const bgColor = event.isBonus ? 'rgba(255,215,0,0.08)' : '';
     const borderColor = event.isBonus ? '2px solid rgba(255,215,0,0.3)' : '1px solid rgba(74,14,14,0.2)';
     
@@ -283,7 +272,6 @@ function renderEvents() {
     html += '</div>';
     
     if (module && typeof module.render === 'function') {
-      console.log('🔴 Вызов render для:', module.title);
       const helpers = {
         createTableButton: function(tableName, eventId, resultKey, ev, count) {
           const moduleTables = module.tables || {};
@@ -365,8 +353,6 @@ function renderEvents() {
       };
       
       html += module.render(event, helpers);
-    } else {
-      console.log('🔴 НЕТ render для:', module ? module.title : 'null');
     }
     
     html += '</div>';
