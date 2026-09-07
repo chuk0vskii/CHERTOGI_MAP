@@ -25,6 +25,7 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 let eventIdCounter = 0;
+let isTestMode = true; // Включаем тестовый режим
 
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -86,7 +87,6 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
       return;
     }
     
-    // Определяем количество результатов (по умолчанию 1)
     const resultsCount = count || 1;
     let html = '';
     const results = [];
@@ -117,7 +117,6 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
     container.innerHTML = html;
     container.style.display = 'block';
     
-    // Сохраняем результат в событие
     const event = findEventById(eventId);
     if (event) {
       if (!event.tableResults) event.tableResults = {};
@@ -136,26 +135,37 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ СПИСКА СОБЫТИЙ
+// ГЕНЕРАЦИЯ СПИСКА СОБЫТИЙ (ТЕСТОВЫЙ РЕЖИМ)
 // ============================================================
 
-function getEventListByType(type) {
-  if (type === 'Общее') {
-    return Object.values(COMMON_EVENTS_MODULES);
+function getAllEventsList() {
+  const allEvents = [];
+  
+  // Общие события по порядку
+  for (var i = 1; i <= 6; i++) {
+    const module = COMMON_EVENTS_MODULES[i];
+    if (module) {
+      allEvents.push({ module: module, type: 'Общее', roll: i });
+    }
   }
-  if (type === 'Чтец_Знаков') {
-    return Object.values(READER_EVENTS_MODULES);
+  
+  // События Чтеца Знаков по порядку
+  for (var j = 1; j <= 6; j++) {
+    const module = READER_EVENTS_MODULES[j];
+    if (module) {
+      allEvents.push({ module: module, type: 'Чтец_Знаков', roll: j });
+    }
   }
-  if (type === 'Тень_Нарара') {
-    return Object.values(SHADOW_EVENTS_MODULES);
+  
+  // События Тени Нарара по порядку
+  for (var k = 1; k <= 6; k++) {
+    const module = SHADOW_EVENTS_MODULES[k];
+    if (module) {
+      allEvents.push({ module: module, type: 'Тень_Нарара', roll: k });
+    }
   }
-  return Object.values(COMMON_EVENTS_MODULES);
-}
-
-function getRandomEvent(type) {
-  const list = getEventListByType(type);
-  const randomIndex = getRandomInt(0, list.length - 1);
-  return list[randomIndex];
+  
+  return allEvents;
 }
 
 // ============================================================
@@ -169,82 +179,41 @@ export async function generatePathEvents() {
     return;
   }
 
-  const common = parseInt(selectedOption.dataset.commonEvents) || 0;
-  const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
-  const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
+  // В тестовом режиме выводим все события
+  const allEvents = getAllEventsList();
+  const totalEvents = allEvents.length;
 
-  let roleCount = 0;
-  let roleDisplay = '0';
-  if (maxRole > 0) {
-    const rollResult = getRandomInt(1, maxRole);
-    roleCount = rollResult + roleBonus;
-    const bonusDisplay = roleBonus > 0 ? ' +' + roleBonus : roleBonus < 0 ? ' ' + roleBonus : '';
-    roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
-  }
-
-  commonEventsCount.textContent = common;
-  maxRoleEvents.textContent = maxRole;
-  roleEventsCount.textContent = roleDisplay;
-  totalEventsCount.textContent = common + roleCount;
+  commonEventsCount.textContent = '6';
+  maxRoleEvents.textContent = '12';
+  roleEventsCount.textContent = '18';
+  totalEventsCount.textContent = totalEvents;
 
   currentEvents = [];
-  const events = generateEventList(common, roleCount);
   
-  events.forEach(function(e) {
-    e.id = getUniqueId();
-    e.tableResults = {};
-    e.secondTableResults = {};
-    e.bars = [];
-    e.secondBars = [];
-    e.checked = false;
-    e.result = null;
-    e.resultText = null;
-    e.secondChecked = false;
-    e.secondResult = null;
-    e.secondResultText = null;
-    e.module = e.eventModule;
+  allEvents.forEach(function(item, index) {
+    const module = item.module;
+    const eventCopy = { 
+      data: { id: module.id }, 
+      type: item.type, 
+      roll: item.roll, 
+      isBonus: false,
+      eventModule: module,
+      id: getUniqueId(),
+      tableResults: {},
+      secondTableResults: {},
+      bars: [],
+      secondBars: [],
+      checked: false,
+      result: null,
+      resultText: null,
+      secondChecked: false,
+      secondResult: null,
+      secondResultText: null
+    };
+    currentEvents.push(eventCopy);
   });
   
-  currentEvents = events;
   renderEvents();
-}
-
-function generateEventList(commonCount, roleCount) {
-  const events = [];
-
-  for (var i = 0; i < commonCount; i++) {
-    const module = getRandomEvent('Общее');
-    const eventCopy = { 
-      data: { id: module.id }, 
-      type: 'Общее', 
-      roll: getRandomInt(1, 6), 
-      isBonus: false,
-      eventModule: module
-    };
-    events.push(eventCopy);
-  }
-
-  const roles = ['Чтец_Знаков', 'Тень_Нарара'];
-  for (var j = 0; j < roleCount; j++) {
-    const roleIndex = getRandomInt(0, roles.length - 1);
-    const role = roles[roleIndex];
-    const module = getRandomEvent(role);
-    const eventCopy = { 
-      data: { id: module.id }, 
-      type: role, 
-      roll: getRandomInt(1, 6), 
-      isBonus: false,
-      eventModule: module
-    };
-    events.push(eventCopy);
-  }
-
-  for (var k = events.length - 1; k > 0; k--) {
-    const j2 = Math.floor(Math.random() * (k + 1));
-    [events[k], events[j2]] = [events[j2], events[k]];
-  }
-
-  return events;
 }
 
 // ============================================================
@@ -352,6 +321,10 @@ function renderEvents() {
         },
         getCurrentDifficulty: function() {
           return getCurrentDifficulty();
+        },
+        // Добавляем функции для работы с Прибытием
+        addArrivalBonus: function(value) {
+          addArrivalBonus(value);
         }
       };
       
@@ -552,10 +525,7 @@ function processCheck(eventId, type, values) {
     return;
   }
   
-  // Получаем текущую сложность
   const difficulty = getCurrentDifficulty();
-  
-  // Передаём сложность в модуль
   const result = module.handleCheck(event, values, type, difficulty);
   
   if (!result) {
@@ -572,16 +542,6 @@ function processCheck(eventId, type, values) {
     event.result = result.resultType;
     event.resultText = result.resultText;
     event.checked = true;
-  }
-  
-  // Применяем эффекты из модуля
-  if (result.effects) {
-    if (result.effects.arrival) {
-      addArrivalBonus(result.effects.arrival);
-    }
-    if (result.effects.signMod) {
-      addSignMod(result.effects.signMod);
-    }
   }
   
   renderEvents();
