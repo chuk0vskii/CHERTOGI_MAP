@@ -6,10 +6,11 @@ export default {
   type: 'fate',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty, getCommonEventsList } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
+    // Выпадающий список всех общих событий
     html += '<div style="margin-top: 8px;">';
     html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px;">Выберите событие:</label>';
     html += '<select id="fate-select-' + event.id + '" style="width:100%; padding:8px 12px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid #4a0e0e; border-radius:6px; color:#ffffff; font-family:\'Philosopher\', sans-serif;">';
@@ -33,6 +34,13 @@ export default {
         'fail_5': 'Чтец знаков невольно нарушает нити судьбы, что приводит к еще одному событию в фазе Путь на выбор Хранителя узлов. Добавьте событие из списка.'
       };
       html += createEffect(event.result, effects);
+      
+      // Если выбран success_5, показываем выбранное событие
+      if (event.result === 'success_5' && event.selectedEvent) {
+        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
+        html += '📌 Известно заранее: <strong>' + event.selectedEvent.title + '</strong>';
+        html += '</div>';
+      }
     }
     
     return html;
