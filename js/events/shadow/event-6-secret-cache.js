@@ -11,34 +11,36 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createSingleBar(event, 'main', 'Проверка Ловкости рук (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success_5': 'В тайнике обнаружено ценное. Группа также получает +1 к Искре.',
         'success': 'Найдены редкие ресурсы — куб провизии восстанавливается на 1 уровень, и группа получает +1 к Прибытию.',
         'fail': 'Тень случайно заставляет сработать ловушку, тень Нарара получает 5к6 урона с любым типом на усмотрение Хранителя узлов.',
         'fail_5': 'Тайник оказался приманкой. Срабатывает событие «Опасная встреча».'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success') {
+        addArrivalBonus(1);
       }
       
-      if (event.result === 'success_5' || event.result === 'success') {
+      if (resultType === 'success_5' || resultType === 'success') {
         html += createTableButton('artefacts', event.id, 'extra_artefacts', event);
-        if (event.result === 'success_5') {
+        if (resultType === 'success_5') {
           html += createTableButton('artefacts', event.id, 'extra_artefacts_2', event, 2);
         }
       }
       
-      if (event.result === 'fail_5') {
+      if (resultType === 'fail_5') {
         html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
       }
     }
@@ -52,19 +54,4 @@ export default {
     let resultText = '';
     
     if (value >= difficulty + 5) {
-      resultType = 'success_5';
-      resultText = 'Критический успех!';
-    } else if (value >= difficulty) {
-      resultType = 'success';
-      resultText = 'Успех!';
-    } else if (value >= difficulty - 5) {
-      resultType = 'fail';
-      resultText = 'Провал...';
-    } else {
-      resultType = 'fail_5';
-      resultText = 'Критический провал!';
-    }
-    
-    return { resultType, resultText };
-  }
-};
+      resultType = 'success_
