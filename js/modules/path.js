@@ -137,15 +137,22 @@ function getRandomEventByType(type) {
   
   if (type === 'Общее') {
     roll = getRandomInt(1, 6);
+    console.log('🔍 Ищем общее событие с ID:', roll);
+    console.log('🔍 COMMON_EVENTS_MODULES:', COMMON_EVENTS_MODULES);
     module = COMMON_EVENTS_MODULES[roll];
   } else if (type === 'Чтец_Знаков') {
     roll = getRandomInt(1, 6);
+    console.log('🔍 Ищем событие Чтеца с ID:', roll);
+    console.log('🔍 READER_EVENTS_MODULES:', READER_EVENTS_MODULES);
     module = READER_EVENTS_MODULES[roll];
   } else if (type === 'Тень_Нарара') {
     roll = getRandomInt(1, 6);
+    console.log('🔍 Ищем событие Тени с ID:', roll);
+    console.log('🔍 SHADOW_EVENTS_MODULES:', SHADOW_EVENTS_MODULES);
     module = SHADOW_EVENTS_MODULES[roll];
   }
   
+  console.log('🔍 Результат поиска:', module ? module.title : 'НЕ НАЙДЕН');
   return { module: module, roll: roll };
 }
 
