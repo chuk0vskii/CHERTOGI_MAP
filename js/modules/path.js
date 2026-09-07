@@ -270,7 +270,7 @@ export async function generatePathEvents() {
     }
   }
 
-  const roles = ['Чтец_Знаков', 'Тень_Нарара'];
+ const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
     const role = roles[roleIndex];
