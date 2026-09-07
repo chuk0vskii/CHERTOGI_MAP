@@ -168,7 +168,6 @@ function addBonusEventInternal(eventId, parentEventId) {
   
   if (!module) return;
   
-  // Удаляем старое бонусное событие, если оно было от этого родителя
   if (parentEventId) {
     const oldBonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === parentEventId);
     if (oldBonusIndex !== -1) {
@@ -200,6 +199,21 @@ function addBonusEventInternal(eventId, parentEventId) {
   };
   
   currentEvents.push(eventCopy);
+}
+
+// ============================================================
+// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА
+// ============================================================
+
+function applyArrivalBonusFromText(text) {
+  if (!text) return;
+  
+  var match = text.match(/([+-])\s*(\d+)\s*(?:к\s*)?(?:Прибыти[ею]|Прибытия)/i);
+  if (match) {
+    var sign = match[1] === '+' ? 1 : -1;
+    var amount = parseInt(match[2]);
+    addArrivalBonus(sign * amount);
+  }
 }
 
 // ============================================================
@@ -407,7 +421,12 @@ function renderEvents() {
         },
         createEffect: function(resultType, effects) {
           if (!effects || !effects[resultType]) return '';
-          return '<div class="event-effect visible">' + effects[resultType] + '</div>';
+          const effectText = effects[resultType];
+          // Применяем прибытие из текста эффекта
+          if (effectText) {
+            applyArrivalBonusFromText(effectText);
+          }
+          return '<div class="event-effect visible">' + effectText + '</div>';
         },
         getCurrentDifficulty: function() {
           return getCurrentDifficulty();
@@ -428,6 +447,9 @@ function renderEvents() {
             { id: 5, title: 'Невероятный Оазис' },
             { id: 6, title: 'Вмешательство звезд' }
           ];
+        },
+        applyArrivalBonusFromText: function(text) {
+          applyArrivalBonusFromText(text);
         }
       };
       
@@ -683,19 +705,14 @@ function processCheck(eventId, type, values) {
     event.checked = true;
   }
   
-  // ===== ПРИМЕНЯЕМ ЭФФЕКТЫ ТОЛЬКО ОДИН РАЗ =====
+  // Применяем эффекты только один раз (только events, не arrival)
   if (result.effects && !event[effectsAppliedKey]) {
     event[effectsAppliedKey] = true;
     
-    if (result.effects.arrival) {
-      addArrivalBonus(result.effects.arrival);
-    }
     if (result.effects.events) {
-      // Добавляем бонусные события без вызова renderEvents
       for (var i = 0; i < result.effects.events; i++) {
         addBonusEventInternal(null);
       }
-      // Рендерим после всех добавлений
       renderEvents();
     }
   }
