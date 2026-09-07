@@ -54,4 +54,19 @@ export default {
     let resultText = '';
     
     if (value >= difficulty + 5) {
-      resultType = 'success_
+      resultType = 'success_5';
+      resultText = 'Критический успех!';
+    } else if (value >= difficulty) {
+      resultType = 'success';
+      resultText = 'Успех!';
+    } else if (value >= difficulty - 5) {
+      resultType = 'fail';
+      resultText = 'Провал...';
+    } else {
+      resultType = 'fail_5';
+      resultText = 'Критический провал!';
+    }
+    
+    return { resultType, resultText };
+  }
+};
