@@ -150,10 +150,10 @@ function getRandomEventByType(type) {
 }
 
 // ============================================================
-// ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ
+// ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ (БЕЗ ВЫЗОВА renderEvents)
 // ============================================================
 
-function addBonusEvent(eventId, parentEventId) {
+function addBonusEventInternal(eventId, parentEventId) {
   let module = null;
   let roll = 0;
   
@@ -199,6 +199,14 @@ function addBonusEvent(eventId, parentEventId) {
   };
   
   currentEvents.push(eventCopy);
+}
+
+// ============================================================
+// ОБЁРТКА ДЛЯ ВЫЗОВА ИЗ ВНЕ (С РЕНДЕРОМ)
+// ============================================================
+
+function addBonusEvent(eventId, parentEventId) {
+  addBonusEventInternal(eventId, parentEventId);
   renderEvents();
 }
 
@@ -685,9 +693,12 @@ function processCheck(eventId, type, values) {
       addArrivalBonus(result.effects.arrival);
     }
     if (result.effects.events) {
+      // Добавляем бонусные события без вызова renderEvents
       for (var i = 0; i < result.effects.events; i++) {
-        addBonusEvent(null);
+        addBonusEventInternal(null);
       }
+      // Рендерим после всех добавлений
+      renderEvents();
     }
   }
   
