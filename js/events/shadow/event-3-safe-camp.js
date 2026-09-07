@@ -10,27 +10,29 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
     html += createSingleBar(event, 'main', 'Проверка Расследования (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success_5': 'Группа находит отличное место для стоянки. +1 к Прибытию и может восстановить 2 уровня Искры или Кремня или по 1 каждый.',
         'success': '+1 уровень Кремня или +1 Искры.',
         'fail': 'Группа не может уснуть из-за постоянного ощущения, что кто-то наблюдает за ними.',
         'fail_5': 'Ваш лагерь расположен прямо в логове монстра.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success_5') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success_5') {
+        addArrivalBonus(1);
       }
       
-      if (event.result === 'fail_5') {
+      if (resultType === 'fail_5') {
         html += createTableButton('opasnost_regional', event.id, 'extra_opasnost', event);
       }
     }
