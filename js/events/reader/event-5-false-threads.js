@@ -48,7 +48,7 @@ export default {
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
-      effects = { events: 1 };
+      effects = { events: 1 }; // ТОЛЬКО 1 событие
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
