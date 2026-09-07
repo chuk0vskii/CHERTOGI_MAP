@@ -11,7 +11,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -30,13 +30,6 @@ export default {
       };
       html += createEffect(resultType, effects);
       
-      if (resultType === 'success_5' || resultType === 'success') {
-        addArrivalBonus(1);
-      }
-      if (resultType === 'fail' || resultType === 'fail_5') {
-        addArrivalBonus(-1);
-      }
-      
       if (resultType === 'success_5') {
         html += createTableButton('great_beasts', event.id, 'extra_great_beasts', event);
       }
@@ -49,21 +42,26 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty + 5) {
       resultType = 'success_5';
       resultText = 'Критический успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = { arrival: -1 };
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = { arrival: -1 };
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
