@@ -10,7 +10,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -18,19 +18,21 @@ export default {
     html += createSingleBar(event, 'main', 'Проверка Расследования (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success': 'Группа успешно обходит преграду и получает +1 к Прибытию.',
         'fail': 'Группа обходит преграду, но с заметными трудностями. Проверка Кремня и -1 к Прибытию.',
         'fail_5': 'Группа должна немедленно начать долгий отдых, поскольку путь будет долгим и нужно подготовиться.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success') {
+        addArrivalBonus(1);
       }
-      if (event.result === 'fail') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(-1);
+      if (resultType === 'fail') {
+        addArrivalBonus(-1);
       }
     }
     
