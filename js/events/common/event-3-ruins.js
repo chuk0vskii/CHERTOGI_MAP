@@ -30,8 +30,6 @@ export default {
         'all_fail': 'Что за кошмары могут обитать в этой местности? Группа начинает в удвоенном темпе сбегать с места. Если же группа решит исследовать руины, ее члены будут считаться Испуганными любыми существами находящимися рядом на все время исследования.'
       };
       html += createEffect(resultType, effects);
-      
-      // В render НЕ вызываем addArrivalBonus
     }
     
     html += '<div class="second-check-section">';
@@ -72,22 +70,27 @@ export default {
       const value = values[0] || 0;
       let resultType = '';
       let resultText = '';
+      let effects = null;
       
       if (value >= difficulty + 5) {
         resultType = 'success_5';
         resultText = 'Критический успех! (2 артефакта)';
+        effects = { arrival: 0 };
       } else if (value >= difficulty) {
         resultType = 'success';
         resultText = 'Успех! (1 артефакт)';
+        effects = { arrival: 0 };
       } else if (value >= difficulty - 5) {
         resultType = 'fail';
         resultText = 'Провал...';
+        effects = { arrival: -1 };
       } else {
         resultType = 'fail_5';
         resultText = 'Критический провал!';
+        effects = { arrival: -1 };
       }
       
-      return { resultType, resultText };
+      return { resultType, resultText, effects };
     }
     
     const successes = values.filter(v => v >= difficulty).length;
