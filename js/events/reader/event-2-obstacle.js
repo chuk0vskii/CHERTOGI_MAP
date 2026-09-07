@@ -10,7 +10,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -27,13 +27,6 @@ export default {
         'fail_5': 'Группа должна немедленно начать долгий отдых, поскольку путь будет долгим и нужно подготовиться.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'success') {
-        addArrivalBonus(1);
-      }
-      if (resultType === 'fail') {
-        addArrivalBonus(-1);
-      }
     }
     
     return html;
@@ -43,18 +36,22 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = { arrival: 1 };
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = { arrival: -1 };
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = null;
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
