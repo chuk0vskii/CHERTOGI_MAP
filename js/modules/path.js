@@ -25,7 +25,6 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 let eventIdCounter = 0;
-let isTestMode = true; // Включаем тестовый режим
 
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -60,7 +59,7 @@ function createBeastLink(name, tableName) {
 }
 
 // ============================================================
-// РОЛЛ ТАБЛИЦЫ С СОХРАНЕНИЕМ РЕЗУЛЬТАТА
+// РОЛЛ ТАБЛИЦЫ
 // ============================================================
 
 async function rollTableInternal(tableName, containerId, fields, isCreature, eventId, resultKey, count) {
@@ -89,12 +88,10 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
     
     const resultsCount = count || 1;
     let html = '';
-    const results = [];
     
     for (var i = 0; i < resultsCount; i++) {
       const randomIndex = Math.floor(Math.random() * data.length);
       const item = data[randomIndex];
-      results.push({ item, randomIndex });
       
       html += '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
       html += '<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат #' + (i + 1) + ': <strong>' + (randomIndex + 1) + '</strong></div>';
@@ -120,11 +117,7 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
     const event = findEventById(eventId);
     if (event) {
       if (!event.tableResults) event.tableResults = {};
-      event.tableResults[resultKey] = { 
-        html: html, 
-        results: results,
-        count: resultsCount
-      };
+      event.tableResults[resultKey] = { html: html };
     }
     
   } catch (err) {
@@ -135,13 +128,12 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ СПИСКА СОБЫТИЙ (ТЕСТОВЫЙ РЕЖИМ)
+// ГЕНЕРАЦИЯ ВСЕХ СОБЫТИЙ ПО ПОРЯДКУ (ТЕСТОВЫЙ РЕЖИМ)
 // ============================================================
 
 function getAllEventsList() {
   const allEvents = [];
   
-  // Общие события по порядку
   for (var i = 1; i <= 6; i++) {
     const module = COMMON_EVENTS_MODULES[i];
     if (module) {
@@ -149,7 +141,6 @@ function getAllEventsList() {
     }
   }
   
-  // События Чтеца Знаков по порядку
   for (var j = 1; j <= 6; j++) {
     const module = READER_EVENTS_MODULES[j];
     if (module) {
@@ -157,7 +148,6 @@ function getAllEventsList() {
     }
   }
   
-  // События Тени Нарара по порядку
   for (var k = 1; k <= 6; k++) {
     const module = SHADOW_EVENTS_MODULES[k];
     if (module) {
@@ -179,7 +169,6 @@ export async function generatePathEvents() {
     return;
   }
 
-  // В тестовом режиме выводим все события
   const allEvents = getAllEventsList();
   const totalEvents = allEvents.length;
 
@@ -190,7 +179,7 @@ export async function generatePathEvents() {
 
   currentEvents = [];
   
-  allEvents.forEach(function(item, index) {
+  allEvents.forEach(function(item) {
     const module = item.module;
     const eventCopy = { 
       data: { id: module.id }, 
@@ -246,14 +235,15 @@ function renderEvents() {
     }
     html += '</div>';
     
-    if (module && module.render) {
+    // Вызываем render события
+    if (module && typeof module.render === 'function') {
       const helpers = {
         createTableButton: function(tableName, eventId, resultKey, ev, count) {
           const moduleTables = module.tables || {};
           const tableConfig = moduleTables[tableName];
           if (!tableConfig) return '';
           
-          const containerId = 'table-result-' + eventId + '-' + tableName + '-' + (count || 1);
+          const containerId = 'table-result-' + eventId + '-' + tableName;
           const fields = tableConfig.fields || ['name'];
           const isCreature = tableConfig.isCreature || false;
           const label = tableConfig.label || 'Таблица';
@@ -322,7 +312,6 @@ function renderEvents() {
         getCurrentDifficulty: function() {
           return getCurrentDifficulty();
         },
-        // Добавляем функции для работы с Прибытием
         addArrivalBonus: function(value) {
           addArrivalBonus(value);
         }
@@ -520,7 +509,7 @@ function processCheck(eventId, type, values) {
   if (!event) return;
   
   const module = event.module;
-  if (!module || !module.handleCheck) {
+  if (!module || typeof module.handleCheck !== 'function') {
     console.error('Модуль события не найден или нет handleCheck', eventId);
     return;
   }
