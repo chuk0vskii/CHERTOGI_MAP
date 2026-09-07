@@ -235,7 +235,6 @@ function renderEvents() {
     }
     html += '</div>';
     
-    // Вызываем render события
     if (module && typeof module.render === 'function') {
       const helpers = {
         createTableButton: function(tableName, eventId, resultKey, ev, count) {
