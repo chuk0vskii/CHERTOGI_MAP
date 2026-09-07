@@ -202,16 +202,28 @@ function addBonusEventInternal(eventId, parentEventId) {
 }
 
 // ============================================================
-// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА
+// ПРИМЕНЕНИЕ ПРИБЫТИЯ ИЗ ТЕКСТА (ТОЛЬКО ОДИН РАЗ)
 // ============================================================
 
-function applyArrivalBonusFromText(text) {
+function applyArrivalBonusFromText(text, eventId, isSecond) {
   if (!text) return;
   
   var match = text.match(/([+-])\s*(\d+)\s*(?:к\s*)?(?:Прибыти[ею]|Прибытия)/i);
   if (match) {
     var sign = match[1] === '+' ? 1 : -1;
     var amount = parseInt(match[2]);
+    
+    // Проверяем, не применялось ли уже прибытие для этого события
+    var event = findEventById(eventId);
+    if (event) {
+      var key = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
+      if (event[key]) {
+        console.log('Прибытие уже применено для события', eventId);
+        return;
+      }
+      event[key] = true;
+    }
+    
     addArrivalBonus(sign * amount);
   }
 }
@@ -269,6 +281,8 @@ export async function generatePathEvents() {
         secondResultText: null,
         effectsApplied: false,
         secondEffectsApplied: false,
+        arrivalApplied: false,
+        arrivalAppliedSecond: false,
         selectedEventId: null,
         selectedEventModule: null
       };
@@ -301,6 +315,8 @@ export async function generatePathEvents() {
         secondResultText: null,
         effectsApplied: false,
         secondEffectsApplied: false,
+        arrivalApplied: false,
+        arrivalAppliedSecond: false,
         selectedEventId: null,
         selectedEventModule: null
       };
@@ -419,13 +435,15 @@ function renderEvents() {
           const resultClass = getResultClass(resultType);
           return '<div class="event-result visible ' + resultClass + '">' + resultText + '</div>';
         },
-        createEffect: function(resultType, effects) {
+        createEffect: function(resultType, effects, eventId, isSecond) {
           if (!effects || !effects[resultType]) return '';
           const effectText = effects[resultType];
-          // Применяем прибытие из текста эффекта
+          
+          // Применяем прибытие из текста эффекта (только один раз)
           if (effectText) {
-            applyArrivalBonusFromText(effectText);
+            applyArrivalBonusFromText(effectText, eventId, isSecond);
           }
+          
           return '<div class="event-effect visible">' + effectText + '</div>';
         },
         getCurrentDifficulty: function() {
@@ -447,9 +465,6 @@ function renderEvents() {
             { id: 5, title: 'Невероятный Оазис' },
             { id: 6, title: 'Вмешательство звезд' }
           ];
-        },
-        applyArrivalBonusFromText: function(text) {
-          applyArrivalBonusFromText(text);
         }
       };
       
