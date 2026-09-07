@@ -23,7 +23,6 @@ export default {
       };
       html += createEffect(resultType, effects);
       
-      // Обновляем счётчик Прибытия
       if (resultType === 'all_or_half_success') {
         addArrivalBonus(1);
       }
