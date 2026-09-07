@@ -128,34 +128,25 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
 }
 
 // ============================================================
-// ГЕНЕРАЦИЯ ВСЕХ СОБЫТИЙ ПО ПОРЯДКУ (ТЕСТОВЫЙ РЕЖИМ)
+// ГЕНЕРАЦИЯ СПИСКА СЛУЧАЙНЫХ СОБЫТИЙ
 // ============================================================
 
-function getAllEventsList() {
-  const allEvents = [];
+function getRandomEventByType(type) {
+  let module = null;
+  let roll = 0;
   
-  for (var i = 1; i <= 6; i++) {
-    const module = COMMON_EVENTS_MODULES[i];
-    if (module) {
-      allEvents.push({ module: module, type: 'Общее', roll: i });
-    }
+  if (type === 'Общее') {
+    roll = getRandomInt(1, 6);
+    module = COMMON_EVENTS_MODULES[roll];
+  } else if (type === 'Чтец_Знаков') {
+    roll = getRandomInt(1, 6);
+    module = READER_EVENTS_MODULES[roll];
+  } else if (type === 'Тень_Нарара') {
+    roll = getRandomInt(1, 6);
+    module = SHADOW_EVENTS_MODULES[roll];
   }
   
-  for (var j = 1; j <= 6; j++) {
-    const module = READER_EVENTS_MODULES[j];
-    if (module) {
-      allEvents.push({ module: module, type: 'Чтец_Знаков', roll: j });
-    }
-  }
-  
-  for (var k = 1; k <= 6; k++) {
-    const module = SHADOW_EVENTS_MODULES[k];
-    if (module) {
-      allEvents.push({ module: module, type: 'Тень_Нарара', roll: k });
-    }
-  }
-  
-  return allEvents;
+  return { module: module, roll: roll };
 }
 
 // ============================================================
@@ -169,39 +160,87 @@ export async function generatePathEvents() {
     return;
   }
 
-  const allEvents = getAllEventsList();
-  const totalEvents = allEvents.length;
+  const common = parseInt(selectedOption.dataset.commonEvents) || 0;
+  const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
+  const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
-  commonEventsCount.textContent = '6';
-  maxRoleEvents.textContent = '12';
-  roleEventsCount.textContent = '18';
-  totalEventsCount.textContent = totalEvents;
+  let roleCount = 0;
+  let roleDisplay = '0';
+  if (maxRole > 0) {
+    const rollResult = getRandomInt(1, maxRole);
+    roleCount = rollResult + roleBonus;
+    const bonusDisplay = roleBonus > 0 ? ' +' + roleBonus : roleBonus < 0 ? ' ' + roleBonus : '';
+    roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
+  }
+
+  commonEventsCount.textContent = common;
+  maxRoleEvents.textContent = maxRole;
+  roleEventsCount.textContent = roleDisplay;
+  totalEventsCount.textContent = common + roleCount;
 
   currentEvents = [];
   
-  allEvents.forEach(function(item) {
-    const module = item.module;
-    const eventCopy = { 
-      data: { id: module.id }, 
-      type: item.type, 
-      roll: item.roll, 
-      isBonus: false,
-      eventModule: module,
-      id: getUniqueId(),
-      tableResults: {},
-      secondTableResults: {},
-      bars: [],
-      secondBars: [],
-      checked: false,
-      result: null,
-      resultText: null,
-      secondChecked: false,
-      secondResult: null,
-      secondResultText: null
-    };
-    currentEvents.push(eventCopy);
-  });
-  
+  // Генерируем ОБЩИЕ события (ровно common штук)
+  for (var i = 0; i < common; i++) {
+    const result = getRandomEventByType('Общее');
+    if (result.module) {
+      const eventCopy = { 
+        data: { id: result.module.id }, 
+        type: 'Общее', 
+        roll: result.roll, 
+        isBonus: false,
+        eventModule: result.module,
+        id: getUniqueId(),
+        tableResults: {},
+        secondTableResults: {},
+        bars: [],
+        secondBars: [],
+        checked: false,
+        result: null,
+        resultText: null,
+        secondChecked: false,
+        secondResult: null,
+        secondResultText: null
+      };
+      currentEvents.push(eventCopy);
+    }
+  }
+
+  // Генерируем РОЛЕВЫЕ события (ровно roleCount штук)
+  const roles = ['Чтец_Знаков', 'Тень_Нарара'];
+  for (var j = 0; j < roleCount; j++) {
+    const roleIndex = getRandomInt(0, roles.length - 1);
+    const role = roles[roleIndex];
+    const result = getRandomEventByType(role);
+    if (result.module) {
+      const eventCopy = { 
+        data: { id: result.module.id }, 
+        type: role, 
+        roll: result.roll, 
+        isBonus: false,
+        eventModule: result.module,
+        id: getUniqueId(),
+        tableResults: {},
+        secondTableResults: {},
+        bars: [],
+        secondBars: [],
+        checked: false,
+        result: null,
+        resultText: null,
+        secondChecked: false,
+        secondResult: null,
+        secondResultText: null
+      };
+      currentEvents.push(eventCopy);
+    }
+  }
+
+  // Перемешиваем все события
+  for (var k = currentEvents.length - 1; k > 0; k--) {
+    const j2 = Math.floor(Math.random() * (k + 1));
+    [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
+  }
+
   renderEvents();
 }
 
