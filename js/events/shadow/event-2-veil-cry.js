@@ -34,18 +34,22 @@ export default {
     const value = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
+      effects = null;
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
+      effects = null;
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
+      effects = null;
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
