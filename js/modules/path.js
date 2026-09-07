@@ -193,6 +193,8 @@ function addBonusEvent(eventId, parentEventId) {
     secondChecked: false,
     secondResult: null,
     secondResultText: null,
+    effectsApplied: false,
+    secondEffectsApplied: false,
     color: 'rgba(255,215,0,0.08)'
   };
   
@@ -250,7 +252,11 @@ export async function generatePathEvents() {
         resultText: null,
         secondChecked: false,
         secondResult: null,
-        secondResultText: null
+        secondResultText: null,
+        effectsApplied: false,
+        secondEffectsApplied: false,
+        selectedEventId: null,
+        selectedEventModule: null
       };
       currentEvents.push(eventCopy);
     }
@@ -278,7 +284,11 @@ export async function generatePathEvents() {
         resultText: null,
         secondChecked: false,
         secondResult: null,
-        secondResultText: null
+        secondResultText: null,
+        effectsApplied: false,
+        secondEffectsApplied: false,
+        selectedEventId: null,
+        selectedEventModule: null
       };
       currentEvents.push(eventCopy);
     }
@@ -497,7 +507,6 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка для выбора события в "Это должно было произойти!"
   if (target.classList.contains('btn-fate-select')) {
     const eventId = parseInt(target.dataset.eventId);
     const select = document.getElementById('fate-select-' + eventId);
@@ -517,12 +526,10 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка удаления бонусного события
   if (target.classList.contains('btn-fate-remove')) {
     const eventId = parseInt(target.dataset.eventId);
     const event = findEventById(eventId);
     if (event) {
-      // Удаляем бонусное событие
       const bonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === eventId);
       if (bonusIndex !== -1) {
         currentEvents.splice(bonusIndex, 1);
@@ -658,6 +665,7 @@ function processCheck(eventId, type, values) {
   }
   
   const isSecond = type === 'second';
+  const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
   
   if (isSecond) {
     event.secondResult = result.resultType;
@@ -669,8 +677,10 @@ function processCheck(eventId, type, values) {
     event.checked = true;
   }
   
-  // ===== ПРИМЕНЯЕМ ЭФФЕКТЫ =====
-  if (result.effects) {
+  // ===== ПРИМЕНЯЕМ ЭФФЕКТЫ ТОЛЬКО ОДИН РАЗ =====
+  if (result.effects && !event[effectsAppliedKey]) {
+    event[effectsAppliedKey] = true;
+    
     if (result.effects.arrival) {
       addArrivalBonus(result.effects.arrival);
     }
