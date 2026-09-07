@@ -384,18 +384,29 @@
 
   console.log('Supabase подключён');
 
-var SECTIONS = [
-  { id: 'beasts', title: 'Звери', table: 'beasts' },
-  { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts' },
-  { id: 'monsters', title: 'Монстры', table: 'monsters' },
-  { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
-  { id: 'insectoids', title: 'Инсектоиды Чертогов', table: 'insectoids' },
-  { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' },
-  { id: 'dangerous_desert', title: 'Опасные существа пустыни и пустошей', table: 'opasnost_pustini' },
-  { id: 'dangerous_steppes', title: 'Опасные существа степей и холмов', table: 'opasnost_stepi' },
-  { id: 'dangerous_mountains', title: 'Опасные существа гор и скал', table: 'opasnost_gor' },
-  { id: 'dangerous_swamps', title: 'Опасные существа топей, рек и джунглей', table: 'opasnost_jungle' }
-];
+  var SECTIONS = [
+    { id: 'beasts', title: 'Звери', table: 'beasts' },
+    { id: 'great_beasts', title: 'Великие странствующие звери', table: 'great_beasts' },
+    { id: 'monsters', title: 'Монстры', table: 'monsters' },
+    { id: 'humanoids', title: 'Гуманоиды', table: 'humanoids' },
+    { id: 'insectoids', title: 'Инсектоиды Чертогов', table: 'insectoids' },
+    { id: 'veil_aberrations', title: 'Аберрации Вуали', table: 'veil_aberrations' },
+    { id: 'traps', title: 'Ловушки', table: 'traps' },
+    { id: 'ruins', title: 'Руины', table: 'ruins' },
+    { id: 'oasis_mysteries', title: 'Загадки Оазисов', table: 'oasis_mysteries' },
+    { id: 'region_curses', title: 'Проклятия области', table: 'region_curses' },
+    { id: 'region_obstacles', title: 'Преграды области', table: 'region_obstacles' },
+    { id: 'zone_conflicts', title: 'Конфликты зоны', table: 'zone_conflicts' },
+    { id: 'reality_tears', title: 'Проломы реальности', table: 'reality_tears' },
+    { id: 'parasitic_creatures', title: 'Паразиты Чертогов', table: 'parasitic_creatures' },
+    { id: 'slaughter_zones', title: 'Бойня области', table: 'slaughter_zones' },
+    { id: 'storm_eyes', title: 'Око Штормов', table: 'storm_eyes' },
+    { id: 'deadly_encounters', title: 'Смертельные встречи', table: 'deadly_encounters' },
+    { id: 'dangerous_desert', title: 'Опасные существа пустыни и пустошей', table: 'opasnost_pustini' },
+    { id: 'dangerous_steppes', title: 'Опасные существа степей и холмов', table: 'opasnost_stepi' },
+    { id: 'dangerous_mountains', title: 'Опасные существа гор и скал', table: 'opasnost_gor' },
+    { id: 'dangerous_swamps', title: 'Опасные существа топей, рек и джунглей', table: 'opasnost_jungle' }
+  ];
 
   function getCreatureImagePath(name) {
     var fileName = name.trim().toLowerCase().replace(/\s+/g, '_');
@@ -717,26 +728,28 @@ var SECTIONS = [
   function openBeastFromUrl() {
     var params = getUrlParams();
     
-    console.log('Параметры URL:', params);
+    console.log('🔍 Параметры URL:', params);
     
     if (!params.section && !params.beast) {
+      console.log('Нет параметров для открытия существа');
       return;
     }
     
-    var sectionId = params.section || 'great_beasts';
+    var sectionId = params.section || 'dangerous_creatures';
     var beastName = params.beast || '';
     
-    console.log('Открытие существа из URL:', { sectionId, beastName });
+    console.log('🔍 Открытие существа:', { sectionId, beastName });
     
     if (!beastName) {
       return;
     }
     
+    // Пробуем найти раздел
     var sectionContent = document.getElementById('content-' + sectionId);
     var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
     
     if (!sectionContent || !sectionHeader) {
-      console.warn('Раздел не найден:', sectionId);
+      console.warn('⚠️ Раздел не найден:', sectionId);
       return;
     }
     
@@ -745,20 +758,22 @@ var SECTIONS = [
     var arrow = document.getElementById('arrow-' + sectionId);
     if (arrow) arrow.classList.add('open');
     
-    // Ищем карточку с нужным существом
+    // Ищем карточку с существом
     var cards = sectionContent.querySelectorAll('.creature-card');
     var targetCard = null;
     var decodedName = decodeURIComponent(beastName);
     
-    console.log('Ищем существо:', decodedName);
-    console.log('Всего карточек:', cards.length);
+    console.log('🔍 Ищем существо:', decodedName);
+    console.log('🔍 Всего карточек в разделе:', cards.length);
     
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
       var nameEl = card.querySelector('.creature-name');
-      if (nameEl && nameEl.textContent.trim() === decodedName) {
+      var cardName = nameEl ? nameEl.textContent.trim() : '';
+      console.log('  - Карточка #' + i + ':', cardName);
+      if (cardName === decodedName) {
         targetCard = card;
-        console.log('Найдена карточка:', decodedName);
+        console.log('✅ Найдена карточка:', decodedName);
         break;
       }
     }
@@ -784,7 +799,12 @@ var SECTIONS = [
         }, 5000);
       }, 300);
     } else {
-      console.warn('Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
+      console.warn('⚠️ Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
+      console.log('🔍 Доступные имена в разделе:');
+      cards.forEach(function(card) {
+        var nameEl = card.querySelector('.creature-name');
+        console.log('  - ' + (nameEl ? nameEl.textContent.trim() : 'НЕТ ИМЕНИ'));
+      });
     }
   }
 
