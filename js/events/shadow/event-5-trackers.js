@@ -14,14 +14,6 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    html += '<div style="margin-top: 8px;">';
-    html += '<label style="color: rgba(255,255,255,0.5); font-size: 13px;">Выберите навык:</label>';
-    html += '<select id="skill-select-' + event.id + '" style="width:100%; padding:8px 12px; margin-top:4px; background:rgba(255,255,255,0.05); border:1px solid #4a0e0e; border-radius:6px; color:#ffffff; font-family:\'Philosopher\', sans-serif;">';
-    html += '<option value="скрытность">Скрытность</option>';
-    html += '<option value="ловкость">Ловкость рук</option>';
-    html += '</select>';
-    html += '</div>';
-    
     html += createSingleBar(event, 'main', 'Результат проверки (сложность ' + difficulty + ')', difficulty);
     html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
     
