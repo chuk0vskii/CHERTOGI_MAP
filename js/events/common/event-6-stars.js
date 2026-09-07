@@ -6,23 +6,33 @@ export default {
   type: 'total_check',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
-    const difficulty = getCurrentDifficulty();
+    const { createSingleBar, createResult, createEffect, addArrivalBonus, addBonusEvent } = helpers;
     let html = '';
     
-    html += createSingleBar(event, 'main', 'Общий результат проверки Традиций', difficulty);
+    html += createSingleBar(event, 'main', 'Общий результат проверки Традиций', 0);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'total_80': 'Боги благословляют группу и их нити судьбы изгибаются в лучшую сторону. Все негативные эффекты знака из фазы Чтение знаков перестают действовать, а все положительные эффекты удваиваются.',
         'total_60': 'Боги в раздумье и посему судьба группы натягивается как струна. Чтец знаков делает еще один бросок по таблице знаков, у группы +1 событие в фазе Путь.',
         'total_40': 'Боги недовольны малым поклонением и группу настигает их разочарование. Бросьте по таблице Знаков из фазы Чтение знаков с помехой. У группы также -2 к Прибытию.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'total_40') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(-2);
+      if (resultType === 'total_40') {
+        addArrivalBonus(-2);
+      }
+      
+      if (resultType === 'total_60') {
+        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
+        html += '⭐ Добавлено бонусное событие в фазе Путь (бросок по таблице знаков)';
+        html += '</div>';
+        if (typeof addBonusEvent === 'function') {
+          addBonusEvent(null);
+        }
       }
     }
     
