@@ -26,6 +26,14 @@ import shadow4 from './shadow/event-4-reality-tear.js';
 import shadow5 from './shadow/event-5-trackers.js';
 import shadow6 from './shadow/event-6-secret-cache.js';
 
+// --- СОБЫТИЯ КОГТЯ АКРЕПЫ ---
+import claw1 from './claw/event-1-spirit-devouring.js';
+import claw2 from './claw/event-2-golden-prey.js';
+import claw3 from './claw/event-3-traces-of-great.js';
+import claw4 from './claw/event-4-poisonous-meal.js';
+import claw5 from './claw/event-5-hunting-ambush.js';
+import claw6 from './claw/event-6-forbidden-place.js';
+
 // ============================================================
 // РЕЕСТРЫ
 // ============================================================
@@ -55,6 +63,15 @@ export const SHADOW_EVENTS_MODULES = {
   4: shadow4,
   5: shadow5,
   6: shadow6
+};
+
+export const CLAW_EVENTS_MODULES = {
+  1: claw1,
+  2: claw2,
+  3: claw3,
+  4: claw4,
+  5: claw5,
+  6: claw6
 };
 
 // ============================================================
@@ -100,6 +117,9 @@ export function getEventModule(id, type) {
   }
   if (type === 'Тень_Нарара') {
     return SHADOW_EVENTS_MODULES[id];
+  }
+  if (type === 'Коготь_Акрепы') {
+    return CLAW_EVENTS_MODULES[id];
   }
   return null;
 }
