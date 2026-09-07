@@ -1,5 +1,5 @@
 // ============================================================
-// ФАЗА ПУТЬ - ДИСПЕТЧЕР
+// path.js — ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ============================================================
 
 import { _supabase } from '../config-module.js';
@@ -308,26 +308,71 @@ export async function generatePathEvents() {
 }
 
 // ============================================================
-// ПРИМЕНЕНИЕ ПРИБЫТИЯ (ТОЛЬКО ЕСЛИ ЯВНО УКАЗАНО)
+// ОБРАБОТКА ПРОВЕРКИ (ОСНОВНАЯ ЛОГИКА)
 // ============================================================
 
-function applyArrivalIfNeeded(event, resultEffects, isSecond) {
-  if (!resultEffects) return;
+function processCheck(eventId, type, values) {
+  const event = findEventById(eventId);
+  if (!event) return;
   
-  var arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
+  const module = event.module;
+  if (!module || typeof module.handleCheck !== 'function') {
+    console.error('Модуль события не найден или нет handleCheck', eventId);
+    return;
+  }
   
-  // Проверяем, есть ли явное указание на изменение прибытия
-  if (resultEffects.arrivalText) {
-    if (!event[arrivalKey]) {
-      event[arrivalKey] = true;
-      var match = resultEffects.arrivalText.match(/([+-])\s*(\d+)/);
-      if (match) {
-        var sign = match[1] === '+' ? 1 : -1;
-        var amount = parseInt(match[2]);
-        addArrivalBonus(sign * amount);
+  const difficulty = getCurrentDifficulty();
+  const result = module.handleCheck(event, values, type, difficulty);
+  
+  if (!result) {
+    return;
+  }
+  
+  const isSecond = type === 'second';
+  const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
+  const arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
+  
+  // Сохраняем результат
+  if (isSecond) {
+    event.secondResult = result.resultType;
+    event.secondResultText = result.resultText;
+    event.secondChecked = true;
+  } else {
+    event.result = result.resultType;
+    event.resultText = result.resultText;
+    event.checked = true;
+  }
+  
+  // Применяем эффекты ТОЛЬКО ОДИН РАЗ
+  if (result.effects && !event[effectsAppliedKey]) {
+    event[effectsAppliedKey] = true;
+    
+    console.log('📊 Применяем эффекты для события #' + eventId + ' (тип: ' + type + '):', result.effects);
+    
+    // ===== ПРИМЕНЯЕМ ПРИБЫТИЕ =====
+    if (result.effects.arrival !== undefined && result.effects.arrival !== null) {
+      if (!event[arrivalKey]) {
+        event[arrivalKey] = true;
+        const value = result.effects.arrival;
+        console.log('➕ Применяем бонус прибытия:', value, 'из эффектов');
+        addArrivalBonus(value);
+      } else {
+        console.log('⚠️ Бонус прибытия уже применён для этого события');
       }
     }
+    
+    // ===== ДОБАВЛЯЕМ БОНУСНЫЕ СОБЫТИЯ =====
+    if (result.effects.events) {
+      const count = result.effects.events;
+      console.log('📌 Добавляем бонусных событий:', count);
+      for (var i = 0; i < count; i++) {
+        addBonusEventInternal(null);
+      }
+      renderEvents();
+    }
   }
+  
+  renderEvents();
 }
 
 // ============================================================
@@ -441,7 +486,9 @@ function renderEvents() {
           return getCurrentDifficulty();
         },
         addArrivalBonus: function(value) {
-          addArrivalBonus(value);
+          // ЭТОТ МЕТОД НЕ ДОЛЖЕН ПРИМЕНЯТЬ БОНУСЫ — только для отображения
+          console.warn('⚠️ addArrivalBonus() вызван из render() — это не должно применяться!');
+          // Ничего не делаем здесь — бонусы применяются только через processCheck()
         },
         addBonusEvent: function(eventId, parentEventId) {
           addBonusEventInternal(eventId, parentEventId);
@@ -490,13 +537,13 @@ function handleClick(e) {
   if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
-    handleCheck(eventId, type);
+    handleSingleCheck(eventId, type);
     return;
   }
   
   if (target.classList.contains('btn-check-second')) {
     const eventId = parseInt(target.dataset.eventId);
-    handleCheck(eventId, 'second');
+    handleSingleCheck(eventId, 'second');
     return;
   }
   
@@ -607,7 +654,7 @@ function handleKeydown(e) {
 // ОБРАБОТКА ПРОВЕРОК
 // ============================================================
 
-function handleCheck(eventId, type) {
+function handleSingleCheck(eventId, type) {
   const event = findEventById(eventId);
   if (!event) return;
   
@@ -674,69 +721,6 @@ function removeBar(eventId, type, barIdx) {
   if (!bars || bars.length <= 1) return;
   
   bars.splice(barIdx, 1);
-  renderEvents();
-}
-
-// ============================================================
-// ОБРАБОТКА ПРОВЕРКИ
-// ============================================================
-
-function processCheck(eventId, type, values) {
-  const event = findEventById(eventId);
-  if (!event) return;
-  
-  const module = event.module;
-  if (!module || typeof module.handleCheck !== 'function') {
-    console.error('Модуль события не найден или нет handleCheck', eventId);
-    return;
-  }
-  
-  const difficulty = getCurrentDifficulty();
-  const result = module.handleCheck(event, values, type, difficulty);
-  
-  if (!result) {
-    return;
-  }
-  
-  const isSecond = type === 'second';
-  const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
-  
-  if (isSecond) {
-    event.secondResult = result.resultType;
-    event.secondResultText = result.resultText;
-    event.secondChecked = true;
-  } else {
-    event.result = result.resultType;
-    event.resultText = result.resultText;
-    event.checked = true;
-  }
-  
-  // Применяем эффекты только один раз
-  if (result.effects && !event[effectsAppliedKey]) {
-    event[effectsAppliedKey] = true;
-    
-    // Применяем прибытие ТОЛЬКО если явно указано
-    if (result.effects.arrivalText) {
-      var match = result.effects.arrivalText.match(/([+-])\s*(\d+)/);
-      if (match) {
-        var sign = match[1] === '+' ? 1 : -1;
-        var amount = parseInt(match[2]);
-        var arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
-        if (!event[arrivalKey]) {
-          event[arrivalKey] = true;
-          addArrivalBonus(sign * amount);
-        }
-      }
-    }
-    
-    if (result.effects.events) {
-      for (var i = 0; i < result.effects.events; i++) {
-        addBonusEventInternal(null);
-      }
-      renderEvents();
-    }
-  }
-  
   renderEvents();
 }
 
