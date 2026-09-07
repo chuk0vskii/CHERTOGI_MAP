@@ -34,6 +34,14 @@ import claw4 from './claw/event-4-poisonous-meal.js';
 import claw5 from './claw/event-5-hunting-ambush.js';
 import claw6 from './claw/event-6-forbidden-place.js';
 
+// --- СОБЫТИЯ ГЛАЗ ЗВЕЗД ---
+import eyes1 from './eyes/event-1-deadly-battle.js';
+import eyes2 from './eyes/event-2-they-came-for-you.js';
+import eyes3 from './eyes/event-3-horizon-trial.js';
+import eyes4 from './eyes/event-4-deadly-weather.js';
+import eyes5 from './eyes/event-5-light-in-darkness.js';
+import eyes6 from './eyes/event-6-shadow-movement.js';
+
 // ============================================================
 // РЕЕСТРЫ
 // ============================================================
@@ -74,6 +82,15 @@ export const CLAW_EVENTS_MODULES = {
   6: claw6
 };
 
+export const EYES_EVENTS_MODULES = {
+  1: eyes1,
+  2: eyes2,
+  3: eyes3,
+  4: eyes4,
+  5: eyes5,
+  6: eyes6
+};
+
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
@@ -95,7 +112,8 @@ export const TABLE_TO_SECTION = {
   'opasnost_pustini': 'dangerous_desert',
   'opasnost_stepi': 'dangerous_steppes',
   'opasnost_gor': 'dangerous_mountains',
-  'opasnost_jungle': 'dangerous_swamps'
+  'opasnost_jungle': 'dangerous_swamps',
+  'veil_aberrations': 'veil_aberrations'
 };
 
 export function getRegionalTableName(terrainType) {
@@ -120,6 +138,9 @@ export function getEventModule(id, type) {
   }
   if (type === 'Коготь_Акрепы') {
     return CLAW_EVENTS_MODULES[id];
+  }
+  if (type === 'Глаза_Звезд') {
+    return EYES_EVENTS_MODULES[id];
   }
   return null;
 }
