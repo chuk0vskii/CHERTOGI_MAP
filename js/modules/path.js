@@ -25,6 +25,7 @@ const regionSelect = document.getElementById('regionSelect');
 let currentEvents = [];
 let tableCache = {};
 let eventIdCounter = 0;
+let isRendering = false;
 
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -202,15 +203,6 @@ function addBonusEventInternal(eventId, parentEventId) {
 }
 
 // ============================================================
-// ОБЁРТКА ДЛЯ ВЫЗОВА ИЗ ВНЕ (С РЕНДЕРОМ)
-// ============================================================
-
-function addBonusEvent(eventId, parentEventId) {
-  addBonusEventInternal(eventId, parentEventId);
-  renderEvents();
-}
-
-// ============================================================
 // ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
@@ -315,8 +307,12 @@ export async function generatePathEvents() {
 // ============================================================
 
 function renderEvents() {
+  if (isRendering) return;
+  isRendering = true;
+  
   if (!currentEvents || currentEvents.length === 0) {
     eventsContainer.innerHTML = '<div class="no-events">Нет событий для этого края</div>';
+    isRendering = false;
     return;
   }
 
@@ -420,7 +416,8 @@ function renderEvents() {
           addArrivalBonus(value);
         },
         addBonusEvent: function(eventId, parentEventId) {
-          addBonusEvent(eventId, parentEventId);
+          addBonusEventInternal(eventId, parentEventId);
+          renderEvents();
         },
         getCommonEventsList: function() {
           return [
@@ -441,6 +438,7 @@ function renderEvents() {
   });
   
   eventsContainer.innerHTML = html;
+  isRendering = false;
   attachEventHandlers();
 }
 
@@ -526,7 +524,7 @@ function handleClick(e) {
         if (event) {
           event.selectedEventId = selectedId;
           event.selectedEventModule = module;
-          addBonusEvent(selectedId, eventId);
+          addBonusEventInternal(selectedId, eventId);
           renderEvents();
         }
       }
