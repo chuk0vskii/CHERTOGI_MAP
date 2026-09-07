@@ -6,7 +6,7 @@ export default {
   type: 'total_check',
   
   render: function(event, helpers) {
-    const { createSingleBar, createResult, createEffect, addArrivalBonus, addBonusEvent } = helpers;
+    const { createSingleBar, createResult, createEffect, addBonusEvent } = helpers;
     let html = '';
     
     html += createSingleBar(event, 'main', 'Общий результат проверки Традиций', 0);
@@ -21,10 +21,6 @@ export default {
         'total_40': 'Боги недовольны малым поклонением и группу настигает их разочарование. Бросьте по таблице Знаков из фазы Чтение знаков с помехой. У группы также -2 к Прибытию.'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'total_40') {
-        addArrivalBonus(-2);
-      }
       
       if (resultType === 'total_60') {
         html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
@@ -43,18 +39,22 @@ export default {
     const totalValue = values[0] || 0;
     let resultType = '';
     let resultText = '';
+    let effects = null;
     
     if (totalValue >= 80) {
       resultType = 'total_80';
       resultText = '80 и более — Боги благословляют группу!';
+      effects = null;
     } else if (totalValue >= 60) {
       resultType = 'total_60';
       resultText = '60 и более — Боги в раздумье!';
+      effects = { events: 1 };
     } else {
       resultType = 'total_40';
       resultText = '40 и менее — Боги недовольны!';
+      effects = { arrival: -2 };
     }
     
-    return { resultType, resultText };
+    return { resultType, resultText, effects };
   }
 };
