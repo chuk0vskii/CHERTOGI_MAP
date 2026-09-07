@@ -10,7 +10,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -26,16 +26,18 @@ export default {
     html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'success': 'Тень прослеживает путь этих существ и избегает контакта — группа получает +1 к Прибытию.',
         'fail': 'Незнакомцы замечают группу.',
         'fail_5': 'Группа заходит в засаду. Начинается бой с раундом сюрприза.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      if (event.result === 'success') {
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'success') {
+        addArrivalBonus(1);
       }
     }
     
