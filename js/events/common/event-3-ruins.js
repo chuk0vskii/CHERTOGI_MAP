@@ -6,51 +6,81 @@ export default {
   type: 'ruins',
   
   tables: {
-    'ruins': { label: 'Таблица Руин', fields: ['name', 'pass_method', 'reward_type'] }
+    'ruins': { label: 'Таблица Руин', fields: ['name', 'pass_method', 'reward_type'] },
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] }
   },
   
   hasSecondCheck: true,
   
   render: function(event, helpers) {
-    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createMultipleBars, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
+    // Основная таблица руин
     html += createTableButton('ruins', event.id, 'main_ruins', event);
     html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
     if (event.checked) {
-      html += createResult(event.result, event.resultText);
+      const resultType = event.result;
+      html += createResult(resultType, event.resultText);
+      
       const effects = {
         'all_or_half_success': 'Группа вдохновляется невероятными строениями древней цивилизации и получает +1 к Прибытию.',
         'half_fail': 'Что разрушило строение? Что это за знаки? Что их ждёт дальше? Мораль группы начинает разваливаться, они получают -1 к Прибытию.',
         'all_fail': 'Что за кошмары могут обитать в этой местности? Группа начинает в удвоенном темпе сбегать с места. Если же группа решит исследовать руины, ее члены будут считаться Испуганными любыми существами находящимися рядом на все время исследования.'
       };
-      html += createEffect(event.result, effects);
+      html += createEffect(resultType, effects);
       
-      // Эффекты с изменением прибытия
-      if (event.result === 'all_or_half_success') {
-        // +1 к Прибытию
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(1);
+      if (resultType === 'all_or_half_success' || resultType === 'crit_success') {
+        addArrivalBonus(1);
       }
-      if (event.result === 'half_fail') {
-        // -1 к Прибытию
-        if (typeof addArrivalBonus === 'function') addArrivalBonus(-1);
+      if (resultType === 'half_fail') {
+        addArrivalBonus(-1);
+      }
+      
+      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ =====
+      // При обычном успехе (all_or_half_success) — 1 артефакт
+      if (resultType === 'all_or_half_success') {
+        html += '<div style="margin-top: 6px; font-size: 14px; color: #51cf66;">Найден магический предмет:</div>';
+        html += createTableButton('artefacts', event.id, 'artefact_success', event);
+      }
+      
+      // При критическом успехе (crit_success) — 2 артефакта
+      if (resultType === 'crit_success') {
+        html += '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Найдено 2 ценных артефакта:</div>';
+        html += createTableButton('artefacts', event.id, 'artefact_crit_1', event);
+        html += createTableButton('artefacts', event.id, 'artefact_crit_2', event, 2);
       }
     }
     
-    // Вторая проверка
+    // Вторая проверка (Тень Нарара)
     html += '<div class="second-check-section">';
     html += createSingleBar(event, 'second', 'Проверка Ловкости рук (Тень Нарара) (сложность ' + difficulty + ')', difficulty);
+    
     if (event.secondChecked) {
-      html += createResult(event.secondResult, event.secondResultText);
+      const secondResult = event.secondResult;
+      html += createResult(secondResult, event.secondResultText);
+      
       const secondEffects = {
         'success_5': 'Группа находит 2 ценных артефакта.',
         'success': 'Тень Нарара находит магический предмет.',
         'fail': 'Группа задерживается и ей приходится совершать отдых у руин, получая эффект проверки Искры повторно.',
         'fail_5': 'Тень Нарара задерживается среди руин, а группа привлекает внимание жителей местности.'
       };
-      html += createEffect(event.secondResult, secondEffects);
+      html += createEffect(secondResult, secondEffects);
+      
+      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ ВО ВТОРОЙ ПРОВЕРКЕ =====
+      if (secondResult === 'success_5') {
+        html += '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Найдено 2 ценных артефакта:</div>';
+        html += createTableButton('artefacts', event.id, 'artefact_second_crit_1', event);
+        html += createTableButton('artefacts', event.id, 'artefact_second_crit_2', event, 2);
+      }
+      
+      if (secondResult === 'success') {
+        html += '<div style="margin-top: 6px; font-size: 14px; color: #51cf66;">Найден магический предмет:</div>';
+        html += createTableButton('artefacts', event.id, 'artefact_second_success', event);
+      }
     }
     html += '</div>';
     
@@ -92,11 +122,25 @@ export default {
     let resultText = '';
     
     if (successes >= half) {
-      resultType = 'all_or_half_success';
-      resultText = 'Успех!';
+      // Проверяем критический успех (все успешны и есть значение на 5+ больше сложности)
+      const hasCrit = values.some(v => v >= difficulty + 5);
+      if (hasCrit && successes === total) {
+        resultType = 'crit_success';
+        resultText = 'Критический успех!';
+      } else {
+        resultType = 'all_or_half_success';
+        resultText = 'Успех!';
+      }
     } else if (failures >= half) {
-      resultType = 'half_fail';
-      resultText = 'Провал...';
+      // Проверяем критический провал (все провалили и есть значение на 5+ меньше сложности)
+      const hasCritFail = values.some(v => v <= difficulty - 5);
+      if (hasCritFail && failures === total) {
+        resultType = 'crit_fail';
+        resultText = 'Критический провал!';
+      } else {
+        resultType = 'half_fail';
+        resultText = 'Провал...';
+      }
     } else if (failures === total) {
       resultType = 'all_fail';
       resultText = 'Все провалили!';
