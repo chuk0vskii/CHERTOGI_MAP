@@ -17,7 +17,7 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Основная таблица руин
+    // ===== ОСНОВНАЯ ПРОВЕРКА (Искра) =====
     html += createTableButton('ruins', event.id, 'main_ruins', event);
     html += createMultipleBars(event, 'main', 'Проверка Искры (сложность ' + difficulty + ')', difficulty);
     
@@ -38,23 +38,9 @@ export default {
       if (resultType === 'half_fail') {
         addArrivalBonus(-1);
       }
-      
-      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ =====
-      // При обычном успехе (all_or_half_success) — 1 артефакт
-      if (resultType === 'all_or_half_success') {
-        html += '<div style="margin-top: 6px; font-size: 14px; color: #51cf66;">Найден магический предмет:</div>';
-        html += createTableButton('artefacts', event.id, 'artefact_success', event);
-      }
-      
-      // При критическом успехе (crit_success) — 2 артефакта
-      if (resultType === 'crit_success') {
-        html += '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Найдено 2 ценных артефакта:</div>';
-        html += createTableButton('artefacts', event.id, 'artefact_crit_1', event);
-        html += createTableButton('artefacts', event.id, 'artefact_crit_2', event, 2);
-      }
     }
     
-    // Вторая проверка (Тень Нарара)
+    // ===== ВТОРАЯ ПРОВЕРКА (Тень Нарара) =====
     html += '<div class="second-check-section">';
     html += createSingleBar(event, 'second', 'Проверка Ловкости рук (Тень Нарара) (сложность ' + difficulty + ')', difficulty);
     
@@ -63,14 +49,14 @@ export default {
       html += createResult(secondResult, event.secondResultText);
       
       const secondEffects = {
-        'success_5': 'Группа находит 2 ценных артефакта.',
+        'success_5': 'Тень Нарара находит 2 ценных артефакта.',
         'success': 'Тень Нарара находит магический предмет.',
         'fail': 'Группа задерживается и ей приходится совершать отдых у руин, получая эффект проверки Искры повторно.',
         'fail_5': 'Тень Нарара задерживается среди руин, а группа привлекает внимание жителей местности.'
       };
       html += createEffect(secondResult, secondEffects);
       
-      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ ВО ВТОРОЙ ПРОВЕРКЕ =====
+      // ===== КНОПКИ ДЛЯ АРТЕФАКТОВ (ТОЛЬКО ОТ ПРОВЕРКИ ТЕНИ) =====
       if (secondResult === 'success_5') {
         html += '<div style="margin-top: 6px; font-size: 14px; color: #ffd700;">Найдено 2 ценных артефакта:</div>';
         html += createTableButton('artefacts', event.id, 'artefact_second_crit_1', event);
@@ -90,6 +76,7 @@ export default {
   handleCheck: function(event, values, type, difficulty) {
     const isSecond = type === 'second';
     
+    // ===== ПРОВЕРКА ТЕНИ НАРАРА =====
     if (isSecond) {
       const value = values[0] || 0;
       let resultType = '';
@@ -97,10 +84,10 @@ export default {
       
       if (value >= difficulty + 5) {
         resultType = 'success_5';
-        resultText = 'Критический успех!';
+        resultText = 'Критический успех! (2 артефакта)';
       } else if (value >= difficulty) {
         resultType = 'success';
-        resultText = 'Успех!';
+        resultText = 'Успех! (1 артефакт)';
       } else if (value >= difficulty - 5) {
         resultType = 'fail';
         resultText = 'Провал...';
@@ -112,7 +99,7 @@ export default {
       return { resultType, resultText };
     }
     
-    // Основная проверка
+    // ===== ПРОВЕРКА ИСКРЫ =====
     const successes = values.filter(v => v >= difficulty).length;
     const failures = values.filter(v => v < difficulty).length;
     const total = values.length;
@@ -122,7 +109,6 @@ export default {
     let resultText = '';
     
     if (successes >= half) {
-      // Проверяем критический успех (все успешны и есть значение на 5+ больше сложности)
       const hasCrit = values.some(v => v >= difficulty + 5);
       if (hasCrit && successes === total) {
         resultType = 'crit_success';
@@ -132,7 +118,6 @@ export default {
         resultText = 'Успех!';
       }
     } else if (failures >= half) {
-      // Проверяем критический провал (все провалили и есть значение на 5+ меньше сложности)
       const hasCritFail = values.some(v => v <= difficulty - 5);
       if (hasCritFail && failures === total) {
         resultType = 'crit_fail';
