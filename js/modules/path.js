@@ -150,6 +150,48 @@ function getRandomEventByType(type) {
 }
 
 // ============================================================
+// ДОБАВЛЕНИЕ БОНУСНОГО СОБЫТИЯ
+// ============================================================
+
+function addBonusEvent(eventId) {
+  let module = null;
+  let roll = 0;
+  
+  if (eventId && COMMON_EVENTS_MODULES[eventId]) {
+    module = COMMON_EVENTS_MODULES[eventId];
+    roll = eventId;
+  } else {
+    roll = getRandomInt(1, 6);
+    module = COMMON_EVENTS_MODULES[roll];
+  }
+  
+  if (!module) return;
+  
+  const eventCopy = { 
+    data: { id: module.id }, 
+    type: 'Общее (бонусное)', 
+    roll: roll, 
+    isBonus: true,
+    module: module,
+    id: getUniqueId(),
+    tableResults: {},
+    secondTableResults: {},
+    bars: [],
+    secondBars: [],
+    checked: false,
+    result: null,
+    resultText: null,
+    secondChecked: false,
+    secondResult: null,
+    secondResultText: null,
+    color: 'rgba(255,215,0,0.08)'
+  };
+  
+  currentEvents.push(eventCopy);
+  renderEvents();
+}
+
+// ============================================================
 // ГЕНЕРАЦИЯ СОБЫТИЙ
 // ============================================================
 
@@ -255,12 +297,12 @@ function renderEvents() {
   
   currentEvents.forEach(function(event) {
     const module = event.module;
-    const bgColor = event.isBonus ? 'rgba(255,215,0,0.08)' : '';
+    const bgColor = event.color || (event.isBonus ? 'rgba(255,215,0,0.08)' : '');
     const borderColor = event.isBonus ? '2px solid rgba(255,215,0,0.3)' : '1px solid rgba(74,14,14,0.2)';
     
     html += '<div class="event-card" data-id="' + event.id + '" style="background: ' + bgColor + '; border: ' + borderColor + ';">';
     html += '<div class="event-header">';
-    html += '<span class="event-type">' + (event.isBonus ? '⭐ ' : '') + event.type + '</span>';
+    html += '<span class="event-type">' + (event.isBonus ? '⭐ БОНУСНОЕ СОБЫТИЕ ' : '') + event.type + '</span>';
     html += '<span class="event-roll">Бросок: <strong>' + event.roll + '</strong></span>';
     html += '</div>';
     html += '<div class="event-text">';
@@ -349,6 +391,19 @@ function renderEvents() {
         },
         addArrivalBonus: function(value) {
           addArrivalBonus(value);
+        },
+        addBonusEvent: function(eventId) {
+          addBonusEvent(eventId);
+        },
+        getCommonEventsList: function() {
+          return [
+            { id: 1, title: 'Знаменье Темной Нити' },
+            { id: 2, title: 'Ловушка' },
+            { id: 3, title: 'Древние Руины' },
+            { id: 4, title: 'Бескрайние Пейзажи' },
+            { id: 5, title: 'Невероятный Оазис' },
+            { id: 6, title: 'Вмешательство звезд' }
+          ];
         }
       };
       
@@ -430,6 +485,26 @@ function handleClick(e) {
   if (target.classList.contains('btn-reality-tear')) {
     const eventId = parseInt(target.dataset.eventId);
     handleRealityTear(eventId);
+    return;
+  }
+  
+  // Кнопка для выбора события в "Это должно было произойти!"
+  if (target.classList.contains('btn-fate-select')) {
+    const eventId = parseInt(target.dataset.eventId);
+    const select = document.getElementById('fate-select-' + eventId);
+    if (select) {
+      const selectedId = parseInt(select.value);
+      const module = COMMON_EVENTS_MODULES[selectedId];
+      if (module) {
+        addBonusEvent(selectedId);
+        // Отмечаем в событии
+        const event = findEventById(eventId);
+        if (event) {
+          event.selectedEvent = module;
+          renderEvents();
+        }
+      }
+    }
     return;
   }
 }
