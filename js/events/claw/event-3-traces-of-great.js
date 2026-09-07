@@ -14,11 +14,13 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
+    // Генерация по таблице great_beasts
     html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
     html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">🐾 Определите, кто оставил эти следы:</div>';
     html += createTableButton('great_beasts', event.id, 'main_great_beasts', event);
     html += '</div>';
     
+    // Два бара для проверок
     html += '<div style="display: flex; flex-wrap: wrap; gap: 20px;">';
     html += '<div style="flex: 1; min-width: 200px;">';
     html += createSingleBar(event, 'survival', 'Проверка Выживания (сложность ' + difficulty + ')', difficulty);
@@ -28,9 +30,9 @@ export default {
     html += '</div>';
     html += '</div>';
     
-    // Добавляем кнопку проверки для двух баров
+    // ОДНА кнопка для проверки обоих баров
     html += '<div style="margin-top: 10px;">';
-    html += '<button class="btn-check-combined" data-event-id="' + event.id + '" style="background:rgba(74,14,14,0.6); color:#fff; border:1px solid #4a0e0e; padding:6px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-family:\'Philosopher\', sans-serif;">Проверить оба</button>';
+    html += '<button class="btn-check-combined" data-event-id="' + event.id + '" style="background:rgba(74,14,14,0.6); color:#fff; border:1px solid #4a0e0e; padding:6px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-family:\'Philosopher\', sans-serif; transition:all 0.3s ease;" onmouseover="this.style.background=\'#4a0e0e\'" onmouseout="this.style.background=\'rgba(74,14,14,0.6)\'">Проверить оба</button>';
     html += '</div>';
     
     if (event.checked) {
