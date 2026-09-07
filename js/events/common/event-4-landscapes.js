@@ -22,7 +22,6 @@ export default {
         'all_fail': 'Этот пейзаж угнетает, они получают -1 к Прибытию.'
       };
       html += createEffect(resultType, effects);
-      // В render НЕ вызываем addArrivalBonus
     }
     
     return html;
