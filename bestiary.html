@@ -20,6 +20,30 @@
       position: relative;
     }
 
+    /* ===== ФОНОВОЕ КОЛЕСО (вращается) ===== */
+    .bg-wheel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+      animation: spinWheel 120s linear infinite;
+    }
+    .bg-wheel img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    @keyframes spinWheel {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     /* ===== ДЕКОРАТИВНЫЕ ГЕКСЫ ПО БОКАМ ===== */
     .bg-image {
       position: fixed;
@@ -51,19 +75,16 @@
       100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
-    /* ===== ОСНОВНАЯ ЛИНИЯ ===== */
+    /* ===== ОСНОВНАЯ ЛИНИЯ (отступ 300px от левого края) ===== */
     .main-line-container {
       position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 300px;
       top: 120px;
       bottom: 20px;
       width: 2px;
       z-index: 3;
       pointer-events: none;
     }
-    /* Вычисляем позицию: (ширина экрана - отступ разделов) / 2 */
-    /* Но используем JS для точного позиционирования */
     .main-line-container .main-line {
       position: absolute;
       left: 50%;
@@ -112,6 +133,7 @@
       font-weight: normal;
       position: relative;
       z-index: 2;
+      text-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
     }
     .page-subtitle {
       text-align: center;
@@ -122,6 +144,7 @@
       margin-bottom: 40px;
       position: relative;
       z-index: 2;
+      text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     }
 
     /* ===== КАЖДЫЙ РАЗДЕЛ ===== */
@@ -134,7 +157,6 @@
     /* ===== ГОРИЗОНТАЛЬНАЯ ЛИНИЯ ОТ ОСНОВНОЙ К РАЗДЕЛУ ===== */
     .section .horizontal-line {
       position: absolute;
-      left: calc(50% - 50vw + 60px);
       top: 50%;
       height: 2px;
       background: #b5001b;
@@ -142,7 +164,6 @@
       opacity: 0.3;
       z-index: 3;
       pointer-events: none;
-      width: 60px;
     }
 
     .section-header {
@@ -501,9 +522,10 @@
 
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; padding-left: 80px; }
-      .section .horizontal-line { width: 40px; left: calc(50% - 50vw + 40px); }
-      .main-line-container { top: 100px; }
+      .main-line-container { left: 150px; }
+      .section .horizontal-line { width: 40px; }
       .main-line-container .main-node { width: 32px; height: 32px; top: -25px; }
+      .bg-wheel { width: 500px; height: 500px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
       .creature-card { flex: 0 0 100%; max-width: 100%; }
@@ -520,9 +542,10 @@
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; padding-left: 60px; }
-      .section .horizontal-line { width: 30px; left: calc(50% - 50vw + 30px); }
-      .main-line-container { top: 80px; }
+      .main-line-container { left: 80px; }
+      .section .horizontal-line { width: 30px; }
       .main-line-container .main-node { width: 28px; height: 28px; top: -20px; }
+      .bg-wheel { width: 350px; height: 350px; opacity: 0.4; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
       .section-header { padding: 12px 14px; }
@@ -537,6 +560,11 @@
   </style>
 </head>
 <body>
+
+<!-- ===== ФОНОВОЕ КОЛЕСО ===== -->
+<div class="bg-wheel">
+  <img src="/CHERTOGI_MAP/images/koleso.png" alt="Колесо" loading="lazy">
+</div>
 
 <!-- ===== ДЕКОРАТИВНЫЕ ГЕКСЫ ПО БОКАМ ===== -->
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left" loading="lazy">
@@ -861,7 +889,6 @@
 
     var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
 
-    // Горизонтальная линия (будет позиционирована через JS)
     var horizontalLine = '<div class="horizontal-line" id="hline-' + section.id + '"></div>';
 
     sectionDiv.innerHTML = 
@@ -926,16 +953,10 @@
     
     var containerRect = container.getBoundingClientRect();
     var containerLeft = containerRect.left;
-    var containerWidth = containerRect.width;
     
-    // Позиция основной линии: посередине между левым краем и левым краем разделов
-    // Левым краем разделов считаем padding-left контейнера (120px)
-    var paddingLeft = 120; // должно совпадать с padding-left .container
-    var lineX = paddingLeft / 2;
-    
-    // Устанавливаем позицию основной линии
-    mainLine.style.left = lineX + 'px';
-    mainLine.style.transform = 'translateX(0)';
+    // Основная линия на 300px от левого края (уже задано в CSS)
+    // Но нам нужно вычислить left для горизонтальных линий
+    var lineX = 300; // отступ от левого края страницы
     
     // Для каждой секции устанавливаем горизонтальную линию
     sections.forEach(function(section) {
@@ -943,7 +964,7 @@
       if (!hline) return;
       
       var sectionRect = section.getBoundingClientRect();
-      var sectionLeft = sectionRect.left - containerRect.left;
+      var sectionLeft = sectionRect.left - containerLeft + container.scrollLeft;
       
       // Горизонтальная линия от основной линии до раздела
       var startX = lineX;
