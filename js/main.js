@@ -1,48 +1,39 @@
 // ===== ТОЧКА ВХОДА =====
 console.log('✅ Карта и маркеры загружены');
 
-// Функция предзагрузки изображений
-function preloadImages(urls) {
-  return Promise.all(urls.map(url => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = resolve;
-      img.onerror = resolve;
-      img.src = url;
-    });
-  }));
-}
-
 async function init() {
   try {
-    // 1. Предзагружаем изображение облака в память
-    console.log('📥 Предзагрузка облаков...');
-    await preloadImages(['/CHERTOGI_MAP/cloud3.png']);
-    console.log('✅ Облака предзагружены');
-    
-    // 2. Загружаем облака на карту
-    if (typeof loadClouds === 'function') {
-      console.log('☁️ Загрузка облаков на карту...');
-      await loadClouds();
-      console.log('✅ Облака загружены на карту');
+    // Сначала скрываем карту (на всякий случай)
+    const mapEl = document.getElementById('map');
+    if (mapEl) {
+      mapEl.style.opacity = '0';
+      mapEl.classList.remove('visible');
     }
     
-    // 3. Загружаем маркеры
+    // Загружаем облака
+    if (typeof loadClouds === 'function') {
+      console.log('☁️ Загрузка облаков...');
+      await loadClouds();
+      console.log('✅ Облака загружены');
+    }
+    
+    // Загружаем маркеры
     if (typeof loadMarkers === 'function') {
       await loadMarkers();
       console.log('✅ Маркеры загружены');
     }
     
-    // 4. Загружаем админку
+    // Загружаем админку
     if (typeof loadAdminRegions === 'function') {
       await loadAdminRegions();
     }
     
-    // 5. ДАЁМ КАРТЕ ВРЕМЯ НА ОТРИСОВКУ ОБЛАКОВ
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Ждём один кадр анимации для отрисовки
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    // И ещё немного времени
+    await new Promise(resolve => setTimeout(resolve, 200));
     
-    // 6. ПОКАЗЫВАЕМ КАРТУ
-    const mapEl = document.getElementById('map');
+    // ПОКАЗЫВАЕМ КАРТУ
     if (mapEl) {
       mapEl.classList.add('visible');
       mapEl.style.opacity = '1';
@@ -54,14 +45,13 @@ async function init() {
       preloader.classList.add('hidden');
       setTimeout(function() {
         preloader.style.display = 'none';
-      }, 800);
+      }, 500);
     }
     
     console.log('✅ Всё загружено!');
     
   } catch (error) {
     console.error('❌ Ошибка загрузки:', error);
-    // В случае ошибки всё равно показываем карту
     const mapEl = document.getElementById('map');
     if (mapEl) {
       mapEl.classList.add('visible');
@@ -72,7 +62,7 @@ async function init() {
       preloader.classList.add('hidden');
       setTimeout(function() {
         preloader.style.display = 'none';
-      }, 800);
+      }, 500);
     }
   }
 }
