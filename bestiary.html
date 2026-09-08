@@ -16,11 +16,45 @@
       color: #e0d5c0;
       font-family: 'Philosopher', 'Arial', sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 100px 20px 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== ФОНОВЫЕ КАРТИНКИ ===== */
+    .bg-image {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.15;
+      width: 600px;
+      height: 600px;
+      object-fit: contain;
+    }
+    .bg-image-left {
+      left: -300px;
+      animation: rotateLeft 60s linear infinite;
+    }
+    .bg-image-right {
+      right: -300px;
+      animation: rotateRight 60s linear infinite;
+    }
+
+    @keyframes rotateLeft {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+    @keyframes rotateRight {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
     .page-title {
@@ -31,6 +65,8 @@
       margin-bottom: 10px;
       letter-spacing: 4px;
       font-weight: normal;
+      position: relative;
+      z-index: 2;
     }
     .page-subtitle {
       text-align: center;
@@ -39,10 +75,14 @@
       letter-spacing: 2px;
       text-transform: uppercase;
       margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
     }
 
     .section {
       margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
     }
     .section-header {
       display: flex;
@@ -361,12 +401,15 @@
       color: rgba(255, 255, 255, 0.3);
       text-align: center;
       padding: 20px 0;
+      position: relative;
+      z-index: 2;
     }
     .no-data {
       color: rgba(255, 255, 255, 0.15);
       text-align: center;
       padding: 20px 0;
       font-size: 16px;
+      width: 100%;
     }
 
     .scroll-top {
@@ -407,6 +450,9 @@
       .creature-card .resource-block { padding: 8px 12px; }
       .creature-card .abilities-block { padding: 8px 12px; }
       .creature-card .actions-block { padding: 8px 12px; }
+      .bg-image { width: 300px; height: 300px; opacity: 0.1; }
+      .bg-image-left { left: -150px; }
+      .bg-image-right { right: -150px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
@@ -416,10 +462,17 @@
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 180px; }
       .creature-card .creature-name { font-size: 17px; }
+      .bg-image { width: 200px; height: 200px; opacity: 0.08; }
+      .bg-image-left { left: -100px; }
+      .bg-image-right { right: -100px; }
     }
   </style>
 </head>
 <body>
+
+<!-- ===== ФОНОВЫЕ КАРТИНКИ ===== -->
+<img src="/CHERTOGI_MAP/images/gex1.png" alt="" class="bg-image bg-image-left" loading="lazy">
+<img src="/CHERTOGI_MAP/images/gex1.png" alt="" class="bg-image bg-image-right" loading="lazy">
 
 <div class="top-banner">
   <span class="title">Огненные чертоги</span>
@@ -723,7 +776,7 @@
 
     var contentHTML = '';
     if (creatures.length === 0) {
-      contentHTML = '<div class="no-data" style="width:100%;">Нет существ в этом разделе</div>';
+      contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
     } else {
       for (var i = 0; i < creatures.length; i++) {
         contentHTML += renderCreatureCard(creatures[i]);
@@ -872,7 +925,6 @@
         targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
         targetCard.style.borderColor = '#ffd700';
         
-        // Раскрываем карточку
         var body = targetCard.querySelector('.creature-body');
         var icon = targetCard.querySelector('.expand-icon');
         if (body) {
