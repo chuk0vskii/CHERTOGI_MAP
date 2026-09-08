@@ -81,11 +81,42 @@
       z-index: 2;
     }
 
+    /* ===== КАЖДЫЙ РАЗДЕЛ С ЛИНИЕЙ ===== */
     .section {
       margin-bottom: 40px;
       position: relative;
       z-index: 2;
+      padding-left: 60px;
     }
+    /* Вертикальная красная линия слева от раздела */
+    .section::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #b5001b;
+      opacity: 0.4;
+    }
+    /* Иконка в начале линии (для каждого раздела) */
+    .section::after {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 20px;
+      width: 22px;
+      height: 22px;
+      background: url('/CHERTOGI_MAP/images/uzelbest.png') no-repeat center;
+      background-size: contain;
+      z-index: 3;
+      filter: drop-shadow(0 0 8px rgba(181, 0, 27, 0.3));
+    }
+    /* Для первого раздела иконка чуть выше */
+    .section:first-child::after {
+      top: 10px;
+    }
+
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -101,6 +132,7 @@
       top: 70px;
       z-index: 50;
       backdrop-filter: blur(8px);
+      margin-left: 10px;
     }
     .section-header:hover {
       background: rgba(74, 14, 14, 0.6);
@@ -151,6 +183,7 @@
       gap: 20px;
       flex-direction: row;
       flex-wrap: wrap;
+      margin-left: 10px;
     }
     .section-content.open {
       display: flex;
@@ -444,6 +477,9 @@
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
+      .section { padding-left: 45px; }
+      .section::before { left: 15px; }
+      .section::after { left: 5px; width: 18px; height: 18px; top: 18px; }
       .creature-card { flex: 0 0 100%; max-width: 100%; }
       .creature-card { padding: 16px 18px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
@@ -455,11 +491,16 @@
       .bg-image { width: 350px; height: 350px; opacity: 0.15; }
       .bg-image-left { left: -175px; }
       .bg-image-right { right: -175px; }
+      .section-header { margin-left: 5px; }
+      .section-content { margin-left: 5px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
+      .section { padding-left: 35px; }
+      .section::before { left: 10px; }
+      .section::after { left: 1px; width: 14px; height: 14px; top: 16px; }
       .creature-card { padding: 12px 14px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 180px; }
@@ -467,6 +508,8 @@
       .bg-image { width: 200px; height: 200px; opacity: 0.1; }
       .bg-image-left { left: -100px; }
       .bg-image-right { right: -100px; }
+      .section-header { margin-left: 3px; padding: 12px 14px; }
+      .section-content { margin-left: 3px; }
     }
   </style>
 </head>
@@ -843,153 +886,4 @@
     var btn = document.getElementById('scrollTopBtn');
     
     window.addEventListener('scroll', function() {
-      if (window.scrollY > 300) {
-        btn.classList.add('visible');
-      } else {
-        btn.classList.remove('visible');
-      }
-    });
-    
-    btn.addEventListener('click', function() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
-
-  // ============================================================
-  // ОБРАБОТКА ПАРАМЕТРОВ URL
-  // ============================================================
-
-  function getUrlParams() {
-    var params = {};
-    var query = window.location.search.substring(1);
-    if (query) {
-      var pairs = query.split('&');
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i].split('=');
-        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-      }
-    }
-    return params;
-  }
-
-  function openBeastFromUrl() {
-    var params = getUrlParams();
-    
-    console.log('🔍 Параметры URL:', params);
-    
-    if (!params.section && !params.beast) {
-      console.log('Нет параметров для открытия существа');
-      return;
-    }
-    
-    var sectionId = params.section || 'dangerous_creatures';
-    var beastName = params.beast || '';
-    
-    console.log('🔍 Открытие существа:', { sectionId, beastName });
-    
-    if (!beastName) {
-      return;
-    }
-    
-    var sectionContent = document.getElementById('content-' + sectionId);
-    var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
-    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
-    
-    if (!sectionContent || !sectionHeader) {
-      console.warn('⚠️ Раздел не найден:', sectionId);
-      return;
-    }
-    
-    sectionContent.classList.add('open');
-    var arrow = document.getElementById('arrow-' + sectionId);
-    if (arrow) arrow.classList.add('open');
-    if (collapseBtn) collapseBtn.classList.add('visible');
-    
-    var cards = sectionContent.querySelectorAll('.creature-card');
-    var targetCard = null;
-    var decodedName = decodeURIComponent(beastName);
-    
-    for (var i = 0; i < cards.length; i++) {
-      var card = cards[i];
-      var nameEl = card.querySelector('.creature-name');
-      var cardName = nameEl ? nameEl.textContent.trim() : '';
-      if (cardName === decodedName) {
-        targetCard = card;
-        break;
-      }
-    }
-    
-    if (targetCard) {
-      setTimeout(function() {
-        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
-        targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
-        targetCard.style.borderColor = '#ffd700';
-        
-        var body = targetCard.querySelector('.creature-body');
-        var icon = targetCard.querySelector('.expand-icon');
-        if (body) {
-          body.classList.add('open');
-          if (icon) icon.classList.add('open');
-        }
-        
-        var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
-        if (toggleBtn) {
-          setTimeout(function() {
-            toggleBtn.click();
-          }, 500);
-        }
-        
-        setTimeout(function() {
-          targetCard.style.background = '';
-          targetCard.style.borderColor = '';
-        }, 5000);
-      }, 300);
-    }
-  }
-
-  // ============================================================
-  // ИНИЦИАЛИЗАЦИЯ
-  // ============================================================
-
-  async function init() {
-    console.log('Загрузка бестиария...');
-
-    var container = document.getElementById('sections-container');
-    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
-
-    var totalCreatures = 0;
-    var fragment = document.createDocumentFragment();
-
-    for (var i = 0; i < SECTIONS.length; i++) {
-      var section = SECTIONS[i];
-      var creatures = await loadSection(section);
-      totalCreatures += creatures.length;
-      var sectionEl = renderSection(section, creatures);
-      fragment.appendChild(sectionEl);
-    }
-
-    container.innerHTML = '';
-    container.appendChild(fragment);
-
-    if (totalCreatures === 0) {
-      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
-    }
-
-    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
-
-    initScrollTop();
-    setTimeout(openBeastFromUrl, 500);
-  }
-
-  window.toggleSection = toggleSection;
-  window.toggleStats = toggleStats;
-  window.toggleCreature = toggleCreature;
-  window.collapseSection = collapseSection;
-
-  document.addEventListener('DOMContentLoaded', init);
-</script>
-
-</body>
-</html>
+      if (window
