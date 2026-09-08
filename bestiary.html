@@ -153,25 +153,6 @@
     .section-header .arrow.open {
       transform: rotate(180deg);
     }
-    .section-header .collapse-btn {
-      background: rgba(255, 215, 0, 0.1);
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      color: #ffd700;
-      padding: 4px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Philosopher', sans-serif;
-      font-size: 12px;
-      transition: all 0.3s ease;
-      display: none;
-      margin-left: 12px;
-    }
-    .section-header .collapse-btn:hover {
-      background: rgba(255, 215, 0, 0.2);
-    }
-    .section-header .collapse-btn.visible {
-      display: inline-block;
-    }
 
     .section-content {
       display: none;
@@ -442,32 +423,6 @@
       width: 100%;
     }
 
-    .scroll-top {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background: rgba(74, 14, 14, 0.8);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      color: #ffd700;
-      padding: 12px 16px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 20px;
-      z-index: 100;
-      opacity: 0;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(4px);
-      display: none;
-    }
-    .scroll-top.visible {
-      opacity: 1;
-      display: block;
-    }
-    .scroll-top:hover {
-      background: rgba(74, 14, 14, 1);
-      transform: scale(1.1);
-    }
-
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
       .bg-wheel { width: 150px; height: 150px; }
@@ -529,8 +484,6 @@
     <div class="loading">Загрузка бестиария...</div>
   </div>
 </div>
-
-<button class="scroll-top" id="scrollTopBtn" title="Наверх">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
@@ -807,7 +760,7 @@
     }
   }
 
-  function renderSection(section, creatures, index) {
+  function renderSection(section, creatures) {
     var sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
     sectionDiv.id = 'section-' + section.id;
@@ -821,15 +774,12 @@
       }
     }
 
-    var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
-
     sectionDiv.innerHTML = 
       '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
         '<span class="title">' + section.title + '</span>' +
         '<span style="display:flex; align-items:center; gap:12px;">' +
           '<span class="count">' + creatures.length + ' существ</span>' +
           '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
-          collapseBtn +
         '</span>' +
       '</div>' +
       '<div class="section-content" id="content-' + section.id + '">' +
@@ -842,53 +792,11 @@
   function toggleSection(sectionId) {
     var content = document.getElementById('content-' + sectionId);
     var arrow = document.getElementById('arrow-' + sectionId);
-    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
     
     if (content) {
-      var isOpening = !content.classList.contains('open');
       content.classList.toggle('open');
       if (arrow) arrow.classList.toggle('open');
-      
-      if (collapseBtn) {
-        if (isOpening) {
-          collapseBtn.classList.add('visible');
-        } else {
-          collapseBtn.classList.remove('visible');
-        }
-      }
     }
-  }
-
-  function collapseSection(sectionId) {
-    var content = document.getElementById('content-' + sectionId);
-    var arrow = document.getElementById('arrow-' + sectionId);
-    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
-    
-    if (content) {
-      content.classList.remove('open');
-      if (arrow) arrow.classList.remove('open');
-      if (collapseBtn) collapseBtn.classList.remove('visible');
-    }
-  }
-
-  // ============================================================
-  // КНОПКА "НАВЕРХ"
-  // ============================================================
-
-  function initScrollTop() {
-    var btn = document.getElementById('scrollTopBtn');
-    
-    window.addEventListener('scroll', function() {
-      if (window.scrollY > 300) {
-        btn.classList.add('visible');
-      } else {
-        btn.classList.remove('visible');
-      }
-    });
-    
-    btn.addEventListener('click', function() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
   }
 
   // ============================================================
@@ -929,7 +837,6 @@
     
     var sectionContent = document.getElementById('content-' + sectionId);
     var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
-    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
     
     if (!sectionContent || !sectionHeader) {
       console.warn('⚠️ Раздел не найден:', sectionId);
@@ -939,7 +846,6 @@
     sectionContent.classList.add('open');
     var arrow = document.getElementById('arrow-' + sectionId);
     if (arrow) arrow.classList.add('open');
-    if (collapseBtn) collapseBtn.classList.add('visible');
     
     var cards = sectionContent.querySelectorAll('.creature-card');
     var targetCard = null;
@@ -1002,7 +908,7 @@
       var section = SECTIONS[i];
       var creatures = await loadSection(section);
       totalCreatures += creatures.length;
-      var sectionEl = renderSection(section, creatures, i);
+      var sectionEl = renderSection(section, creatures);
       fragment.appendChild(sectionEl);
     }
 
@@ -1015,14 +921,12 @@
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
 
-    initScrollTop();
     setTimeout(openBeastFromUrl, 500);
   }
 
   window.toggleSection = toggleSection;
   window.toggleStats = toggleStats;
   window.toggleCreature = toggleCreature;
-  window.collapseSection = collapseSection;
 
   document.addEventListener('DOMContentLoaded', init);
 </script>
