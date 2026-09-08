@@ -565,7 +565,7 @@ function attachEventHandlers() {
 function handleClick(e) {
   const target = e.target;
   
-  if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple')) {
+  if (target.classList.contains('btn-check') && !target.classList.contains('btn-check-second') && !target.classList.contains('btn-check-multiple') && !target.classList.contains('btn-check-combined')) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
     handleSingleCheck(eventId, type);
@@ -582,6 +582,12 @@ function handleClick(e) {
     const eventId = parseInt(target.dataset.eventId);
     const type = target.dataset.type || 'main';
     handleMultipleCheck(eventId, type);
+    return;
+  }
+  
+  if (target.classList.contains('btn-check-combined')) {
+    const eventId = parseInt(target.dataset.eventId);
+    handleCombinedCheck(eventId);
     return;
   }
   
@@ -662,12 +668,6 @@ function handleClick(e) {
     handlePlaceGenerate(eventId);
     return;
   }
-  
-  if (target.classList.contains('btn-check-combined')) {
-    const eventId = parseInt(target.dataset.eventId);
-    handleCombinedCheck(eventId);
-    return;
-  }
 }
 
 function handleInput(e) {
@@ -691,7 +691,7 @@ function handleKeydown(e) {
   if (e.key === 'Enter') {
     const target = e.target;
     if (target.classList.contains('check-input') || target.classList.contains('bar-input')) {
-      const btn = target.closest('.event-check-row').querySelector('.btn-check, .btn-check-second, .btn-check-multiple');
+      const btn = target.closest('.event-check-row').querySelector('.btn-check, .btn-check-second, .btn-check-multiple, .btn-check-combined');
       if (btn) btn.click();
     }
   }
@@ -746,23 +746,30 @@ function handleCombinedCheck(eventId) {
   const event = findEventById(eventId);
   if (!event) return;
   
-  const survivalInput = document.getElementById('check-' + eventId + '-survival');
-  const natureInput = document.getElementById('check-' + eventId + '-nature');
-  
-  if (!survivalInput || !natureInput) {
-    alert('Поля проверки не найдены');
+  // Ищем все поля ввода внутри карточки события
+  const eventCard = document.querySelector('.event-card[data-id="' + eventId + '"]');
+  if (!eventCard) {
+    alert('Карточка события не найдена');
     return;
   }
   
-  const survivalValue = parseInt(survivalInput.value);
-  const natureValue = parseInt(natureInput.value);
+  // Собираем все значения из полей с классом check-input внутри карточки
+  const inputs = eventCard.querySelectorAll('.check-input');
+  const values = [];
   
-  if (isNaN(survivalValue) || survivalValue < 1 || isNaN(natureValue) || natureValue < 1) {
+  inputs.forEach(function(input) {
+    const val = parseInt(input.value);
+    if (!isNaN(val) && val >= 1) {
+      values.push(val);
+    }
+  });
+  
+  if (values.length === 0) {
     alert('Введите корректные значения (минимум 1)');
     return;
   }
   
-  processCheck(eventId, 'main', [survivalValue, natureValue]);
+  processCheck(eventId, 'main', values);
 }
 
 function addBar(eventId, type) {
@@ -841,28 +848,4 @@ function handlePlaceGenerate(eventId) {
   const tableFields = {
     'reality_tears': ['name', 'description', 'effect'],
     'oasis_mysteries': ['oasis_type', 'mystery'],
-    'ruins': ['name', 'pass_method', 'reward_type'],
-    'slaughter_zones': ['name', 'description']
-  };
-  
-  const fields = tableFields[tableName] || ['name'];
-  
-  const containerId = 'place-result-' + eventId;
-  const resultKey = 'place_generate_' + tableName;
-  
-  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
-}
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.removeEventListener('click', generatePathEvents);
-    generateBtn.addEventListener('click', generatePathEvents);
-    console.log('Кнопка "Сгенерировать события" подключена');
-  }
-}
-
-initPath();
+    'ruins': ['name', 'pass_method
