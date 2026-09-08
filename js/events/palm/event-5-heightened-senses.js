@@ -13,7 +13,7 @@ export default {
     // Два бара для проверок (без кнопок)
     html += '<div style="display: flex; flex-wrap: wrap; gap: 20px;">';
     
-    // Бар 1: Уход за животными — используем ID check-{eventId}-survival для совместимости
+    // Бар 1: Уход за животными
     html += '<div style="flex: 1; min-width: 200px;">';
     html += '<div class="event-check-row">';
     html += '<label for="check-' + event.id + '-survival" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Ухода за животными (сложность ' + difficulty + ')</label>';
@@ -21,7 +21,7 @@ export default {
     html += '</div>';
     html += '</div>';
     
-    // Бар 2: Традиции — используем ID check-{eventId}-nature для совместимости
+    // Бар 2: Традиции
     html += '<div style="flex: 1; min-width: 200px;">';
     html += '<div class="event-check-row">';
     html += '<label for="check-' + event.id + '-nature" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Традиций (сложность ' + difficulty + ')</label>';
@@ -63,24 +63,36 @@ export default {
     const animalSuccess = animalValue >= difficulty;
     const traditionsSuccess = traditionsValue >= difficulty;
     
-    if (traditionsSuccess && !animalSuccess) {
+    // ===== ЛОГИКА ПРОВЕРКИ =====
+    // 1. Успех Чтеца Знаков (с приоритетом)
+    if (traditionsSuccess) {
       resultType = 'reader_success';
       resultText = 'Чтец Знаков успешен!';
-      effects = null;
-    } else if (!traditionsSuccess && animalSuccess) {
+      // Если это последнее событие в списке, +1 к Прибытию
+      // Проверяем, является ли это событие последним в списке
+      const eventIndex = currentEvents.indexOf(event);
+      const isLastEvent = (eventIndex === currentEvents.length - 1);
+      effects = isLastEvent ? { arrival: 1 } : null;
+      
+      // Добавляем пометку в результат
+      if (isLastEvent) {
+        resultText += ' (последнее событие → +1 Прибытие)';
+      }
+    } 
+    // 2. Успех Длани Батрины (если Чтец провалился)
+    else if (animalSuccess) {
       resultType = 'palm_success';
       resultText = 'Длань Батрины успешна!';
       effects = null;
-    } else if (traditionsSuccess && animalSuccess) {
-      // Если оба успешны — выбираем более важный (Чтец Знаков)
-      resultType = 'reader_success';
-      resultText = 'Обе проверки успешны! (Чтец Знаков)';
-      effects = null;
-    } else {
+    } 
+    // 3. Оба провалены
+    else {
       resultType = 'both_fail';
       resultText = 'Обе проверки провалены';
       effects = { arrival: -1, events: 1 };
     }
+    
+    console.log('📊 Обострение чувств — результат:', resultType, 'эффекты:', effects);
     
     return { resultType, resultText, effects };
   }
