@@ -75,7 +75,7 @@
       100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
-    /* ===== ОСНОВНАЯ ЛИНИЯ (отступ 300px от левого края) ===== */
+    /* ===== ОСНОВНАЯ ЛИНИЯ (отступ 150px от левого края) ===== */
     .main-line-container {
       position: absolute;
       left: 150px;
@@ -522,10 +522,10 @@
 
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; padding-left: 80px; }
-      .main-line-container { left: 150px; }
+      .main-line-container { left: 80px; }
       .section .horizontal-line { width: 40px; }
       .main-line-container .main-node { width: 32px; height: 32px; top: -25px; }
-      .bg-wheel { width: 500px; height: 500px; }
+      .bg-wheel { width: 150px; height: 150px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
       .creature-card { flex: 0 0 100%; max-width: 100%; }
@@ -542,10 +542,10 @@
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; padding-left: 60px; }
-      .main-line-container { left: 80px; }
+      .main-line-container { left: 50px; }
       .section .horizontal-line { width: 30px; }
       .main-line-container .main-node { width: 28px; height: 28px; top: -20px; }
-      .bg-wheel { width: 350px; height: 350px; opacity: 0.4; }
+      .bg-wheel { width: 120px; height: 120px; opacity: 0.25; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
       .section-header { padding: 12px 14px; }
@@ -954,9 +954,9 @@
     var containerRect = container.getBoundingClientRect();
     var containerLeft = containerRect.left;
     
-    // Основная линия на 300px от левого края (уже задано в CSS)
-    // Но нам нужно вычислить left для горизонтальных линий
-    var lineX = 300; // отступ от левого края страницы
+    // Получаем позицию основной линии (из CSS)
+    var mainLineStyle = getComputedStyle(mainLine);
+    var mainLineLeft = parseFloat(mainLineStyle.left) || 150;
     
     // Для каждой секции устанавливаем горизонтальную линию
     sections.forEach(function(section) {
@@ -964,12 +964,12 @@
       if (!hline) return;
       
       var sectionRect = section.getBoundingClientRect();
-      var sectionLeft = sectionRect.left - containerLeft + container.scrollLeft;
+      var sectionLeft = sectionRect.left - containerLeft;
       
       // Горизонтальная линия от основной линии до раздела
-      var startX = lineX;
+      var startX = mainLineLeft;
       var endX = sectionLeft;
-      var width = endX - startX - 2;
+      var width = endX - startX;
       
       if (width > 0) {
         hline.style.left = startX + 'px';
