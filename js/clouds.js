@@ -31,18 +31,14 @@ async function loadClouds() {
     return;
   }
 
-  // Сначала загружаем все изображения облаков в память
-  const imagePromises = data.map(() => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = resolve;
-      img.onerror = resolve;
-      img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
-    });
+  // Предзагружаем изображение облака в память
+  const cloudImg = new Image();
+  await new Promise((resolve) => {
+    cloudImg.onload = resolve;
+    cloudImg.onerror = resolve;
+    cloudImg.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
   });
-  
-  await Promise.all(imagePromises);
-  console.log('📥 Все изображения облаков загружены в память');
+  console.log('📥 Изображение облака загружено в память');
 
   // Добавляем облака на карту
   data.forEach(region => {
@@ -52,9 +48,10 @@ async function loadClouds() {
     const halfSize = CLOUD_SIZE / 2;
     const adjustedCy = cy + OFFSET_Y;
 
+    // Используем загруженное изображение через ImageSource
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
-        url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
+        url: cloudImg.src,
         imageExtent: [
           cx - halfSize,
           adjustedCy - halfSize,
@@ -72,14 +69,7 @@ async function loadClouds() {
   });
 
   console.log(`✅ Добавлено ${data.length} облаков`);
-  
-  // Ждём отрисовки
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      setTimeout(resolve, 100);
-    });
-  });
 }
 
-// НЕ ЗАПУСКАЕМ АВТОМАТИЧЕСКИ — loadClouds вызывается из main.js
+// НЕ ЗАПУСКАЕМ АВТОМАТИЧЕСКИ
 // loadClouds();
