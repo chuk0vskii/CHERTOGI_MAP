@@ -3,13 +3,14 @@ console.log('✅ Карта и маркеры загружены');
 
 async function init() {
   try {
-    // Загружаем облака
+    // Сначала загружаем облака
     if (typeof loadClouds === 'function') {
+      console.log('☁️ Загрузка облаков...');
       await loadClouds();
       console.log('✅ Облака загружены');
     }
     
-    // Загружаем маркеры
+    // Потом загружаем маркеры
     if (typeof loadMarkers === 'function') {
       await loadMarkers();
       console.log('✅ Маркеры загружены');
@@ -20,12 +21,12 @@ async function init() {
       await loadAdminRegions();
     }
     
-    // ===== ПОКАЗЫВАЕМ КАРТУ =====
+    // ===== ПОКАЗЫВАЕМ КАРТУ ТОЛЬКО ПОСЛЕ ЗАГРУЗКИ ОБЛАКОВ =====
     const mapEl = document.getElementById('map');
     if (mapEl) {
       mapEl.classList.add('visible');
       mapEl.style.opacity = '1';
-      console.log('✅ Класс visible добавлен');
+      console.log('✅ Карта показана');
     }
     
     const preloader = document.getElementById('preloader');
@@ -36,14 +37,22 @@ async function init() {
       }, 800);
     }
     
-    console.log('✅ Всё загружено! Карта показана.');
+    console.log('✅ Всё загружено!');
     
   } catch (error) {
     console.error('❌ Ошибка загрузки:', error);
+    // В случае ошибки всё равно показываем карту
     const mapEl = document.getElementById('map');
     if (mapEl) {
       mapEl.classList.add('visible');
       mapEl.style.opacity = '1';
+    }
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+      preloader.classList.add('hidden');
+      setTimeout(function() {
+        preloader.style.display = 'none';
+      }, 800);
     }
   }
 }
