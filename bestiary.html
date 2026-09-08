@@ -55,6 +55,10 @@
       border-radius: 12px;
       transition: all 0.3s ease;
       user-select: none;
+      position: sticky;
+      top: 70px;
+      z-index: 50;
+      backdrop-filter: blur(8px);
     }
     .section-header:hover {
       background: rgba(74, 14, 14, 0.6);
@@ -79,12 +83,32 @@
     .section-header .arrow.open {
       transform: rotate(180deg);
     }
+    .section-header .collapse-btn {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: #ffd700;
+      padding: 4px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Philosopher', sans-serif;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      display: none;
+      margin-left: 12px;
+    }
+    .section-header .collapse-btn:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+    .section-header .collapse-btn.visible {
+      display: inline-block;
+    }
 
     .section-content {
       display: none;
       padding: 20px 0;
       gap: 20px;
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
     }
     .section-content.open {
       display: flex;
@@ -94,8 +118,11 @@
       background: rgba(74, 14, 14, 0.2);
       border: 1px solid rgba(74, 14, 14, 0.2);
       border-radius: 12px;
-      padding: 24px 28px;
+      padding: 20px 22px;
       transition: all 0.3s ease;
+      flex: 0 0 calc(50% - 10px);
+      max-width: calc(50% - 10px);
+      box-sizing: border-box;
     }
     .creature-card:hover {
       background: rgba(74, 14, 14, 0.35);
@@ -103,68 +130,70 @@
     }
     .creature-card .creature-name {
       font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 22px;
+      font-size: 20px;
       color: #ffffff;
       letter-spacing: 1px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-weight: normal;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .creature-card .creature-name .expand-icon {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease;
+    }
+    .creature-card .creature-name .expand-icon.open {
+      transform: rotate(180deg);
     }
     .creature-card .creature-meta {
-      font-size: 14px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.4);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .creature-card .creature-meta span {
-      margin-right: 18px;
+      margin-right: 14px;
+    }
+
+    .creature-card .creature-body {
+      display: none;
+    }
+    .creature-card .creature-body.open {
+      display: block;
     }
 
     .creature-card .creature-description {
       font-size: 14px;
-      line-height: 1.8;
+      line-height: 1.7;
       color: #ccc;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       white-space: pre-line;
       word-wrap: break-word;
     }
 
     .creature-card .creature-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 8px;
-      padding: 12px 0;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 6px;
+      padding: 10px 0;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .creature-card .creature-stats .stat {
-      font-size: 14px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.5);
     }
     .creature-card .creature-stats .stat strong {
       color: #ffffff;
     }
 
-    .creature-card .btn-toggle-stats {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.5);
-      padding: 6px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Philosopher', sans-serif;
-      font-size: 13px;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-    }
-    .creature-card .btn-toggle-stats:hover {
-      background: rgba(74, 14, 14, 0.3);
-      color: #ffffff;
-      border-color: rgba(74, 14, 14, 0.5);
-    }
-
     .creature-card .stats-full {
       display: none;
-      margin-top: 12px;
-      padding: 16px 20px;
+      margin-top: 10px;
+      padding: 12px 16px;
       background: rgba(74, 14, 14, 0.2);
       border-radius: 8px;
       border-left: 2px solid rgba(74, 14, 14, 0.5);
@@ -175,15 +204,15 @@
     .creature-card .stats-full .stat-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px 24px;
-      font-size: 14px;
+      gap: 4px 20px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.6);
-      padding: 4px 0;
-      line-height: 1.6;
+      padding: 3px 0;
+      line-height: 1.5;
     }
     .creature-card .stats-full .stat-row .label {
       color: rgba(255, 255, 255, 0.4);
-      min-width: 110px;
+      min-width: 100px;
     }
     .creature-card .stats-full .stat-row .value {
       color: #e0d5c0;
@@ -195,10 +224,10 @@
 
     .creature-card .abilities-block {
       display: none;
-      margin-top: 12px;
-      padding: 14px 18px;
+      margin-top: 10px;
+      padding: 10px 14px;
       border: 1px solid rgba(255, 50, 50, 0.3);
-      border-radius: 10px;
+      border-radius: 8px;
       background: transparent;
     }
     .creature-card .abilities-block.open {
@@ -206,27 +235,27 @@
     }
     .creature-card .abilities-block .abilities-label {
       color: rgba(255, 100, 100, 0.7);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-family: 'Philosopher', sans-serif;
       text-transform: uppercase;
     }
     .creature-card .abilities-block .abilities-content {
       color: #e0d5c0;
-      font-size: 14px;
+      font-size: 13px;
       white-space: pre-line;
       word-wrap: break-word;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .creature-card .actions-block {
       display: none;
-      margin-top: 12px;
-      padding: 14px 18px;
+      margin-top: 10px;
+      padding: 10px 14px;
       border: 1px solid rgba(255, 50, 50, 0.3);
-      border-radius: 10px;
+      border-radius: 8px;
       background: transparent;
     }
     .creature-card .actions-block.open {
@@ -234,25 +263,25 @@
     }
     .creature-card .actions-block .actions-label {
       color: rgba(255, 100, 100, 0.7);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-family: 'Philosopher', sans-serif;
       text-transform: uppercase;
     }
     .creature-card .actions-block .actions-content {
       color: #e0d5c0;
-      font-size: 14px;
+      font-size: 13px;
       white-space: pre-line;
       word-wrap: break-word;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .creature-card .resource-block {
       display: none;
-      margin-top: 12px;
-      padding: 14px 18px;
+      margin-top: 10px;
+      padding: 10px 14px;
       background: rgba(255, 215, 0, 0.08);
       border: 1px solid rgba(255, 215, 0, 0.2);
       border-radius: 8px;
@@ -263,15 +292,15 @@
     }
     .creature-card .resource-block .resource-label {
       color: #ffd700;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: bold;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-family: 'Philosopher', sans-serif;
     }
     .creature-card .resource-block .resource-content {
       color: #e0d5c0;
-      font-size: 14px;
+      font-size: 13px;
       white-space: pre-line;
       word-wrap: break-word;
       line-height: 1.4;
@@ -281,10 +310,28 @@
       padding: 1px 0;
     }
 
+    .creature-card .btn-toggle-stats {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.4);
+      padding: 4px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Philosopher', sans-serif;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+    }
+    .creature-card .btn-toggle-stats:hover {
+      background: rgba(74, 14, 14, 0.3);
+      color: #ffffff;
+      border-color: rgba(74, 14, 14, 0.5);
+    }
+
     .creature-card .creature-image-container {
       display: none;
-      margin-top: 16px;
-      padding-top: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
     .creature-card .creature-image-container.open {
@@ -292,7 +339,7 @@
     }
     .creature-card .creature-image-container img {
       max-width: 100%;
-      max-height: 400px;
+      max-height: 300px;
       border-radius: 8px;
       display: block;
       margin: 0 auto;
@@ -302,9 +349,9 @@
     }
     .creature-card .creature-image-container .image-placeholder {
       text-align: center;
-      padding: 40px 20px;
-      color: rgba(255, 255, 255, 0.2);
-      font-size: 14px;
+      padding: 30px 20px;
+      color: rgba(255, 255, 255, 0.15);
+      font-size: 13px;
       background: rgba(0, 0, 0, 0.2);
       border-radius: 8px;
       border: 1px dashed rgba(255, 255, 255, 0.05);
@@ -322,34 +369,53 @@
       font-size: 16px;
     }
 
+    .scroll-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(74, 14, 14, 0.8);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      color: #ffd700;
+      padding: 12px 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+      display: none;
+    }
+    .scroll-top.visible {
+      opacity: 1;
+      display: block;
+    }
+    .scroll-top:hover {
+      background: rgba(74, 14, 14, 1);
+      transform: scale(1.1);
+    }
+
     @media (max-width: 768px) {
       .container { padding: 80px 16px 30px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
-      .creature-card { padding: 18px 20px; }
-      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+      .creature-card { flex: 0 0 100%; max-width: 100%; }
+      .creature-card { padding: 16px 18px; }
+      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
       .creature-card .stats-full .stat-row { flex-direction: column; gap: 2px; }
-      .creature-card .creature-image-container img { max-height: 300px; }
-      .creature-card .resource-block { padding: 10px 14px; }
-      .creature-card .abilities-block { padding: 10px 14px; }
-      .creature-card .actions-block { padding: 10px 14px; }
+      .creature-card .creature-image-container img { max-height: 250px; }
+      .creature-card .resource-block { padding: 8px 12px; }
+      .creature-card .abilities-block { padding: 8px 12px; }
+      .creature-card .actions-block { padding: 8px 12px; }
     }
     @media (max-width: 480px) {
       .container { padding: 70px 12px 20px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
-      .creature-card { padding: 14px 16px; }
-      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
-      .creature-card .creature-image-container img { max-height: 200px; }
-      .creature-card .resource-block { padding: 8px 12px; }
-      .creature-card .abilities-block { padding: 8px 12px; }
-      .creature-card .actions-block { padding: 8px 12px; }
-      .creature-card .resource-block .resource-label { font-size: 12px; }
-      .creature-card .resource-block .resource-content { font-size: 12px; }
-      .creature-card .abilities-block .abilities-label { font-size: 11px; }
-      .creature-card .abilities-block .abilities-content { font-size: 12px; }
-      .creature-card .actions-block .actions-label { font-size: 11px; }
-      .creature-card .actions-block .actions-content { font-size: 12px; }
+      .creature-card { padding: 12px 14px; }
+      .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+      .creature-card .creature-image-container img { max-height: 180px; }
+      .creature-card .creature-name { font-size: 17px; }
     }
   </style>
 </head>
@@ -372,6 +438,8 @@
     <div class="loading">Загрузка бестиария...</div>
   </div>
 </div>
+
+<button class="scroll-top" id="scrollTopBtn" title="Наверх">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
@@ -530,7 +598,7 @@
       }
     }
 
-    var extraHTML = extraRows ? '<button class="btn-toggle-stats" onclick="toggleStats(this)">Показать все характеристики</button><div class="stats-full">' + extraRows + '</div>' : '';
+    var extraHTML = extraRows ? '<button class="btn-toggle-stats" onclick="toggleStats(this)">Показать характеристики</button><div class="stats-full">' + extraRows + '</div>' : '';
 
     var metaHTML = '';
     if (creature.size) metaHTML += '<span>' + creature.size + '</span>';
@@ -563,19 +631,37 @@
       </div>
     `;
 
-    return '<div class="creature-card" data-id="' + (creature.id || '') + '" data-name="' + encodeURIComponent(creatureName) + '">' +
-      '<div class="creature-name">' + creatureName + '</div>' +
+    var creatureId = creature.id || 'unknown';
+    
+    return '<div class="creature-card" data-id="' + creatureId + '" data-name="' + encodeURIComponent(creatureName) + '">' +
+      '<div class="creature-name" onclick="toggleCreature(this)">' + 
+        creatureName + 
+        '<span class="expand-icon">▼</span>' +
+      '</div>' +
       (metaHTML ? '<div class="creature-meta">' + metaHTML + '</div>' : '') +
-      descHTML +
-      statsContainerHTML +
-      extraHTML +
-      abilitiesHTML +
-      actionsHTML +
-      resourceHTML +
-      '<div class="creature-image-container" id="image-container-' + (creature.id || 'unknown') + '">' +
-        imageHTML +
+      '<div class="creature-body">' +
+        descHTML +
+        statsContainerHTML +
+        extraHTML +
+        abilitiesHTML +
+        actionsHTML +
+        resourceHTML +
+        '<div class="creature-image-container" id="image-container-' + creatureId + '">' +
+          imageHTML +
+        '</div>' +
       '</div>' +
     '</div>';
+  }
+
+  function toggleCreature(nameEl) {
+    var card = nameEl.closest('.creature-card');
+    var body = card.querySelector('.creature-body');
+    var icon = nameEl.querySelector('.expand-icon');
+    
+    if (body) {
+      body.classList.toggle('open');
+      if (icon) icon.classList.toggle('open');
+    }
   }
 
   function toggleStats(btn) {
@@ -586,7 +672,7 @@
       var isOpening = !statsFull.classList.contains('open');
       
       statsFull.classList.toggle('open');
-      btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать все характеристики';
+      btn.textContent = statsFull.classList.contains('open') ? 'Скрыть характеристики' : 'Показать характеристики';
       
       var abilitiesBlock = card.querySelector('.abilities-block');
       if (abilitiesBlock) {
@@ -637,12 +723,14 @@
 
     var contentHTML = '';
     if (creatures.length === 0) {
-      contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
+      contentHTML = '<div class="no-data" style="width:100%;">Нет существ в этом разделе</div>';
     } else {
       for (var i = 0; i < creatures.length; i++) {
         contentHTML += renderCreatureCard(creatures[i]);
       }
     }
+
+    var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
 
     sectionDiv.innerHTML = 
       '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
@@ -650,6 +738,7 @@
         '<span style="display:flex; align-items:center; gap:12px;">' +
           '<span class="count">' + creatures.length + ' существ</span>' +
           '<span class="arrow" id="arrow-' + section.id + '">▼</span>' +
+          collapseBtn +
         '</span>' +
       '</div>' +
       '<div class="section-content" id="content-' + section.id + '">' +
@@ -662,44 +751,57 @@
   function toggleSection(sectionId) {
     var content = document.getElementById('content-' + sectionId);
     var arrow = document.getElementById('arrow-' + sectionId);
+    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
+    
     if (content) {
+      var isOpening = !content.classList.contains('open');
       content.classList.toggle('open');
       if (arrow) arrow.classList.toggle('open');
+      
+      if (collapseBtn) {
+        if (isOpening) {
+          collapseBtn.classList.add('visible');
+        } else {
+          collapseBtn.classList.remove('visible');
+        }
+      }
     }
   }
 
-  async function init() {
-    console.log('Загрузка бестиария...');
-
-    var container = document.getElementById('sections-container');
-    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
-
-    var totalCreatures = 0;
-    var fragment = document.createDocumentFragment();
-
-    for (var i = 0; i < SECTIONS.length; i++) {
-      var section = SECTIONS[i];
-      var creatures = await loadSection(section);
-      totalCreatures += creatures.length;
-      var sectionEl = renderSection(section, creatures);
-      fragment.appendChild(sectionEl);
+  function collapseSection(sectionId) {
+    var content = document.getElementById('content-' + sectionId);
+    var arrow = document.getElementById('arrow-' + sectionId);
+    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
+    
+    if (content) {
+      content.classList.remove('open');
+      if (arrow) arrow.classList.remove('open');
+      if (collapseBtn) collapseBtn.classList.remove('visible');
     }
-
-    container.innerHTML = '';
-    container.appendChild(fragment);
-
-    if (totalCreatures === 0) {
-      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
-    }
-
-    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
-
-    // Запускаем обработку URL после загрузки
-    setTimeout(openBeastFromUrl, 500);
   }
 
   // ============================================================
-  // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ КОНКРЕТНОГО СУЩЕСТВА
+  // КНОПКА "НАВЕРХ"
+  // ============================================================
+
+  function initScrollTop() {
+    var btn = document.getElementById('scrollTopBtn');
+    
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+    
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ============================================================
+  // ОБРАБОТКА ПАРАМЕТРОВ URL
   // ============================================================
 
   function getUrlParams() {
@@ -734,36 +836,30 @@
       return;
     }
     
-    // Пробуем найти раздел
     var sectionContent = document.getElementById('content-' + sectionId);
     var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
+    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
     
     if (!sectionContent || !sectionHeader) {
       console.warn('⚠️ Раздел не найден:', sectionId);
       return;
     }
     
-    // Открываем раздел
     sectionContent.classList.add('open');
     var arrow = document.getElementById('arrow-' + sectionId);
     if (arrow) arrow.classList.add('open');
+    if (collapseBtn) collapseBtn.classList.add('visible');
     
-    // Ищем карточку с существом
     var cards = sectionContent.querySelectorAll('.creature-card');
     var targetCard = null;
     var decodedName = decodeURIComponent(beastName);
-    
-    console.log('🔍 Ищем существо:', decodedName);
-    console.log('🔍 Всего карточек в разделе:', cards.length);
     
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
       var nameEl = card.querySelector('.creature-name');
       var cardName = nameEl ? nameEl.textContent.trim() : '';
-      console.log('  - Карточка #' + i + ':', cardName);
       if (cardName === decodedName) {
         targetCard = card;
-        console.log('✅ Найдена карточка:', decodedName);
         break;
       }
     }
@@ -775,6 +871,14 @@
         targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
         targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
         targetCard.style.borderColor = '#ffd700';
+        
+        // Раскрываем карточку
+        var body = targetCard.querySelector('.creature-body');
+        var icon = targetCard.querySelector('.expand-icon');
+        if (body) {
+          body.classList.add('open');
+          if (icon) icon.classList.add('open');
+        }
         
         var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
         if (toggleBtn) {
@@ -788,18 +892,47 @@
           targetCard.style.borderColor = '';
         }, 5000);
       }, 300);
-    } else {
-      console.warn('⚠️ Существо "' + decodedName + '" не найдено в разделе ' + sectionId);
-      console.log('🔍 Доступные имена в разделе:');
-      cards.forEach(function(card) {
-        var nameEl = card.querySelector('.creature-name');
-        console.log('  - ' + (nameEl ? nameEl.textContent.trim() : 'НЕТ ИМЕНИ'));
-      });
     }
+  }
+
+  // ============================================================
+  // ИНИЦИАЛИЗАЦИЯ
+  // ============================================================
+
+  async function init() {
+    console.log('Загрузка бестиария...');
+
+    var container = document.getElementById('sections-container');
+    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
+
+    var totalCreatures = 0;
+    var fragment = document.createDocumentFragment();
+
+    for (var i = 0; i < SECTIONS.length; i++) {
+      var section = SECTIONS[i];
+      var creatures = await loadSection(section);
+      totalCreatures += creatures.length;
+      var sectionEl = renderSection(section, creatures);
+      fragment.appendChild(sectionEl);
+    }
+
+    container.innerHTML = '';
+    container.appendChild(fragment);
+
+    if (totalCreatures === 0) {
+      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
+    }
+
+    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
+
+    initScrollTop();
+    setTimeout(openBeastFromUrl, 500);
   }
 
   window.toggleSection = toggleSection;
   window.toggleStats = toggleStats;
+  window.toggleCreature = toggleCreature;
+  window.collapseSection = collapseSection;
 
   document.addEventListener('DOMContentLoaded', init);
 </script>
