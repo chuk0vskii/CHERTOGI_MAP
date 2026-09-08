@@ -13,19 +13,19 @@ export default {
     // Два бара для проверок (без кнопок)
     html += '<div style="display: flex; flex-wrap: wrap; gap: 20px;">';
     
-    // Бар 1: Уход за животными
+    // Бар 1: Уход за животными — используем ID check-{eventId}-survival для совместимости
     html += '<div style="flex: 1; min-width: 200px;">';
     html += '<div class="event-check-row">';
-    html += '<label for="check-' + event.id + '-animal" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Ухода за животными (сложность ' + difficulty + ')</label>';
-    html += '<input type="number" id="check-' + event.id + '-animal" min="1" max="30" value="10" class="check-input" data-event-id="' + event.id + '" data-type="animal" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#ffffff; font-size:18px; text-align:center; font-family:\'Philosopher\', sans-serif; box-sizing:border-box;">';
+    html += '<label for="check-' + event.id + '-survival" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Ухода за животными (сложность ' + difficulty + ')</label>';
+    html += '<input type="number" id="check-' + event.id + '-survival" min="1" max="30" value="10" class="check-input" data-event-id="' + event.id + '" data-type="survival" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#ffffff; font-size:18px; text-align:center; font-family:\'Philosopher\', sans-serif; box-sizing:border-box;">';
     html += '</div>';
     html += '</div>';
     
-    // Бар 2: Традиции
+    // Бар 2: Традиции — используем ID check-{eventId}-nature для совместимости
     html += '<div style="flex: 1; min-width: 200px;">';
     html += '<div class="event-check-row">';
-    html += '<label for="check-' + event.id + '-traditions" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Традиций (сложность ' + difficulty + ')</label>';
-    html += '<input type="number" id="check-' + event.id + '-traditions" min="1" max="30" value="10" class="check-input" data-event-id="' + event.id + '" data-type="traditions" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#ffffff; font-size:18px; text-align:center; font-family:\'Philosopher\', sans-serif; box-sizing:border-box;">';
+    html += '<label for="check-' + event.id + '-nature" style="color: rgba(255,255,255,0.5); font-size: 13px; display: block; margin-bottom: 4px;">Проверка Традиций (сложность ' + difficulty + ')</label>';
+    html += '<input type="number" id="check-' + event.id + '-nature" min="1" max="30" value="10" class="check-input" data-event-id="' + event.id + '" data-type="nature" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#ffffff; font-size:18px; text-align:center; font-family:\'Philosopher\', sans-serif; box-sizing:border-box;">';
     html += '</div>';
     html += '</div>';
     
