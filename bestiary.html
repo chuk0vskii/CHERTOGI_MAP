@@ -75,52 +75,12 @@
       100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
-    /* ===== ОСНОВНАЯ ЛИНИЯ (отступ 150px от левого края) ===== */
-    .main-line-container {
-      position: absolute;
-      left: 150px;
-      top: 120px;
-      bottom: 20px;
-      width: 2px;
-      z-index: 3;
-      pointer-events: none;
-    }
-    .main-line-container .main-line {
-      position: absolute;
-      left: 50%;
-      top: 0;
-      width: 2px;
-      height: 100%;
-      background: #b5001b;
-      transform: translateX(-50%);
-      opacity: 0.5;
-    }
-
-    /* ===== УЗЕЛ (ГЛАВНАЯ ИКОНКА СВЕРХУ) ===== */
-    .main-line-container .main-node {
-      position: absolute;
-      left: 50%;
-      top: -30px;
-      transform: translateX(-50%);
-      width: 42px;
-      height: 42px;
-      z-index: 4;
-      pointer-events: none;
-    }
-    .main-line-container .main-node img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 20px rgba(181, 0, 27, 0.4));
-    }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 100px 20px 40px;
       position: relative;
       z-index: 2;
-      padding-left: 120px;
     }
 
     .page-title {
@@ -152,18 +112,6 @@
       margin-bottom: 40px;
       position: relative;
       z-index: 2;
-    }
-
-    /* ===== ГОРИЗОНТАЛЬНАЯ ЛИНИЯ ОТ ОСНОВНОЙ К РАЗДЕЛУ ===== */
-    .section .horizontal-line {
-      position: absolute;
-      top: 50%;
-      height: 2px;
-      background: #b5001b;
-      transform: translateY(-50%);
-      opacity: 0.3;
-      z-index: 3;
-      pointer-events: none;
     }
 
     .section-header {
@@ -521,10 +469,7 @@
     }
 
     @media (max-width: 768px) {
-      .container { padding: 80px 16px 30px; padding-left: 80px; }
-      .main-line-container { left: 80px; }
-      .section .horizontal-line { width: 40px; }
-      .main-line-container .main-node { width: 32px; height: 32px; top: -25px; }
+      .container { padding: 80px 16px 30px; }
       .bg-wheel { width: 150px; height: 150px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
@@ -541,10 +486,7 @@
       .bg-image-right { right: -175px; }
     }
     @media (max-width: 480px) {
-      .container { padding: 70px 12px 20px; padding-left: 60px; }
-      .main-line-container { left: 50px; }
-      .section .horizontal-line { width: 30px; }
-      .main-line-container .main-node { width: 28px; height: 28px; top: -20px; }
+      .container { padding: 70px 12px 20px; }
       .bg-wheel { width: 120px; height: 120px; opacity: 0.25; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
@@ -569,14 +511,6 @@
 <!-- ===== ДЕКОРАТИВНЫЕ ГЕКСЫ ПО БОКАМ ===== -->
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left" loading="lazy">
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right" loading="lazy">
-
-<!-- ===== ОСНОВНАЯ ЛИНИЯ ===== -->
-<div class="main-line-container" id="mainLineContainer">
-  <div class="main-line"></div>
-  <div class="main-node">
-    <img src="/CHERTOGI_MAP/images/uzelbest.png" alt="Узел">
-  </div>
-</div>
 
 <div class="top-banner">
   <span class="title">Огненные чертоги</span>
@@ -889,10 +823,7 @@
 
     var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
 
-    var horizontalLine = '<div class="horizontal-line" id="hline-' + section.id + '"></div>';
-
     sectionDiv.innerHTML = 
-      horizontalLine +
       '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
         '<span class="title">' + section.title + '</span>' +
         '<span style="display:flex; align-items:center; gap:12px;">' +
@@ -938,45 +869,6 @@
       if (arrow) arrow.classList.remove('open');
       if (collapseBtn) collapseBtn.classList.remove('visible');
     }
-  }
-
-  // ============================================================
-  // ПОЗИЦИОНИРОВАНИЕ ЛИНИЙ
-  // ============================================================
-
-  function positionLines() {
-    var container = document.querySelector('.container');
-    var mainLine = document.getElementById('mainLineContainer');
-    var sections = document.querySelectorAll('.section');
-    
-    if (!container || !mainLine || sections.length === 0) return;
-    
-    var containerRect = container.getBoundingClientRect();
-    var containerLeft = containerRect.left;
-    
-    // Получаем позицию основной линии (из CSS)
-    var mainLineStyle = getComputedStyle(mainLine);
-    var mainLineLeft = parseFloat(mainLineStyle.left) || 150;
-    
-    // Для каждой секции устанавливаем горизонтальную линию
-    sections.forEach(function(section) {
-      var hline = section.querySelector('.horizontal-line');
-      if (!hline) return;
-      
-      var sectionRect = section.getBoundingClientRect();
-      var sectionLeft = sectionRect.left - containerLeft;
-      
-      // Горизонтальная линия от основной линии до раздела
-      var startX = mainLineLeft;
-      var endX = sectionLeft;
-      var width = endX - startX;
-      
-      if (width > 0) {
-        hline.style.left = startX + 'px';
-        hline.style.width = width + 'px';
-        hline.style.opacity = '0.3';
-      }
-    });
   }
 
   // ============================================================
@@ -1122,10 +1014,6 @@
     }
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
-
-    // Позиционируем линии после загрузки
-    setTimeout(positionLines, 100);
-    window.addEventListener('resize', positionLines);
 
     initScrollTop();
     setTimeout(openBeastFromUrl, 500);
