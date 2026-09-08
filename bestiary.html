@@ -54,7 +54,7 @@
     /* ===== КРАСНАЯ ЛИНИЯ ===== */
     .tree-container {
       position: absolute;
-      left: 30px;
+      left: 60px;
       top: 130px;
       bottom: 20px;
       width: 2px;
@@ -77,10 +77,10 @@
     .tree-container .main-node {
       position: absolute;
       left: 50%;
-      top: -45px;
+      top: -30px;
       transform: translateX(-50%);
-      width: 64px;
-      height: 64px;
+      width: 42px;
+      height: 42px;
       z-index: 4;
       pointer-events: none;
     }
@@ -96,8 +96,8 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      width: 28px;
-      height: 28px;
+      width: 56px;
+      height: 56px;
       z-index: 4;
       pointer-events: none;
       display: flex;
@@ -115,7 +115,7 @@
       position: absolute;
       right: 100%;
       top: 50%;
-      width: 16px;
+      width: 30px;
       height: 2px;
       background: #b5001b;
       transform: translateY(-50%);
@@ -139,7 +139,7 @@
       padding: 100px 20px 40px;
       position: relative;
       z-index: 2;
-      padding-left: 80px;
+      padding-left: 120px;
     }
 
     .page-title {
@@ -169,7 +169,7 @@
       margin-bottom: 40px;
       position: relative;
       z-index: 2;
-      padding-left: 20px;
+      padding-left: 30px;
     }
 
     .section-header {
@@ -527,14 +527,14 @@
     }
 
     @media (max-width: 768px) {
-      .container { padding: 80px 16px 30px; padding-left: 60px; }
-      .tree-container { left: 20px; }
-      .tree-container .main-node { width: 48px; height: 48px; top: -35px; }
-      .tree-container .branch { width: 22px; height: 22px; }
-      .tree-container .branch .branch-line { width: 12px; }
+      .container { padding: 80px 16px 30px; padding-left: 80px; }
+      .tree-container { left: 30px; }
+      .tree-container .main-node { width: 32px; height: 32px; top: -25px; }
+      .tree-container .branch { width: 40px; height: 40px; }
+      .tree-container .branch .branch-line { width: 20px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
-      .section { padding-left: 12px; }
+      .section { padding-left: 15px; }
       .creature-card { flex: 0 0 100%; max-width: 100%; }
       .creature-card { padding: 16px 18px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
@@ -548,14 +548,14 @@
       .bg-image-right { right: -175px; }
     }
     @media (max-width: 480px) {
-      .container { padding: 70px 12px 20px; padding-left: 50px; }
-      .tree-container { left: 15px; }
-      .tree-container .main-node { width: 36px; height: 36px; top: -28px; }
-      .tree-container .branch { width: 18px; height: 18px; }
-      .tree-container .branch .branch-line { width: 10px; }
+      .container { padding: 70px 12px 20px; padding-left: 60px; }
+      .tree-container { left: 20px; }
+      .tree-container .main-node { width: 28px; height: 28px; top: -20px; }
+      .tree-container .branch { width: 32px; height: 32px; }
+      .tree-container .branch .branch-line { width: 15px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
-      .section { padding-left: 8px; }
+      .section { padding-left: 10px; }
       .creature-card { padding: 12px 14px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 180px; }
@@ -634,16 +634,10 @@
     var container = document.getElementById('treeContainer');
     var sections = document.querySelectorAll('.section');
     var total = sections.length;
-    var paddingTop = 0; // отступ сверху для первого раздела
     
     sections.forEach(function(section, index) {
-      // Получаем позицию раздела относительно контейнера
-      var rect = section.getBoundingClientRect();
-      var containerRect = document.querySelector('.container').getBoundingClientRect();
-      
-      // Вычисляем позицию относительно дерева (примерно)
-      var topOffset = 50 + index * 95; // примерный отступ между разделами
-      if (index === 0) topOffset = 20;
+      // Вычисляем позицию раздела относительно дерева
+      var topOffset = 20 + index * 95;
       
       // Создаём ответвление
       var branch = document.createElement('div');
