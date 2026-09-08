@@ -886,4 +886,153 @@
     var btn = document.getElementById('scrollTopBtn');
     
     window.addEventListener('scroll', function() {
-      if (window
+      if (window.scrollY > 300) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+    
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ============================================================
+  // ОБРАБОТКА ПАРАМЕТРОВ URL
+  // ============================================================
+
+  function getUrlParams() {
+    var params = {};
+    var query = window.location.search.substring(1);
+    if (query) {
+      var pairs = query.split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      }
+    }
+    return params;
+  }
+
+  function openBeastFromUrl() {
+    var params = getUrlParams();
+    
+    console.log('🔍 Параметры URL:', params);
+    
+    if (!params.section && !params.beast) {
+      console.log('Нет параметров для открытия существа');
+      return;
+    }
+    
+    var sectionId = params.section || 'dangerous_creatures';
+    var beastName = params.beast || '';
+    
+    console.log('🔍 Открытие существа:', { sectionId, beastName });
+    
+    if (!beastName) {
+      return;
+    }
+    
+    var sectionContent = document.getElementById('content-' + sectionId);
+    var sectionHeader = document.querySelector('#section-' + sectionId + ' .section-header');
+    var collapseBtn = document.querySelector('#section-' + sectionId + ' .collapse-btn');
+    
+    if (!sectionContent || !sectionHeader) {
+      console.warn('⚠️ Раздел не найден:', sectionId);
+      return;
+    }
+    
+    sectionContent.classList.add('open');
+    var arrow = document.getElementById('arrow-' + sectionId);
+    if (arrow) arrow.classList.add('open');
+    if (collapseBtn) collapseBtn.classList.add('visible');
+    
+    var cards = sectionContent.querySelectorAll('.creature-card');
+    var targetCard = null;
+    var decodedName = decodeURIComponent(beastName);
+    
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var nameEl = card.querySelector('.creature-name');
+      var cardName = nameEl ? nameEl.textContent.trim() : '';
+      if (cardName === decodedName) {
+        targetCard = card;
+        break;
+      }
+    }
+    
+    if (targetCard) {
+      setTimeout(function() {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        targetCard.style.transition = 'background 0.5s ease, border-color 0.5s ease';
+        targetCard.style.background = 'rgba(255, 215, 0, 0.15)';
+        targetCard.style.borderColor = '#ffd700';
+        
+        var body = targetCard.querySelector('.creature-body');
+        var icon = targetCard.querySelector('.expand-icon');
+        if (body) {
+          body.classList.add('open');
+          if (icon) icon.classList.add('open');
+        }
+        
+        var toggleBtn = targetCard.querySelector('.btn-toggle-stats');
+        if (toggleBtn) {
+          setTimeout(function() {
+            toggleBtn.click();
+          }, 500);
+        }
+        
+        setTimeout(function() {
+          targetCard.style.background = '';
+          targetCard.style.borderColor = '';
+        }, 5000);
+      }, 300);
+    }
+  }
+
+  // ============================================================
+  // ИНИЦИАЛИЗАЦИЯ
+  // ============================================================
+
+  async function init() {
+    console.log('Загрузка бестиария...');
+
+    var container = document.getElementById('sections-container');
+    container.innerHTML = '<div class="loading">Загрузка бестиария...</div>';
+
+    var totalCreatures = 0;
+    var fragment = document.createDocumentFragment();
+
+    for (var i = 0; i < SECTIONS.length; i++) {
+      var section = SECTIONS[i];
+      var creatures = await loadSection(section);
+      totalCreatures += creatures.length;
+      var sectionEl = renderSection(section, creatures);
+      fragment.appendChild(sectionEl);
+    }
+
+    container.innerHTML = '';
+    container.appendChild(fragment);
+
+    if (totalCreatures === 0) {
+      container.innerHTML = '<div class="no-data">Бестиарий пуст. Добавьте существ в базу данных.</div>';
+    }
+
+    console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
+
+    initScrollTop();
+    setTimeout(openBeastFromUrl, 500);
+  }
+
+  window.toggleSection = toggleSection;
+  window.toggleStats = toggleStats;
+  window.toggleCreature = toggleCreature;
+  window.collapseSection = collapseSection;
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
