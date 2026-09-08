@@ -31,7 +31,20 @@ async function loadClouds() {
     return;
   }
 
-  // Добавляем облака
+  // Сначала загружаем все изображения облаков в память
+  const imagePromises = data.map(() => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = resolve;
+      img.onerror = resolve;
+      img.src = '/CHERTOGI_MAP/cloud3.png?v=' + Date.now();
+    });
+  });
+  
+  await Promise.all(imagePromises);
+  console.log('📥 Все изображения облаков загружены в память');
+
+  // Добавляем облака на карту
   data.forEach(region => {
     const cx = region.cloud_x || region.x;
     const cy = region.cloud_y || region.y;
@@ -39,7 +52,6 @@ async function loadClouds() {
     const halfSize = CLOUD_SIZE / 2;
     const adjustedCy = cy + OFFSET_Y;
 
-    // Создаём слой с облаком
     const cloudLayer = new ol.layer.Image({
       source: new ol.source.ImageStatic({
         url: '/CHERTOGI_MAP/cloud3.png?v=' + Date.now(),
@@ -61,13 +73,13 @@ async function loadClouds() {
 
   console.log(`✅ Добавлено ${data.length} облаков`);
   
-  // Ждём загрузки изображений облаков
+  // Ждём отрисовки
   return new Promise((resolve) => {
-    // Даём время на отрисовку облаков
-    setTimeout(resolve, 500);
+    requestAnimationFrame(() => {
+      setTimeout(resolve, 100);
+    });
   });
 }
 
-// Запускаем загрузку, но только если map уже существует
-// Теперь loadClouds вызывается из main.js, поэтому убираем автозапуск
+// НЕ ЗАПУСКАЕМ АВТОМАТИЧЕСКИ — loadClouds вызывается из main.js
 // loadClouds();
