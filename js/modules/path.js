@@ -5,7 +5,7 @@
 import { _supabase } from '../config-module.js';
 import { 
   COMMON_EVENTS_MODULES, READER_EVENTS_MODULES, SHADOW_EVENTS_MODULES,
-  CLAW_EVENTS_MODULES, EYES_EVENTS_MODULES,
+  CLAW_EVENTS_MODULES, EYES_EVENTS_MODULES, PALM_EVENTS_MODULES,
   TABLE_TO_SECTION, getRegionalTableName, getEventModule
 } from '../events/index.js';
 import { getRandomInt, getResultLabel, getResultClass } from './utils.js';
@@ -152,6 +152,9 @@ function getRandomEventByType(type) {
   } else if (type === 'Глаза_Звезд') {
     roll = getRandomInt(1, 6);
     module = EYES_EVENTS_MODULES[roll];
+  } else if (type === 'Длань_Батрины') {
+    roll = getRandomInt(1, 6);
+    module = PALM_EVENTS_MODULES[roll];
   }
   
   return { module: module, roll: roll };
@@ -280,9 +283,8 @@ export async function generatePathEvents() {
     }
   }
 
-  // ВРЕМЕННО — только для тестирования Длани Батрины
-const roles = ['Длань_Батрины'];
-// const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
+  // ВСЕ РОЛИ
+  const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
     const role = roles[roleIndex];
@@ -362,14 +364,10 @@ function processCheck(eventId, type, values) {
   }
   
   // ПРИМЕНЯЕМ ЭФФЕКТЫ — СБРАСЫВАЕМ ФЛАГ ДЛЯ ПОВТОРНЫХ ПРОВЕРОК
-  // Если пользователь меняет значение и проверяет снова, применяем эффекты заново
-  // Но только если результат изменился
   if (result.effects) {
-    // Проверяем, был ли уже применён эффект для этого результата
     const effectKey = isSecond ? 'secondEffectResult' : 'effectResult';
     const previousResult = event[effectKey];
     
-    // Если результат изменился или эффект ещё не применялся
     if (previousResult !== result.resultType || !event[effectsAppliedKey]) {
       event[effectsAppliedKey] = true;
       event[effectKey] = result.resultType;
@@ -378,7 +376,6 @@ function processCheck(eventId, type, values) {
       
       // ===== ПРИМЕНЯЕМ ПРИБЫТИЕ =====
       if (result.effects.arrival !== undefined && result.effects.arrival !== null) {
-        // Сначала откатываем предыдущий бонус, если он был
         if (event[arrivalKey] && event[arrivalKey + 'Value'] !== undefined) {
           const oldValue = event[arrivalKey + 'Value'];
           console.log('🔄 Откатываем предыдущий бонус прибытия:', -oldValue);
@@ -408,7 +405,6 @@ function processCheck(eventId, type, values) {
     }
   }
   
-  // Перерисовываем всегда в конце
   renderEvents();
 }
 
@@ -523,12 +519,9 @@ function renderEvents() {
           return getCurrentDifficulty();
         },
         addArrivalBonus: function(value) {
-          // ЭТОТ МЕТОД НЕ ДОЛЖЕН ПРИМЕНЯТЬ БОНУСЫ — только для отображения
           console.warn('⚠️ addArrivalBonus() вызван из render() — это не должно применяться!');
-          // Ничего не делаем здесь — бонусы применяются только через processCheck()
         },
         addBonusEvent: function(eventId, parentEventId) {
-          // Используем проверку на дубли
           addBonusEventInternal(eventId, parentEventId);
           renderEvents();
         },
@@ -635,7 +628,6 @@ function handleClick(e) {
         const module = COMMON_EVENTS_MODULES[selectedId];
         const event = findEventById(eventId);
         if (event) {
-          // Проверяем, не выбрано ли уже это событие
           if (event.selectedEventId === selectedId) {
             console.log('⚠️ Это событие уже выбрано');
             return;
@@ -665,14 +657,12 @@ function handleClick(e) {
     return;
   }
   
-  // Кнопка для события "Запретное место" (генерация по выбранной таблице)
   if (target.classList.contains('btn-place-generate')) {
     const eventId = parseInt(target.dataset.eventId);
     handlePlaceGenerate(eventId);
     return;
   }
   
-  // Кнопка для комбинированной проверки (Следы Великих)
   if (target.classList.contains('btn-check-combined')) {
     const eventId = parseInt(target.dataset.eventId);
     handleCombinedCheck(eventId);
@@ -752,7 +742,6 @@ function handleMultipleCheck(eventId, type) {
   processCheck(eventId, type, values);
 }
 
-// Комбинированная проверка для "Следы Великих"
 function handleCombinedCheck(eventId) {
   const event = findEventById(eventId);
   if (!event) return;
@@ -849,41 +838,7 @@ function handlePlaceGenerate(eventId) {
   const container = document.getElementById('place-result-' + eventId);
   if (!container) return;
   
-  // Маппинг названий таблиц для отображения
-  const tableLabels = {
-    'reality_tears': 'Пролом Реальности',
-    'oasis_mysteries': 'Невероятный Оазис',
-    'ruins': 'Древние Руины',
-    'slaughter_zones': 'Бойня Области'
-  };
-  
   const tableFields = {
     'reality_tears': ['name', 'description', 'effect'],
     'oasis_mysteries': ['oasis_type', 'mystery'],
-    'ruins': ['name', 'pass_method', 'reward_type'],
-    'slaughter_zones': ['name', 'description']
-  };
-  
-  const label = tableLabels[tableName] || tableName;
-  const fields = tableFields[tableName] || ['name'];
-  
-  // Используем существующую функцию rollTableInternal
-  const containerId = 'place-result-' + eventId;
-  const resultKey = 'place_generate_' + tableName;
-  
-  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
-}
-
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-
-export function initPath() {
-  if (generateBtn) {
-    generateBtn.removeEventListener('click', generatePathEvents);
-    generateBtn.addEventListener('click', generatePathEvents);
-    console.log('Кнопка "Сгенерировать события" подключена');
-  }
-}
-
-initPath();
+    'ruins': ['name', 'pass_method', 'reward_type
