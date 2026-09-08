@@ -20,9 +20,9 @@ export default {
     html += '</div>';
     html += '</div>';
     
-    // Одна кнопка для проверки обоих баров
+    // ОДНА кнопка для проверки обоих баров
     html += '<div style="margin-top: 10px;">';
-    html += '<button class="btn-check-combined" data-event-id="' + event.id + '" style="background:rgba(74,14,14,0.6); color:#fff; border:1px solid #4a0e0e; padding:6px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-family:\'Philosopher\', sans-serif; transition:all 0.3s ease;" onmouseover="this.style.background=\'#4a0e0e\'" onmouseout="this.style.background=\'rgba(74,14,14,0.6)\'">Проверить оба</button>';
+    html += '<button class="btn-check-combined" data-event-id="' + event.id + '" style="background:rgba(74,14,14,0.6); color:#fff; border:1px solid #4a0e0e; padding:6px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-family:\'Philosopher\', sans-serif; transition:all 0.3s ease;" onmouseover="this.style.background=\'#4a0e0e\'" onmouseout="this.style.background=\'rgba(74,14,14,0.6)\'">Проверить</button>';
     html += '</div>';
     
     if (event.checked) {
