@@ -42,6 +42,14 @@ import eyes4 from './eyes/event-4-deadly-weather.js';
 import eyes5 from './eyes/event-5-light-in-darkness.js';
 import eyes6 from './eyes/event-6-shadow-movement.js';
 
+// --- СОБЫТИЯ ДЛАНИ БАТРИНЫ ---
+import palm1 from './palm/event-1-rabies.js';
+import palm2 from './palm/event-2-broken-balance.js';
+import palm3 from './palm/event-3-herd-fear.js';
+import palm4 from './palm/event-4-disappearance.js';
+import palm5 from './palm/event-5-heightened-senses.js';
+import palm6 from './palm/event-6-gifts-of-sumug.js';
+
 // ============================================================
 // РЕЕСТРЫ
 // ============================================================
@@ -89,6 +97,15 @@ export const EYES_EVENTS_MODULES = {
   4: eyes4,
   5: eyes5,
   6: eyes6
+};
+
+export const PALM_EVENTS_MODULES = {
+  1: palm1,
+  2: palm2,
+  3: palm3,
+  4: palm4,
+  5: palm5,
+  6: palm6
 };
 
 // ============================================================
@@ -141,6 +158,9 @@ export function getEventModule(id, type) {
   }
   if (type === 'Глаза_Звезд') {
     return EYES_EVENTS_MODULES[id];
+  }
+  if (type === 'Длань_Батрины') {
+    return PALM_EVENTS_MODULES[id];
   }
   return null;
 }
