@@ -51,111 +51,19 @@
       100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 100px 20px 40px;
-      position: relative;
-      z-index: 2;
-      /* padding-left уже не нужен, т.к. позиционирование через абсолют */
-    }
-
-    .page-title {
-      font-family: 'Calypso', 'Times New Roman', serif;
-      font-size: 42px;
-      color: #ffffff;
-      text-align: center;
-      margin-bottom: 10px;
-      letter-spacing: 4px;
-      font-weight: normal;
-      position: relative;
-      z-index: 2;
-    }
-    .page-subtitle {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 14px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 40px;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* ===== КАЖДЫЙ РАЗДЕЛ — ОТНОСИТЕЛЬНЫЙ КОНТЕЙНЕР ===== */
-    .section {
-      margin-bottom: 40px;
-      position: relative;
-      z-index: 2;
-      /* Добавляем отступ слева для линии и ответвлений */
-      padding-left: 200px;
-    }
-
-    /* ===== КРАСНАЯ ЛИНИЯ (178px от раздела) ===== */
-    .section .section-line {
-      position: absolute;
-      left: -178px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #b5001b;
-      opacity: 0.5;
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    /* ===== ОТВЕТВЛЕНИЕ (89px от раздела) ===== */
-    .section .section-branch {
-      position: absolute;
-      left: -89px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      z-index: 4;
-      pointer-events: none;
-    }
-    .section .section-branch img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 8px rgba(181, 0, 27, 0.2));
-    }
-    /* Горизонтальная линия от главной линии к ответвлению */
-    .section .section-branch::before {
-      content: '';
-      position: absolute;
-      right: 100%;
-      top: 50%;
-      width: 89px;
-      height: 2px;
-      background: #b5001b;
-      transform: translateY(-50%);
-      opacity: 0.3;
-    }
-    .section .section-branch::after {
-      content: '';
-      position: absolute;
-      left: -2px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 5px;
-      height: 5px;
-      background: #b5001b;
-      border-radius: 50%;
-      opacity: 0.3;
-    }
-
-    /* ===== ГЛАВНАЯ ЛИНИЯ (сквозная, для всех разделов) ===== */
+    /* ===== ОСНОВНАЯ ЛИНИЯ ===== */
     .main-line-container {
       position: absolute;
-      left: 22px;
-      top: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 120px;
       bottom: 20px;
       width: 2px;
       z-index: 3;
       pointer-events: none;
     }
+    /* Вычисляем позицию: (ширина экрана - отступ разделов) / 2 */
+    /* Но используем JS для точного позиционирования */
     .main-line-container .main-line {
       position: absolute;
       left: 50%;
@@ -183,6 +91,58 @@
       height: 100%;
       object-fit: contain;
       filter: drop-shadow(0 0 20px rgba(181, 0, 27, 0.4));
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+      position: relative;
+      z-index: 2;
+      padding-left: 120px;
+    }
+
+    .page-title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 42px;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+      font-weight: normal;
+      position: relative;
+      z-index: 2;
+    }
+    .page-subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== КАЖДЫЙ РАЗДЕЛ ===== */
+    .section {
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== ГОРИЗОНТАЛЬНАЯ ЛИНИЯ ОТ ОСНОВНОЙ К РАЗДЕЛУ ===== */
+    .section .horizontal-line {
+      position: absolute;
+      left: calc(50% - 50vw + 60px);
+      top: 50%;
+      height: 2px;
+      background: #b5001b;
+      transform: translateY(-50%);
+      opacity: 0.3;
+      z-index: 3;
+      pointer-events: none;
+      width: 60px;
     }
 
     .section-header {
@@ -540,11 +500,9 @@
     }
 
     @media (max-width: 768px) {
-      .section { padding-left: 120px; }
-      .section .section-line { left: -100px; }
-      .section .section-branch { left: -50px; width: 24px; height: 24px; }
-      .section .section-branch::before { width: 50px; }
-      .main-line-container { left: 20px; }
+      .container { padding: 80px 16px 30px; padding-left: 80px; }
+      .section .horizontal-line { width: 40px; left: calc(50% - 50vw + 40px); }
+      .main-line-container { top: 100px; }
       .main-line-container .main-node { width: 32px; height: 32px; top: -25px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
@@ -561,11 +519,9 @@
       .bg-image-right { right: -175px; }
     }
     @media (max-width: 480px) {
-      .section { padding-left: 80px; }
-      .section .section-line { left: -70px; }
-      .section .section-branch { left: -35px; width: 18px; height: 18px; }
-      .section .section-branch::before { width: 35px; }
-      .main-line-container { left: 10px; }
+      .container { padding: 70px 12px 20px; padding-left: 60px; }
+      .section .horizontal-line { width: 30px; left: calc(50% - 50vw + 30px); }
+      .main-line-container { top: 80px; }
       .main-line-container .main-node { width: 28px; height: 28px; top: -20px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
@@ -586,7 +542,7 @@
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left" loading="lazy">
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right" loading="lazy">
 
-<!-- ===== ГЛАВНАЯ ЛИНИЯ ===== -->
+<!-- ===== ОСНОВНАЯ ЛИНИЯ ===== -->
 <div class="main-line-container" id="mainLineContainer">
   <div class="main-line"></div>
   <div class="main-node">
@@ -894,12 +850,6 @@
     sectionDiv.className = 'section';
     sectionDiv.id = 'section-' + section.id;
 
-    // Добавляем линию и ответвление для каждого раздела
-    var branchIcon = (index % 2 === 0) ? 'otvet1.png' : 'otvet2.png';
-    
-    var lineHTML = '<div class="section-line"></div>';
-    var branchHTML = '<div class="section-branch"><img src="/CHERTOGI_MAP/images/' + branchIcon + '" alt="Ответвление"></div>';
-
     var contentHTML = '';
     if (creatures.length === 0) {
       contentHTML = '<div class="no-data">Нет существ в этом разделе</div>';
@@ -911,9 +861,11 @@
 
     var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
 
+    // Горизонтальная линия (будет позиционирована через JS)
+    var horizontalLine = '<div class="horizontal-line" id="hline-' + section.id + '"></div>';
+
     sectionDiv.innerHTML = 
-      lineHTML +
-      branchHTML +
+      horizontalLine +
       '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
         '<span class="title">' + section.title + '</span>' +
         '<span style="display:flex; align-items:center; gap:12px;">' +
@@ -959,6 +911,51 @@
       if (arrow) arrow.classList.remove('open');
       if (collapseBtn) collapseBtn.classList.remove('visible');
     }
+  }
+
+  // ============================================================
+  // ПОЗИЦИОНИРОВАНИЕ ЛИНИЙ
+  // ============================================================
+
+  function positionLines() {
+    var container = document.querySelector('.container');
+    var mainLine = document.getElementById('mainLineContainer');
+    var sections = document.querySelectorAll('.section');
+    
+    if (!container || !mainLine || sections.length === 0) return;
+    
+    var containerRect = container.getBoundingClientRect();
+    var containerLeft = containerRect.left;
+    var containerWidth = containerRect.width;
+    
+    // Позиция основной линии: посередине между левым краем и левым краем разделов
+    // Левым краем разделов считаем padding-left контейнера (120px)
+    var paddingLeft = 120; // должно совпадать с padding-left .container
+    var lineX = paddingLeft / 2;
+    
+    // Устанавливаем позицию основной линии
+    mainLine.style.left = lineX + 'px';
+    mainLine.style.transform = 'translateX(0)';
+    
+    // Для каждой секции устанавливаем горизонтальную линию
+    sections.forEach(function(section) {
+      var hline = section.querySelector('.horizontal-line');
+      if (!hline) return;
+      
+      var sectionRect = section.getBoundingClientRect();
+      var sectionLeft = sectionRect.left - containerRect.left;
+      
+      // Горизонтальная линия от основной линии до раздела
+      var startX = lineX;
+      var endX = sectionLeft;
+      var width = endX - startX - 2;
+      
+      if (width > 0) {
+        hline.style.left = startX + 'px';
+        hline.style.width = width + 'px';
+        hline.style.opacity = '0.3';
+      }
+    });
   }
 
   // ============================================================
@@ -1104,6 +1101,10 @@
     }
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
+
+    // Позиционируем линии после загрузки
+    setTimeout(positionLines, 100);
+    window.addEventListener('resize', positionLines);
 
     initScrollTop();
     setTimeout(openBeastFromUrl, 500);
