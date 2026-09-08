@@ -841,4 +841,28 @@ function handlePlaceGenerate(eventId) {
   const tableFields = {
     'reality_tears': ['name', 'description', 'effect'],
     'oasis_mysteries': ['oasis_type', 'mystery'],
-    'ruins': ['name', 'pass_method', 'reward_type
+    'ruins': ['name', 'pass_method', 'reward_type'],
+    'slaughter_zones': ['name', 'description']
+  };
+  
+  const fields = tableFields[tableName] || ['name'];
+  
+  const containerId = 'place-result-' + eventId;
+  const resultKey = 'place_generate_' + tableName;
+  
+  rollTableInternal(tableName, containerId, fields, false, eventId, resultKey, 1);
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+
+export function initPath() {
+  if (generateBtn) {
+    generateBtn.removeEventListener('click', generatePathEvents);
+    generateBtn.addEventListener('click', generatePathEvents);
+    console.log('Кнопка "Сгенерировать события" подключена');
+  }
+}
+
+initPath();
