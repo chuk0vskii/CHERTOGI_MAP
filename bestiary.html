@@ -51,95 +51,13 @@
       100% { transform: translateY(-50%) rotate(-360deg); }
     }
 
-    /* ===== КРАСНАЯ ЛИНИЯ ===== */
-    .tree-container {
-      position: absolute;
-      left: 60px;
-      top: 130px;
-      bottom: 20px;
-      width: 2px;
-      z-index: 3;
-      pointer-events: none;
-    }
-    /* Главная линия */
-    .tree-container .main-line {
-      position: absolute;
-      left: 50%;
-      top: 0;
-      width: 2px;
-      height: 100%;
-      background: #b5001b;
-      transform: translateX(-50%);
-      opacity: 0.6;
-    }
-
-    /* ===== УЗЕЛ (ГЛАВНАЯ ИКОНКА СВЕРХУ) ===== */
-    .tree-container .main-node {
-      position: absolute;
-      left: 50%;
-      top: -30px;
-      transform: translateX(-50%);
-      width: 42px;
-      height: 42px;
-      z-index: 4;
-      pointer-events: none;
-    }
-    .tree-container .main-node img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 20px rgba(181, 0, 27, 0.4));
-    }
-
-    /* ===== ОТВЕТВЛЕНИЯ ===== */
-    .tree-container .branch {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 56px;
-      height: 56px;
-      z-index: 4;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .tree-container .branch img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 8px rgba(181, 0, 27, 0.2));
-    }
-    /* Линия от главной линии к ответвлению */
-    .tree-container .branch .branch-line {
-      position: absolute;
-      right: 100%;
-      top: 50%;
-      width: 30px;
-      height: 2px;
-      background: #b5001b;
-      transform: translateY(-50%);
-      opacity: 0.4;
-    }
-    .tree-container .branch .branch-line::after {
-      content: '';
-      position: absolute;
-      right: -2px;
-      top: -3px;
-      width: 5px;
-      height: 5px;
-      background: #b5001b;
-      border-radius: 50%;
-      opacity: 0.4;
-    }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 100px 20px 40px;
       position: relative;
       z-index: 2;
-      padding-left: 120px;
+      /* padding-left уже не нужен, т.к. позиционирование через абсолют */
     }
 
     .page-title {
@@ -164,12 +82,107 @@
       z-index: 2;
     }
 
-    /* ===== РАЗДЕЛЫ ===== */
+    /* ===== КАЖДЫЙ РАЗДЕЛ — ОТНОСИТЕЛЬНЫЙ КОНТЕЙНЕР ===== */
     .section {
       margin-bottom: 40px;
       position: relative;
       z-index: 2;
-      padding-left: 30px;
+      /* Добавляем отступ слева для линии и ответвлений */
+      padding-left: 200px;
+    }
+
+    /* ===== КРАСНАЯ ЛИНИЯ (178px от раздела) ===== */
+    .section .section-line {
+      position: absolute;
+      left: -178px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #b5001b;
+      opacity: 0.5;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* ===== ОТВЕТВЛЕНИЕ (89px от раздела) ===== */
+    .section .section-branch {
+      position: absolute;
+      left: -89px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .section .section-branch img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(181, 0, 27, 0.2));
+    }
+    /* Горизонтальная линия от главной линии к ответвлению */
+    .section .section-branch::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      width: 89px;
+      height: 2px;
+      background: #b5001b;
+      transform: translateY(-50%);
+      opacity: 0.3;
+    }
+    .section .section-branch::after {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 5px;
+      height: 5px;
+      background: #b5001b;
+      border-radius: 50%;
+      opacity: 0.3;
+    }
+
+    /* ===== ГЛАВНАЯ ЛИНИЯ (сквозная, для всех разделов) ===== */
+    .main-line-container {
+      position: absolute;
+      left: 22px;
+      top: 130px;
+      bottom: 20px;
+      width: 2px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .main-line-container .main-line {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: #b5001b;
+      transform: translateX(-50%);
+      opacity: 0.5;
+    }
+
+    /* ===== УЗЕЛ (ГЛАВНАЯ ИКОНКА СВЕРХУ) ===== */
+    .main-line-container .main-node {
+      position: absolute;
+      left: 50%;
+      top: -30px;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 42px;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .main-line-container .main-node img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 20px rgba(181, 0, 27, 0.4));
     }
 
     .section-header {
@@ -527,14 +540,14 @@
     }
 
     @media (max-width: 768px) {
-      .container { padding: 80px 16px 30px; padding-left: 80px; }
-      .tree-container { left: 30px; }
-      .tree-container .main-node { width: 32px; height: 32px; top: -25px; }
-      .tree-container .branch { width: 40px; height: 40px; }
-      .tree-container .branch .branch-line { width: 20px; }
+      .section { padding-left: 120px; }
+      .section .section-line { left: -100px; }
+      .section .section-branch { left: -50px; width: 24px; height: 24px; }
+      .section .section-branch::before { width: 50px; }
+      .main-line-container { left: 20px; }
+      .main-line-container .main-node { width: 32px; height: 32px; top: -25px; }
       .page-title { font-size: 30px; }
       .section-header .title { font-size: 20px; }
-      .section { padding-left: 15px; }
       .creature-card { flex: 0 0 100%; max-width: 100%; }
       .creature-card { padding: 16px 18px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
@@ -548,14 +561,15 @@
       .bg-image-right { right: -175px; }
     }
     @media (max-width: 480px) {
-      .container { padding: 70px 12px 20px; padding-left: 60px; }
-      .tree-container { left: 20px; }
-      .tree-container .main-node { width: 28px; height: 28px; top: -20px; }
-      .tree-container .branch { width: 32px; height: 32px; }
-      .tree-container .branch .branch-line { width: 15px; }
+      .section { padding-left: 80px; }
+      .section .section-line { left: -70px; }
+      .section .section-branch { left: -35px; width: 18px; height: 18px; }
+      .section .section-branch::before { width: 35px; }
+      .main-line-container { left: 10px; }
+      .main-line-container .main-node { width: 28px; height: 28px; top: -20px; }
       .page-title { font-size: 24px; }
       .section-header .title { font-size: 17px; }
-      .section { padding-left: 10px; }
+      .section-header { padding: 12px 14px; }
       .creature-card { padding: 12px 14px; }
       .creature-card .creature-stats { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
       .creature-card .creature-image-container img { max-height: 180px; }
@@ -572,13 +586,12 @@
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left" loading="lazy">
 <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right" loading="lazy">
 
-<!-- ===== ДЕРЕВО С УЗЛАМИ ===== -->
-<div class="tree-container" id="treeContainer">
+<!-- ===== ГЛАВНАЯ ЛИНИЯ ===== -->
+<div class="main-line-container" id="mainLineContainer">
   <div class="main-line"></div>
   <div class="main-node">
     <img src="/CHERTOGI_MAP/images/uzelbest.png" alt="Узел">
   </div>
-  <!-- Ответвления будут добавлены через JS -->
 </div>
 
 <div class="top-banner">
@@ -625,36 +638,6 @@
     { id: 'dangerous_mountains', title: 'Опасные существа гор и скал', table: 'opasnost_gor' },
     { id: 'dangerous_swamps', title: 'Опасные существа топей, рек и джунглей', table: 'opasnost_jungle' }
   ];
-
-  // ============================================================
-  // ОТВЕТВЛЕНИЯ
-  // ============================================================
-
-  function addBranches() {
-    var container = document.getElementById('treeContainer');
-    var sections = document.querySelectorAll('.section');
-    var total = sections.length;
-    
-    sections.forEach(function(section, index) {
-      // Вычисляем позицию раздела относительно дерева
-      var topOffset = 20 + index * 95;
-      
-      // Создаём ответвление
-      var branch = document.createElement('div');
-      branch.className = 'branch';
-      branch.style.top = topOffset + 'px';
-      
-      // Используем otvet1.png для нечётных, otvet2.png для чётных
-      var iconName = (index % 2 === 0) ? 'otvet1.png' : 'otvet2.png';
-      
-      branch.innerHTML = `
-        <img src="/CHERTOGI_MAP/images/${iconName}" alt="Ответвление">
-        <div class="branch-line"></div>
-      `;
-      
-      container.appendChild(branch);
-    });
-  }
 
   function getCreatureImagePath(name) {
     var fileName = name.trim().toLowerCase().replace(/\s+/g, '_');
@@ -906,10 +889,16 @@
     }
   }
 
-  function renderSection(section, creatures) {
+  function renderSection(section, creatures, index) {
     var sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
     sectionDiv.id = 'section-' + section.id;
+
+    // Добавляем линию и ответвление для каждого раздела
+    var branchIcon = (index % 2 === 0) ? 'otvet1.png' : 'otvet2.png';
+    
+    var lineHTML = '<div class="section-line"></div>';
+    var branchHTML = '<div class="section-branch"><img src="/CHERTOGI_MAP/images/' + branchIcon + '" alt="Ответвление"></div>';
 
     var contentHTML = '';
     if (creatures.length === 0) {
@@ -923,6 +912,8 @@
     var collapseBtn = '<button class="collapse-btn" onclick="collapseSection(\'' + section.id + '\')">✕ Свернуть</button>';
 
     sectionDiv.innerHTML = 
+      lineHTML +
+      branchHTML +
       '<div class="section-header" onclick="toggleSection(\'' + section.id + '\')">' +
         '<span class="title">' + section.title + '</span>' +
         '<span style="display:flex; align-items:center; gap:12px;">' +
@@ -1101,7 +1092,7 @@
       var section = SECTIONS[i];
       var creatures = await loadSection(section);
       totalCreatures += creatures.length;
-      var sectionEl = renderSection(section, creatures);
+      var sectionEl = renderSection(section, creatures, i);
       fragment.appendChild(sectionEl);
     }
 
@@ -1113,9 +1104,6 @@
     }
 
     console.log('Бестиарий загружен (' + totalCreatures + ' существ)');
-
-    // Добавляем ответвления после отрисовки разделов
-    addBranches();
 
     initScrollTop();
     setTimeout(openBeastFromUrl, 500);
