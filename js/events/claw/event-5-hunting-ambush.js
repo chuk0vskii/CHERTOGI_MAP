@@ -5,12 +5,8 @@ export default {
   checkInfo: 'Коготь Акрепы совершает проверку Выживания.',
   type: 'claw',
   
-  tables: {
-    'zone_conflicts': { label: 'Таблица Конфликтов Зоны', fields: ['name', 'description'] }
-  },
-  
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -23,14 +19,10 @@ export default {
       const effects = {
         'success_5': 'Коготь Акрепы ускользает и даже находит ресурсы. +1 к уровню Провизии.',
         'success': 'Коготь Акрепы сбегает, но добычу приходится оставить.',
-        'fail': 'Коготь Акрепы сбегает, но приводит опасность к группе. Происходит событие Смертельная встреча.',
-        'fail_5': 'Битва неизбежна и враг ходит первый. Происходит событие Смертельная Встреча.'
+        'fail': 'Коготь Акрепы сбегает, но приводит опасность к группе. Сделайте бросок по таблице Смертельные существа зоны (см. в документе края).',
+        'fail_5': 'Битва неизбежна и враг ходит первый. Сделайте бросок по таблице Смертельные существа зоны (см. в документе края).'
       };
       html += createEffect(resultType, effects);
-      
-      if (resultType === 'fail' || resultType === 'fail_5') {
-        html += createTableButton('zone_conflicts', event.id, 'extra_zone_conflicts', event);
-      }
     }
     
     return html;
