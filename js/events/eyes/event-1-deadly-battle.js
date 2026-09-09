@@ -5,19 +5,14 @@ export default {
   checkInfo: 'Глаза Звезд совершает проверку Внимательности.',
   type: 'eyes',
   
-  tables: {
-    'zone_conflicts': { label: 'Конфликт Зоны', fields: ['name', 'description'] }
-  },
-  
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Генерация по таблице zone_conflicts
+    // Блок с пояснением о таблице Смертельные существа зоны
     html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
-    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">⚔️ Что скрывается в тишине:</div>';
-    html += createTableButton('zone_conflicts', event.id, 'main_zone_conflicts', event);
+    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px;">⚔️ Сделайте бросок по таблице Смертельные существа зоны (см. в документе края)</div>';
     html += '</div>';
     
     // Проверка Внимательности
