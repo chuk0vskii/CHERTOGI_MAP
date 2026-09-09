@@ -5,19 +5,14 @@ export default {
   checkInfo: 'Длань Батрины совершает проверку Ухода за животными.',
   type: 'palm',
   
-  tables: {
-    'opasnost_regional': { label: 'Опасные существа региона', fields: ['name'], isCreature: true }
-  },
-  
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Генерация по региональной таблице
+    // Блок с пояснением (без генерации)
     html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
-    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">👹 Кто напугал животных:</div>';
-    html += createTableButton('opasnost_regional', event.id, 'main_opasnost', event);
+    html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px;">🐾 Животные чувствуют опасность. Бросьте по таблице Опасные существа зоны (см. в документе края)</div>';
     html += '</div>';
     
     html += createSingleBar(event, 'main', 'Проверка Ухода за животными (сложность ' + difficulty + ')', difficulty);
