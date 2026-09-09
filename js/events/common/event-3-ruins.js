@@ -7,7 +7,8 @@ export default {
   
   tables: {
     'ruins': { label: 'Таблица Руин', fields: ['name', 'pass_method', 'reward_type'] },
-    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] }
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] },
+    'opasnost_regional': { label: 'Опасные существа зоны', fields: ['name'], isCreature: true }
   },
   
   hasSecondCheck: true,
@@ -66,6 +67,14 @@ export default {
         html += '<div style="margin-top: 6px; font-size: 14px; color: #51cf66;">Найден магический предмет:</div>';
         html += createTableButton('artefacts', event.id, 'artefact_second_success', event);
       }
+      
+      // Если критический провал — генерация по региональной таблице
+      if (secondResult === 'fail_5') {
+        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700;">';
+        html += '<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 4px;">Кто привлёк внимание:</div>';
+        html += createTableButton('opasnost_regional', event.id, 'extra_opasnost_regional', event);
+        html += '</div>';
+      }
     }
     html += '</div>';
     
@@ -90,7 +99,7 @@ export default {
         resultType = 'success';
         resultText = 'Успех! (1 артефакт)';
         effects = null;
-      } else if (value >= difficulty - 5) {
+      } else if (value >= difficulty - 4) {
         resultType = 'fail';
         resultText = 'Провал...';
         effects = null;
