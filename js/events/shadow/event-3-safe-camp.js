@@ -6,7 +6,7 @@ export default {
   type: 'safe_camp',
   
   tables: {
-    'opasnost_regional': { label: 'Таблица Опасных Существ Зоны', fields: ['name'], isCreature: true }
+    'opasnost_regional': { label: 'Опасные существа зоны', fields: ['name'], isCreature: true }
   },
   
   render: function(event, helpers) {
@@ -28,8 +28,12 @@ export default {
       };
       html += createEffect(resultType, effects);
       
+      // Если критический провал — генерация по региональной таблице
       if (resultType === 'fail_5') {
+        html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700;">';
+        html += '<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 4px;">Кто живёт в логове:</div>';
         html += createTableButton('opasnost_regional', event.id, 'extra_opasnost', event);
+        html += '</div>';
       }
     }
     
@@ -49,15 +53,15 @@ export default {
     } else if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
-      effects = { arrival: 0 };
-    } else if (value >= difficulty - 5) {
+      effects = null;
+    } else if (value >= difficulty - 4) {
       resultType = 'fail';
       resultText = 'Провал...';
-      effects = { arrival: 0 };
+      effects = null;
     } else {
       resultType = 'fail_5';
       resultText = 'Критический провал!';
-      effects = { arrival: 0 };
+      effects = null;
     }
     
     return { resultType, resultText, effects };
