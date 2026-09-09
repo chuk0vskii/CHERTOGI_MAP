@@ -6,7 +6,7 @@ export default {
   type: 'eyes',
   
   tables: {
-    'opasnost_regional': { label: 'Опасные существа региона', fields: ['name'], isCreature: true }
+    'opasnost_regional': { label: 'Опасные существа зоны', fields: ['name'], isCreature: true }
   },
   
   render: function(event, helpers) {
@@ -14,7 +14,7 @@ export default {
     const difficulty = getCurrentDifficulty();
     let html = '';
     
-    // Генерация по региональной таблице (всегда доступна)
+    // Блок с генерацией по региональной таблице (всегда доступна)
     html += '<div style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
     html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 6px;">👹 Кто двигается в вашу сторону:</div>';
     html += createTableButton('opasnost_regional', event.id, 'main_opasnost_regional', event);
