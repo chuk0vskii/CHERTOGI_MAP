@@ -31,7 +31,7 @@ export default {
       // Если критический провал — генерация по региональной таблице
       if (resultType === 'fail_5') {
         html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.05); border-radius: 6px; border-left: 2px solid #ffd700;">';
-        html += '<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 4px;">Кто живёт в логове:</div>';
+        html += '<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 4px;">Бросьте по таблице Опасные существа зоны (см. в документе края):</div>';
         html += createTableButton('opasnost_regional', event.id, 'extra_opasnost', event);
         html += '</div>';
       }
