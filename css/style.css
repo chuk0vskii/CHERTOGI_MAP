@@ -584,3 +584,24 @@ body {
     font-size: 18px;
   }
 }
+
+.top-banner .banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.top-banner .banner-left img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+}
+@media (max-width: 768px) {
+  .top-banner .banner-left { gap: 8px; }
+  .top-banner .banner-left img { width: 32px; height: 32px; }
+}
+@media (max-width: 480px) {
+  .top-banner .banner-left { gap: 6px; }
+  .top-banner .banner-left img { width: 26px; height: 26px; }
+}
