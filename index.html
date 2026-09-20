@@ -21,6 +21,18 @@
       padding: 0 80px !important;
       box-sizing: border-box !important;
     }
+    .top-banner .banner-left {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      flex-shrink: 0 !important;
+    }
+    .top-banner .banner-left img {
+      width: 42px !important;
+      height: 42px !important;
+      object-fit: contain !important;
+      filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3)) !important;
+    }
     .top-banner .title { flex-shrink: 0 !important; }
     .nav-links {
       display: flex !important;
@@ -45,12 +57,16 @@
     }
     @media (max-width: 768px) {
       .top-banner { padding: 0 16px !important; }
+      .top-banner .banner-left { gap: 8px !important; }
+      .top-banner .banner-left img { width: 32px !important; height: 32px !important; }
       .top-banner .title { font-size: 18px !important; }
       .nav-links { gap: 12px !important; }
       .nav-links a { font-size: 12px !important; }
     }
     @media (max-width: 480px) {
       .top-banner { padding: 0 10px !important; }
+      .top-banner .banner-left { gap: 6px !important; }
+      .top-banner .banner-left img { width: 26px !important; height: 26px !important; }
       .top-banner .title { font-size: 15px !important; }
       .nav-links { gap: 8px !important; }
       .nav-links a { font-size: 10px !important; }
@@ -227,23 +243,6 @@
       text-align: left;
     }
     #reports-list p { color: #777; font-size: 14px; }
-
-    #version-counter {
-      position: fixed;
-      top: 80px;
-      left: 16px;
-      z-index: 200;
-      color: rgba(255, 215, 0, 0.5);
-      font-family: 'Philosopher', monospace;
-      font-size: 13px;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      padding: 4px 12px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 215, 0, 0.1);
-      user-select: none;
-      pointer-events: none;
-    }
 
     /* ===== МОДАЛЬНОЕ ОКНО ОТЧЁТА ===== */
     #report-modal {
@@ -469,6 +468,11 @@
       transform: none !important;
     }
     .cloud-marker:hover img { transform: none !important; }
+
+    /* ===== СКРЫВАЕМ КНОПКИ ЗУМА ===== */
+    .ol-zoom {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -481,7 +485,10 @@
 
   <!-- БАННЕР -->
 <div class="top-banner">
-  <span class="title">Огненные чертоги</span>
+  <div class="banner-left">
+    <img src="/CHERTOGI_MAP/images/flamechertogi.png" alt="Огненные чертоги">
+    <span class="title">Огненные чертоги</span>
+  </div>
   <div class="nav-links">
     <a href="index.html" class="active">Карта</a>
     <a href="znaki.html">В путь</a>
@@ -489,9 +496,7 @@
     <a href="tree.html">Древо смерти</a>
   </div>
 </div>
-</div>
 
-  <div id="version-counter">v1.0</div>
   <div id="map"></div>
   <div id="marker-container"></div>
 
@@ -569,43 +574,12 @@
   <!-- Метки отчётов -->
 <script src="js/report-markers.js"></script>
 
-  <!-- ===== КНОПКИ ===== -->
-  <button id="get-coords-btn" style="position: fixed; bottom: 100px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 12px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-    Координаты
-  </button>
-
-  <script>
-    document.getElementById('get-coords-btn').addEventListener('click', function() {
-      alert('Кликни на карту в нужное место');
-      var handler = function(e) {
-        var coords = e.coordinate;
-        alert('Координаты:\nX: ' + coords[0] + '\nY: ' + coords[1]);
-        var text = coords[0] + ', ' + coords[1];
-        navigator.clipboard.writeText(text).then(function() {
-          console.log('Скопировано:', text);
-        });
-        map.un('click', handler);
-      };
-      map.on('click', handler);
-    });
-  </script>
-
-  <button id="admin-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #ffd700; color: #1a0a1a; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-    Админ
-  </button>
-
-  <div id="admin-panel" style="display: none; position: fixed; bottom: 80px; right: 20px; z-index: 9999; background: rgba(20, 15, 30, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 20px; max-height: 400px; overflow-y: auto; min-width: 250px; color: #e0d5c0; box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
-    <h3 style="color: #ffd700; margin-top: 0; font-family: 'Philosopher', serif;">Управление краями</h3>
-    <div id="admin-regions-list"></div>
-    <button id="admin-close-btn" style="margin-top: 12px; padding: 6px 16px; background: #4a0e0e; border: 1px solid #ffd700; border-radius: 6px; color: #ffd700; cursor: pointer;">Закрыть</button>
-  </div>
 <script>
   // ============================================================
   // ОБРАБОТКА ПАРАМЕТРОВ URL ДЛЯ ОТКРЫТИЯ ОТЧЁТА
   // ============================================================
 
   (function() {
-    // Функция получения параметров из URL
     function getUrlParams() {
       var params = {};
       var query = window.location.search.substring(1);
@@ -619,7 +593,6 @@
       return params;
     }
 
-    // Функция открытия отчёта после загрузки карты
     function openReportFromUrl() {
       var params = getUrlParams();
       
@@ -637,12 +610,10 @@
         return;
       }
       
-      // Ждём загрузки карты и маркеров
       var checkInterval = setInterval(function() {
         if (typeof map !== 'undefined' && map && typeof openSidebar === 'function') {
           clearInterval(checkInterval);
           
-          // Получаем данные региона
           _supabase
             .from('regions')
             .select('name, description, difficulty')
@@ -650,17 +621,14 @@
             .single()
             .then(function(result) {
               if (!result.error && result.data) {
-                // Открываем сайдбар
                 openSidebar(regionId, result.data.name, result.data.description, result.data.difficulty);
                 
-                // Ждём загрузки отчётов и раскрываем нужный
                 setTimeout(function() {
                   var reportElement = document.getElementById('report-' + reportId);
                   if (reportElement) {
                     reportElement.style.display = 'block';
                     reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    // Подсвечиваем отчёт
                     reportElement.style.background = 'rgba(255,215,0,0.1)';
                     reportElement.style.borderLeft = '2px solid #ffd700';
                     setTimeout(function() {
@@ -674,13 +642,11 @@
         }
       }, 500);
       
-      // Таймаут, чтобы не ждать вечно
       setTimeout(function() {
         clearInterval(checkInterval);
       }, 10000);
     }
 
-    // Запускаем после загрузки страницы
     if (document.readyState === 'complete') {
       setTimeout(openReportFromUrl, 1500);
     } else {
@@ -690,13 +656,13 @@
     }
   })();
 </script>
-  <script>
+
+<script>
   // ============================================================
   // ОБРАБОТКА ПЕРЕХОДА С ДРЕВА СМЕРТИ
   // ============================================================
 
   (function() {
-    // Проверяем sessionStorage при загрузке
     function checkForReportFromTree() {
       try {
         var reportId = sessionStorage.getItem('open_report_id');
@@ -709,12 +675,10 @@
         
         console.log('Открытие отчёта с Древа смерти:', { reportId, regionId, name });
         
-        // Очищаем sessionStorage после чтения
         sessionStorage.removeItem('open_report_id');
         sessionStorage.removeItem('open_region_id');
         sessionStorage.removeItem('open_name');
         
-        // Ждём загрузки карты и функций
         var checkInterval = setInterval(function() {
           if (typeof map !== 'undefined' && map && typeof openSidebar === 'function' && typeof _supabase !== 'undefined') {
             clearInterval(checkInterval);
@@ -727,7 +691,6 @@
               return;
             }
             
-            // Получаем данные региона
             _supabase
               .from('regions')
               .select('name, description, difficulty')
@@ -744,10 +707,8 @@
                   return;
                 }
                 
-                // Открываем сайдбар
                 openSidebar(regionIdNum, result.data.name, result.data.description, result.data.difficulty);
                 
-                // Ждём загрузки отчётов и раскрываем нужный
                 var reportCheck = setInterval(function() {
                   var reportElement = document.getElementById('report-' + reportIdNum);
                   if (reportElement) {
@@ -756,12 +717,10 @@
                     reportElement.style.background = 'rgba(255,215,0,0.15)';
                     reportElement.style.borderLeft = '3px solid #ffd700';
                     
-                    // Прокручиваем к отчёту
                     setTimeout(function() {
                       reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 300);
                     
-                    // Убираем подсветку через 5 секунд
                     setTimeout(function() {
                       reportElement.style.background = '';
                       reportElement.style.borderLeft = '';
@@ -771,7 +730,6 @@
                   }
                 }, 500);
                 
-                // Таймаут для поиска отчёта
                 setTimeout(function() {
                   clearInterval(reportCheck);
                 }, 5000);
@@ -779,7 +737,6 @@
           }
         }, 500);
         
-        // Таймаут, чтобы не ждать вечно
         setTimeout(function() {
           clearInterval(checkInterval);
         }, 10000);
@@ -789,7 +746,6 @@
       }
     }
 
-    // Запускаем после загрузки страницы
     if (document.readyState === 'complete') {
       setTimeout(checkForReportFromTree, 1000);
     } else {
