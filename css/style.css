@@ -1,3 +1,46 @@
+/* ===== ПОДКЛЮЧЕНИЕ ШРИФТОВ ===== */
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&display=swap');
+
+/* ===== Calypso — локальный шрифт ===== */
+@font-face {
+  font-family: 'Calypso';
+  src: url('/CHERTOGI_MAP/fonts/Calypso.ttf?v=1') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0d0d1a;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: none;
+}
+
 /* ================================================================
    БАННЕР (ЕДИНЫЙ ДЛЯ ВСЕХ СТРАНИЦ)
    ================================================================ */
@@ -118,3 +161,209 @@
     font-size: 10px;
   }
 }
+
+/* ================================================================
+   КАРТА
+   ================================================================ */
+#map {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background: #0d0d1a;
+}
+
+/* ================================================================
+   БОКОВАЯ ПАНЕЛЬ
+   ================================================================ */
+#region-sidebar {
+  display: none;
+  position: fixed;
+  right: 0;
+  top: 70px;
+  width: 420px;
+  height: calc(100vh - 70px);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(4px);
+  border-left: 2px solid #4a0e0e;
+  z-index: 1000;
+  padding: 0;
+  overflow-y: auto;
+  color: #ffffff;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.6);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  font-family: 'Philosopher', sans-serif;
+}
+
+#region-sidebar.open {
+  transform: translateX(0);
+}
+
+#region-image-placeholder {
+  width: 100%;
+  min-height: 150px;
+  max-height: 350px;
+  height: auto;
+  flex-shrink: 0;
+  background: #4a0e0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+  font-family: 'Philosopher', sans-serif;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+#region-image-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 350px;
+  min-height: 150px;
+  background: #4a0e0e;
+  display: block;
+}
+
+#close-icon-container {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
+  margin: 0;
+  height: 0;
+  overflow: visible;
+}
+
+#close-icon {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  opacity: 0.7;
+  width: 28px;
+  height: 28px;
+  margin-top: 12px;
+  margin-right: 16px;
+}
+
+#close-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.panel-content {
+  padding: 20px 40px 40px 40px;
+  text-align: left;
+}
+
+#sidebar-title {
+  color: #ffffff;
+  font-size: 21px;
+  margin-bottom: 6px;
+  font-family: 'Calypso', serif !important;
+  font-weight: normal;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+#sidebar-description {
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #cccccc;
+  font-family: 'Philosopher', sans-serif;
+  text-align: left;
+}
+
+#region-difficulty {
+  margin: 12px 0 16px 0;
+}
+
+#report-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 2px solid #4a0e0e;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 24px;
+  font-family: 'Philosopher', sans-serif;
+  text-align: center;
+}
+
+#report-btn:hover {
+  background: #4a0e0e;
+  color: #ffffff;
+}
+
+#reports-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-family: 'Philosopher', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+#reports-list {
+  font-family: 'Philosopher', sans-serif;
+  color: #cccccc;
+  text-align: left;
+}
+
+#reports-list p {
+  color: #777;
+  font-size: 14px;
+}
+
+/* ================================================================
+   КНОПКИ-МАРКЕРЫ
+   ================================================================ */
+.marker-button {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.marker-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.marker-button:hover img {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.marker-button .marker-tooltip {
+  position: absolute;
+  bottom: 
