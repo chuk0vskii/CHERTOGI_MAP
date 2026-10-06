@@ -198,17 +198,19 @@ function loadRegionImage(regionId) {
 
 function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
-  sidebarTitle.textContent = name;
+  // Безопасно: textContent не выполняет HTML
+  sidebarTitle.textContent = name || '';
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
   loadRegionImage(regionId);
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
+      // difficulty — число из БД, вставляем как есть (число безопасно)
       difficultyContainer.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; margin: 12px 0 16px 0; padding: 8px 12px; background: rgba(74, 14, 14, 0.4); border-radius: 6px; border-left: 3px solid #4a0e0e;">
           <span style="color: #aaa; font-size: 14px; font-family: "Philosopher", sans-serif;">Сложность пути:</span>
-          <span style="color: #ffd700; font-size: 18px; font-weight: 700; font-family: "Philosopher", sans-serif;">${difficulty}</span>
+          <span style="color: #ffd700; font-size: 18px; font-weight: 700; font-family: "Philosopher", sans-serif;">${Number(difficulty)}</span>
         </div>
       `;
     } else {
@@ -387,6 +389,7 @@ function updateReportSectionVisibility() {
 function updateKeeperDisplay() {
   var keeperDisplay = document.getElementById('keeper-display');
   if (keeperDisplay) {
+    // value — безопасно, это не HTML
     keeperDisplay.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : 'Войдите по паролю');
   }
 }
@@ -479,6 +482,7 @@ function stopPlacementMode() {
 }
 
 function updateTempMarker(x, y, type) {
+  // Внутренние строки, не пользовательские данные — безопасно
   var iconSrc = type === 'resource' 
     ? '/CHERTOGI_MAP/icons/resurs.png' 
     : '/CHERTOGI_MAP/icons/Nochleg.png';
@@ -542,7 +546,7 @@ function resetPlacementState() {
 }
 
 // ============================================================
-// ОТПРАВКА ОТЧЁТА (без проверки дубликатов)
+// ОТПРАВКА ОТЧЁТА
 // ============================================================
 
 async function submitReportHandler() {
