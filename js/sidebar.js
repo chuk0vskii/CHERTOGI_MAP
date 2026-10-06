@@ -609,11 +609,7 @@ async function submitReportHandler() {
   var hasResource = document.getElementById('resource-check')?.checked || false;
   var hasShelter = document.getElementById('shelter-check')?.checked || false;
 
-  if (!hasResource && !hasShelter && deceasedNames.length === 0) {
-    alert('Добавьте хотя бы одно имя умершего или отметьте точку интереса');
-    return;
-  }
-
+  // Если отмечены чекбоксы — должны быть размещены метки
   if (hasResource && !tempMarkers.resource) {
     alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
     return;
@@ -641,75 +637,46 @@ async function submitReportHandler() {
     
     var reportsToInsert = [];
     
-    if (deceasedNames.length > 0) {
-      var reportData = {
-        region_id: currentRegionId,
-        keeper_name: keeperName || null,
-        content: content,
-        deceased_names: deceasedNames,
-        has_resource: hasResource || false,
-        has_shelter: hasShelter || false,
-        marker_type: null,
-        marker_x: null,
-        marker_y: null,
-        game_date: new Date().toISOString().split('T')[0]
-      };
-      reportsToInsert.push(reportData);
-    }
+    // Базовый отчёт — всегда создаётся, даже без умерших и без точек интереса
+    var baseReport = {
+      region_id: currentRegionId,
+      keeper_name: keeperName || null,
+      content: content,
+      deceased_names: deceasedNames.length > 0 ? deceasedNames : null,
+      has_resource: false,
+      has_shelter: false,
+      marker_type: null,
+      marker_x: null,
+      marker_y: null,
+      game_date: new Date().toISOString().split('T')[0]
+    };
     
-    if (hasResource && tempMarkers.resource && deceasedNames.length === 0) {
+    reportsToInsert.push(baseReport);
+    
+    // Если только ресурс — добавляем метку к базовому отчёту
+    if (hasResource && tempMarkers.resource) {
       var pos = tempMarkers.resource.position;
-      reportsToInsert.push({
-        region_id: currentRegionId,
-        keeper_name: keeperName || null,
-        content: content + ' (Место ресурса)',
-        deceased_names: null,
-        has_resource: true,
-        has_shelter: false,
-        marker_type: 'resource',
-        marker_x: pos.x,
-        marker_y: pos.y,
-        game_date: new Date().toISOString().split('T')[0]
-      });
+      baseReport.has_resource = true;
+      baseReport.marker_type = 'resource';
+      baseReport.marker_x = pos.x;
+      baseReport.marker_y = pos.y;
     }
     
-    if (hasShelter && tempMarkers.shelter && deceasedNames.length === 0) {
+    // Если только ночлег — добавляем метку к базовому отчёту
+    if (hasShelter && tempMarkers.shelter) {
       var pos2 = tempMarkers.shelter.position;
-      reportsToInsert.push({
-        region_id: currentRegionId,
-        keeper_name: keeperName || null,
-        content: content + ' (Место ночлега)',
-        deceased_names: null,
-        has_resource: false,
-        has_shelter: true,
-        marker_type: 'shelter',
-        marker_x: pos2.x,
-        marker_y: pos2.y,
-        game_date: new Date().toISOString().split('T')[0]
-      });
-    }
-    
-    if (hasResource && tempMarkers.resource && deceasedNames.length > 0) {
-      var pos = tempMarkers.resource.position;
-      reportsToInsert[0].has_resource = true;
-      reportsToInsert[0].marker_type = 'resource';
-      reportsToInsert[0].marker_x = pos.x;
-      reportsToInsert[0].marker_y = pos.y;
-    }
-    
-    if (hasShelter && tempMarkers.shelter && deceasedNames.length > 0) {
-      var pos2 = tempMarkers.shelter.position;
-      reportsToInsert[0].has_shelter = true;
-      if (!reportsToInsert[0].marker_type) {
-        reportsToInsert[0].marker_type = 'shelter';
-        reportsToInsert[0].marker_x = pos2.x;
-        reportsToInsert[0].marker_y = pos2.y;
+      baseReport.has_shelter = true;
+      if (!baseReport.marker_type) {
+        baseReport.marker_type = 'shelter';
+        baseReport.marker_x = pos2.x;
+        baseReport.marker_y = pos2.y;
       } else {
+        // Если и ресурс, и ночлег — создаём отдельный отчёт для ночлега
         reportsToInsert.push({
           region_id: currentRegionId,
           keeper_name: keeperName || null,
           content: content + ' (Место ночлега)',
-          deceased_names: deceasedNames,
+          deceased_names: null,
           has_resource: false,
           has_shelter: true,
           marker_type: 'shelter',
