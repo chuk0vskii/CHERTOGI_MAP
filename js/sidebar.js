@@ -10,11 +10,13 @@ const reportsList = document.getElementById('reports-list');
 const difficultyContainer = document.getElementById('region-difficulty');
 
 // ============================================================
-// КОНФИГУРАЦИЯ ПАРОЛЯ
+// КОНФИГУРАЦИЯ АВТОРИЗАЦИИ
 // ============================================================
 
-const REPORT_PASSWORD = 'CHERTOGI2024';
 const STORAGE_KEY = 'chertogi_report_auth';
+const EDGE_FUNCTION_URL = 'https://djieimjwhgjgsjcysceh.supabase.co/functions/v1/check-report-password';
+const SUPABASE_PUBLIC_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
+
 let isAuthorized = false;
 let currentKeeper = '';
 
@@ -29,6 +31,39 @@ let tempMarkers = {
 };
 let mapClickListener = null;
 let activePlacementType = null;
+
+// ============================================================
+// ПРОВЕРКА ПАРОЛЯ ЧЕРЕЗ EDGE FUNCTION SUPABASE
+// ============================================================
+
+async function checkPasswordViaServer(password) {
+  try {
+    const response = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_PUBLIC_KEY
+      },
+      body: JSON.stringify({ password: password })
+    });
+    
+    if (!response.ok) {
+      console.error('Ошибка запроса к серверу:', response.status);
+      return false;
+    }
+    
+    const data = await response.json();
+    return data.ok === true;
+    
+  } catch (err) {
+    console.error('Ошибка проверки пароля:', err);
+    return false;
+  }
+}
+
+// ============================================================
+// СОХРАНЕНИЕ / ЗАГРУЗКА СОСТОЯНИЯ
+// ============================================================
 
 function loadAuthState() {
   try {
@@ -198,7 +233,6 @@ function loadRegionImage(regionId) {
 
 function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
-  // Безопасно: textContent не выполняет HTML
   sidebarTitle.textContent = name || '';
   sidebarDesc.textContent = description || 'Описание отсутствует';
 
@@ -206,7 +240,6 @@ function openSidebar(regionId, name, description, difficulty) {
 
   if (difficultyContainer) {
     if (difficulty !== undefined && difficulty !== null) {
-      // difficulty — число из БД, вставляем как есть (число безопасно)
       difficultyContainer.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; margin: 12px 0 16px 0; padding: 8px 12px; background: rgba(74, 14, 14, 0.4); border-radius: 6px; border-left: 3px solid #4a0e0e;">
           <span style="color: #aaa; font-size: 14px; font-family: "Philosopher", sans-serif;">Сложность пути:</span>
@@ -389,7 +422,6 @@ function updateReportSectionVisibility() {
 function updateKeeperDisplay() {
   var keeperDisplay = document.getElementById('keeper-display');
   if (keeperDisplay) {
-    // value — безопасно, это не HTML
     keeperDisplay.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : 'Войдите по паролю');
   }
 }
@@ -482,7 +514,6 @@ function stopPlacementMode() {
 }
 
 function updateTempMarker(x, y, type) {
-  // Внутренние строки, не пользовательские данные — безопасно
   var iconSrc = type === 'resource' 
     ? '/CHERTOGI_MAP/icons/resurs.png' 
     : '/CHERTOGI_MAP/icons/Nochleg.png';
@@ -851,7 +882,7 @@ function closePasswordModal() {
   passwordModal.style.display = 'none';
 }
 
-passwordSubmitBtn.addEventListener('click', function() {
+passwordSubmitBtn.addEventListener('click', async function() {
   var inputPassword = passwordInput.value.trim();
   var keeperName = keeperInput.value.trim();
 
@@ -867,7 +898,18 @@ passwordSubmitBtn.addEventListener('click', function() {
     return;
   }
 
-  if (inputPassword === REPORT_PASSWORD) {
+  // Блокируем кнопку на время проверки
+  passwordSubmitBtn.disabled = true;
+  passwordSubmitBtn.textContent = 'Проверка...';
+  passwordError.style.display = 'none';
+
+  // Проверяем пароль через Edge Function
+  var isCorrect = await checkPasswordViaServer(inputPassword);
+
+  passwordSubmitBtn.disabled = false;
+  passwordSubmitBtn.textContent = 'Подтвердить';
+
+  if (isCorrect) {
     setReportAuthorized(true);
     setCurrentKeeper(keeperName);
     closePasswordModal();
