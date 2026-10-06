@@ -35,15 +35,16 @@ async function loadReports(regionId) {
     var fullContent = '';
     
     if (report.keeper_name) {
-      fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + report.keeper_name + '</div>';
+      fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + escapeHtml(report.keeper_name) + '</div>';
     }
     
     if (report.content) {
-      fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + report.content + '</div>';
+      fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + escapeHtml(report.content) + '</div>';
     }
     
     if (report.deceased_names && report.deceased_names.length > 0) {
-      fullContent += '<div style="color: #ff6b6b; font-size: 13px; margin-top: 4px;"><span style="color: #888;">Умершие:</span> ' + report.deceased_names.join(', ') + '</div>';
+      var namesEscaped = report.deceased_names.map(function(n) { return escapeHtml(n); }).join(', ');
+      fullContent += '<div style="color: #ff6b6b; font-size: 13px; margin-top: 4px;"><span style="color: #888;">Умершие:</span> ' + namesEscaped + '</div>';
     }
     
     var points = [];
@@ -63,8 +64,8 @@ async function loadReports(regionId) {
     html += `
       <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 2px solid rgba(255,215,0,0.2); cursor: pointer;" onclick="toggleReport('${reportId}')">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #aaa; font-size: 12px;">${dateStr} ${timeStr}</span>
-          <span style="color: #555; font-size: 10px;">#${report.id}</span>
+          <span style="color: #aaa; font-size: 12px;">${escapeHtml(dateStr)} ${escapeHtml(timeStr)}</span>
+          <span style="color: #555; font-size: 10px;">#${escapeHtml(report.id)}</span>
         </div>
         <div id="${reportId}" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
           ${fullContent}
