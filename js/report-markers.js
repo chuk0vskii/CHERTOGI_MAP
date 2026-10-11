@@ -14,7 +14,7 @@ async function loadReportMarkers() {
     var result = await _supabase
       .from('game_reports')
       .select('id, region_id, marker_type, marker_x, marker_y')
-      .eq('moderation_status', 'approved')
+      .eq('is_approved', true)
       .not('marker_x', 'is', null)
       .not('marker_y', 'is', null);
 
