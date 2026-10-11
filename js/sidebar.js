@@ -701,13 +701,17 @@ async function submitReportHandler() {
       allResults.push(result);
     }
 
-    var message = 'Отчёт сохранён!';
-    if (deceasedNames.length > 0) {
-      message += ' Добавлено имён: ' + deceasedNames.length;
-    }
-    if (hasResource) message += ' (ресурс)';
-    if (hasShelter) message += ' (ночлег)';
-    alert(message);
+   var message = '📝 Отчёт отправлен на модерацию!\n\n';
+message += 'Он будет проверен Хранителем узлов в ближайшее время. ';
+message += 'После одобрения отчёт появится на карте.\n\n';
+
+if (deceasedNames.length > 0) {
+  message += '✅ Добавлено имён умерших: ' + deceasedNames.length + '\n';
+}
+if (hasResource) message += '✅ Отмечено место ресурса\n';
+if (hasShelter) message += '✅ Отмечено место ночлега\n';
+
+alert(message);
     
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
