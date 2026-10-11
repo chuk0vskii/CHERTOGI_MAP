@@ -12,7 +12,7 @@ async function loadReports(regionId) {
     .from('game_reports')
     .select('*')
     .eq('region_id', regionId)
-    .eq('moderation_status', 'approved')
+   .eq('is_approved', true)
     .order('created_at', { ascending: false })
     .limit(10);
 
