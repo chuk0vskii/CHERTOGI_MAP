@@ -1,0 +1,20 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Каждый день в полночь UTC (можно и реже — раз в 2-3 дня хватит)
+    - cron: '0 0 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Insert ping row into Supabase
+        run: |
+          curl -X POST "https://djieimjwhgjgsjcysceh.supabase.co/rest/v1/wake_up_supabase" \
+            -H "apikey: sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi" \
+            -H "Authorization: Bearer sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"ping": 1}'
