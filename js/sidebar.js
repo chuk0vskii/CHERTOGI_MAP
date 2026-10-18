@@ -588,7 +588,8 @@ async function submitReportHandler() {
     return;
   }
   
-  if (!currentRegionId) {
+  // ИСПРАВЛЕНИЕ: Проверяем на null/undefined, чтобы 0 (Дымный путь) работал
+  if (currentRegionId === null || currentRegionId === undefined) {
     alert('Регион не выбран!');
     return;
   }
@@ -637,7 +638,7 @@ async function submitReportHandler() {
     
     var reportsToInsert = [];
     
-    // Базовый отчёт — всегда создаётся, даже без умерших и без точек интереса
+    // Базовый отчёт — всегда создаётся
     var baseReport = {
       region_id: currentRegionId,
       keeper_name: keeperName || null,
@@ -701,17 +702,17 @@ async function submitReportHandler() {
       allResults.push(result);
     }
 
-   var message = '📝 Отчёт отправлен на модерацию!\n\n';
-message += 'Он будет проверен Администратором в ближайшее время. ';
-message += 'После одобрения отчёт появится на карте.\n\n';
+    var message = '📝 Отчёт отправлен на модерацию!\n\n';
+    message += 'Он будет проверен Хранителем узлов в ближайшее время.\n';
+    message += 'После одобрения отчёт появится на карте.\n\n';
 
-if (deceasedNames.length > 0) {
-  message += '✅ Добавлено имён умерших: ' + deceasedNames.length + '\n';
-}
-if (hasResource) message += '✅ Отмечено место ресурса\n';
-if (hasShelter) message += '✅ Отмечено место ночлега\n';
+    if (deceasedNames.length > 0) {
+      message += '✅ Добавлено имён умерших: ' + deceasedNames.length + '\n';
+    }
+    if (hasResource) message += '✅ Отмечено место ресурса\n';
+    if (hasShelter) message += '✅ Отмечено место ночлега\n';
 
-alert(message);
+    alert(message);
     
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
