@@ -102,12 +102,18 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
         if (item[field] !== undefined && item[field] !== null) {
           let value = item[field];
           if (isCreature) value = createBeastLink(value, actualTableName);
-          const label = field === 'name' ? '' : 
-                        field === 'pass_method' ? 'Как пройти: ' : 
-                        field === 'reward_type' ? 'Что хранят: ' : 
-                        field === 'oasis_type' ? 'Оазис: ' : 
-                        field === 'mystery' ? 'Тайна: ' : '';
-          html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5;">' + label + value + '</div>';
+          
+          // Красивые подписи для полей
+          let label = field === 'name' ? '' : 
+                      field === 'description' ? '' : 
+                      field === 'pass_method' ? 'Как пройти: ' : 
+                      field === 'reward_type' ? 'Что хранят: ' : 
+                      field === 'oasis_type' ? 'Оазис: ' : 
+                      field === 'mystery' ? 'Тайна: ' : 
+                      field === 'effect' ? 'Эффект: ' : 
+                      field === 'attunement' ? 'Настройка: ' : '';
+
+          html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5; margin-top: 4px;">' + label + value + '</div>';
         }
       });
       html += '</div>';
@@ -746,14 +752,12 @@ function handleCombinedCheck(eventId) {
   const event = findEventById(eventId);
   if (!event) return;
   
-  // Ищем все поля ввода внутри карточки события
   const eventCard = document.querySelector('.event-card[data-id="' + eventId + '"]');
   if (!eventCard) {
     alert('Карточка события не найдена');
     return;
   }
   
-  // Собираем все значения из полей с классом check-input внутри карточки
   const inputs = eventCard.querySelectorAll('.check-input');
   const values = [];
   
@@ -831,7 +835,7 @@ function handleRealityTear(eventId) {
 }
 
 // ============================================================
-// ОБРАБОТКА "ЗАПРЕТНОЕ МЕСТО" (генерация по выбранной таблице)
+// ОБРАБОТКА "ЗАПРЕТНОЕ МЕСТО"
 // ============================================================
 
 function handlePlaceGenerate(eventId) {
