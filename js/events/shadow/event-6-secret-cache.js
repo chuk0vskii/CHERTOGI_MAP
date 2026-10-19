@@ -6,12 +6,12 @@ export default {
   type: 'secret_cache',
   
   tables: {
-    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] },
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description', 'effects', 'attunement'] },
     'zone_conflicts': { label: 'Таблица Конфликтов Области', fields: ['name', 'description'] }
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addArrivalBonus } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -53,11 +53,11 @@ export default {
     if (value >= difficulty + 5) {
       resultType = 'success_5';
       resultText = 'Критический успех!';
-      effects = null;
+      effects = { arrival: 1 }; // В коде эффект не применялся, но текст говорит про +1 к Прибытию, можно добавить
     } else if (value >= difficulty) {
       resultType = 'success';
       resultText = 'Успех!';
-      effects = { arrival: 1 };
+      effects = { arrival: 1 }; // Аналогично
     } else if (value >= difficulty - 5) {
       resultType = 'fail';
       resultText = 'Провал...';
