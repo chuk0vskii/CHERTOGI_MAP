@@ -983,14 +983,12 @@ document.getElementById('edit-submit-btn').addEventListener('click', async funct
   submitBtn.textContent = 'Отправка...';
 
   try {
-    // 1. Обновляем текст, сбрасываем статус и ОБНОВЛЯЕМ ДАТУ (created_at), 
-    // чтобы база данных ТОЧНО увидела изменение и отправила уведомление.
+    // 1. Обновляем базу данных (текст и статус)
     var result = await _supabase
       .from('game_reports')
       .update({ 
         content: newContent,
-        is_approved: null,
-        created_at: new Date().toISOString()
+        is_approved: null
       })
       .eq('id', reportId);
 
@@ -998,10 +996,33 @@ document.getElementById('edit-submit-btn').addEventListener('click', async funct
       throw new Error(result.error.message);
     }
 
+    // 2. Вручную вызываем бота, чтобы он точно прислал уведомление
+    try {
+      await fetch('https://djieimjwhgjgsjcysceh.supabase.co/functions/v1/notify-telegram', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_PUBLIC_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_PUBLIC_KEY
+        },
+        body: JSON.stringify({
+          type: 'UPDATE', // Говорим боту, что это редактирование
+          record: {
+            id: reportId,
+            region_id: currentRegionId,
+            keeper_name: getCurrentKeeper(),
+            content: newContent
+          }
+        })
+      });
+    } catch (botErr) {
+      console.error('Ошибка вызова бота:', botErr);
+    }
+
     alert('✅ Отчёт отправлен на повторную модерацию!');
     editReportModal.style.display = 'none';
 
-    // Перезагружаем список отчётов и метки на карте
+    // 3. Перезагружаем список отчётов
     if (currentRegionId !== null && currentRegionId !== undefined) {
       await loadReports(currentRegionId);
       if (typeof loadReportMarkers === 'function') {
