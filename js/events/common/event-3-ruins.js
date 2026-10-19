@@ -5,9 +5,9 @@ export default {
   checkInfo: 'Все в группе совершают Проверку Искры.',
   type: 'ruins',
   
-  tables: {
+    tables: {
     'ruins': { label: 'Таблица Руин', fields: ['name', 'pass_method', 'reward_type'] },
-    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description', 'effect'] },
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description', 'effects', 'attunement'] },
     'opasnost_regional': { label: 'Опасные существа зоны', fields: ['name'], isCreature: true }
   },
   
