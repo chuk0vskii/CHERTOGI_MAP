@@ -103,14 +103,14 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
           let value = item[field];
           if (isCreature) value = createBeastLink(value, actualTableName);
           
-          // Красивые подписи для полей
+                    // Красивые подписи для полей
           let label = field === 'name' ? '' : 
                       field === 'description' ? '' : 
                       field === 'pass_method' ? 'Как пройти: ' : 
                       field === 'reward_type' ? 'Что хранят: ' : 
                       field === 'oasis_type' ? 'Оазис: ' : 
                       field === 'mystery' ? 'Тайна: ' : 
-                      field === 'effect' ? 'Эффект: ' : 
+                      field === 'effects' ? 'Эффект: ' : 
                       field === 'attunement' ? 'Настройка: ' : '';
 
           html += '<div style="font-size: 14px; color: #e0d5c0; line-height: 1.5; margin-top: 4px;">' + label + value + '</div>';
