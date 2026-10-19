@@ -7,7 +7,7 @@ export default {
   
   tables: {
     'traps': { label: 'Таблица Ловушек', fields: ['name', 'description'] },
-    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description'] }
+    'artefacts': { label: 'Таблица Артефактов', fields: ['name', 'description', 'effects', 'attunement'] }
   },
   
   render: function(event, helpers) {
