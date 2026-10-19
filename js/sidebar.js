@@ -983,13 +983,14 @@ document.getElementById('edit-submit-btn').addEventListener('click', async funct
   submitBtn.textContent = 'Отправка...';
 
   try {
-    // Обновляем текст и сбрасываем статус на модерацию.
-    // Триггер в базе данных сам отправит уведомление в ТГ, так как текст изменился.
+    // 1. Обновляем текст, сбрасываем статус и ОБНОВЛЯЕМ ДАТУ (created_at), 
+    // чтобы база данных ТОЧНО увидела изменение и отправила уведомление.
     var result = await _supabase
       .from('game_reports')
       .update({ 
         content: newContent,
-        is_approved: null
+        is_approved: null,
+        created_at: new Date().toISOString()
       })
       .eq('id', reportId);
 
