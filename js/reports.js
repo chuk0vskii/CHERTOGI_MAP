@@ -12,7 +12,7 @@ async function loadReports(regionId) {
     .from('game_reports')
     .select('*')
     .eq('region_id', regionId)
-   .eq('is_approved', true)
+    .eq('is_approved', true)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -62,20 +62,49 @@ async function loadReports(regionId) {
     var dateStr = new Date(report.created_at).toLocaleDateString('ru-RU');
     var timeStr = new Date(report.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     
+    // Кнопка редактирования (появляется только если введен пароль)
+    var editBtnHTML = '';
+    if (typeof isReportAuthorized === 'function' && isReportAuthorized()) {
+      var safeContent = encodeURIComponent(report.content || '');
+      editBtnHTML = `
+        <button class="btn-edit-report" 
+                data-id="${report.id}" 
+                data-content="${safeContent}" 
+                style="background: rgba(74,14,14,0.6); border: 1px solid #4a0e0e; color: #ffd700; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px; margin-top: 8px; transition: all 0.3s;"
+                onmouseover="this.style.background='#4a0e0e'"
+                onmouseout="this.style.background='rgba(74,14,14,0.6)'">
+          ✏️ Редактировать
+        </button>
+      `;
+    }
+
     html += `
-      <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 2px solid rgba(255,215,0,0.2); cursor: pointer;" onclick="toggleReport('${reportId}')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 2px solid rgba(255,215,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleReport('${reportId}')">
           <span style="color: #aaa; font-size: 12px;">${escapeHtml(dateStr)} ${escapeHtml(timeStr)}</span>
           <span style="color: #555; font-size: 10px;">#${escapeHtml(report.id)}</span>
         </div>
         <div id="${reportId}" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
           ${fullContent}
+          ${editBtnHTML}
         </div>
       </div>
     `;
   }
   
   reportsList.innerHTML = html;
+
+  // Навешиваем обработчики на кнопки редактирования
+  document.querySelectorAll('.btn-edit-report').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation(); // Чтобы не закрывался аккордеон при клике на кнопку
+      var id = parseInt(this.dataset.id);
+      var content = decodeURIComponent(this.dataset.content);
+      if (typeof openEditReportModal === 'function') {
+        openEditReportModal(id, content);
+      }
+    });
+  });
 }
 
 function toggleReport(reportId) {
