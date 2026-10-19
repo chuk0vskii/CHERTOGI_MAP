@@ -983,14 +983,13 @@ document.getElementById('edit-submit-btn').addEventListener('click', async funct
   submitBtn.textContent = 'Отправка...';
 
   try {
-    var result = await _supabase
+   var result = await _supabase
       .from('game_reports')
       .update({ 
         content: newContent,
         is_approved: null
       })
       .eq('id', reportId);
-
     if (result.error) {
       throw new Error(result.error.message);
     }
