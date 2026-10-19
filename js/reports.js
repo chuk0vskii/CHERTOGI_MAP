@@ -8,6 +8,7 @@ async function loadReports(regionId) {
   
   reportsList.innerHTML = '<p style="color: #777; font-size: 14px;">Загрузка...</p>';
   
+  // Загружаем ТОЛЬКО одобренные отчеты для отображения на карте
   var result = await _supabase
     .from('game_reports')
     .select('*')
@@ -70,9 +71,7 @@ async function loadReports(regionId) {
         <button class="btn-edit-report" 
                 data-id="${report.id}" 
                 data-content="${safeContent}" 
-                style="background: rgba(74,14,14,0.6); border: 1px solid #4a0e0e; color: #ffd700; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px; margin-top: 8px; transition: all 0.3s;"
-                onmouseover="this.style.background='#4a0e0e'"
-                onmouseout="this.style.background='rgba(74,14,14,0.6)'">
+                style="background: rgba(74,14,14,0.6); border: 1px solid #4a0e0e; color: #ffd700; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 12px; margin-top: 8px; transition: all 0.3s;">
           ✏️ Редактировать
         </button>
       `;
@@ -97,7 +96,7 @@ async function loadReports(regionId) {
   // Навешиваем обработчики на кнопки редактирования
   document.querySelectorAll('.btn-edit-report').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
-      e.stopPropagation(); // Чтобы не закрывался аккордеон при клике на кнопку
+      e.stopPropagation();
       var id = parseInt(this.dataset.id);
       var content = decodeURIComponent(this.dataset.content);
       if (typeof openEditReportModal === 'function') {
