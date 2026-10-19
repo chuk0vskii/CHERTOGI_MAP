@@ -983,20 +983,45 @@ document.getElementById('edit-submit-btn').addEventListener('click', async funct
   submitBtn.textContent = 'Отправка...';
 
   try {
-   var result = await _supabase
+    // 1. Обновляем текст и сбрасываем статус на модерацию (is_approved = null)
+    var result = await _supabase
       .from('game_reports')
       .update({ 
         content: newContent,
         is_approved: null
       })
       .eq('id', reportId);
+
     if (result.error) {
       throw new Error(result.error.message);
+    }
+
+    // 2. Вручную вызываем функцию для отправки уведомления в ТГ
+    try {
+      await fetch(EDGE_FUNCTION_URL.replace('check-report-password', 'notify-telegram'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_PUBLIC_KEY
+        },
+        body: JSON.stringify({
+          type: 'UPDATE', // Говорим боту, что это редактирование
+          record: {
+            id: reportId,
+            region_id: currentRegionId,
+            keeper_name: getCurrentKeeper(),
+            content: newContent
+          }
+        })
+      });
+    } catch (botErr) {
+      console.error('Ошибка вызова бота:', botErr);
     }
 
     alert('✅ Отчёт отправлен на повторную модерацию!');
     editReportModal.style.display = 'none';
 
+    // 3. Перезагружаем список отчётов и метки на карте
     if (currentRegionId !== null && currentRegionId !== undefined) {
       await loadReports(currentRegionId);
       if (typeof loadReportMarkers === 'function') {
