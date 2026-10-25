@@ -279,7 +279,13 @@ async function loadOvulMarkers() {
 
     marker.addEventListener('click', (e) => {
       e.stopPropagation();
-      showResidentInfo(resident);
+      
+      // Если это Древо Смерти, переходим на страницу
+      if (resident.icon === 'drevo') {
+        window.location.href = 'tree.html';
+      } else {
+        showResidentInfo(resident);
+      }
     });
 
     markersLayer.appendChild(marker);
