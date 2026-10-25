@@ -46,10 +46,11 @@
       z-index: 2;
     }
 
-    /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
+       /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
     .map-container {
       width: 100%;
-      height: 320px;
+      /* Убираем фиксированную высоту, чтобы контейнер подстроился под картинку */
+      height: auto; 
       margin-bottom: 30px;
       display: flex;
       align-items: center;
@@ -62,15 +63,14 @@
       padding: 0;
     }
     
-   .map-container img {
-      width: 138%; /* Увеличили на 15% (было 120) */
-      height: 138%;
+    .map-container img {
+      width: 138%; /* Увеличили на 15% */
+      height: auto; /* Высота подстраивается автоматически */
       object-fit: contain;
       object-position: center; 
       
-      /* Обрезаем по 10 пикселей сверху и снизу (компенсируем увеличением) */
-      margin-top: -10px;
-      margin-bottom: -10px;
+      /* Убрали отрицательные отступы, которые обрезали края */
+      margin: 0; 
       
       display: block;
       filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
