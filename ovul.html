@@ -49,15 +49,13 @@
     /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
     .map-container {
       width: 100%;
-      height: 320px; /* Высота контейнера */
+      height: 320px;
       margin-bottom: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden; /* Обрезаем всё, что вылезает */
+      overflow: hidden;
       position: relative;
-      
-      /* Убрали фиолетовый фон и рамку */
       background: transparent;
       border: none; 
       border-radius: 0; 
@@ -65,17 +63,15 @@
     }
     
     .map-container img {
-      width: 120%; /* Увеличили картинку на 20% */
+      width: 120%;
       height: 120%;
-      object-fit: contain; /* Сохраняем пропорции */
+      object-fit: contain;
       object-position: center; 
-      
-      /* Обрезаем по 10 пикселей сверху и снизу (компенсируем увеличением) */
       margin-top: -10px;
       margin-bottom: -10px;
-      
       display: block;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); /* Добавили легкую тень для объема */
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+      cursor: crosshair; /* Курсор в виде прицела для удобства */
     }
 
     .page-title {
@@ -295,7 +291,7 @@
   <div class="container">
     <!-- МЕСТО ДЛЯ КАРТИНКИ -->
     <div class="map-container">
-      <img src="/CHERTOGI_MAP/images/mapOvul.png" alt="Карта Овуля" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'color:rgba(255,255,255,0.3)\'>Карта Овуля</span>';">
+      <img id="ovul-map-image" src="/CHERTOGI_MAP/images/mapOvul.png" alt="Карта Овуля" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'color:rgba(255,255,255,0.3)\'>Карта Овуля</span>';">
     </div>
 
     <h1 class="page-title">Овуль</h1>
