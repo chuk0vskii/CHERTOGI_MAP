@@ -240,6 +240,20 @@
 </head>
 <body>
 
+  <!-- БАННЕР -->
+  <div class="top-banner">
+    <div class="banner-left">
+      <img src="/CHERTOGI_MAP/images/flamechertogi.png" alt="Огненные чертоги">
+      <span class="title">Огненные чертоги</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Карта</a>
+      <a href="znaki.html">В путь</a>
+      <a href="bestiary.html">Бестиарий</a>
+      <a href="tree.html">Древо смерти</a>
+    </div>
+  </div>
+
   <!-- ФОНОВЫЕ ГЕКСЫ -->
   <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left">
   <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right">
@@ -255,7 +269,7 @@
 
     <!-- КНОПКА ДОБАВЛЕНИЯ (появляется только с паролем) -->
     <div id="auth-section" style="text-align: right; margin-bottom: 20px;">
-      <button id="login-btn" class="btn-submit" style="width: auto; padding: 10px 20px;">🔑 Ввести пароль</button>
+      <button id="login-btn" class="btn-submit" style="width: auto; padding: 10px 20px;">Добавить вашего искателя</button>
       <button id="add-char-btn" class="btn-submit" style="width: auto; padding: 10px 20px; display: none;">+ Добавить персонажа</button>
     </div>
 
@@ -308,7 +322,6 @@
       <select id="filter-squad">
         <option value="">Все отряды</option>
         <option value="Без отряда">Без отряда</option>
-        <!-- Сюда JS будет добавлять отряды -->
       </select>
     </div>
 
@@ -332,7 +345,6 @@
           <div id="view-squad" style="color: #51cf66; font-size: 14px; margin-bottom: 15px;"></div>
           <div id="view-desc" style="font-size: 15px; line-height: 1.6; margin-bottom: 15px;"></div>
           <div id="view-traits" style="font-size: 14px; color: #ffd700; background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px;"></div>
-          <!-- Кнопка редактирования (только для админа) -->
           <button id="edit-char-btn" style="margin-top: 20px; padding: 8px 16px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; display: none;">✏️ Редактировать</button>
         </div>
       </div>
@@ -377,7 +389,6 @@
           <div id="multiclass-fields">
             <select id="char-class-2">
               <option value="">— Второй класс —</option>
-              <!-- Дублируем список классов -->
               <option value="Варвар">Варвар</option>
               <option value="Бард">Бард</option>
               <option value="Жрец">Жрец</option>
