@@ -49,7 +49,7 @@
     /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
     .map-container {
       width: 100%;
-      height: 400px;
+      height: 300px; /* Уменьшили высоту */
       background: #1a0a1a;
       border: 1px solid #4a0e0e;
       border-radius: 16px;
@@ -59,11 +59,12 @@
       justify-content: center;
       overflow: hidden;
       position: relative;
+      padding: 10px;
     }
     .map-container img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain; /* Вписываем картинку целиком */
       display: block;
     }
 
