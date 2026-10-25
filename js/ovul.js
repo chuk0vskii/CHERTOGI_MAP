@@ -403,4 +403,47 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ============================================================
+  // ВРЕМЕННЫЙ ИНСТРУМЕНТ ДЛЯ ПОЛУЧЕНИЯ КООРДИНАТ (ТОЛЬКО ДЛЯ ТЕБЯ)
+  // ============================================================
+  const mapImg = document.getElementById('ovul-map-image');
+  if (mapImg) {
+    mapImg.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Переводим в проценты (чтобы метки не съезжали при изменении размера окна)
+      const xPercent = (x / rect.width) * 100;
+      const yPercent = (y / rect.height) * 100;
+      
+      const coordText = `X: ${xPercent.toFixed(2)}%, Y: ${yPercent.toFixed(2)}%`;
+      
+      navigator.clipboard.writeText(coordText).then(() => {
+        const tooltip = document.createElement('div');
+        tooltip.textContent = `Скопировано: ${coordText}`;
+        tooltip.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #4a0e0e;
+          color: #ffd700;
+          padding: 10px 20px;
+          border-radius: 8px;
+          border: 1px solid #ffd700;
+          font-family: 'Philosopher', sans-serif;
+          z-index: 9999;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        `;
+        document.body.appendChild(tooltip);
+        
+        setTimeout(() => tooltip.remove(), 2000);
+      }).catch(err => {
+        console.error('Ошибка копирования:', err);
+        alert('Координаты: ' + coordText);
+      });
+    });
+  }
 });
