@@ -1,392 +1,473 @@
-// ============================================================
-// ОВУЛЬ - СКРИПТ СТРАНИЦЫ
-// ============================================================
-
-// Настройки
-const EDGE_FUNCTION_URL = 'https://djieimjwhgjysceh.supabase.co/functions/v1/check-report-password';
-const SUPABASE_PUBLIC_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
-const STORAGE_KEY = 'chertogi_report_auth'; // Тот же ключ, что и для отчетов
-
-let isAuthorized = false;
-let allCharacters = [];
-let currentViewChar = null;
-
-// ============================================================
-// АВТОРИЗАЦИЯ
-// ============================================================
-
-function checkAuthStatus() {
-  try {
-    const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const data = JSON.parse(saved);
-      isAuthorized = data.isAuthorized || false;
-      updateAuthUI();
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Огненные чертоги — Овуль</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  } catch (e) { console.warn(e); }
-}
-
-function updateAuthUI() {
-  const loginBtn = document.getElementById('login-btn');
-  const addBtn = document.getElementById('add-char-btn');
-  
-  if (isAuthorized) {
-    loginBtn.style.display = 'none';
-    addBtn.style.display = 'inline-block';
-  } else {
-    loginBtn.style.display = 'inline-block';
-    addBtn.style.display = 'none';
-  }
-}
-
-// Обработка кнопки "Войти"
-document.getElementById('login-btn').addEventListener('click', () => {
-  document.getElementById('auth-modal').style.display = 'flex';
-});
-
-document.getElementById('auth-submit').addEventListener('click', async () => {
-  const pwd = document.getElementById('auth-password').value;
-  const errorEl = document.getElementById('auth-error');
-  
-  if (!pwd) return;
-  
-  try {
-    const response = await fetch(EDGE_FUNCTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLIC_KEY },
-      body: JSON.stringify({ password: pwd })
-    });
-    
-    const data = await response.json();
-    if (data.ok) {
-      isAuthorized = true;
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ isAuthorized: true, currentKeeper: 'Админ' }));
-      document.getElementById('auth-modal').style.display = 'none';
-      errorEl.style.display = 'none';
-      updateAuthUI();
-      loadCharacters(); // Перезагружаем, чтобы появились кнопки редактирования
-    } else {
-      errorEl.style.display = 'block';
+    body {
+      background: linear-gradient(180deg, #0a0a0a 0%, #1a1010 40%, #0f0a0a 70%, #050505 100%);
+      color: #e0d5c0;
+      font-family: 'Philosopher', 'Arial', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
-  } catch (e) { console.error(e); }
-});
 
-// ============================================================
-// ЗАГРУЗКА И ОТРИСОВКА ПЕРСОНАЖЕЙ
-// ============================================================
+    /* ===== ДЕКОРАТИВНЫЕ ГЕКСЫ ===== */
+    .bg-image {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.15;
+      width: 700px;
+      height: 700px;
+      object-fit: contain;
+      filter: brightness(1.3) contrast(1.1);
+    }
+    .bg-image-left { left: -350px; animation: rotateLeft 60s linear infinite; }
+    .bg-image-right { right: -350px; animation: rotateRight 60s linear infinite; }
+    @keyframes rotateLeft { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(360deg); } }
+    @keyframes rotateRight { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(-360deg); } }
 
-async function loadCharacters() {
-  const grid = document.getElementById('characters-grid');
-  grid.innerHTML = '<div class="empty-state">Загрузка...</div>';
-  
-  // Загружаем только одобренных (если админ — можно показать всех, но пока только одобренных)
-  let query = _supabase.from('characters').select('*').order('name');
-  
-  if (!isAuthorized) {
-    query = query.eq('is_approved', true);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error(error);
-    grid.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-    return;
-  }
-  
-  allCharacters = data || [];
-  populateSquadFilter();
-  renderCharacters();
-}
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+      position: relative;
+      z-index: 2;
+    }
 
-function renderCharacters() {
-  const grid = document.getElementById('characters-grid');
-  const search = document.getElementById('search-input').value.toLowerCase();
-  const filterClass = document.getElementById('filter-class').value;
-  const filterRace = document.getElementById('filter-race').value;
-  const filterSquad = document.getElementById('filter-squad').value;
-  
-  const filtered = allCharacters.filter(char => {
-    const matchesSearch = (char.name || '').toLowerCase().includes(search) || 
-                          (char.description || '').toLowerCase().includes(search);
-    const matchesClass = filterClass ? (char.class || '').includes(filterClass) : true;
-    const matchesRace = filterRace ? char.race === filterRace : true;
-    const matchesSquad = filterSquad ? (char.squad_name || 'Без отряда') === filterSquad : true;
+    /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
+    .map-container {
+      width: 100%;
+      height: 400px;
+      background: #1a0a1a;
+      border: 1px solid #4a0e0e;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .map-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .page-title {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 42px;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+      font-weight: normal;
+      text-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    }
+    .page-subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+      text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ===== ПАНЕЛЬ ФИЛЬТРОВ ===== */
+    .filters-panel {
+      background: rgba(74, 14, 14, 0.2);
+      border: 1px solid rgba(74, 14, 14, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(4px);
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filters-panel input, .filters-panel select {
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: 'Philosopher', sans-serif;
+      font-size: 14px;
+      flex: 1;
+      min-width: 150px;
+    }
+    .filters-panel input:focus, .filters-panel select:focus {
+      outline: none;
+      border-color: #ffd700;
+    }
+    .filters-panel select option { background: #1a0a1a; color: #fff; }
+
+    /* ===== СЕТКА ПЕРСОНАЖЕЙ ===== */
+    .characters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .character-card {
+      background: rgba(74, 14, 14, 0.2);
+      border: 1px solid rgba(74, 14, 14, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .character-card:hover {
+      background: rgba(74, 14, 14, 0.4);
+      border-color: #4a0e0e;
+      transform: translateY(-3px);
+    }
     
-    return matchesSearch && matchesClass && matchesRace && matchesSquad;
-  });
-  
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Персонажи не найдены</div>';
-    return;
-  }
-  
-  grid.innerHTML = filtered.map(char => `
-    <div class="character-card" onclick="openViewModal(${char.id})">
-      <div class="char-header">
-        <div class="char-name">${escapeHtml(char.name)}</div>
-      </div>
-      <div class="char-class-race">${escapeHtml(char.class)} • ${escapeHtml(char.race)}</div>
-      ${char.squad_name ? `<div class="char-squad">🛡️ ${escapeHtml(char.squad_name)}</div>` : ''}
-      <div class="char-desc-preview">${escapeHtml(char.description || 'Нет описания')}</div>
+    .char-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .char-name {
+      font-family: 'Calypso', 'Times New Roman', serif;
+      font-size: 20px;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+    .char-class-race {
+      font-size: 13px;
+      color: #ffd700;
+    }
+    .char-squad {
+      font-size: 12px;
+      color: #51cf66;
+      margin-top: 4px;
+    }
+    .char-desc-preview {
+      font-size: 13px;
+      color: #aaa;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      margin-top: 10px;
+    }
+
+    /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #1a0a1a;
+      border: 1px solid #4a0e0e;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      color: #ffffff;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 15px; right: 15px;
+      cursor: pointer;
+      font-size: 24px;
+      color: #ff6b6b;
+    }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #4a0e0e;
+      border-radius: 6px;
+      color: #ffffff;
+      font-family: 'Philosopher', sans-serif;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .form-group select option { background: #1a0a1a; }
+    
+    .btn-submit {
+      width: 100%; padding: 12px;
+      background: #4a0e0e; color: #ffd700;
+      border: none; border-radius: 6px;
+      cursor: pointer; font-family: 'Philosopher', sans-serif;
+      font-weight: bold; font-size: 16px;
+    }
+    .btn-submit:hover { background: #6a1a1a; }
+
+    /* Мультикласс */
+    #multiclass-fields { display: none; gap: 10px; margin-top: 10px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px;
+      color: rgba(255,255,255,0.3);
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ФОНОВЫЕ ГЕКСЫ -->
+  <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left">
+  <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right">
+
+  <div class="container">
+    <!-- МЕСТО ДЛЯ КАРТИНКИ -->
+    <div class="map-container">
+      <img src="/CHERTOGI_MAP/images/mapOvul.png" alt="Карта Овуля" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'color:rgba(255,255,255,0.3)\'>Карта Овуля</span>';">
     </div>
-  `).join('');
-}
 
-function populateSquadFilter() {
-  const select = document.getElementById('filter-squad');
-  const squads = new Set();
-  
-  allCharacters.forEach(c => {
-    if (c.squad_name && c.squad_name.trim() !== '') squads.add(c.squad_name.trim());
-  });
-  
-  // Сохраняем текущее выбранное значение
-  const currentVal = select.value;
-  
-  // Очищаем всё, кроме первых двух опций
-  while (select.options.length > 2) select.remove(2);
-  
-  squads.forEach(sq => {
-    const opt = document.createElement('option');
-    opt.value = sq;
-    opt.textContent = sq;
-    select.appendChild(opt);
-  });
-  
-  if (currentVal) select.value = currentVal;
-}
+    <h1 class="page-title">Овуль</h1>
+    <div class="page-subtitle">Архив искателей</div>
 
-// Слушатели фильтров
-document.getElementById('search-input').addEventListener('input', renderCharacters);
-document.getElementById('filter-class').addEventListener('change', renderCharacters);
-document.getElementById('filter-race').addEventListener('change', renderCharacters);
-document.getElementById('filter-squad').addEventListener('change', renderCharacters);
+    <!-- КНОПКА ДОБАВЛЕНИЯ (появляется только с паролем) -->
+    <div id="auth-section" style="text-align: right; margin-bottom: 20px;">
+      <button id="login-btn" class="btn-submit" style="width: auto; padding: 10px 20px;">🔑 Ввести пароль</button>
+      <button id="add-char-btn" class="btn-submit" style="width: auto; padding: 10px 20px; display: none;">+ Добавить персонажа</button>
+    </div>
 
-// ============================================================
-// МОДАЛКА ПРОСМОТРА
-// ============================================================
+    <!-- ФИЛЬТРЫ -->
+    <div class="filters-panel">
+      <input type="text" id="search-input" placeholder="Поиск по имени...">
+      <select id="filter-class">
+        <option value="">Все классы</option>
+        <option value="Варвар">Варвар</option>
+        <option value="Бард">Бард</option>
+        <option value="Жрец">Жрец</option>
+        <option value="Друид">Друид</option>
+        <option value="Воин">Воин</option>
+        <option value="Монах">Монах</option>
+        <option value="Паладин">Паладин</option>
+        <option value="Следопыт">Следопыт</option>
+        <option value="Плут">Плут</option>
+        <option value="Чародей">Чародей</option>
+        <option value="Колдун">Колдун</option>
+        <option value="Волшебник">Волшебник</option>
+        <option value="Шаман">Шаман</option>
+        <option value="Дрифтер">Дрифтер</option>
+        <option value="Изобретатель">Изобретатель</option>
+      </select>
+      <select id="filter-race">
+        <option value="">Все расы</option>
+        <option value="Браллец">Браллец</option>
+        <option value="Дангунец">Дангунец</option>
+        <option value="Хешег">Хешег</option>
+        <option value="Адаад">Адаад</option>
+        <option value="Ойрдуг">Ойрдуг</option>
+        <option value="Сар-худдулин">Сар-худдулин</option>
+        <option value="Омор-худдулин">Омор-худдулин</option>
+        <option value="Эрх-худдулин">Эрх-худдулин</option>
+        <option value="Самагхи">Самагхи</option>
+        <option value="Эрил-удриш">Эрил-удриш</option>
+        <option value="Урма-удриш">Урма-удриш</option>
+        <option value="Пьюр-пьюр-удриш">Пьюр-пьюр-удриш</option>
+        <option value="Янтарный маракиец">Янтарный маракиец</option>
+        <option value="Пепельный маракиец">Пепельный маракиец</option>
+        <option value="Драгмирец">Драгмирец</option>
+        <option value="Вирморожденный">Вирморожденный</option>
+        <option value="Борос">Борос</option>
+        <option value="Аджаид">Аджаид</option>
+        <option value="Элорец">Элорец</option>
+        <option value="Джабари">Джабари</option>
+        <option value="Джахази">Джахази</option>
+        <option value="Кобольд">Кобольд</option>
+      </select>
+      <select id="filter-squad">
+        <option value="">Все отряды</option>
+        <option value="Без отряда">Без отряда</option>
+        <!-- Сюда JS будет добавлять отряды -->
+      </select>
+    </div>
 
-function openViewModal(id) {
-  const char = allCharacters.find(c => c.id === id);
-  if (!char) return;
-  
-  currentViewChar = char;
-  
-  document.getElementById('view-name').textContent = char.name;
-  document.getElementById('view-class-race').textContent = `${char.class} • ${char.race}`;
-  document.getElementById('view-squad').textContent = char.squad_name ? `🛡️ Отряд: ${char.squad_name}` : '';
-  document.getElementById('view-desc').textContent = char.description || 'Описание отсутствует';
-  document.getElementById('view-traits').textContent = char.mini_traits ? `✦ Достижения: ${char.mini_traits}` : '';
-  
-  const img = document.getElementById('view-image');
-  if (char.image_url) {
-    img.src = char.image_url;
-    img.style.display = 'block';
-  } else {
-    img.style.display = 'none';
-  }
-  
-  const editBtn = document.getElementById('edit-char-btn');
-  if (isAuthorized) {
-    editBtn.style.display = 'inline-block';
-    editBtn.onclick = () => openEditModal(char);
-  } else {
-    editBtn.style.display = 'none';
-  }
-  
-  document.getElementById('view-modal').style.display = 'flex';
-}
+    <!-- СЕТКА ПЕРСОНАЖЕЙ -->
+    <div id="characters-grid" class="characters-grid">
+      <div class="empty-state">Загрузка персонажей...</div>
+    </div>
+  </div>
 
-// ============================================================
-// МОДАЛКА РЕДАКТИРОВАНИЯ / ДОБАВЛЕНИЯ
-// ============================================================
+  <!-- МОДАЛКА: ПРОСМОТР ПЕРСОНАЖА -->
+  <div id="view-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="document.getElementById('view-modal').style.display='none'">&times;</span>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+          <img id="view-image" src="" alt="" style="width: 100%; border-radius: 8px; border: 1px solid #4a0e0e; display: none;">
+        </div>
+        <div style="flex: 2;">
+          <h2 id="view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 28px; margin-bottom: 5px;"></h2>
+          <div id="view-class-race" style="color: #aaa; font-size: 16px; margin-bottom: 10px;"></div>
+          <div id="view-squad" style="color: #51cf66; font-size: 14px; margin-bottom: 15px;"></div>
+          <div id="view-desc" style="font-size: 15px; line-height: 1.6; margin-bottom: 15px;"></div>
+          <div id="view-traits" style="font-size: 14px; color: #ffd700; background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px;"></div>
+          <!-- Кнопка редактирования (только для админа) -->
+          <button id="edit-char-btn" style="margin-top: 20px; padding: 8px 16px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; display: none;">✏️ Редактировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-function openEditModal(char = null) {
-  document.getElementById('view-modal').style.display = 'none'; // Закрываем просмотр
-  document.getElementById('edit-modal').style.display = 'flex';
-  
-  const form = document.getElementById('character-form');
-  form.reset();
-  document.getElementById('image-preview').innerHTML = '';
-  
-  if (char) {
-    // Режим редактирования
-    document.querySelector('#edit-modal h3').textContent = 'Редактировать персонажа';
-    document.getElementById('char-id').value = char.id;
-    document.getElementById('char-name-input').value = char.name;
-    document.getElementById('char-race-input').value = char.race;
-    document.getElementById('char-squad-input').value = char.squad_name || '';
-    document.getElementById('char-traits-input').value = char.mini_traits || '';
-    document.getElementById('char-desc-input').value = char.description || '';
-    
-    // Разбираемся с классом (мультикласс)
-    if (char.class.includes(' - ')) {
-      document.getElementById('char-class-input').value = 'Мультикласс';
-      toggleMulticlass();
-      const parts = char.class.split(' - ');
-      document.getElementById('char-class-2').value = parts[1] || '';
-    } else {
-      document.getElementById('char-class-input').value = char.class;
-      toggleMulticlass();
-    }
-    
-    if (char.image_url) {
-      document.getElementById('image-preview').innerHTML = `<img src="${char.image_url}" style="max-height: 100px; border-radius: 6px;">`;
-    }
-  } else {
-    // Режим добавления
-    document.querySelector('#edit-modal h3').textContent = 'Новый персонаж';
-    document.getElementById('char-id').value = '';
-    document.getElementById('char-class-input').value = '';
-    toggleMulticlass();
-  }
-}
-
-document.getElementById('add-char-btn').addEventListener('click', () => openEditModal(null));
-document.getElementById('edit-char-btn').addEventListener('click', () => {
-  if (currentViewChar) openEditModal(currentViewChar);
-});
-
-function toggleMulticlass() {
-  const classSelect = document.getElementById('char-class-input');
-  const multiFields = document.getElementById('multiclass-fields');
-  
-  if (classSelect.value === 'Мультикласс') {
-    multiFields.style.display = 'flex';
-  } else {
-    multiFields.style.display = 'none';
-  }
-}
-
-// Обработка отправки формы
-document.getElementById('character-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  if (!isAuthorized) {
-    alert('Вы не авторизованы!');
-    return;
-  }
-  
-  const id = document.getElementById('char-id').value;
-  const name = document.getElementById('char-name-input').value.trim();
-  const race = document.getElementById('char-race-input').value;
-  const squad = document.getElementById('char-squad-input').value.trim();
-  const traits = document.getElementById('char-traits-input').value.trim();
-  const desc = document.getElementById('char-desc-input').value.trim();
-  const fileInput = document.getElementById('char-image-input');
-  const file = fileInput.files[0];
-  
-  // Определяем класс
-  let charClass = document.getElementById('char-class-input').value;
-  if (charClass === 'Мультикласс') {
-    const class2 = document.getElementById('char-class-2').value;
-    if (!class2) {
-      alert('Выберите второй класс для мультикласса!');
-      return;
-    }
-    // Сортируем по алфавиту для единообразия
-    const classes = [document.getElementById('char-class-2').value, document.getElementById('char-class-2').value];
-    // На самом деле нам нужны два разных класса. Берем первый из основного селекта (там "Мультикласс", что не подходит).
-    // Придется хранить первый класс где-то еще. 
-    // Упростим: при выборе Мультикласс, мы просим ввести два класса.
-  }
-  
-  // Упрощенная логика для мультикласса (пока без первого класса, только второй, так как в HTML нет первого селекта для мультикласса, кроме "Мультикласс").
-  // Давай исправим это в HTML. Но пока сделаем костыль: если Мультикласс, просто сохраним "Мультикласс - Второй".
-  if (charClass === 'Мультикласс') {
-    charClass = `Мультикласс - ${document.getElementById('char-class-2').value}`;
-  }
-  
-  if (!name || !charClass || !race || !desc) {
-    alert('Заполните все обязательные поля!');
-    return;
-  }
-  
-  if (file && file.size > 1024 * 1024) {
-    alert('Картинка слишком большая! Максимум 1 МБ.');
-    return;
-  }
-  
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Сохранение...';
-  
-  try {
-    let imageUrl = currentViewChar?.image_url || null;
-    
-    // Загрузка картинки
-    if (file) {
-      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-      const { data: uploadData, error: uploadError } = await _supabase.storage
-        .from('characters')
-        .upload(fileName, file);
-        
-      if (uploadError) throw uploadError;
+  <!-- МОДАЛКА: ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ ПЕРСОНАЖА -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="document.getElementById('edit-modal').style.display='none'">&times;</span>
+      <h3 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 20px; text-align: center;">Новый персонаж</h3>
       
-      const { data: urlData } = _supabase.storage.from('characters').getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
-    }
-    
-    // Формируем данные
-    const charData = {
-      name: name,
-      class: charClass,
-      race: race,
-      squad_name: squad || null,
-      mini_traits: traits || null,
-      description: desc,
-      image_url: imageUrl,
-      is_approved: null // При редактировании сбрасываем на модерацию
-    };
-    
-    if (id) {
-      // Обновление
-      const { error } = await _supabase.from('characters').update(charData).eq('id', id);
-      if (error) throw error;
-      alert('Персонаж обновлен и отправлен на модерацию!');
-    } else {
-      // Создание
-      const { error } = await _supabase.from('characters').insert([charData]);
-      if (error) throw error;
-      alert('Персонаж добавлен и отправлен на модерацию!');
-    }
-    
-    document.getElementById('edit-modal').style.display = 'none';
-    loadCharacters(); // Перезагружаем список
-    
-  } catch (err) {
-    console.error(err);
-    alert('Ошибка: ' + err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Сохранить';
-  }
-});
+      <form id="character-form">
+        <input type="hidden" id="char-id">
+        
+        <div class="form-group">
+          <label>Имя персонажа</label>
+          <input type="text" id="char-name-input" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Класс</label>
+          <select id="char-class-input" required onchange="toggleMulticlass()">
+            <option value="">— Выберите класс —</option>
+            <option value="Варвар">Варвар</option>
+            <option value="Бард">Бард</option>
+            <option value="Жрец">Жрец</option>
+            <option value="Друид">Друид</option>
+            <option value="Воин">Воин</option>
+            <option value="Монах">Монах</option>
+            <option value="Паладин">Паладин</option>
+            <option value="Следопыт">Следопыт</option>
+            <option value="Плут">Плут</option>
+            <option value="Чародей">Чародей</option>
+            <option value="Колдун">Колдун</option>
+            <option value="Волшебник">Волшебник</option>
+            <option value="Шаман">Шаман</option>
+            <option value="Дрифтер">Дрифтер</option>
+            <option value="Изобретатель">Изобретатель</option>
+            <option value="Мультикласс">Мультикласс</option>
+          </select>
+          <div id="multiclass-fields">
+            <select id="char-class-2">
+              <option value="">— Второй класс —</option>
+              <!-- Дублируем список классов -->
+              <option value="Варвар">Варвар</option>
+              <option value="Бард">Бард</option>
+              <option value="Жрец">Жрец</option>
+              <option value="Друид">Друид</option>
+              <option value="Воин">Воин</option>
+              <option value="Монах">Монах</option>
+              <option value="Паладин">Паладин</option>
+              <option value="Следопыт">Следопыт</option>
+              <option value="Плут">Плут</option>
+              <option value="Чародей">Чародей</option>
+              <option value="Колдун">Колдун</option>
+              <option value="Волшебник">Волшебник</option>
+              <option value="Шаман">Шаман</option>
+              <option value="Дрифтер">Дрифтер</option>
+              <option value="Изобретатель">Изобретатель</option>
+            </select>
+          </div>
+        </div>
 
-// ============================================================
-// ПРЕДПРОСМОТР КАРТИНКИ ПРИ ВЫБОРЕ
-// ============================================================
-document.getElementById('char-image-input').addEventListener('change', function() {
-  const file = this.files[0];
-  const preview = document.getElementById('image-preview');
-  if (file) {
-    if (file.size > 1024 * 1024) {
-      alert('Файл больше 1 МБ. Выберите меньшую картинку.');
-      this.value = '';
-      preview.innerHTML = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => { preview.innerHTML = `<img src="${e.target.result}" style="max-height: 100px; border-radius: 6px;">`; };
-    reader.readAsDataURL(file);
-  }
-});
+        <div class="form-group">
+          <label>Раса</label>
+          <select id="char-race-input" required>
+            <option value="">— Выберите расу —</option>
+            <option value="Браллец">Браллец</option>
+            <option value="Дангунец">Дангунец</option>
+            <option value="Хешег">Хешег</option>
+            <option value="Адаад">Адаад</option>
+            <option value="Ойрдуг">Ойрдуг</option>
+            <option value="Сар-худдулин">Сар-худдулин</option>
+            <option value="Омор-худдулин">Омор-худдулин</option>
+            <option value="Эрх-худдулин">Эрх-худдулин</option>
+            <option value="Самагхи">Самагхи</option>
+            <option value="Эрил-удриш">Эрил-удриш</option>
+            <option value="Урма-удриш">Урма-удриш</option>
+            <option value="Пьюр-пьюр-удриш">Пьюр-пьюр-удриш</option>
+            <option value="Янтарный маракиец">Янтарный маракиец</option>
+            <option value="Пепельный маракиец">Пепельный маракиец</option>
+            <option value="Драгмирец">Драгмирец</option>
+            <option value="Вирморожденный">Вирморожденный</option>
+            <option value="Борос">Борос</option>
+            <option value="Аджаид">Аджаид</option>
+            <option value="Элорец">Элорец</option>
+            <option value="Джабари">Джабари</option>
+            <option value="Джахази">Джахази</option>
+            <option value="Кобольд">Кобольд</option>
+          </select>
+        </div>
 
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  checkAuthStatus();
-  loadCharacters();
-});
+        <div class="form-group">
+          <label>Отряд (если есть)</label>
+          <input type="text" id="char-squad-input" placeholder="Название отряда">
+        </div>
+
+        <div class="form-group">
+          <label>Мини-черты (достижения)</label>
+          <input type="text" id="char-traits-input" placeholder="Например: Бегущий по нефриту">
+        </div>
+
+        <div class="form-group">
+          <label>Описание</label>
+          <textarea id="char-desc-input" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Картинка (макс. 1 МБ)</label>
+          <input type="file" id="char-image-input" accept="image/*">
+          <div id="image-preview" style="margin-top: 10px;"></div>
+        </div>
+
+        <button type="submit" class="btn-submit">Сохранить</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА: ВВОД ПАРОЛЯ -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <span class="modal-close" onclick="document.getElementById('auth-modal').style.display='none'">&times;</span>
+      <h3 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 20px; text-align: center;">Введите пароль</h3>
+      <div class="form-group">
+        <input type="password" id="auth-password" placeholder="Пароль...">
+      </div>
+      <button id="auth-submit" class="btn-submit">Войти</button>
+      <div id="auth-error" style="color: #ff6b6b; text-align: center; margin-top: 10px; display: none;">Неверный пароль</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="ovul.js"></script>
+</body>
+</html>
