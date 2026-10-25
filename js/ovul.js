@@ -3,7 +3,7 @@
 // ============================================================
 
 // Настройки
-const EDGE_FUNCTION_URL = 'https://djieimjwhgjysceh.supabase.co/functions/v1/check-report-password';
+const EDGE_FUNCTION_URL = 'https://djieimjwhgjgsjcysceh.supabase.co/functions/v1/check-report-password';
 const SUPABASE_PUBLIC_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
 const STORAGE_KEY = 'chertogi_report_auth'; // Тот же ключ, что и для отчетов
 
