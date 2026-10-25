@@ -46,32 +46,24 @@
       z-index: 2;
     }
 
-       /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
+    /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
     .map-container {
       width: 100%;
-      /* Убираем фиксированную высоту, чтобы контейнер подстроился под картинку */
-      height: auto; 
+      height: auto;
       margin-bottom: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
       position: relative;
       background: transparent;
       border: none; 
-      border-radius: 0; 
       padding: 0;
     }
     
     .map-container img {
-      width: 70%; /* Увеличили на 15% */
-      height: auto; /* Высота подстраивается автоматически */
+      width: 100%;
+      height: auto;
       object-fit: contain;
-      object-position: center; 
-      
-      /* Убрали отрицательные отступы, которые обрезали края */
-      margin: 0; 
-      
       display: block;
       filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
       cursor: crosshair;
