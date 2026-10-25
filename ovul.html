@@ -49,23 +49,33 @@
     /* ===== МЕСТО ДЛЯ КАРТИНКИ ===== */
     .map-container {
       width: 100%;
-      height: 300px; /* Уменьшили высоту */
-      background: #1a0a1a;
-      border: 1px solid #4a0e0e;
-      border-radius: 16px;
+      height: 320px; /* Высота контейнера */
       margin-bottom: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: hidden; /* Обрезаем всё, что вылезает */
       position: relative;
-      padding: 10px;
+      
+      /* Убрали фиолетовый фон и рамку */
+      background: transparent;
+      border: none; 
+      border-radius: 0; 
+      padding: 0;
     }
+    
     .map-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* Вписываем картинку целиком */
+      width: 120%; /* Увеличили картинку на 20% */
+      height: 120%;
+      object-fit: contain; /* Сохраняем пропорции */
+      object-position: center; 
+      
+      /* Обрезаем по 10 пикселей сверху и снизу (компенсируем увеличением) */
+      margin-top: -10px;
+      margin-bottom: -10px;
+      
       display: block;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); /* Добавили легкую тень для объема */
     }
 
     .page-title {
