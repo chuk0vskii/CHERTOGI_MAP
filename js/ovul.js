@@ -41,7 +41,7 @@ function updateAuthUI() {
 }
 
 // ============================================================
-// ЗАГРУЗКА И ОТРИСОВКА
+// ЗАГРУЗКА И ОТРИСОВКА ПЕРСОНАЖЕЙ
 // ============================================================
 
 async function loadCharacters() {
@@ -131,7 +131,7 @@ function populateSquadFilter() {
 }
 
 // ============================================================
-// МОДАЛКИ
+// МОДАЛКИ ПЕРСОНАЖЕЙ
 // ============================================================
 
 function openViewModal(id) {
@@ -217,6 +217,103 @@ function toggleMulticlass() {
       document.getElementById('char-class-multi-2').value = '';
     }
   }
+}
+
+// ============================================================
+// ЖИТЕЛИ ОВУЛЯ (МЕТКИ НА КАРТЕ)
+// ============================================================
+
+async function loadOvulMarkers() {
+  const mapImg = document.getElementById('ovul-map-image');
+  if (!mapImg) return;
+
+  const { data, error } = await _supabase.from('ovul_residents').select('*');
+  if (error) {
+    console.error('Ошибка загрузки меток:', error);
+    return;
+  }
+
+  // Создаем контейнер для меток (поверх картинки)
+  let markersLayer = document.getElementById('ovul-markers-layer');
+  if (!markersLayer) {
+    markersLayer = document.createElement('div');
+    markersLayer.id = 'ovul-markers-layer';
+    markersLayer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;';
+    mapImg.parentElement.appendChild(markersLayer);
+  }
+
+  markersLayer.innerHTML = '';
+
+  data.forEach(resident => {
+    if (resident.pos_x === null || resident.pos_y === null) return;
+
+    const marker = document.createElement('div');
+    marker.style.cssText = `
+      position: absolute;
+      left: ${resident.pos_x}%;
+      top: ${resident.pos_y}%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      pointer-events: auto;
+      width: 40px;
+      height: 40px;
+      transition: transform 0.2s;
+    `;
+    
+    const iconSrc = resident.icon ? `/CHERTOGI_MAP/icons/${resident.icon}.png` : '/CHERTOGI_MAP/icons/marker2.png';
+    
+    marker.innerHTML = `
+      <img src="${iconSrc}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));">
+      <div class="marker-tooltip" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1a0a1a; color: #ffd700; padding: 5px 10px; border-radius: 4px; border: 1px solid #4a0e0e; white-space: nowrap; font-size: 12px; opacity: 0; transition: opacity 0.2s; pointer-events: none;">${resident.name}</div>
+    `;
+
+    marker.addEventListener('mouseenter', function() {
+      this.style.transform = 'translate(-50%, -50%) scale(1.2)';
+      this.querySelector('.marker-tooltip').style.opacity = '1';
+    });
+    marker.addEventListener('mouseleave', function() {
+      this.style.transform = 'translate(-50%, -50%) scale(1)';
+      this.querySelector('.marker-tooltip').style.opacity = '0';
+    });
+
+    marker.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showResidentInfo(resident);
+    });
+
+    markersLayer.appendChild(marker);
+  });
+}
+
+function showResidentInfo(resident) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.display = 'flex';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 800px;">
+      <span class="modal-close" onclick="this.closest('.modal').remove()">&times;</span>
+      <h2 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 15px;">${escapeHtml(resident.name)}</h2>
+      
+      <div style="font-size: 15px; line-height: 1.6; color: #e0d5c0; white-space: pre-line; margin-bottom: 20px;">
+        ${escapeHtml(resident.description)}
+      </div>
+
+      ${resident.reward ? `
+        <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; border-left: 3px solid #ffd700; margin-bottom: 15px;">
+          <div style="color: #ffd700; font-weight: bold; margin-bottom: 5px;">🏆 Награда (Мини-черта):</div>
+          <div style="color: #e0d5c0; font-size: 14px;">${escapeHtml(resident.reward)}</div>
+        </div>
+      ` : ''}
+
+      ${resident.secret ? `
+        <div style="background: rgba(255,50,50,0.05); padding: 15px; border-radius: 8px; border-left: 3px solid #ff4444;">
+          <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 5px;">🤫 Тайна:</div>
+          <div style="color: #ccc; font-size: 14px;">${escapeHtml(resident.secret)}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
 // ============================================================
@@ -414,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      // Переводим в проценты (чтобы метки не съезжали при изменении размера окна)
       const xPercent = (x / rect.width) * 100;
       const yPercent = (y / rect.height) * 100;
       
@@ -445,5 +541,12 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Координаты: ' + coordText);
       });
     });
+    
+    // Загружаем метки, когда картинка загрузится
+    if (mapImg.complete) {
+      loadOvulMarkers();
+    } else {
+      mapImg.addEventListener('load', loadOvulMarkers);
+    }
   }
 });
