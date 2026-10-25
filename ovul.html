@@ -62,16 +62,19 @@
       padding: 0;
     }
     
-    .map-container img {
-      width: 120%;
-      height: 120%;
+   .map-container img {
+      width: 138%; /* Увеличили на 15% (было 120) */
+      height: 138%;
       object-fit: contain;
       object-position: center; 
+      
+      /* Обрезаем по 10 пикселей сверху и снизу (компенсируем увеличением) */
       margin-top: -10px;
       margin-bottom: -10px;
+      
       display: block;
       filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-      cursor: crosshair; /* Курсор в виде прицела для удобства */
+      cursor: crosshair;
     }
 
     .page-title {
