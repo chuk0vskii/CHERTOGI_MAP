@@ -260,7 +260,8 @@ async function loadOvulMarkers() {
       transition: transform 0.2s;
     `;
     
-    const iconSrc = resident.icon ? `/CHERTOGI_MAP/icons/${resident.icon}.png` : '/CHERTOGI_MAP/icons/marker2.png';
+    // ИСПРАВЛЕННЫЙ ПУТЬ К ИКОНКАМ
+    const iconSrc = resident.icon ? `/CHERTOGI_MAP/images/ovul/${resident.icon}.png` : '/CHERTOGI_MAP/icons/marker2.png';
     
     marker.innerHTML = `
       <img src="${iconSrc}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));">
