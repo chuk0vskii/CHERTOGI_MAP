@@ -111,10 +111,11 @@
       letter-spacing: 0.5px;
     }
 
-    /* ===== БАЗОВЫЕ МЕТКИ ===== */
+    /* ===== МЕТКИ (УВЕЛИЧЕНЫ В 2.5 РАЗА, ОПУЩЕНЫ) ===== */
     .ovul-marker {
       position: absolute;
-      transform: translate(-50%, calc(-50% - 20px));
+      /* -50% центрирует. -10px опускает вниз (было -20px) */
+      transform: translate(-50%, calc(-50% - 10px));
       cursor: pointer;
       pointer-events: auto;
       display: flex;
@@ -125,6 +126,7 @@
       overflow: visible;
     }
     .ovul-marker:hover {
+      transform: translate(-50%, calc(-50% - 10px)) scale(1.1);
       filter: brightness(1.15);
       z-index: 4;
     }
@@ -358,19 +360,18 @@
     }
 
     /* ========================================================= */
-    /* ===== ЯДЕРНЫЙ ТЕСТ РАЗМЕРА И ПОЗИЦИИ (ПРИНУДИТЕЛЬНО) ==== */
+    /* ===== ФИНАЛЬНЫЙ РАЗМЕР МЕТОК ===== */
     /* ========================================================= */
     .ovul-marker {
-      width: 10px !important;
-      height: 10px !important;
-      transform: translate(-50%, calc(-50% - 20px)) !important;
+      width: 25px !important;
+      height: 25px !important;
+      transform: translate(-50%, calc(-50% - 10px)) !important; /* Опущено на 10px */
     }
     .ovul-marker:hover {
-      transform: translate(-50%, calc(-50% - 20px)) scale(1.5) !important;
+      transform: translate(-50%, calc(-50% - 10px)) scale(1.1) !important;
     }
     .ovul-marker img {
-      /* Жестко сжимаем саму картинку в 2 раза */
-      transform: scale(0.5) !important; 
+      transform: none !important; /* Убрали жесткое сжатие */
       width: 100% !important;
       height: 100% !important;
     }
