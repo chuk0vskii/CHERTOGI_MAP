@@ -185,16 +185,31 @@ function openResidentModal(id) {
   iconImg.onerror = () => { iconImg.src = '/CHERTOGI_MAP/icons/marker2.png'; };
 
   // ============================================================
-  // БОЛЬШАЯ КАРТИНКА (ИЗ ПАПКИ jiteli, БЕРЕМ ИМЯ ИЗ ПОЛЯ icon)
+  // БОЛЬШАЯ КАРТИНКА (ЖЕСТКАЯ ПРИВЯЗКА)
   // ============================================================
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
-  // Берем название файла из поля icon (например, gabur, odjara)
-  let imgName = res.icon ? String(res.icon).trim() : '';
+  // Словарь соответствия имен файлов
+  const imageMap = {
+    'Бани Онжары': 'odjara',
+    'Бочка Габура': 'gabur',
+    'Обо ветрам Хазула': 'hazul',
+    'Хижина Надзирателя Ишохота': 'ishohot',
+    'Белый отец Джубин': 'jubin',
+    'Крепость Кетонара': 'ketonar',
+    'Кузница Кушуга': 'kushig',
+    'Палатка Красной Кости Мудара': 'mudar',
+    'Арена Намашу': 'namashu',
+    'Кусачий сад Элюба': 'elub',
+    'Костоправная братьев Сха': 'sha',
+    'Йондани': 'iondani'
+  };
+
+  // Ищем картинку в словаре или берем из поля icon
+  let imgName = imageMap[res.name] || res.icon;
   
   if (imgName) {
-    // Формируем путь: images/jiteli/gabur.jpg
     const imgPath = `/CHERTOGI_MAP/images/jiteli/${imgName}.jpg`;
     
     bigImage.src = imgPath;
