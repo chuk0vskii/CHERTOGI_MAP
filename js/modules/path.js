@@ -631,6 +631,12 @@ function handleClick(e) {
     return;
   }
   
+  if (target.classList.contains('btn-fail-roll')) {
+    const eventId = parseInt(target.dataset.eventId);
+    handleFailRoll(eventId);
+    return;
+  }
+  
   if (target.classList.contains('btn-fate-select')) {
     const eventId = parseInt(target.dataset.eventId);
     const select = document.getElementById('fate-select-' + eventId);
@@ -828,6 +834,49 @@ function handleRealityTear(eventId) {
   const resultText = results[roll] || 'Неизвестная природа пролома';
   
   const container = document.getElementById('reality-result-' + eventId);
+  if (container) {
+    container.innerHTML = '<div style="background: rgba(255,215,0,0.05); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 4px;">Результат (1d8): <strong>' + roll + '</strong> — ' + resultText + '</div>';
+    container.style.display = 'block';
+  }
+}
+
+// ============================================================
+// ОБРАБОТКА 1d8 ДЛЯ "ПРОКЛЯТЫХ ЗЕМЕЛЬ" (fail_5)
+// ============================================================
+
+function handleFailRoll(eventId) {
+  const event = findEventById(eventId);
+  if (!event) return;
+  
+  // Если уже бросали — показываем сохранённый результат, не перебрасываем
+  if (event.failRollResult) {
+    const container = document.getElementById('fail-roll-result-' + eventId);
+    if (container) {
+      container.innerHTML = '<div style="background: rgba(255,215,0,0.05); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 4px;">Результат (1d8): <strong>' + event.failRollResult + '</strong> — ' + event.failRollText + '</div>';
+      container.style.display = 'block';
+    }
+    return;
+  }
+  
+  const roll = getRandomInt(1, 8);
+  const results = {
+    1: 'Прорыв грани Вуали',
+    2: 'Прорыв грани Вуали',
+    3: 'Разлом в лабиринты',
+    4: 'Разлом в лабиринты',
+    5: 'Открытие кармана мира духов',
+    6: 'Открытие кармана мира духов',
+    7: 'Дыхание дальних чертогов',
+    8: 'Дыхание дальних чертогов'
+  };
+  
+  const resultText = results[roll] || 'Неизвестная природа пролома';
+  
+  // Сохраняем в event, чтобы не терялось при перерисовке
+  event.failRollResult = roll;
+  event.failRollText = resultText;
+  
+  const container = document.getElementById('fail-roll-result-' + eventId);
   if (container) {
     container.innerHTML = '<div style="background: rgba(255,215,0,0.05); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 4px;">Результат (1d8): <strong>' + roll + '</strong> — ' + resultText + '</div>';
     container.style.display = 'block';
