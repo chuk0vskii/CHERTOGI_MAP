@@ -277,10 +277,25 @@
 
   <div class="container">
     <h1 class="page-title">Овуль</h1>
-    <div class="page-subtitle">Архив искателей и жителей</div>
+    <div class="page-subtitle">Архив жителей и искателей</div>
 
     <!-- ========================================== -->
-    <!-- РАЗДЕЛ 1: ИСКАТЕЛИ -->
+    <!-- РАЗДЕЛ 1: ЖИТЕЛИ ОВУЛЯ (ВВЕРХУ) -->
+    <!-- ========================================== -->
+    <div class="section-title">
+      <span>Жители Овуля</span>
+    </div>
+
+    <div class="filters-panel">
+      <input type="text" id="search-resident-input" placeholder="Поиск по имени...">
+    </div>
+
+    <div id="residents-grid" class="residents-grid">
+      <div class="empty-state">Загрузка жителей...</div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- РАЗДЕЛ 2: ИСКАТЕЛИ (СНИЗУ) -->
     <!-- ========================================== -->
     <div class="section-title">
       <span>Искатели</span>
@@ -344,21 +359,6 @@
     <div id="characters-grid" class="characters-grid">
       <div class="empty-state">Загрузка искателей...</div>
     </div>
-
-    <!-- ========================================== -->
-    <!-- РАЗДЕЛ 2: ЖИТЕЛИ ОВУЛЯ -->
-    <!-- ========================================== -->
-    <div class="section-title">
-      <span>Жители Овуля</span>
-    </div>
-
-    <div class="filters-panel">
-      <input type="text" id="search-resident-input" placeholder="Поиск по имени...">
-    </div>
-
-    <div id="residents-grid" class="residents-grid">
-      <div class="empty-state">Загрузка жителей...</div>
-    </div>
   </div>
 
   <!-- ========================================== -->
@@ -384,7 +384,6 @@
   </div>
 
   <div id="edit-modal" class="modal">
-    <!-- Форма редактирования искателя (без изменений) -->
     <div class="modal-content">
       <span class="modal-close" onclick="document.getElementById('edit-modal').style.display='none'">&times;</span>
       <h3 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 20px; text-align: center;">Искатель</h3>
@@ -466,7 +465,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
-  <!-- Подключаем наш обновленный скрипт -->
   <script src="js/ovul.js"></script>
 </body>
 </html>
