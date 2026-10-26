@@ -125,6 +125,7 @@ async function loadResidents() {
     return;
   }
   
+  console.log('Жители из базы:', data); // ОТЛАДКА: посмотрим, что приходит
   allResidents = data || [];
   renderResidents();
 }
@@ -145,7 +146,6 @@ function renderResidents() {
   }
 
   grid.innerHTML = filtered.map(res => {
-    // Убрали toLowerCase, чтобы находило plamenniiYAZIK.png
     let iconName = res.icon ? String(res.icon) : '';
     const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
 
@@ -192,21 +192,28 @@ function openViewModal(id) {
 
 function openResidentModal(id) {
   const res = allResidents.find(r => r.id === id);
-  if (!res) return;
+  if (!res) {
+    console.error('Житель не найден по ID:', id);
+    return;
+  }
 
-  document.getElementById('res-view-name').textContent = res.name;
+  console.log('Открываем жителя:', res); // ОТЛАДКА: смотрим, что внутри
 
-  // Вывод описания с абзацами
+  document.getElementById('res-view-name').textContent = res.name || 'Без имени';
+
+  // Безопасное извлечение описания (на случай, если поле называется иначе)
+  const descriptionText = res.description || res.desc || res.text || res.info || '';
   const descEl = document.getElementById('res-view-desc');
-  if (res.description) {
-    const formattedDesc = res.description
+  
+  if (descriptionText) {
+    const formattedDesc = descriptionText
       .split('\n')
       .filter(p => p.trim() !== '')
       .map(p => `<p>${escapeHtml(p.trim())}</p>`)
       .join('');
     descEl.innerHTML = formattedDesc;
   } else {
-    descEl.innerHTML = '<p>Описание отсутствует</p>';
+    descEl.innerHTML = '<p>Описание отсутствует в базе данных</p>';
   }
 
   // Иконка
