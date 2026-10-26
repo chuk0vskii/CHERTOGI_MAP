@@ -114,7 +114,7 @@
       box-shadow: 0 8px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; position: relative;
     }
     
-    #view-modal .modal-content, #resident-modal .modal-content { max-width: 900px; }
+    #view-modal .modal-content { max-width: 900px; }
     
     .modal-close {
       position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; color: #ff6b6b; z-index: 10;
@@ -137,6 +137,12 @@
     .btn-submit:hover { background: #6a1a1a; }
 
     .empty-state { text-align: center; padding: 50px; color: rgba(255,255,255,0.3); font-size: 18px; grid-column: 1 / -1; }
+
+    @media (max-width: 992px) {
+      /* На планшетах картинка уменьшится, чтобы окно не ломалось */
+      #resident-modal .modal-content { max-width: 95%; }
+      .resident-img-container { width: 100% !important; height: 300px !important; }
+    }
 
     @media (max-width: 768px) {
       .container { padding: 90px 15px 30px 15px; }
@@ -263,43 +269,43 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- МОДАЛКА ДЛЯ ЖИТЕЛЕЙ ОВУЛЯ (ТЕМНО-КРАСНАЯ) -->
+  <!-- МОДАЛКА ДЛЯ ЖИТЕЛЕЙ ОВУЛЯ -->
   <!-- ========================================== -->
   <div id="resident-modal" class="modal">
-    <div class="modal-content" style="background: #1a0505; border: 1px solid #4a0e0e;">
+    <div class="modal-content" style="background: #1a0505; border: 1px solid #4a0e0e; max-width: 1200px; width: 95%;">
       <span class="modal-close" onclick="document.getElementById('resident-modal').style.display='none'">&times;</span>
       
-      <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
         
-        <!-- ЛЕВЫЙ БЛОК: Прямоугольник для изображения -->
-        <div style="flex-shrink: 0; width: 150px; height: 200px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,215,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <!-- ЛЕВЫЙ БЛОК: Прямоугольник для изображения (450x600) -->
+        <div class="resident-img-container" style="flex-shrink: 0; width: 450px; height: 600px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,215,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
           <img id="res-view-image" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-          <span id="res-view-image-placeholder" style="color: rgba(255,255,255,0.2); font-size: 12px; text-align: center; padding: 10px;">Нет изоб-<br>ражения</span>
+          <span id="res-view-image-placeholder" style="color: rgba(255,255,255,0.2); font-size: 16px; text-align: center; padding: 10px;">Нет изоб-<br>ражения</span>
         </div>
 
         <!-- ПРАВЫЙ БЛОК: Вся инфа -->
-        <div style="flex: 1; min-width: 250px;">
+        <div style="flex: 1; min-width: 300px;">
           
           <!-- Заголовок с иконкой -->
-          <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 15px;">
+          <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 15px;">
             <img id="res-view-icon" src="" alt="" style="width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); flex-shrink: 0;">
-            <h2 id="res-view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 28px; margin: 0; line-height: 1.2; word-break: break-word;"></h2>
+            <h2 id="res-view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 32px; margin: 0; line-height: 1.2; word-break: break-word;"></h2>
           </div>
 
           <!-- Описание с абзацами -->
-          <div id="res-view-desc" style="margin-bottom: 25px; font-size: 15px; line-height: 1.6; color: #e0d5c0; white-space: pre-wrap;">
+          <div id="res-view-desc" style="margin-bottom: 25px; font-size: 16px; line-height: 1.6; color: #e0d5c0; white-space: pre-wrap;">
           </div>
           
           <!-- Награда -->
           <div id="res-view-reward-wrapper" style="background: rgba(255,215,0,0.08); padding: 15px; border-radius: 8px; border-left: 3px solid #ffd700; margin-bottom: 15px; display: none;">
             <div style="color: #ffd700; font-weight: bold; margin-bottom: 8px;">🏆 Награда (Мини-черта):</div>
-            <div id="res-view-reward" style="color: #e0d5c0; font-size: 14px;"></div>
+            <div id="res-view-reward" style="color: #e0d5c0; font-size: 15px;"></div>
           </div>
 
           <!-- Тайна -->
           <div id="res-view-secret-wrapper" style="background: rgba(255,50,50,0.05); padding: 15px; border-radius: 8px; border-left: 3px solid #ff4444; display: none;">
             <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">🤫 Тайна:</div>
-            <div id="res-view-secret" style="color: #ccc; font-size: 14px;"></div>
+            <div id="res-view-secret" style="color: #ccc; font-size: 15px;"></div>
           </div>
           
         </div>
