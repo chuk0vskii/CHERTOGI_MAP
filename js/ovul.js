@@ -119,7 +119,6 @@ function renderResidents() {
 
   grid.innerHTML = filtered.map(res => {
     let iconName = res.icon ? String(res.icon) : '';
-    // Для карточек берем иконки из папки ovul (как было) или можно тоже из jiteli, если хочешь.
     const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
     
     const roleLabel = res.is_patron ? 'Патрон Овуля' : 'Житель Овуля';
@@ -185,20 +184,24 @@ function openResidentModal(id) {
   iconImg.src = iconSrc;
   iconImg.onerror = () => { iconImg.src = '/CHERTOGI_MAP/icons/marker2.png'; };
 
-  // Большая картинка (из папки jiteli по названию из базы)
+  // ============================================================
+  // БОЛЬШАЯ КАРТИНКА (ИЗ ПАПКИ jiteli, БЕРЕМ ИМЯ ИЗ ПОЛЯ icon)
+  // ============================================================
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
-  if (res.name) {
-    // Формируем имя файла (в нижнем регистре, без пробелов, расширение .jpg)
-    const fileName = res.name.toLowerCase().trim().replace(/\s+/g, '') + '.jpg';
-    const imgPath = `/CHERTOGI_MAP/images/jiteli/${fileName}`;
+  // Берем название файла из поля icon (например, gabur, odjara)
+  let imgName = res.icon ? String(res.icon).trim() : '';
+  
+  if (imgName) {
+    // Формируем путь: images/jiteli/gabur.jpg
+    const imgPath = `/CHERTOGI_MAP/images/jiteli/${imgName}.jpg`;
     
     bigImage.src = imgPath;
     bigImage.style.display = 'block';
     if (placeholder) placeholder.style.display = 'none';
     
-    // Если картинки нет — показываем заглушку
+    // Если файла нет — показываем заглушку
     bigImage.onerror = () => {
       bigImage.style.display = 'none';
       if (placeholder) placeholder.style.display = 'block';
