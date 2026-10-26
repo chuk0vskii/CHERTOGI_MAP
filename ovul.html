@@ -158,7 +158,7 @@
 
     @media (max-width: 992px) {
       #resident-modal .modal-content { max-width: 95%; }
-      .resident-img-container { width: 100% !important; height: 300px !important; }
+      .resident-img-container { width: 100% !important; height: 400px !important; }
     }
 
     @media (max-width: 768px) {
@@ -296,7 +296,8 @@
         
         <!-- ЛЕВЫЙ БЛОК: Прямоугольник для изображения (450x600) -->
         <div class="resident-img-container" style="flex-shrink: 0; width: 450px; height: 600px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,215,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img id="res-view-image" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+          <!-- ИЗМЕНЕНО: object-fit: contain вместо cover, добавлены ограничения -->
+          <img id="res-view-image" src="" alt="" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: none;">
           <span id="res-view-image-placeholder" style="color: rgba(255,255,255,0.2); font-size: 16px; text-align: center; padding: 10px;">Нет изоб-<br>ражения</span>
         </div>
 
