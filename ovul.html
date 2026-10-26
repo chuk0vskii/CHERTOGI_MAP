@@ -49,7 +49,7 @@
     /* ===== ОБЁРТКА КАРТЫ ===== */
     .map-container {
       width: 100%;
-      max-width: 500px;        /* ← карта уменьшена в 2 раза (было 1000px) */
+      max-width: 500px;
       margin: 0 auto 30px auto;
       padding: 0;
       position: relative;
@@ -59,7 +59,7 @@
     .map-scene {
       position: relative;
       width: 100%;
-      line-height: 0;           /* убирает лишний отступ под img */
+      line-height: 0;
       border-radius: 12px;
       overflow: hidden;
       background: rgba(0, 0, 0, 0.2);
@@ -78,14 +78,14 @@
       height: auto;
       user-select: none;
       -webkit-user-drag: none;
-      pointer-events: none;   /* клики ловит сцена / слой меток */
+      pointer-events: none;
     }
 
     /* Слой меток — точно поверх картинки */
     .map-markers-layer {
       position: absolute;
       inset: 0;
-      pointer-events: none;   /* кликабельны только сами метки */
+      pointer-events: none;
       z-index: 2;
     }
 
@@ -123,16 +123,16 @@
     /* ===== МЕТКИ ===== */
     .ovul-marker {
       position: absolute;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, calc(-50% - 20px));
       cursor: pointer;
       pointer-events: auto;
-      width: 40px;
-      height: 40px;
+      width: 20px;
+      height: 20px;
       transition: transform 0.2s ease, filter 0.2s ease;
       z-index: 3;
     }
     .ovul-marker:hover {
-      transform: translate(-50%, -50%) scale(1.2);
+      transform: translate(-50%, calc(-50% - 20px)) scale(1.2);
       filter: brightness(1.15);
       z-index: 4;
     }
@@ -258,7 +258,6 @@
       transform: translateY(-3px);
     }
 
-    /* Миниатюра в карточке */
     .char-thumbnail {
       width: 60px;
       height: 60px;
@@ -328,7 +327,6 @@
       position: relative;
     }
     
-    /* Увеличиваем окно просмотра */
     #view-modal .modal-content {
       max-width: 900px;
     }
@@ -377,7 +375,7 @@
     /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .map-container { max-width: 100%; }
-      .ovul-marker  { width: 32px; height: 32px; }
+      .ovul-marker  { width: 16px; height: 16px; }
       .ovul-marker .marker-tooltip { font-size: 11px; padding: 4px 8px; }
     }
   </style>
@@ -538,7 +536,6 @@
             <option value="Мультикласс">Мультикласс</option>
           </select>
           
-          <!-- Блок для мультикласса -->
           <div id="multiclass-fields" style="display: none; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
             <select id="char-class-multi-1" style="flex: 1; min-width: 120px;">
               <option value="">— Первый класс —</option>
