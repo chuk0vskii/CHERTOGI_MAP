@@ -89,6 +89,25 @@
       border-color: rgba(200, 200, 200, 0.5) !important;
     }
 
+    /* === СТИЛЬ ДЛЯ МЕРТВЫХ ИСКАТЕЛЕЙ === */
+    .dead-card {
+      background: rgba(40, 40, 40, 0.8) !important;
+      border: 1px solid rgba(100, 100, 100, 0.5) !important;
+      opacity: 0.7;
+    }
+    .dead-card:hover {
+      background: rgba(60, 60, 60, 0.9) !important;
+      border-color: rgba(150, 150, 150, 0.8) !important;
+    }
+    .dead-label {
+      color: #ff4444;
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 2px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    }
+
     .char-thumbnail { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid #4a0e0e; flex-shrink: 0; background: #1a0a1a; }
     .resident-icon { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8)); }
 
@@ -107,7 +126,6 @@
       justify-content: center; align-items: center;
     }
     
-    /* Базовый стиль окна */
     .modal-content {
       background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px;
       padding: 30px; max-width: 600px; width: 90%; color: #ffffff;
@@ -139,7 +157,6 @@
     .empty-state { text-align: center; padding: 50px; color: rgba(255,255,255,0.3); font-size: 18px; grid-column: 1 / -1; }
 
     @media (max-width: 992px) {
-      /* На планшетах картинка уменьшится, чтобы окно не ломалось */
       #resident-modal .modal-content { max-width: 95%; }
       .resident-img-container { width: 100% !important; height: 300px !important; }
     }
