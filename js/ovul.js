@@ -66,7 +66,6 @@ async function loadDeceasedNames() {
       }
     });
 
-    // Сохраняем в глобальную переменную для быстрой проверки
     deceasedNames = names.map(n => n.toLowerCase().trim());
     console.log('Загружено павших имен:', deceasedNames.length);
 
@@ -114,7 +113,6 @@ function renderCharacters() {
   if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state">Искатели не найдены</div>'; return; }
   
   grid.innerHTML = filtered.map(char => {
-    // Проверяем, есть ли имя в списке павших (приводим к нижнему регистру для надежности)
     const isDead = deceasedNames.includes(char.name.toLowerCase().trim());
     const cardClass = isDead ? 'character-card dead-card' : 'character-card';
 
@@ -180,6 +178,41 @@ function renderResidents() {
         </div>
       </div>
     `;
+  }).join('');
+}
+
+// ============================================================
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ НАГРАД
+// ============================================================
+function formatRewardText(text) {
+  if (!text) return '';
+  
+  // Разделяем текст по заголовкам "Мини черта" (с дефисом или без)
+  const parts = text.split(/(?=Мини[- ]?черта[ -—])/i);
+  
+  return parts.map(part => {
+    const lines = part.trim().split('\n').map(p => p.trim()).filter(p => p !== '');
+    if (lines.length === 0) return '';
+    
+    // Проверяем, начинается ли блок с заголовка
+    const isHeader = /^Мини[- ]?черта/i.test(lines[0]);
+    const headerText = isHeader ? lines.shift() : '';
+    
+    let html = '<div style="margin-bottom: 15px;">';
+    if (headerText) {
+      html += `<div style="color: #ffd700; font-weight: bold; font-size: 16px; margin-bottom: 8px; border-bottom: 1px dashed rgba(255,215,0,0.3); padding-bottom: 4px;">${escapeHtml(headerText)}</div>`;
+    }
+    
+    html += lines.map(line => {
+      // Выделяем "Требование:" и "Эффект:"
+      if (line.toLowerCase().startsWith('требование:') || line.toLowerCase().startsWith('эффект:')) {
+        return `<div style="margin-bottom: 6px; padding-left: 20px; text-indent: -20px;"><span style="color: #ffd700; margin-right: 8px;">❖</span><span style="color: #ffaaaa;">${escapeHtml(line)}</span></div>`;
+      }
+      return `<div style="margin-bottom: 6px; padding-left: 20px; text-indent: -20px;"><span style="color: #ffd700; margin-right: 8px;">❖</span>${escapeHtml(line)}</div>`;
+    }).join('');
+    
+    html += '</div>';
+    return html;
   }).join('');
 }
 
@@ -263,9 +296,10 @@ function openResidentModal(id) {
     if (placeholder) placeholder.style.display = 'block';
   }
 
+  // Используем новую функцию форматирования для награды
   const rewardWrapper = document.getElementById('res-view-reward-wrapper');
   if (res.reward) {
-    document.getElementById('res-view-reward').innerHTML = res.reward.split('\n').map(p => p.trim()).filter(p => p !== '').map(p => `<p style="margin-bottom: 8px;"><span style="color: #ffd700; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`).join('');
+    document.getElementById('res-view-reward').innerHTML = formatRewardText(res.reward);
     rewardWrapper.style.display = 'block';
   } else {
     rewardWrapper.style.display = 'none';
@@ -341,7 +375,6 @@ function toggleMulticlass() {
 document.addEventListener('DOMContentLoaded', async () => {
   checkAuthStatus();
   
-  // Сначала грузим павших, потом искателей, чтобы при отрисовке знать, кто мертв
   await loadDeceasedNames();
   loadCharacters();
   loadResidents();
@@ -461,7 +494,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Закрытие модалок по клику на фон
   const modals = document.querySelectorAll('.modal');
   modals.forEach(modal => {
     modal.addEventListener('click', function(e) {
