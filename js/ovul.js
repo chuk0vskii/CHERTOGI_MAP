@@ -117,7 +117,6 @@ function populateSquadFilter() {
   });
   
   const currentVal = select.value;
-  
   while (select.options.length > 2) select.remove(2);
   
   squads.forEach(sq => {
@@ -220,68 +219,65 @@ function toggleMulticlass() {
 }
 
 // ============================================================
-// ЖИТЕЛИ ОВУЛЯ (МЕТКИ НА КАРТЕ)
+// ЖИТЕЛИ ОВУЛЯ (МЕТКИ НА КАРТЕ) - ИСПРАВЛЕНО
 // ============================================================
 
 async function loadOvulMarkers() {
   const mapImg = document.getElementById('ovul-map-image');
-  if (!mapImg) return;
+  const scene = document.getElementById('ovul-map-scene');
+  if (!mapImg || !scene) return;
+
+  // Ждем загрузки картинки
+  if (!mapImg.complete || mapImg.naturalWidth === 0) {
+    await new Promise(resolve => {
+      mapImg.onload = resolve;
+      mapImg.onerror = resolve;
+    });
+  }
 
   const { data, error } = await _supabase.from('ovul_residents').select('*');
   if (error) {
     console.error('Ошибка загрузки меток:', error);
     return;
   }
+  if (!data || data.length === 0) return;
 
-  // Создаем контейнер для меток (поверх картинки)
   let markersLayer = document.getElementById('ovul-markers-layer');
   if (!markersLayer) {
     markersLayer = document.createElement('div');
     markersLayer.id = 'ovul-markers-layer';
-    markersLayer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;';
-    mapImg.parentElement.appendChild(markersLayer);
+    markersLayer.className = 'map-markers-layer';
+    scene.appendChild(markersLayer);
   }
-
   markersLayer.innerHTML = '';
 
   data.forEach(resident => {
     if (resident.pos_x === null || resident.pos_y === null) return;
 
     const marker = document.createElement('div');
-    marker.style.cssText = `
-      position: absolute;
-      left: ${resident.pos_x}%;
-      top: ${resident.pos_y}%;
-      transform: translate(-50%, -50%);
-      cursor: pointer;
-      pointer-events: auto;
-      width: 40px;
-      height: 40px;
-      transition: transform 0.2s;
-    `;
-    
-    // ИСПРАВЛЕННЫЙ ПУТЬ К ИКОНКАМ
-    const iconSrc = resident.icon ? `/CHERTOGI_MAP/images/ovul/${resident.icon}.png` : '/CHERTOGI_MAP/icons/marker2.png';
-    
-    marker.innerHTML = `
-      <img src="${iconSrc}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));">
-      <div class="marker-tooltip" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1a0a1a; color: #ffd700; padding: 5px 10px; border-radius: 4px; border: 1px solid #4a0e0e; white-space: nowrap; font-size: 12px; opacity: 0; transition: opacity 0.2s; pointer-events: none;">${resident.name}</div>
-    `;
+    marker.className = 'ovul-marker';
+    // Задаем только позицию в процентах. Размер и отступы берет из CSS!
+    marker.style.left = resident.pos_x + '%';
+    marker.style.top = resident.pos_y + '%';
 
-    marker.addEventListener('mouseenter', function() {
-      this.style.transform = 'translate(-50%, -50%) scale(1.2)';
-      this.querySelector('.marker-tooltip').style.opacity = '1';
-    });
-    marker.addEventListener('mouseleave', function() {
-      this.style.transform = 'translate(-50%, -50%) scale(1)';
-      this.querySelector('.marker-tooltip').style.opacity = '0';
-    });
+    if (resident.icon === 'drevo') {
+      marker.classList.add('marker-drevo');
+    }
+
+    // Жестко нижний регистр для надежности
+    let iconName = resident.icon ? String(resident.icon).toLowerCase() : '';
+    const iconSrc = iconName
+      ? `/CHERTOGI_MAP/images/ovul/${iconName}.png`
+      : '/CHERTOGI_MAP/icons/marker2.png';
+
+    marker.innerHTML = `
+      <img src="${iconSrc}" alt="${escapeHtml(resident.name)}" onerror="this.src='/CHERTOGI_MAP/icons/marker2.png'">
+      <div class="marker-tooltip">${escapeHtml(resident.name)}</div>
+    `;
 
     marker.addEventListener('click', (e) => {
       e.stopPropagation();
-      
-      // Если это Древо Смерти, переходим на страницу
-      if (resident.icon === 'drevo') {
+      if (iconName === 'drevo') {
         window.location.href = 'tree.html';
       } else {
         showResidentInfo(resident);
@@ -329,8 +325,10 @@ function showResidentInfo(resident) {
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthStatus();
   loadCharacters();
+  
+  // Загружаем метки, когда страница готова
+  loadOvulMarkers();
 
-  // Кнопка "Войти"
   const loginBtn = document.getElementById('login-btn');
   if (loginBtn) {
     loginBtn.addEventListener('click', () => {
@@ -338,13 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Кнопка "Добавить"
   const addBtn = document.getElementById('add-char-btn');
   if (addBtn) {
     addBtn.addEventListener('click', () => openEditModal(null));
   }
 
-  // Кнопка "Редактировать"
   const editBtn = document.getElementById('edit-char-btn');
   if (editBtn) {
     editBtn.addEventListener('click', () => {
@@ -352,16 +348,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Отправка формы
+  // Форма
   const form = document.getElementById('character-form');
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      if (!isAuthorized) {
-        alert('Вы не авторизованы!');
-        return;
-      }
+      if (!isAuthorized) { alert('Вы не авторизованы!'); return; }
       
       const id = document.getElementById('char-id').value;
       const name = document.getElementById('char-name-input').value.trim();
@@ -376,23 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (charClass === 'Мультикласс') {
         const class1 = document.getElementById('char-class-multi-1').value;
         const class2 = document.getElementById('char-class-multi-2').value;
-        
-        if (!class1 || !class2) {
-          alert('Выберите оба класса!');
-          return;
-        }
+        if (!class1 || !class2) { alert('Выберите оба класса!'); return; }
         charClass = `${class1} - ${class2}`;
       }
       
-      if (!name || !charClass || !race || !desc) {
-        alert('Заполните все обязательные поля!');
-        return;
-      }
-      
-      if (file && file.size > 1024 * 1024) {
-        alert('Картинка слишком большая! Максимум 1 МБ.');
-        return;
-      }
+      if (!name || !charClass || !race || !desc) { alert('Заполните все обязательные поля!'); return; }
+      if (file && file.size > 1024 * 1024) { alert('Картинка слишком большая! Максимум 1 МБ.'); return; }
       
       const submitBtn = e.target.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
@@ -400,12 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       try {
         let imageUrl = currentViewChar?.image_url || null;
-        
         if (file) {
           const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
           const { error: uploadError } = await _supabase.storage.from('characters').upload(fileName, file);
           if (uploadError) throw uploadError;
-          
           const { data: urlData } = _supabase.storage.from('characters').getPublicUrl(fileName);
           imageUrl = urlData.publicUrl;
         }
@@ -433,7 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('edit-modal').style.display = 'none';
         loadCharacters(); 
-        
       } catch (err) {
         console.error(err);
         alert('Ошибка: ' + err.message);
@@ -450,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
     authSubmit.addEventListener('click', async () => {
       const pwd = document.getElementById('auth-password').value;
       const errorEl = document.getElementById('auth-error');
-      
       if (!pwd) return;
       
       try {
@@ -459,7 +436,6 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLIC_KEY },
           body: JSON.stringify({ password: pwd })
         });
-        
         const data = await response.json();
         if (data.ok) {
           isAuthorized = true;
@@ -475,16 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Слушатели фильтров
+  // Фильтры
   const searchInput = document.getElementById('search-input');
   if (searchInput) searchInput.addEventListener('input', renderCharacters);
-  
   const filterClass = document.getElementById('filter-class');
   if (filterClass) filterClass.addEventListener('change', renderCharacters);
-  
   const filterRace = document.getElementById('filter-race');
   if (filterRace) filterRace.addEventListener('change', renderCharacters);
-  
   const filterSquad = document.getElementById('filter-squad');
   if (filterSquad) filterSquad.addEventListener('change', renderCharacters);
 
@@ -497,63 +470,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (file) {
         if (file.size > 1024 * 1024) {
           alert('Файл больше 1 МБ.');
-          this.value = '';
-          preview.innerHTML = '';
-          return;
+          this.value = ''; preview.innerHTML = ''; return;
         }
         const reader = new FileReader();
         reader.onload = (e) => { preview.innerHTML = `<img src="${e.target.result}" style="max-height: 100px; border-radius: 6px;">`; };
         reader.readAsDataURL(file);
       }
     });
-  }
-
-  // ============================================================
-  // ВРЕМЕННЫЙ ИНСТРУМЕНТ ДЛЯ ПОЛУЧЕНИЯ КООРДИНАТ (ТОЛЬКО ДЛЯ ТЕБЯ)
-  // ============================================================
-  const mapImg = document.getElementById('ovul-map-image');
-  if (mapImg) {
-    mapImg.addEventListener('click', function(e) {
-      const rect = this.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const xPercent = (x / rect.width) * 100;
-      const yPercent = (y / rect.height) * 100;
-      
-      const coordText = `X: ${xPercent.toFixed(2)}%, Y: ${yPercent.toFixed(2)}%`;
-      
-      navigator.clipboard.writeText(coordText).then(() => {
-        const tooltip = document.createElement('div');
-        tooltip.textContent = `Скопировано: ${coordText}`;
-        tooltip.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #4a0e0e;
-          color: #ffd700;
-          padding: 10px 20px;
-          border-radius: 8px;
-          border: 1px solid #ffd700;
-          font-family: 'Philosopher', sans-serif;
-          z-index: 9999;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-        `;
-        document.body.appendChild(tooltip);
-        
-        setTimeout(() => tooltip.remove(), 2000);
-      }).catch(err => {
-        console.error('Ошибка копирования:', err);
-        alert('Координаты: ' + coordText);
-      });
-    });
-    
-    // Загружаем метки, когда картинка загрузится
-    if (mapImg.complete) {
-      loadOvulMarkers();
-    } else {
-      mapImg.addEventListener('load', loadOvulMarkers);
-    }
   }
 });
