@@ -70,20 +70,30 @@
       gap: 15px; margin-bottom: 40px;
     }
 
-    /* БАЗОВАЯ КАРТОЧКА (Теперь такая же серая, как у жителей) */
+    /* БАЗОВАЯ КАРТОЧКА (Искатели - как раньше, красные) */
     .character-card {
-      background: rgba(150, 150, 150, 0.15); 
-      border: 1px solid rgba(150, 150, 150, 0.25);
+      background: rgba(74, 14, 14, 0.2); 
+      border: 1px solid rgba(74, 14, 14, 0.2);
       border-radius: 12px; padding: 12px 15px; transition: all 0.3s ease;
       cursor: pointer; display: flex; align-items: center; gap: 15px; min-height: 90px;
     }
     .character-card:hover {
-      background: rgba(150, 150, 150, 0.25); 
-      border-color: rgba(200, 200, 200, 0.5); 
+      background: rgba(74, 14, 14, 0.4); 
+      border-color: #4a0e0e; 
       transform: translateY(-3px);
     }
 
-    /* === СТИЛЬ ДЛЯ МЕРТВЫХ ИСКАТЕЛЕЙ (Темно-серый) === */
+    /* ЖИТЕЛИ (Серые) */
+    .resident-card {
+      background: rgba(150, 150, 150, 0.15) !important;
+      border: 1px solid rgba(150, 150, 150, 0.25) !important;
+    }
+    .resident-card:hover {
+      background: rgba(150, 150, 150, 0.25) !important;
+      border-color: rgba(200, 200, 200, 0.5) !important;
+    }
+
+    /* === МЕРТВЫЕ ИСКАТЕЛИ (Темно-серые) === */
     .dead-card {
       background: rgba(40, 40, 40, 0.8) !important;
       border: 1px solid rgba(100, 100, 100, 0.5) !important;
@@ -126,7 +136,12 @@
       box-shadow: 0 8px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; position: relative;
     }
     
-    #view-modal .modal-content { max-width: 900px; }
+    /* Модалка искателя (теперь тоже темно-красная) */
+    #view-modal .modal-content { 
+      max-width: 900px; 
+      background: #1a0505; 
+      border: 1px solid #4a0e0e;
+    }
     
     .modal-close {
       position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; color: #ff6b6b; z-index: 10;
@@ -225,7 +240,7 @@
 
   <!-- МОДАЛКИ ДЛЯ ИСКАТЕЛЕЙ -->
   <div id="view-modal" class="modal">
-    <div class="modal-content" style="background: #1a0a1a;">
+    <div class="modal-content">
       <span class="modal-close" onclick="document.getElementById('view-modal').style.display='none'">&times;</span>
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 200px;"><img id="view-image" src="" alt="" style="width: 100%; border-radius: 8px; border: 1px solid #4a0e0e; display: none;"></div>
