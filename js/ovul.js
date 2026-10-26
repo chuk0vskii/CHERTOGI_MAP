@@ -10,7 +10,7 @@ let isAuthorized = false;
 let allCharacters = [];
 let currentViewChar = null;
 let allResidents = []; 
-let deceasedNames = []; // Массив павших имен
+let deceasedNames = []; 
 
 // ============================================================
 // АВТОРИЗАЦИЯ
@@ -187,14 +187,12 @@ function renderResidents() {
 function formatRewardText(text) {
   if (!text) return '';
   
-  // Разделяем текст по заголовкам "Мини черта" (с дефисом или без)
   const parts = text.split(/(?=Мини[- ]?черта[ -—])/i);
   
   return parts.map(part => {
     const lines = part.trim().split('\n').map(p => p.trim()).filter(p => p !== '');
     if (lines.length === 0) return '';
     
-    // Проверяем, начинается ли блок с заголовка
     const isHeader = /^Мини[- ]?черта/i.test(lines[0]);
     const headerText = isHeader ? lines.shift() : '';
     
@@ -204,7 +202,6 @@ function formatRewardText(text) {
     }
     
     html += lines.map(line => {
-      // Выделяем "Требование:" и "Эффект:"
       if (line.toLowerCase().startsWith('требование:') || line.toLowerCase().startsWith('эффект:')) {
         return `<div style="margin-bottom: 6px; padding-left: 20px; text-indent: -20px;"><span style="color: #ffd700; margin-right: 8px;">❖</span><span style="color: #ffaaaa;">${escapeHtml(line)}</span></div>`;
       }
@@ -223,15 +220,29 @@ function openViewModal(id) {
   const char = allCharacters.find(c => c.id === id);
   if (!char) return;
   currentViewChar = char;
+  
   document.getElementById('view-name').textContent = char.name;
   document.getElementById('view-class-race').textContent = `${char.class} • ${char.race}`;
   document.getElementById('view-squad').textContent = char.squad_name ? `🛡️ Отряд: ${char.squad_name}` : '';
-  document.getElementById('view-desc').textContent = char.description || 'Описание отсутствует';
+  
+  // Вывод описания с сохранением абзацев
+  const descEl = document.getElementById('view-desc');
+  const rawDesc = char.description || '';
+  descEl.innerHTML = '';
+  if (rawDesc) {
+    descEl.innerHTML = escapeHtml(rawDesc).replace(/\n/g, '<br>');
+  } else {
+    descEl.textContent = 'Описание отсутствует';
+  }
+  
   document.getElementById('view-traits').textContent = char.mini_traits ? `✦ Достижения: ${char.mini_traits}` : '';
+  
   const img = document.getElementById('view-image');
   if (char.image_url) { img.src = char.image_url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+  
   const editBtn = document.getElementById('edit-char-btn');
   if (isAuthorized) { editBtn.style.display = 'inline-block'; editBtn.onclick = () => openEditModal(char); } else { editBtn.style.display = 'none'; }
+  
   document.getElementById('view-modal').style.display = 'flex';
 }
 
@@ -296,7 +307,6 @@ function openResidentModal(id) {
     if (placeholder) placeholder.style.display = 'block';
   }
 
-  // Используем новую функцию форматирования для награды
   const rewardWrapper = document.getElementById('res-view-reward-wrapper');
   if (res.reward) {
     document.getElementById('res-view-reward').innerHTML = formatRewardText(res.reward);
