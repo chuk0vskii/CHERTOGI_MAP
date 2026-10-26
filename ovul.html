@@ -70,7 +70,6 @@
       gap: 15px; margin-bottom: 40px;
     }
 
-    /* Базовая карточка (Искатели) */
     .character-card {
       background: rgba(74, 14, 14, 0.2); border: 1px solid rgba(74, 14, 14, 0.2);
       border-radius: 12px; padding: 12px 15px; transition: all 0.3s ease;
@@ -80,7 +79,7 @@
       background: rgba(74, 14, 14, 0.4); border-color: #4a0e0e; transform: translateY(-3px);
     }
 
-    /* !!! ЖЕСТКИЙ ЦВЕТ ДЛЯ ЖИТЕЛЕЙ !!! */
+    /* ЖЕСТКИЙ ЦВЕТ ДЛЯ ЖИТЕЛЕЙ */
     .resident-card {
       background: rgba(150, 150, 150, 0.15) !important;
       border: 1px solid rgba(150, 150, 150, 0.25) !important;
@@ -107,17 +106,18 @@
       background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 2000;
       justify-content: center; align-items: center;
     }
+    
+    /* Базовый стиль окна */
     .modal-content {
       background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px;
       padding: 30px; max-width: 600px; width: 90%; color: #ffffff;
       box-shadow: 0 8px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; position: relative;
     }
     
-    #view-modal .modal-content, #resident-modal .modal-content { max-width: 800px; }
-    #view-modal .modal-content img { max-height: 500px; object-fit: contain; }
-
+    #view-modal .modal-content, #resident-modal .modal-content { max-width: 900px; }
+    
     .modal-close {
-      position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; color: #ff6b6b;
+      position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; color: #ff6b6b; z-index: 10;
     }
     
     .form-group { margin-bottom: 15px; }
@@ -138,13 +138,10 @@
 
     .empty-state { text-align: center; padding: 50px; color: rgba(255,255,255,0.3); font-size: 18px; grid-column: 1 / -1; }
 
-    /* Стили для абзацев в описании жителя */
-    .resident-description p { margin-bottom: 12px; line-height: 1.6; font-size: 15px; color: #e0d5c0; }
-    .resident-description p:last-child { margin-bottom: 0; }
-
     @media (max-width: 768px) {
       .container { padding: 90px 15px 30px 15px; }
       .filters-panel { flex-direction: column; }
+      .modal-content { padding: 20px; }
     }
   </style>
 </head>
@@ -172,7 +169,7 @@
 
     <!-- ЖИТЕЛИ -->
     <div class="section-title">
-      <span>Жители Овуля</span>
+      <span>Жители и Патроны Овуля</span>
     </div>
     <div class="filters-panel">
       <input type="text" id="search-resident-input" placeholder="Поиск по имени...">
@@ -193,46 +190,11 @@
       <input type="text" id="search-input" placeholder="Поиск по имени...">
       <select id="filter-class">
         <option value="">Все классы</option>
-        <option value="Варвар">Варвар</option>
-        <option value="Бард">Бард</option>
-        <option value="Жрец">Жрец</option>
-        <option value="Друид">Друид</option>
-        <option value="Воин">Воин</option>
-        <option value="Монах">Монах</option>
-        <option value="Паладин">Паладин</option>
-        <option value="Следопыт">Следопыт</option>
-        <option value="Плут">Плут</option>
-        <option value="Чародей">Чародей</option>
-        <option value="Колдун">Колдун</option>
-        <option value="Волшебник">Волшебник</option>
-        <option value="Шаман">Шаман</option>
-        <option value="Дрифтер">Дрифтер</option>
-        <option value="Изобретатель">Изобретатель</option>
+        <option value="Варвар">Варвар</option><option value="Бард">Бард</option><option value="Жрец">Жрец</option><option value="Друид">Друид</option><option value="Воин">Воин</option><option value="Монах">Монах</option><option value="Паладин">Паладин</option><option value="Следопыт">Следопыт</option><option value="Плут">Плут</option><option value="Чародей">Чародей</option><option value="Колдун">Колдун</option><option value="Волшебник">Волшебник</option><option value="Шаман">Шаман</option><option value="Дрифтер">Дрифтер</option><option value="Изобретатель">Изобретатель</option>
       </select>
       <select id="filter-race">
         <option value="">Все расы</option>
-        <option value="Браллец">Браллец</option>
-        <option value="Дангунец">Дангунец</option>
-        <option value="Хешег">Хешег</option>
-        <option value="Адаад">Адаад</option>
-        <option value="Ойрдуг">Ойрдуг</option>
-        <option value="Сар-худдулин">Сар-худдулин</option>
-        <option value="Омор-худдулин">Омор-худдулин</option>
-        <option value="Эрх-худдулин">Эрх-худдулин</option>
-        <option value="Самагхи">Самагхи</option>
-        <option value="Эрил-удриш">Эрил-удриш</option>
-        <option value="Урма-удриш">Урма-удриш</option>
-        <option value="Пьюр-пьюр-удриш">Пьюр-пьюр-удриш</option>
-        <option value="Янтарный маракиец">Янтарный маракиец</option>
-        <option value="Пепельный маракиец">Пепельный маракиец</option>
-        <option value="Драгмирец">Драгмирец</option>
-        <option value="Вирморожденный">Вирморожденный</option>
-        <option value="Борос">Борос</option>
-        <option value="Аджаид">Аджаид</option>
-        <option value="Элорец">Элорец</option>
-        <option value="Джабари">Джабари</option>
-        <option value="Джахази">Джахази</option>
-        <option value="Кобольд">Кобольд</option>
+        <option value="Браллец">Браллец</option><option value="Дангунец">Дангунец</option><option value="Хешег">Хешег</option><option value="Адаад">Адаад</option><option value="Ойрдуг">Ойрдуг</option><option value="Сар-худдулин">Сар-худдулин</option><option value="Омор-худдулин">Омор-худдулин</option><option value="Эрх-худдулин">Эрх-худдулин</option><option value="Самагхи">Самагхи</option><option value="Эрил-удриш">Эрил-удриш</option><option value="Урма-удриш">Урма-удриш</option><option value="Пьюр-пьюр-удриш">Пьюр-пьюр-удриш</option><option value="Янтарный маракиец">Янтарный маракиец</option><option value="Пепельный маракиец">Пепельный маракиец</option><option value="Драгмирец">Драгмирец</option><option value="Вирморожденный">Вирморожденный</option><option value="Борос">Борос</option><option value="Аджаид">Аджаид</option><option value="Элорец">Элорец</option><option value="Джабари">Джабари</option><option value="Джахази">Джахази</option><option value="Кобольд">Кобольд</option>
       </select>
       <select id="filter-squad">
         <option value="">Все отряды</option>
@@ -244,9 +206,9 @@
     </div>
   </div>
 
-  <!-- МОДАЛКИ (без изменений) -->
+  <!-- МОДАЛКИ ДЛЯ ИСКАТЕЛЕЙ -->
   <div id="view-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="background: #1a0a1a;">
       <span class="modal-close" onclick="document.getElementById('view-modal').style.display='none'">&times;</span>
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 200px;"><img id="view-image" src="" alt="" style="width: 100%; border-radius: 8px; border: 1px solid #4a0e0e; display: none;"></div>
@@ -263,7 +225,7 @@
   </div>
 
   <div id="edit-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="background: #1a0a1a;">
       <span class="modal-close" onclick="document.getElementById('edit-modal').style.display='none'">&times;</span>
       <h3 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 20px; text-align: center;">Искатель</h3>
       <form id="character-form">
@@ -291,7 +253,7 @@
   </div>
 
   <div id="auth-modal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-content" style="max-width: 400px; background: #1a0a1a;">
       <span class="modal-close" onclick="document.getElementById('auth-modal').style.display='none'">&times;</span>
       <h3 style="font-family: 'Calypso', serif; color: #ffd700; margin-bottom: 20px; text-align: center;">Введите пароль</h3>
       <div class="form-group"><input type="password" id="auth-password" placeholder="Пароль..."></div>
@@ -300,25 +262,47 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- МОДАЛКА ДЛЯ ЖИТЕЛЕЙ ОВУЛЯ (ТЕМНО-КРАСНАЯ) -->
+  <!-- ========================================== -->
   <div id="resident-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="background: #1a0505; border: 1px solid #4a0e0e;">
       <span class="modal-close" onclick="document.getElementById('resident-modal').style.display='none'">&times;</span>
       
-      <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 15px;">
-        <img id="res-view-icon" src="" alt="" style="width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));">
-        <h2 id="res-view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 32px; margin: 0; line-height: 1.2;"></h2>
-      </div>
+      <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+        
+        <!-- ЛЕВЫЙ БЛОК: Прямоугольник для изображения -->
+        <div style="flex-shrink: 0; width: 150px; height: 200px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,215,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <img id="res-view-image" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+          <span id="res-view-image-placeholder" style="color: rgba(255,255,255,0.2); font-size: 12px; text-align: center; padding: 10px;">Нет изоб-<br>ражения</span>
+        </div>
 
-      <div id="res-view-desc" class="resident-description" style="margin-bottom: 25px;"></div>
-      
-      <div id="res-view-reward-wrapper" style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; border-left: 3px solid #ffd700; margin-bottom: 15px; display: none;">
-        <div style="color: #ffd700; font-weight: bold; margin-bottom: 5px;">🏆 Награда (Мини-черта):</div>
-        <div id="res-view-reward" style="color: #e0d5c0; font-size: 14px;"></div>
-      </div>
+        <!-- ПРАВЫЙ БЛОК: Вся инфа -->
+        <div style="flex: 1; min-width: 250px;">
+          
+          <!-- Заголовок с иконкой -->
+          <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 15px;">
+            <img id="res-view-icon" src="" alt="" style="width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); flex-shrink: 0;">
+            <h2 id="res-view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 28px; margin: 0; line-height: 1.2; word-break: break-word;"></h2>
+          </div>
 
-      <div id="res-view-secret-wrapper" style="background: rgba(255,50,50,0.05); padding: 15px; border-radius: 8px; border-left: 3px solid #ff4444; display: none;">
-        <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 5px;">🤫 Тайна:</div>
-        <div id="res-view-secret" style="color: #ccc; font-size: 14px;"></div>
+          <!-- Описание с абзацами -->
+          <div id="res-view-desc" style="margin-bottom: 25px; font-size: 15px; line-height: 1.6; color: #e0d5c0; white-space: pre-wrap;">
+          </div>
+          
+          <!-- Награда -->
+          <div id="res-view-reward-wrapper" style="background: rgba(255,215,0,0.08); padding: 15px; border-radius: 8px; border-left: 3px solid #ffd700; margin-bottom: 15px; display: none;">
+            <div style="color: #ffd700; font-weight: bold; margin-bottom: 8px;">🏆 Награда (Мини-черта):</div>
+            <div id="res-view-reward" style="color: #e0d5c0; font-size: 14px;"></div>
+          </div>
+
+          <!-- Тайна -->
+          <div id="res-view-secret-wrapper" style="background: rgba(255,50,50,0.05); padding: 15px; border-radius: 8px; border-left: 3px solid #ff4444; display: none;">
+            <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">🤫 Тайна:</div>
+            <div id="res-view-secret" style="color: #ccc; font-size: 14px;"></div>
+          </div>
+          
+        </div>
       </div>
     </div>
   </div>
