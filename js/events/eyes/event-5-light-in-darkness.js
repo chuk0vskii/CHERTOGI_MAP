@@ -11,7 +11,7 @@ export default {
   },
   
   render: function(event, helpers) {
-    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty, addBonusEvent } = helpers;
+    const { createTableButton, createSingleBar, createResult, createEffect, getCurrentDifficulty } = helpers;
     const difficulty = getCurrentDifficulty();
     let html = '';
     
@@ -38,9 +38,6 @@ export default {
         html += '<div style="margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border-left: 3px solid #ffd700; color: #ffd700; font-size: 14px;">';
         html += '⭐ Добавлено бонусное событие "Ловушка"';
         html += '</div>';
-        if (typeof addBonusEvent === 'function') {
-          addBonusEvent(2); // ID события "Ловушка" = 2
-        }
       }
     }
     
@@ -60,7 +57,7 @@ export default {
     } else {
       resultType = 'fail';
       resultText = 'Провал...';
-      effects = null;
+      effects = { events: 1 };
     }
     
     return { resultType, resultText, effects };
