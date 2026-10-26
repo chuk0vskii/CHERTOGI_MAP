@@ -10,7 +10,7 @@ let isAuthorized = false;
 let allCharacters = [];
 let currentViewChar = null;
 
-let allResidents = []; // Массив для жителей Овуля
+let allResidents = []; 
 
 // ============================================================
 // АВТОРИЗАЦИЯ
@@ -145,10 +145,10 @@ function renderResidents() {
   }
 
   grid.innerHTML = filtered.map(res => {
-    let iconName = res.icon ? String(res.icon).toLowerCase() : '';
+    // Убрали toLowerCase, чтобы находило plamenniiYAZIK.png
+    let iconName = res.icon ? String(res.icon) : '';
     const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
 
-    // Добавлен класс resident-card для мягкого серого фона
     return `
       <div class="character-card resident-card" onclick="openResidentModal(${res.id})">
         <img src="${iconSrc}" class="resident-icon" alt="${escapeHtml(res.name)}" onerror="this.src='/CHERTOGI_MAP/icons/marker2.png'">
@@ -196,10 +196,9 @@ function openResidentModal(id) {
 
   document.getElementById('res-view-name').textContent = res.name;
 
-  // Форматируем описание в абзацы (разделяем по переносу строки)
+  // Вывод описания с абзацами
   const descEl = document.getElementById('res-view-desc');
   if (res.description) {
-    // Заменяем переносы строк на теги <p> для красивых отступов
     const formattedDesc = res.description
       .split('\n')
       .filter(p => p.trim() !== '')
@@ -211,7 +210,7 @@ function openResidentModal(id) {
   }
 
   // Иконка
-  let iconName = res.icon ? String(res.icon).toLowerCase() : '';
+  let iconName = res.icon ? String(res.icon) : '';
   const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
   const iconImg = document.getElementById('res-view-icon');
   iconImg.src = iconSrc;
