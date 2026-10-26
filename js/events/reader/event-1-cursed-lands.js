@@ -48,7 +48,16 @@ export default {
         html += '<div style="margin-top: 12px; padding: 12px 16px; background: rgba(255,215,0,0.05); border-radius: 8px; border-left: 3px solid #ffd700;">';
         html += '<div style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 8px;">🎲 Бросок 1d8 для определения последствий:</div>';
         html += '<button class="btn-fail-roll" data-event-id="' + event.id + '" style="background:transparent; border:1px solid rgba(255,215,0,0.3); color:#ffd700; padding:6px 18px; border-radius:6px; cursor:pointer; font-family:\'Philosopher\', sans-serif; font-size:13px; transition:all 0.3s ease;" onmouseover="this.style.background=\'rgba(255,215,0,0.1)\'; this.style.borderColor=\'#ffd700\'" onmouseout="this.style.background=\'transparent\'; this.style.borderColor=\'rgba(255,215,0,0.3)\'">🎲 Бросить 1d8</button>';
-        html += '<div id="fail-roll-result-' + event.id + '" style="margin-top: 8px;"></div>';
+        
+        // Если уже бросали — показываем сохранённый результат, иначе пустой контейнер
+        if (event.failRollResult) {
+          html += '<div id="fail-roll-result-' + event.id + '" style="margin-top: 8px; display: block;">';
+          html += '<div style="background: rgba(255,215,0,0.05); padding: 8px 12px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 4px;">Результат (1d8): <strong>' + event.failRollResult + '</strong> — ' + event.failRollText + '</div>';
+          html += '</div>';
+        } else {
+          html += '<div id="fail-roll-result-' + event.id + '" style="margin-top: 8px;"></div>';
+        }
+        
         html += '</div>';
       }
     }
