@@ -70,26 +70,20 @@
       gap: 15px; margin-bottom: 40px;
     }
 
+    /* БАЗОВАЯ КАРТОЧКА (Теперь такая же серая, как у жителей) */
     .character-card {
-      background: rgba(74, 14, 14, 0.2); border: 1px solid rgba(74, 14, 14, 0.2);
+      background: rgba(150, 150, 150, 0.15); 
+      border: 1px solid rgba(150, 150, 150, 0.25);
       border-radius: 12px; padding: 12px 15px; transition: all 0.3s ease;
       cursor: pointer; display: flex; align-items: center; gap: 15px; min-height: 90px;
     }
     .character-card:hover {
-      background: rgba(74, 14, 14, 0.4); border-color: #4a0e0e; transform: translateY(-3px);
+      background: rgba(150, 150, 150, 0.25); 
+      border-color: rgba(200, 200, 200, 0.5); 
+      transform: translateY(-3px);
     }
 
-    /* ЖЕСТКИЙ ЦВЕТ ДЛЯ ЖИТЕЛЕЙ */
-    .resident-card {
-      background: rgba(150, 150, 150, 0.15) !important;
-      border: 1px solid rgba(150, 150, 150, 0.25) !important;
-    }
-    .resident-card:hover {
-      background: rgba(150, 150, 150, 0.25) !important;
-      border-color: rgba(200, 200, 200, 0.5) !important;
-    }
-
-    /* === СТИЛЬ ДЛЯ МЕРТВЫХ ИСКАТЕЛЕЙ === */
+    /* === СТИЛЬ ДЛЯ МЕРТВЫХ ИСКАТЕЛЕЙ (Темно-серый) === */
     .dead-card {
       background: rgba(40, 40, 40, 0.8) !important;
       border: 1px solid rgba(100, 100, 100, 0.5) !important;
@@ -296,7 +290,6 @@
         
         <!-- ЛЕВЫЙ БЛОК: Прямоугольник для изображения (450x600) -->
         <div class="resident-img-container" style="flex-shrink: 0; width: 450px; height: 600px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,215,0,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <!-- ИЗМЕНЕНО: object-fit: contain вместо cover, добавлены ограничения -->
           <img id="res-view-image" src="" alt="" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: none;">
           <span id="res-view-image-placeholder" style="color: rgba(255,255,255,0.2); font-size: 16px; text-align: center; padding: 10px;">Нет изоб-<br>ражения</span>
         </div>
