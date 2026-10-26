@@ -109,7 +109,7 @@ function populateSquadFilter() {
 }
 
 // ============================================================
-// ЗАГРУЗКА ЖИТЕЛЕЙ ОВУЛЯ (ВМЕСТО КАРТЫ)
+// ЗАГРУЗКА ЖИТЕЛЕЙ ОВУЛЯ
 // ============================================================
 async function loadResidents() {
   const grid = document.getElementById('residents-grid');
@@ -145,12 +145,12 @@ function renderResidents() {
   }
 
   grid.innerHTML = filtered.map(res => {
-    // Формируем путь к иконке. Если иконки нет, ставим заглушку.
     let iconName = res.icon ? String(res.icon).toLowerCase() : '';
     const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
 
+    // Добавлен класс resident-card для мягкого серого фона
     return `
-      <div class="character-card" onclick="openResidentModal(${res.id})">
+      <div class="character-card resident-card" onclick="openResidentModal(${res.id})">
         <img src="${iconSrc}" class="resident-icon" alt="${escapeHtml(res.name)}" onerror="this.src='/CHERTOGI_MAP/icons/marker2.png'">
         <div class="char-info-wrapper">
           <div class="char-name">${escapeHtml(res.name)}</div>
@@ -195,7 +195,20 @@ function openResidentModal(id) {
   if (!res) return;
 
   document.getElementById('res-view-name').textContent = res.name;
-  document.getElementById('res-view-desc').textContent = res.description || 'Описание отсутствует';
+
+  // Форматируем описание в абзацы (разделяем по переносу строки)
+  const descEl = document.getElementById('res-view-desc');
+  if (res.description) {
+    // Заменяем переносы строк на теги <p> для красивых отступов
+    const formattedDesc = res.description
+      .split('\n')
+      .filter(p => p.trim() !== '')
+      .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+      .join('');
+    descEl.innerHTML = formattedDesc;
+  } else {
+    descEl.innerHTML = '<p>Описание отсутствует</p>';
+  }
 
   // Иконка
   let iconName = res.icon ? String(res.icon).toLowerCase() : '';
@@ -283,7 +296,7 @@ function toggleMulticlass() {
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthStatus();
   loadCharacters();
-  loadResidents(); // Запускаем загрузку жителей вместо карты
+  loadResidents();
 
   // Поиск жителей
   const searchResidentInput = document.getElementById('search-resident-input');
