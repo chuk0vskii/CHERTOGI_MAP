@@ -190,7 +190,6 @@ function openResidentModal(id) {
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
-  // Словарь соответствия имен файлов
   const imageMap = {
     'Бани Онжары': 'odjara',
     'Бочка Габура': 'gabur',
@@ -206,17 +205,13 @@ function openResidentModal(id) {
     'Йондани': 'iondani'
   };
 
-  // Ищем картинку в словаре или берем из поля icon
   let imgName = imageMap[res.name] || res.icon;
   
   if (imgName) {
     const imgPath = `/CHERTOGI_MAP/images/jiteli/${imgName}.jpg`;
-    
     bigImage.src = imgPath;
     bigImage.style.display = 'block';
     if (placeholder) placeholder.style.display = 'none';
-    
-    // Если файла нет — показываем заглушку
     bigImage.onerror = () => {
       bigImage.style.display = 'none';
       if (placeholder) placeholder.style.display = 'block';
@@ -248,7 +243,7 @@ function openResidentModal(id) {
 }
 
 // ============================================================
-// ОСТАЛЬНЫЕ ФУНКЦИИ (РЕДАКТИРОВАНИЕ ИСКАТЕЛЕЙ)
+// ОСТАЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 function openEditModal(char = null) {
   document.getElementById('view-modal').style.display = 'none'; 
@@ -419,4 +414,16 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) { console.error(e); }
     });
   }
+
+  // ============================================================
+  // ЗАКРЫТИЕ МОДАЛОК ПО КЛИКУ НА ФОН
+  // ============================================================
+  const modals = document.querySelectorAll('.modal');
+  modals.forEach(modal => {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    });
+  });
 });
