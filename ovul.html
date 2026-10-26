@@ -120,31 +120,31 @@
       letter-spacing: 0.5px;
     }
 
-    /* ===== МЕТКИ ===== */
+    /* ===== МЕТКИ (ЖЕСТКОЕ УМЕНЬШЕНИЕ) ===== */
     .ovul-marker {
       position: absolute;
-      transform: translate(-50%, calc(-50% - 20px));
+      transform: translate(-50%, calc(-50% - 20px)) !important;
       cursor: pointer;
       pointer-events: auto;
-      width: 20px;  /* контейнер для клика */
-      height: 20px;
+      width: 12px !important;
+      height: 12px !important;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s ease, filter 0.2s ease;
       z-index: 3;
       overflow: visible;
     }
+    
     .ovul-marker:hover {
-      transform: translate(-50%, calc(-50% - 20px)) scale(1.2);
+      transform: translate(-50%, calc(-50% - 20px)) scale(1.5) !important;
       filter: brightness(1.15);
       z-index: 4;
     }
+    
     .ovul-marker img {
-      width: 100%;
-      height: 100%;
+      width: 100% !important;
+      height: 100% !important;
       object-fit: contain;
-      transform: scale(0.5); /* ЖЕСТКОЕ УМЕНЬШЕНИЕ В 2 РАЗА ВНУТРИ КОНТЕЙНЕРА */
       filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
       pointer-events: none;
       user-select: none;
@@ -380,7 +380,7 @@
     /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .map-container { max-width: 100%; }
-      .ovul-marker  { width: 16px; height: 16px; }
+      .ovul-marker  { width: 10px !important; height: 10px !important; }
       .ovul-marker .marker-tooltip { font-size: 11px; padding: 4px 8px; }
     }
   </style>
