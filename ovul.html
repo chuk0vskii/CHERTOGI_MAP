@@ -143,6 +143,12 @@
       border: 1px solid #4a0e0e;
     }
     
+    /* Стиль для сохранения отступов (переносов строк) в описании искателя */
+    #view-desc {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
     .modal-close {
       position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; color: #ff6b6b; z-index: 10;
     }
@@ -249,8 +255,13 @@
           <h2 id="view-name" style="font-family: 'Calypso', serif; color: #ffd700; font-size: 28px; margin-bottom: 5px;"></h2>
           <div id="view-class-race" style="color: #aaa; font-size: 16px; margin-bottom: 10px;"></div>
           <div id="view-squad" style="color: #51cf66; font-size: 14px; margin-bottom: 15px;"></div>
+          
+          <!-- Описание теперь с сохранением абзацев -->
           <div id="view-desc" style="font-size: 15px; line-height: 1.6; margin-bottom: 15px;"></div>
+          
           <div id="view-traits" style="font-size: 14px; color: #ffd700; background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px;"></div>
+          
+          <!-- Кнопка редактирования -->
           <button id="edit-char-btn" style="margin-top: 20px; padding: 8px 16px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; display: none;">✏️ Редактировать</button>
         </div>
       </div>
