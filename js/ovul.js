@@ -10,6 +10,7 @@ let isAuthorized = false;
 let allCharacters = [];
 let currentViewChar = null;
 let allResidents = []; 
+let deceasedNames = []; // Массив павших имен
 
 // ============================================================
 // АВТОРИЗАЦИЯ
@@ -40,17 +41,55 @@ function updateAuthUI() {
 }
 
 // ============================================================
+// ЗАГРУЗКА ИМЕН ИЗ ДРЕВА СМЕРТИ
+// ============================================================
+async function loadDeceasedNames() {
+  try {
+    const { data, error } = await _supabase
+      .from('game_reports')
+      .select('deceased_names')
+      .not('deceased_names', 'is', null);
+
+    if (error) {
+      console.error('Ошибка загрузки имен павших:', error);
+      return;
+    }
+
+    let names = [];
+    data.forEach(report => {
+      let reportNames = report.deceased_names;
+      if (typeof reportNames === 'string') {
+        reportNames = reportNames.split(',').map(s => s.trim()).filter(s => s);
+      }
+      if (Array.isArray(reportNames)) {
+        names.push(...reportNames);
+      }
+    });
+
+    // Сохраняем в глобальную переменную для быстрой проверки
+    deceasedNames = names.map(n => n.toLowerCase().trim());
+    console.log('Загружено павших имен:', deceasedNames.length);
+
+  } catch (err) {
+    console.error('Критическая ошибка:', err);
+  }
+}
+
+// ============================================================
 // ЗАГРУЗКА ИСКАТЕЛЕЙ
 // ============================================================
 async function loadCharacters() {
   const grid = document.getElementById('characters-grid');
   if (!grid) return;
   grid.innerHTML = '<div class="empty-state">Загрузка...</div>';
+  
   let query = _supabase.from('characters').select('*').order('name');
   if (!isAuthorized) query = query.eq('is_approved', true);
+  
   const { data, error } = await query;
   if (error) { grid.innerHTML = '<div class="empty-state">Ошибка загрузки</div>'; return; }
   allCharacters = data || [];
+  
   populateSquadFilter();
   renderCharacters();
 }
@@ -58,6 +97,7 @@ async function loadCharacters() {
 function renderCharacters() {
   const grid = document.getElementById('characters-grid');
   if (!grid) return;
+  
   const search = document.getElementById('search-input').value.toLowerCase();
   const filterClass = document.getElementById('filter-class').value;
   const filterRace = document.getElementById('filter-race').value;
@@ -73,16 +113,23 @@ function renderCharacters() {
   
   if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state">Искатели не найдены</div>'; return; }
   
-  grid.innerHTML = filtered.map(char => `
-    <div class="character-card" onclick="openViewModal(${char.id})">
-      ${char.image_url ? `<img src="${char.image_url}" class="char-thumbnail" alt="${escapeHtml(char.name)}">` : `<div class="char-thumbnail" style="display:flex; align-items:center; justify-content:center; color:#555; font-size:20px;">?</div>`}
-      <div class="char-info-wrapper">
-        <div class="char-name">${escapeHtml(char.name)}</div>
-        <div class="char-class-race">${escapeHtml(char.class)} • ${escapeHtml(char.race)}</div>
-        ${char.squad_name ? `<div class="char-class-race" style="color: #51cf66;">🛡️ ${escapeHtml(char.squad_name)}</div>` : ''}
+  grid.innerHTML = filtered.map(char => {
+    // Проверяем, есть ли имя в списке павших (приводим к нижнему регистру для надежности)
+    const isDead = deceasedNames.includes(char.name.toLowerCase().trim());
+    const cardClass = isDead ? 'character-card dead-card' : 'character-card';
+
+    return `
+      <div class="${cardClass}" onclick="openViewModal(${char.id})">
+        ${char.image_url ? `<img src="${char.image_url}" class="char-thumbnail" alt="${escapeHtml(char.name)}">` : `<div class="char-thumbnail" style="display:flex; align-items:center; justify-content:center; color:#555; font-size:20px;">?</div>`}
+        <div class="char-info-wrapper">
+          <div class="char-name">${escapeHtml(char.name)}</div>
+          ${isDead ? '<div class="dead-label">💀 МЕРТВ</div>' : ''}
+          <div class="char-class-race">${escapeHtml(char.class)} • ${escapeHtml(char.race)}</div>
+          ${char.squad_name && !isDead ? `<div class="char-class-race" style="color: #51cf66;">🛡️ ${escapeHtml(char.squad_name)}</div>` : ''}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function populateSquadFilter() {
@@ -97,7 +144,7 @@ function populateSquadFilter() {
 }
 
 // ============================================================
-// ЗАГРУЗКА ЖИТЕЛЕЙ И ПАТРОНОВ
+// ЗАГРУЗКА ЖИТЕЛЕЙ
 // ============================================================
 async function loadResidents() {
   const grid = document.getElementById('residents-grid');
@@ -161,7 +208,6 @@ function openResidentModal(id) {
 
   document.getElementById('res-view-name').textContent = res.name;
   
-  // Вывод описания с абзацами и маркерами ❖
   const descEl = document.getElementById('res-view-desc');
   const rawDesc = res.description || '';
   
@@ -177,16 +223,12 @@ function openResidentModal(id) {
     descEl.innerHTML = '<p>Описание отсутствует</p>';
   }
 
-  // Маленькая иконка рядом с именем (из папки ovul)
   let iconName = res.icon ? String(res.icon) : '';
   const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
   const iconImg = document.getElementById('res-view-icon');
   iconImg.src = iconSrc;
   iconImg.onerror = () => { iconImg.src = '/CHERTOGI_MAP/icons/marker2.png'; };
 
-  // ============================================================
-  // БОЛЬШАЯ КАРТИНКА (ЖЕСТКАЯ ПРИВЯЗКА)
-  // ============================================================
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
@@ -221,7 +263,6 @@ function openResidentModal(id) {
     if (placeholder) placeholder.style.display = 'block';
   }
 
-  // Награда
   const rewardWrapper = document.getElementById('res-view-reward-wrapper');
   if (res.reward) {
     document.getElementById('res-view-reward').innerHTML = res.reward.split('\n').map(p => p.trim()).filter(p => p !== '').map(p => `<p style="margin-bottom: 8px;"><span style="color: #ffd700; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`).join('');
@@ -230,7 +271,6 @@ function openResidentModal(id) {
     rewardWrapper.style.display = 'none';
   }
 
-  // Тайна
   const secretWrapper = document.getElementById('res-view-secret-wrapper');
   if (res.secret) {
     document.getElementById('res-view-secret').innerHTML = res.secret.split('\n').map(p => p.trim()).filter(p => p !== '').map(p => `<p style="margin-bottom: 8px;"><span style="color: #ff6b6b; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`).join('');
@@ -243,7 +283,7 @@ function openResidentModal(id) {
 }
 
 // ============================================================
-// ОСТАЛЬНЫЕ ФУНКЦИИ
+// ФУНКЦИИ РЕДАКТИРОВАНИЯ
 // ============================================================
 function openEditModal(char = null) {
   document.getElementById('view-modal').style.display = 'none'; 
@@ -295,8 +335,14 @@ function toggleMulticlass() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
   checkAuthStatus();
+  
+  // Сначала грузим павших, потом искателей, чтобы при отрисовке знать, кто мертв
+  await loadDeceasedNames();
   loadCharacters();
   loadResidents();
 
@@ -415,9 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ============================================================
-  // ЗАКРЫТИЕ МОДАЛОК ПО КЛИКУ НА ФОН
-  // ============================================================
+  // Закрытие модалок по клику на фон
   const modals = document.querySelectorAll('.modal');
   modals.forEach(modal => {
     modal.addEventListener('click', function(e) {
