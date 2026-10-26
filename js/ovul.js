@@ -119,11 +119,11 @@ function renderResidents() {
 
   grid.innerHTML = filtered.map(res => {
     let iconName = res.icon ? String(res.icon) : '';
+    // Для карточек берем иконки из папки ovul (как было) или можно тоже из jiteli, если хочешь.
     const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
     
-    // Проверяем, патрон это или житель
     const roleLabel = res.is_patron ? 'Патрон Овуля' : 'Житель Овуля';
-    const roleColor = res.is_patron ? '#ff6b6b' : '#aaa'; // Патроны будут красноватыми
+    const roleColor = res.is_patron ? '#ff6b6b' : '#aaa';
 
     return `
       <div class="character-card resident-card" onclick="openResidentModal(${res.id})">
@@ -162,28 +162,56 @@ function openResidentModal(id) {
 
   document.getElementById('res-view-name').textContent = res.name;
   
-  // Вывод описания с абзацами
+  // Вывод описания с абзацами и маркерами ❖
   const descEl = document.getElementById('res-view-desc');
   const rawDesc = res.description || '';
   
   if (rawDesc) {
-    const formattedDesc = rawDesc.split('\n').filter(p => p.trim() !== '').map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
+    const formattedDesc = rawDesc
+      .split('\n')
+      .map(p => p.trim())
+      .filter(p => p !== '')
+      .map(p => `<p style="margin-bottom: 12px; padding-left: 20px; text-indent: -20px;"><span style="color: #ffd700; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`)
+      .join('');
     descEl.innerHTML = formattedDesc;
   } else {
     descEl.innerHTML = '<p>Описание отсутствует</p>';
   }
 
-  // Иконка
+  // Маленькая иконка рядом с именем (из папки ovul)
   let iconName = res.icon ? String(res.icon) : '';
   const iconSrc = iconName ? `/CHERTOGI_MAP/images/ovul/${iconName}.png` : '/CHERTOGI_MAP/icons/marker2.png';
   const iconImg = document.getElementById('res-view-icon');
   iconImg.src = iconSrc;
   iconImg.onerror = () => { iconImg.src = '/CHERTOGI_MAP/icons/marker2.png'; };
 
-  // Награда (Мини-черта)
+  // Большая картинка (из папки jiteli по названию из базы)
+  const bigImage = document.getElementById('res-view-image');
+  const placeholder = document.getElementById('res-view-image-placeholder');
+  
+  if (res.name) {
+    // Формируем имя файла (в нижнем регистре, без пробелов, расширение .jpg)
+    const fileName = res.name.toLowerCase().trim().replace(/\s+/g, '') + '.jpg';
+    const imgPath = `/CHERTOGI_MAP/images/jiteli/${fileName}`;
+    
+    bigImage.src = imgPath;
+    bigImage.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
+    
+    // Если картинки нет — показываем заглушку
+    bigImage.onerror = () => {
+      bigImage.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'block';
+    };
+  } else {
+    bigImage.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+  }
+
+  // Награда
   const rewardWrapper = document.getElementById('res-view-reward-wrapper');
   if (res.reward) {
-    document.getElementById('res-view-reward').textContent = res.reward;
+    document.getElementById('res-view-reward').innerHTML = res.reward.split('\n').map(p => p.trim()).filter(p => p !== '').map(p => `<p style="margin-bottom: 8px;"><span style="color: #ffd700; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`).join('');
     rewardWrapper.style.display = 'block';
   } else {
     rewardWrapper.style.display = 'none';
@@ -192,7 +220,7 @@ function openResidentModal(id) {
   // Тайна
   const secretWrapper = document.getElementById('res-view-secret-wrapper');
   if (res.secret) {
-    document.getElementById('res-view-secret').textContent = res.secret;
+    document.getElementById('res-view-secret').innerHTML = res.secret.split('\n').map(p => p.trim()).filter(p => p !== '').map(p => `<p style="margin-bottom: 8px;"><span style="color: #ff6b6b; margin-right: 8px;">❖</span>${escapeHtml(p)}</p>`).join('');
     secretWrapper.style.display = 'block';
   } else {
     secretWrapper.style.display = 'none';
@@ -201,4 +229,176 @@ function openResidentModal(id) {
   document.getElementById('resident-modal').style.display = 'flex';
 }
 
-// ... остальные функции для искателей (openEditModal, toggleMulticlass и т.д.) остаются без изменений ...
+// ============================================================
+// ОСТАЛЬНЫЕ ФУНКЦИИ (РЕДАКТИРОВАНИЕ ИСКАТЕЛЕЙ)
+// ============================================================
+function openEditModal(char = null) {
+  document.getElementById('view-modal').style.display = 'none'; 
+  document.getElementById('edit-modal').style.display = 'flex';
+  const form = document.getElementById('character-form');
+  form.reset();
+  document.getElementById('image-preview').innerHTML = '';
+  
+  if (char) {
+    document.querySelector('#edit-modal h3').textContent = 'Редактировать персонажа';
+    document.getElementById('char-id').value = char.id;
+    document.getElementById('char-name-input').value = char.name;
+    document.getElementById('char-race-input').value = char.race;
+    document.getElementById('char-squad-input').value = char.squad_name || '';
+    document.getElementById('char-traits-input').value = char.mini_traits || '';
+    document.getElementById('char-desc-input').value = char.description || '';
+    if (char.class.includes(' - ')) {
+      document.getElementById('char-class-input').value = 'Мультикласс';
+      toggleMulticlass();
+      const parts = char.class.split(' - ');
+      document.getElementById('char-class-multi-1').value = parts[0] || '';
+      document.getElementById('char-class-multi-2').value = parts[1] || '';
+    } else {
+      document.getElementById('char-class-input').value = char.class;
+      toggleMulticlass();
+    }
+    if (char.image_url) {
+      document.getElementById('image-preview').innerHTML = `<img src="${char.image_url}" style="max-height: 100px; border-radius: 6px;">`;
+    }
+  } else {
+    document.querySelector('#edit-modal h3').textContent = 'Новый персонаж';
+    document.getElementById('char-id').value = '';
+    document.getElementById('char-class-input').value = '';
+    toggleMulticlass();
+  }
+}
+
+function toggleMulticlass() {
+  const classSelect = document.getElementById('char-class-input');
+  const multiFields = document.getElementById('multiclass-fields');
+  if (classSelect && multiFields) {
+    if (classSelect.value === 'Мультикласс') {
+      multiFields.style.display = 'flex';
+    } else {
+      multiFields.style.display = 'none';
+      document.getElementById('char-class-multi-1').value = '';
+      document.getElementById('char-class-multi-2').value = '';
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthStatus();
+  loadCharacters();
+  loadResidents();
+
+  const searchResidentInput = document.getElementById('search-resident-input');
+  if (searchResidentInput) searchResidentInput.addEventListener('input', renderResidents);
+
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.addEventListener('click', () => { document.getElementById('auth-modal').style.display = 'flex'; });
+  const addBtn = document.getElementById('add-char-btn');
+  if (addBtn) addBtn.addEventListener('click', () => openEditModal(null));
+  const editBtn = document.getElementById('edit-char-btn');
+  if (editBtn) editBtn.addEventListener('click', () => { if (currentViewChar) openEditModal(currentViewChar); });
+
+  const form = document.getElementById('character-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAuthorized) { alert('Вы не авторизованы!'); return; }
+      const id = document.getElementById('char-id').value;
+      const name = document.getElementById('char-name-input').value.trim();
+      const race = document.getElementById('char-race-input').value;
+      const squad = document.getElementById('char-squad-input').value.trim();
+      const traits = document.getElementById('char-traits-input').value.trim();
+      const desc = document.getElementById('char-desc-input').value.trim();
+      const fileInput = document.getElementById('char-image-input');
+      const file = fileInput.files[0];
+      let charClass = document.getElementById('char-class-input').value;
+      if (charClass === 'Мультикласс') {
+        const class1 = document.getElementById('char-class-multi-1').value;
+        const class2 = document.getElementById('char-class-multi-2').value;
+        if (!class1 || !class2) { alert('Выберите оба класса!'); return; }
+        charClass = `${class1} - ${class2}`;
+      }
+      if (!name || !charClass || !race || !desc) { alert('Заполните все обязательные поля!'); return; }
+      if (file && file.size > 1024 * 1024) { alert('Картинка слишком большая! Максимум 1 МБ.'); return; }
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Сохранение...';
+      try {
+        let imageUrl = currentViewChar?.image_url || null;
+        if (file) {
+          const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+          const { error: uploadError } = await _supabase.storage.from('characters').upload(fileName, file);
+          if (uploadError) throw uploadError;
+          const { data: urlData } = _supabase.storage.from('characters').getPublicUrl(fileName);
+          imageUrl = urlData.publicUrl;
+        }
+        const charData = { name, class: charClass, race, squad_name: squad || null, mini_traits: traits || null, description: desc, image_url: imageUrl, is_approved: null };
+        if (id) {
+          const { error } = await _supabase.from('characters').update(charData).eq('id', id);
+          if (error) throw error;
+          alert('Персонаж обновлен и отправлен на модерацию!');
+        } else {
+          const { error } = await _supabase.from('characters').insert([charData]);
+          if (error) throw error;
+          alert('Персонаж добавлен и отправлен на модерацию!');
+        }
+        document.getElementById('edit-modal').style.display = 'none';
+        loadCharacters(); 
+      } catch (err) {
+        alert('Ошибка: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Сохранить';
+      }
+    });
+  }
+
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.addEventListener('input', renderCharacters);
+  const filterClass = document.getElementById('filter-class');
+  if (filterClass) filterClass.addEventListener('change', renderCharacters);
+  const filterRace = document.getElementById('filter-race');
+  if (filterRace) filterRace.addEventListener('change', renderCharacters);
+  const filterSquad = document.getElementById('filter-squad');
+  if (filterSquad) filterSquad.addEventListener('change', renderCharacters);
+
+  const imageInput = document.getElementById('char-image-input');
+  if (imageInput) {
+    imageInput.addEventListener('change', function() {
+      const file = this.files[0];
+      const preview = document.getElementById('image-preview');
+      if (file) {
+        if (file.size > 1024 * 1024) { alert('Файл больше 1 МБ.'); this.value = ''; preview.innerHTML = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => { preview.innerHTML = `<img src="${e.target.result}" style="max-height: 100px; border-radius: 6px;">`; };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  const authSubmit = document.getElementById('auth-submit');
+  if (authSubmit) {
+    authSubmit.addEventListener('click', async () => {
+      const pwd = document.getElementById('auth-password').value;
+      const errorEl = document.getElementById('auth-error');
+      if (!pwd) return;
+      try {
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLIC_KEY },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await response.json();
+        if (data.ok) {
+          isAuthorized = true;
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ isAuthorized: true, currentKeeper: 'Админ' }));
+          document.getElementById('auth-modal').style.display = 'none';
+          errorEl.style.display = 'none';
+          updateAuthUI();
+          loadCharacters();
+        } else {
+          errorEl.style.display = 'block';
+        }
+      } catch (e) { console.error(e); }
+    });
+  }
+});
