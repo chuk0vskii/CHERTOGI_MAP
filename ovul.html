@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>ТЕСТ 123</title>
+  <title>Огненные чертоги — Овуль</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     * {
@@ -55,7 +55,6 @@
       position: relative;
     }
 
-    /* «Сцена» — картинка + слой меток строго друг над другом */
     .map-scene {
       position: relative;
       width: 100%;
@@ -71,7 +70,6 @@
       box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.4);
     }
 
-    /* Сама картинка */
     .map-scene > img {
       display: block;
       width: 100%;
@@ -81,7 +79,6 @@
       pointer-events: none;
     }
 
-    /* Слой меток — точно поверх картинки */
     .map-markers-layer {
       position: absolute;
       inset: 0;
@@ -98,13 +95,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(74, 14, 14, 0.3),
-        rgba(74, 14, 14, 0.3) 12px,
-        rgba(74, 14, 14, 0.15) 12px,
-        rgba(74, 14, 14, 0.15) 24px
-      );
+      background: repeating-linear-gradient(45deg, rgba(74,14,14,0.3), rgba(74,14,14,0.3) 12px, rgba(74,14,14,0.15) 12px, rgba(74,14,14,0.15) 24px);
       color: rgba(255, 255, 255, 0.5);
       font-family: 'Calypso', serif;
       font-size: 22px;
@@ -120,30 +111,26 @@
       letter-spacing: 0.5px;
     }
 
-    /* ===== МЕТКИ (ЖЕСТКОЕ УМЕНЬШЕНИЕ) ===== */
+    /* ===== БАЗОВЫЕ МЕТКИ ===== */
     .ovul-marker {
       position: absolute;
-      transform: translate(-50%, calc(-50% - 20px)) !important;
+      transform: translate(-50%, calc(-50% - 20px));
       cursor: pointer;
       pointer-events: auto;
-      width: 12px !important;
-      height: 12px !important;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.2s ease, filter 0.2s ease;
       z-index: 3;
       overflow: visible;
     }
-    
     .ovul-marker:hover {
-      transform: translate(-50%, calc(-50% - 20px)) scale(1.5) !important;
       filter: brightness(1.15);
       z-index: 4;
     }
-    
     .ovul-marker img {
-      width: 100% !important;
-      height: 100% !important;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
       pointer-events: none;
@@ -177,7 +164,6 @@
       visibility: visible;
     }
 
-    /* Пульсация для Древа Смерти */
     .ovul-marker.marker-drevo {
       animation: drevoPulse 2.2s ease-in-out infinite;
     }
@@ -206,7 +192,6 @@
       text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     }
 
-    /* ===== ПАНЕЛЬ ФИЛЬТРОВ ===== */
     .filters-panel {
       background: rgba(74, 14, 14, 0.2);
       border: 1px solid rgba(74, 14, 14, 0.3);
@@ -231,13 +216,9 @@
       flex: 1;
       min-width: 150px;
     }
-    .filters-panel input:focus, .filters-panel select:focus {
-      outline: none;
-      border-color: #ffd700;
-    }
+    .filters-panel input:focus, .filters-panel select:focus { outline: none; border-color: #ffd700; }
     .filters-panel select option { background: #1a0a1a; color: #fff; }
 
-    /* ===== СЕТКА ПЕРСОНАЖЕЙ ===== */
     .characters-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -307,7 +288,6 @@
       margin-top: 2px;
     }
 
-    /* ===== МОДАЛЬНЫЕ ОКНА ===== */
     .modal {
       display: none;
       position: fixed;
@@ -332,13 +312,8 @@
       position: relative;
     }
     
-    #view-modal .modal-content {
-      max-width: 900px;
-    }
-    #view-modal .modal-content img {
-      max-height: 500px;
-      object-fit: contain;
-    }
+    #view-modal .modal-content { max-width: 900px; }
+    #view-modal .modal-content img { max-height: 500px; object-fit: contain; }
 
     .modal-close {
       position: absolute;
@@ -377,17 +352,32 @@
       font-size: 18px;
     }
 
-    /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
     @media (max-width: 768px) {
       .map-container { max-width: 100%; }
-      .ovul-marker  { width: 10px !important; height: 10px !important; }
       .ovul-marker .marker-tooltip { font-size: 11px; padding: 4px 8px; }
+    }
+
+    /* ========================================================= */
+    /* ===== ЯДЕРНЫЙ ТЕСТ РАЗМЕРА И ПОЗИЦИИ (ПРИНУДИТЕЛЬНО) ==== */
+    /* ========================================================= */
+    .ovul-marker {
+      width: 10px !important;
+      height: 10px !important;
+      transform: translate(-50%, calc(-50% - 20px)) !important;
+    }
+    .ovul-marker:hover {
+      transform: translate(-50%, calc(-50% - 20px)) scale(1.5) !important;
+    }
+    .ovul-marker img {
+      /* Жестко сжимаем саму картинку в 2 раза */
+      transform: scale(0.5) !important; 
+      width: 100% !important;
+      height: 100% !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- БАННЕР -->
   <div class="top-banner">
     <div class="banner-left">
       <img src="/CHERTOGI_MAP/images/flamechertogi.png" alt="Огненные чертоги">
@@ -401,12 +391,10 @@
     </div>
   </div>
 
-  <!-- ФОНОВЫЕ ГЕКСЫ -->
   <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-left">
   <img src="/CHERTOGI_MAP/images/gex3.png" alt="" class="bg-image bg-image-right">
 
   <div class="container">
-    <!-- МЕСТО ДЛЯ КАРТИНКИ -->
     <div class="map-container">
       <div class="map-scene" id="ovul-map-scene">
         <img id="ovul-map-image" src="/CHERTOGI_MAP/images/mapOvul.png" alt="Карта Овуля" loading="lazy">
@@ -421,13 +409,11 @@
     <h1 class="page-title">Овуль</h1>
     <div class="page-subtitle">Архив искателей</div>
 
-    <!-- КНОПКА ДОБАВЛЕНИЯ -->
     <div id="auth-section" style="text-align: right; margin-bottom: 20px;">
       <button id="login-btn" class="btn-submit" style="width: auto; padding: 10px 20px;">Добавить вашего искателя</button>
       <button id="add-char-btn" class="btn-submit" style="width: auto; padding: 10px 20px; display: none;">+ Добавить персонажа</button>
     </div>
 
-    <!-- ФИЛЬТРЫ -->
     <div class="filters-panel">
       <input type="text" id="search-input" placeholder="Поиск по имени...">
       <select id="filter-class">
@@ -479,13 +465,11 @@
       </select>
     </div>
 
-    <!-- СЕТКА ПЕРСОНАЖЕЙ -->
     <div id="characters-grid" class="characters-grid">
       <div class="empty-state">Загрузка персонажей...</div>
     </div>
   </div>
 
-  <!-- МОДАЛКА: ПРОСМОТР ПЕРСОНАЖА -->
   <div id="view-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="document.getElementById('view-modal').style.display='none'">&times;</span>
@@ -505,7 +489,6 @@
     </div>
   </div>
 
-  <!-- МОДАЛКА: ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ ПЕРСОНАЖА -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="document.getElementById('edit-modal').style.display='none'">&times;</span>
@@ -513,7 +496,6 @@
       
       <form id="character-form">
         <input type="hidden" id="char-id">
-        
         <div class="form-group">
           <label>Имя персонажа</label>
           <input type="text" id="char-name-input" required>
@@ -614,29 +596,24 @@
           <label>Отряд (если есть)</label>
           <input type="text" id="char-squad-input" placeholder="Название отряда">
         </div>
-
         <div class="form-group">
           <label>Мини-черты (достижения)</label>
           <input type="text" id="char-traits-input" placeholder="Например: Бегущий по нефриту">
         </div>
-
         <div class="form-group">
           <label>Описание</label>
           <textarea id="char-desc-input" required></textarea>
         </div>
-
         <div class="form-group">
           <label>Картинка (макс. 1 МБ)</label>
           <input type="file" id="char-image-input" accept="image/*">
           <div id="image-preview" style="margin-top: 10px;"></div>
         </div>
-
         <button type="submit" class="btn-submit">Сохранить</button>
       </form>
     </div>
   </div>
 
-  <!-- МОДАЛКА: ВВОД ПАРОЛЯ -->
   <div id="auth-modal" class="modal">
     <div class="modal-content" style="max-width: 400px;">
       <span class="modal-close" onclick="document.getElementById('auth-modal').style.display='none'">&times;</span>
