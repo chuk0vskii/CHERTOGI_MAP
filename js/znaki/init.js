@@ -3,7 +3,7 @@
 // ============================================================
 
 import { loadRegions, initRegionChangeHandler } from '../modules/region.js';
-import { drawSign, resetSigns } from '../modules/signs.js';
+import { drawSign, resetSigns, checkEye } from '../modules/signs.js';
 import { generatePathEvents, initPath } from '../modules/path.js';
 
 console.log('🚀 znaki/init.js загружен');
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const drawBtn = document.getElementById('drawSignBtn');
   const resetBtn = document.getElementById('resetSignsBtn');
   const generateBtn = document.getElementById('generateEventsBtn');
+  const eyeCheckBtn = document.getElementById('eyeCheckBtn');
   const signInput = document.getElementById('signInput');
   
   if (drawBtn) {
@@ -40,6 +41,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     resetBtn.removeEventListener('click', resetSigns);
     resetBtn.addEventListener('click', resetSigns);
     console.log('✅ Кнопка "Сбросить эффекты" настроена');
+  }
+  
+  if (eyeCheckBtn) {
+    eyeCheckBtn.removeEventListener('click', checkEye);
+    eyeCheckBtn.addEventListener('click', checkEye);
+    console.log('✅ Кнопка "Сделать проверку" (Око) настроена');
   }
   
   if (generateBtn) {
