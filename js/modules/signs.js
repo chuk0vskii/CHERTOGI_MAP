@@ -144,9 +144,8 @@ export function checkEye() {
   }
 
   // Расчет для Событий (extraEvents)
-  // В базе: positiveEvents = true (например, +1 событие), negativeEvents = false (например, -1 событие)
   if (currentSign.extraEvents !== undefined && currentSign.extraEvents !== 0) {
-    const isBad = currentSign.extraEvents > 0; // +1 событие - это плохо
+    const isBad = currentSign.extraEvents > 0; 
     if (isBad) {
       newEvents = isSuccess ? (currentSign.extraEvents * -1) : (currentSign.extraEvents * 2);
     } else {
@@ -155,11 +154,11 @@ export function checkEye() {
   }
 
   // Расчет для Костей Удачи (luckDice) и Проклятья (curseDice)
-  // Если знак дает кости удачи (luckDice > 0), при провале они превращаются в кости проклятья.
   if (currentSign.luckDice !== undefined && currentSign.luckDice > 0) {
     if (isSuccess) {
       newLuck = currentSign.luckDice * 2;
     } else {
+      // При провале кость удачи превращается в кость проклятья
       newCurse = currentSign.luckDice;
     }
   }
@@ -186,6 +185,7 @@ export function checkEye() {
 function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue, eventValue, luckValue, curseValue) {
   let metaHtml = 'Выпало: <strong>' + sign.title + '</strong>';
   
+  // Если проверка еще не пройдена, показываем изначальные эффекты
   if (!isChecked) {
     if (sign.mod !== 0) {
       const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
@@ -205,6 +205,7 @@ function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue, eventV
     }
   }
 
+  // Если проверка пройдена, показываем ТОЛЬКО итоговые эффекты
   if (isChecked) {
     const resultText = isSuccess ? 'Успех!' : 'Провал...';
     const resultColor = isSuccess ? '#51cf66' : '#ff6b6b';
@@ -230,8 +231,18 @@ function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue, eventV
     }
   }
 
+  // Добавляем текстовое описание эффекта знака в конце
   if (sign.effect) {
-    metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + sign.effect + '</span>';
+    // Если была проверка и это кость удачи (Шептуна), убираем лишнюю строку из описания
+    let effectText = sign.effect;
+    if (isChecked && !isSuccess && sign.luckDice) {
+       // Убираем предложение про кость удачи при провале
+       effectText = effectText.replace('Все в группе получают 1 кость удачи на фазу Путь.', '').trim();
+    }
+    
+    if (effectText) {
+      metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + effectText + '</span>';
+    }
   }
   
   signMeta.innerHTML = metaHtml;
