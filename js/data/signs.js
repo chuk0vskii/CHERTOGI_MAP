@@ -91,7 +91,8 @@ export const SIGNS = [ null,
     image: 'vetra.png',
     dc: 15,
     isNumeric: true,
-    type: 'positive'
+    type: 'positive',
+    extraEvents: -1 // -1 событие
   },
   { 
     title: 'Знак Шамаса', 
@@ -110,8 +111,9 @@ export const SIGNS = [ null,
     effect: 'Все в группе получают 1 кость удачи на фазу Путь.',
     image: 'shopota.png',
     dc: 15,
-    isNumeric: false,
-    type: 'positive'
+    isNumeric: true,
+    type: 'positive',
+    luckDice: 1 // 1 кость удачи
   },
   { 
     title: 'Знак Звёзд', 
@@ -150,8 +152,9 @@ export const SIGNS = [ null,
     effect: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.',
     image: 'oka.png',
     dc: 20,
-    isNumeric: false,
-    type: 'positive'
+    isNumeric: true,
+    type: 'positive',
+    extraEvents: 1 // +1 событие (плохо, т.к. ночью)
   },
   { 
     title: 'Знак Прибытия', 
