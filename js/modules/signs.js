@@ -50,6 +50,7 @@ export function drawSign() {
     return;
   }
 
+  // Сбрасываем предыдущий знак перед новым броском
   if (currentSign) {
     addSignMod(-currentModApplied);
     addArrivalBonus(-currentArrivalApplied);
@@ -96,29 +97,49 @@ export function checkEye() {
 
   const dc = currentSign.dc || 15;
   const isSuccess = eyeValue >= dc;
-  const isPositive = currentSign.type === 'positive';
 
+  // Откатываем предыдущие бонусы
   addSignMod(-currentModApplied);
   addArrivalBonus(-currentArrivalApplied);
 
   let newMod = 0;
   let newArrival = 0;
 
-  if (isPositive) {
-    if (isSuccess) {
-      newMod = (currentSign.mod || 0) * 2;
-      newArrival = (currentSign.arrivalBonus || 0) * 2;
+  // Вспомогательная функция для расчета нового значения
+  function calculateNewBonus(originalBonus) {
+    if (originalBonus === 0) return 0;
+    
+    const isBadForGroup = originalBonus > 0; // Если бонус положительный (к сложности) - это плохо
+    // Внимание: для Прибытия инвертированная логика!
+    // Но мы смотрим на знак числа. Если бонус к прибытию равен -2, то это ПЛОХО для группы.
+    // Значит, isBadForGroup для Прибытия = (originalBonus < 0).
+    // Чтобы не путаться, мы передадим флаг "isArrival" в функцию.
+
+    // Давай сделаем проще: вычислим "полезность" бонуса для группы.
+    // Если бонус к сложности > 0 -> вредно. Если к прибытию < 0 -> вредно.
+    // Но поскольку мы знаем, какой это тип, сделаем две отдельные функции или передадим параметр.
+  }
+
+  // Расчет для Сложности (mod)
+  if (currentSign.mod !== undefined && currentSign.mod !== 0) {
+    const isBad = currentSign.mod > 0; // Если +, то плохо
+    if (isBad) {
+      newMod = isSuccess ? (currentSign.mod * -1) : (currentSign.mod * 2);
     } else {
-      newMod = (currentSign.mod || 0) * -1;
-      newArrival = (currentSign.arrivalBonus || 0) * -1;
+      newMod = isSuccess ? (currentSign.mod * 2) : (currentSign.mod * -1);
     }
-  } else {
-    if (isSuccess) {
-      newMod = (currentSign.mod || 0) * -1;
-      newArrival = (currentSign.arrivalBonus || 0) * -1;
+  }
+
+  // Расчет для Прибытия (arrivalBonus)
+  // Внимание: здесь логика знака бонуса ОБРАТНАЯ!
+  // Если бонус к прибытию = +2 (хорошо), то "вредный" бонус = -2 (плохо).
+  // Поэтому isBad = arrivalBonus < 0.
+  if (currentSign.arrivalBonus !== undefined && currentSign.arrivalBonus !== 0) {
+    const isBad = currentSign.arrivalBonus < 0; // Если -, то плохо
+    if (isBad) {
+      newArrival = isSuccess ? (currentSign.arrivalBonus * -1) : (currentSign.arrivalBonus * 2);
     } else {
-      newMod = (currentSign.mod || 0) * 2;
-      newArrival = (currentSign.arrivalBonus || 0) * 2;
+      newArrival = isSuccess ? (currentSign.arrivalBonus * 2) : (currentSign.arrivalBonus * -1);
     }
   }
 
@@ -144,7 +165,9 @@ function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
   }
   
   if (sign.arrivalBonus && !isChecked) {
-    const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive';
+    const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive'; // Если +2 к прибытию - это "негатив" для сложности (зеленый), если -2 - "позитив" (красный). Но для прибытия наоборот.
+    // Сделаем проще: + к прибытию - зеленый, - к прибытию - красный.
+    const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive'; 
     const arrText = sign.arrivalBonus > 0 ? '+' + sign.arrivalBonus : '' + sign.arrivalBonus;
     metaHtml += ' | Прибытие: <strong class="' + arrClass + '">' + arrText + '</strong>';
   }
@@ -160,7 +183,7 @@ function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
         metaHtml += ' | Итоговая сложность: <strong class="' + modClass + '">' + (modValue > 0 ? '+' + modValue : modValue) + '</strong>';
       }
       if (arrivalValue !== 0) {
-        const arrClass = arrivalValue > 0 ? 'mod-negative' : 'mod-positive';
+        const arrClass = arrivalValue > 0 ? 'mod-negative' : 'mod-positive'; 
         metaHtml += ' | Итоговое Прибытие: <strong class="' + arrClass + '">' + (arrivalValue > 0 ? '+' + arrivalValue : arrivalValue) + '</strong>';
       }
     }
