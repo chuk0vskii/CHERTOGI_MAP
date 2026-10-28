@@ -15,10 +15,6 @@ const signImage = document.getElementById('signImage');
 
 let signHistory = [];
 
-// ============================================================
-// БРОСОК ЗНАКА
-// ============================================================
-
 export function drawSign() {
   const regionId = getRegionId();
   console.log('🎯 drawSign вызван, regionId:', regionId);
@@ -85,10 +81,6 @@ export function drawSign() {
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
 }
-
-// ============================================================
-// СБРОС
-// ============================================================
 
 export function resetSigns() {
   const regionId = getRegionId();
