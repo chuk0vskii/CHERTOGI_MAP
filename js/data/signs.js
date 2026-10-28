@@ -1,146 +1,241 @@
 // ============================================================
-// ДАННЫЕ ЗНАКОВ
+// ФАЗА ЗНАКИ
 // ============================================================
 
-export const SIGNS = [ null,
-  { 
-    title: 'Знак Тьмы', 
-    description: 'Знак влечет опасность. В неизведанных землях над вашей дорогой сгущается тьма. Опасность выше, чем когда-либо.',
-    mod: 2,
-    effect: 'Сложность пути повышена на 2, События что будут на пути нельзя узнать никаким образом. Группа не может избегать опасных встреч.',
-    image: 'tma.png'
-  },
-  { 
-    title: 'Знак Рока', 
-    description: 'Знак влечет ощущение неминуемого конца и мысли о том, что это путешествие - плохая идея.',
-    mod: 0,
-    effect: 'До первой успешной проверки, все проверки группы совершаются с помехой.',
-    image: 'rok.png'
-  },
-  { 
-    title: 'Знак Зверя', 
-    description: 'Знак означает, что что-то охотится в Чертогах, и оно знает, что вы отправляетесь в путь.',
-    mod: 0,
-    effect: 'Группа не может избежать встреч с опасными существами в фазе Путь.',
-    image: 'zver.png'
-  },
-  { 
-    title: 'Знак Красного Ветра', 
-    description: 'Это знак вражды Акрепы и Нарара, что означает бушующий ветер и изменение песков.',
-    mod: 1,
-    effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода.',
-    image: 'krasnii.png'
-  },
-  { 
-    title: 'Знак Ай\'анги', 
-    description: 'Этот знак означает, что Ай\'aнга недоволен, предвидятся буря.',
-    mod: 1,
-    effect: 'Сложность пути повышена на 1, в фазе Путь обязательно будет событие Смертельная погода и для его преодоления проверки будут с помехой.',
-    image: 'bura.png'
-  },
-  { 
-    title: 'Знак Червя', 
-    description: 'Знак предвещает беду с провизией и едой.',
-    mod: 1,
-    effect: 'Сложность пути повышается на 1, при первом отдыхе и осмотре провизии, её размер снижается на 1 категорию.',
-    image: 'cherv.png'
-  },
-  { 
-    title: 'Знак Золотого Плода', 
-    description: 'Предвещает невероятный пир и то, что еда будет вкусна, словно нектар богов.',
-    mod: -1,
-    effect: 'Сложность пути понижается на 1, при первом отдыхе и осмотре провизии, её размер выше на 1 категорию.',
-    image: 'plod.png'
-  },
-  { 
-    title: 'Знак Вдохновения', 
-    description: 'Знак предвещает невероятные виды и хорошую погоду, которая вдохновляет группу.',
-    mod: 0,
-    effect: 'Первый бросок для избежания усталости, группа делает с преимуществом.',
-    image: 'vdohnovenia.png'
-  },
-  { 
-    title: 'Знак Нарара', 
-    description: 'Знак означает благословение северного ветра, который поможет в пути группе.',
-    mod: -1,
-    effect: 'Сложность пути понижается на 1, в фазе Путь на 1 событие меньше (на выбор Хранителя узлов).',
-    image: 'vetra.png'
-  },
-  { 
-    title: 'Знак Шамаса', 
-    description: 'Знак предвещает, что лучи Шамаса не позволят опасности скрыться от ваших глаз.',
-    mod: 0,
-    effect: 'Глаза звезд совершает все проверки в фазе Путь с преимуществом. Существа с помехой пытаются скрыться от группы.',
-    image: 'solnca.png'
-  },
-  { 
-    title: 'Знак Шептуна', 
-    description: 'Знак означает невероятное вдохновение на приключение и предчувствие удачи.',
-    mod: 0,
-    effect: 'Все в группе получают 1 кость удачи на фазу Путь.',
-    image: 'shopota.png'
-  },
-  { 
-    title: 'Знак Звёзд', 
-    description: 'Знак высшего оберега, звезды следят за вами и надеются на поступки, которые долетят до Тингира.',
-    mod: -2,
-    effect: 'Сложность пути понижается на 2.',
-    image: 'zvezd.png'
-  },
-  { 
-    title: 'Знак Голода', 
-    description: 'Знак предвещает встречу с голодными духами, которые хотят, чтобы и вы познали их голод.',
-    mod: 0,
-    effect: 'Группа совершает проверки для осмотра и сохранения провизии с помехой в фазе Путь.',
-    image: 'golod.png'
-  },
-  { 
-    title: 'Знак Золотой Нити', 
-    description: 'Знак означает невероятную удачу и поддержку судьбы.',
-    mod: 0,
-    effect: 'В фазе Путь все проверки ролей делаются с преимуществом.',
-    image: 'niti.png'
-  },
-  { 
-    title: 'Знак Закрытого Ока', 
-    description: 'Знак предвещает трудную видимость под дозором Ману.',
-    mod: 0,
-    effect: '+1 одно событие в фазе Путь. Оно произойдет ночью при отдыхе.',
-    image: 'oka.png'
-  },
-  { 
-    title: 'Знак Прибытия', 
-    description: 'Знак предвещает тяжелый путь, но легкое прибытие к цели.',
-    mod: 0,
-    effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы +2 на фазу Прибытие.',
-    image: 'pribitia.png'
-  },
-  { 
-    title: 'Знак Пути', 
-    description: 'Знак предвещает легкий путь, но тяжелое прибытие к цели.',
-    mod: 0,
-    effect: 'Группа совершает проверки для поиска безопасной тропы, поиска безопасного места или провизии с помехой. У группы -2 на фазу Прибытие.',
-    image: 'puti.png'
-  },
-  { 
-    title: 'Знак Конца', 
-    description: 'Знак означает смерть, двуглавые совы бдят, чтобы обрезать нить судьбы искателя.',
-    mod: 0,
-    effect: 'Группа провалит свой первый бросок для избежания усталости, первый урон по каждому из группы будет критическим.',
-    image: 'konec.png'
-  },
-  { 
-    title: 'Знак Черного Треугольника', 
-    description: 'Знак показывает дребезжание в нитях судьбы, и Вуаль это слышит.',
-    mod: 0,
-    effect: 'При встрече в фазе Путь группа может встретить только существ из таблицы Дети Вуали. До первого успешного броска для осмотра местности, выслеживания существ и поиска безопасного места и провизии, проверки совершаются с помехой.',
-    image: 'treugolnik.png'
-  },
-  { 
-    title: 'Знак Очага', 
-    description: 'Знак предвещает легкое возвращение домой.',
-    mod: -3,
-    effect: 'Сложность пути понижается на 3 при возвращении в Овуль и при поиске безопасного места.',
-    image: 'ochag.png'
+import { SIGNS } from '../data/signs.js';
+import { 
+  getRegionId, addSignMod, resetSignMod, updateDifficulty, 
+  addArrivalBonus, resetArrivalBonus 
+} from './region.js';
+
+const signInput = document.getElementById('signInput');
+const signResult = document.getElementById('signResult');
+const signPlaceholder = document.getElementById('signPlaceholder');
+const signTitle = document.getElementById('signTitle');
+const signDescription = document.getElementById('signDescription');
+const signMeta = document.getElementById('signMeta');
+const signImage = document.getElementById('signImage');
+
+// Новые элементы для проверки Ока
+const eyeInput = document.getElementById('eyeInput');
+const eyeCheckBtn = document.getElementById('eyeCheckBtn');
+
+let currentSign = null; // Храним текущий выпавший знак
+let currentModApplied = 0; // Сколько было применено к сложности
+let currentArrivalApplied = 0; // Сколько было применено к прибытию
+
+// ============================================================
+// БРОСОК ЗНАКА
+// ============================================================
+
+export function drawSign() {
+  const regionId = getRegionId();
+  console.log('🎯 drawSign вызван, regionId:', regionId);
+  
+  if (regionId === null || regionId === undefined) {
+    alert('Сначала выберите край!');
+    return;
   }
-];
+
+  const value = parseInt(signInput.value);
+  if (isNaN(value) || value < 1) {
+    alert('Введите число проверки (минимум 1)');
+    return;
+  }
+
+  let index = value;
+  if (index > 20) index = 20;
+
+  const sign = SIGNS[index];
+  if (!sign) {
+    alert('Знак не найден. Попробуйте другое число.');
+    return;
+  }
+
+  // Сбрасываем предыдущий знак перед новым броском
+  if (currentSign) {
+    addSignMod(-currentModApplied);
+    addArrivalBonus(-currentArrivalApplied);
+  }
+
+  currentSign = sign;
+  currentModApplied = sign.mod || 0;
+  currentArrivalApplied = sign.arrivalBonus || 0;
+
+  addSignMod(currentModApplied);
+  
+  if (currentArrivalApplied) {
+    addArrivalBonus(currentArrivalApplied);
+  }
+
+  signTitle.textContent = sign.title;
+  signDescription.textContent = sign.description;
+
+  updateSignUI(sign, false); // false = проверка еще не пройдена
+  signResult.classList.add('visible');
+  signPlaceholder.style.display = 'none';
+}
+
+// ============================================================
+// ПРОВЕРКА ОКА ПРЕДЗНАМЕНОВАНИЯ
+// ============================================================
+
+export function checkEye() {
+  if (!currentSign) {
+    alert('Сначала узнайте знак!');
+    return;
+  }
+
+  const eyeValue = parseInt(eyeInput.value);
+  if (isNaN(eyeValue) || eyeValue < 1) {
+    alert('Введите число проверки Ока Предзнаменования');
+    return;
+  }
+
+  // Проверяем, есть ли числовой эффект
+  if (!currentSign.isNumeric) {
+    alert('Этот знак не имеет числовых эффектов, которые можно изменить.');
+    return;
+  }
+
+  const dc = currentSign.dc || 15;
+  const isSuccess = eyeValue >= dc;
+  const isPositive = currentSign.type === 'positive';
+
+  // Откатываем предыдущие бонусы
+  addSignMod(-currentModApplied);
+  addArrivalBonus(-currentArrivalApplied);
+
+  let newMod = 0;
+  let newArrival = 0;
+
+  if (isPositive) {
+    if (isSuccess) {
+      // Позитивный + Успех = удвоение
+      newMod = (currentSign.mod || 0) * 2;
+      newArrival = (currentSign.arrivalBonus || 0) * 2;
+    } else {
+      // Позитивный + Провал = становится отрицательным
+      newMod = (currentSign.mod || 0) * -1;
+      newArrival = (currentSign.arrivalBonus || 0) * -1;
+    }
+  } else {
+    // Негативный
+    if (isSuccess) {
+      // Негативный + Успех = становится положительным
+      newMod = (currentSign.mod || 0) * -1;
+      newArrival = (currentSign.arrivalBonus || 0) * -1;
+    } else {
+      // Негативный + Провал = удвоение негатива
+      newMod = (currentSign.mod || 0) * 2;
+      newArrival = (currentSign.arrivalBonus || 0) * 2;
+    }
+  }
+
+  // Применяем новые значения
+  currentModApplied = newMod;
+  currentArrivalApplied = newArrival;
+  addSignMod(newMod);
+  addArrivalBonus(newArrival);
+
+  // Обновляем UI с результатом проверки
+  updateSignUI(currentSign, true, isSuccess, newMod, newArrival);
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ЗНАКА
+// ============================================================
+
+function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
+  let metaHtml = 'Выпало: <strong>' + sign.title + '</strong>';
+  
+  if (sign.mod !== 0 && !isChecked) {
+    const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
+    const modText = sign.mod > 0 ? '+' + sign.mod : '' + sign.mod;
+    metaHtml += ' | Изменение сложности: <strong class="' + modClass + '">' + modText + '</strong>';
+  }
+  
+  if (sign.arrivalBonus && !isChecked) {
+    const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive';
+    const arrText = sign.arrivalBonus > 0 ? '+' + sign.arrivalBonus : '' + sign.arrivalBonus;
+    metaHtml += ' | Прибытие: <strong class="' + arrClass + '">' + arrText + '</strong>';
+  }
+
+  if (isChecked) {
+    const resultText = isSuccess ? 'Успех!' : 'Провал...';
+    const resultColor = isSuccess ? '#51cf66' : '#ff6b6b';
+    metaHtml += '<br><span style="color: ' + resultColor + '; font-weight: bold;">Око Предзнаменования: ' + resultText + '</span>';
+    
+    if (sign.isNumeric) {
+      if (modValue !== 0) {
+        const modClass = modValue > 0 ? 'mod-positive' : 'mod-negative';
+        metaHtml += ' | Итоговая сложность: <strong class="' + modClass + '">' + (modValue > 0 ? '+' + modValue : modValue) + '</strong>';
+      }
+      if (arrivalValue !== 0) {
+        const arrClass = arrivalValue > 0 ? 'mod-negative' : 'mod-positive';
+        metaHtml += ' | Итоговое Прибытие: <strong class="' + arrClass + '">' + (arrivalValue > 0 ? '+' + arrivalValue : arrivalValue) + '</strong>';
+      }
+    }
+  }
+
+  if (sign.effect) {
+    metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + sign.effect + '</span>';
+  }
+  
+  signMeta.innerHTML = metaHtml;
+
+  if (sign.image) {
+    signImage.innerHTML = '<img src="/CHERTOGI_MAP/znakiimg/' + sign.image + '" alt="' + sign.title + '" style="width:100%; height:100%; object-fit:cover;">';
+    signImage.style.background = 'transparent';
+    signImage.style.display = 'flex';
+    signImage.style.alignItems = 'center';
+    signImage.style.justifyContent = 'center';
+  } else {
+    signImage.innerHTML = '500×500<br>заглушка';
+    signImage.style.background = '#4a0e0e';
+    signImage.style.display = 'flex';
+    signImage.style.alignItems = 'center';
+    signImage.style.justifyContent = 'center';
+    signImage.style.color = 'rgba(255,255,255,0.2)';
+    signImage.style.fontSize = '14px';
+    signImage.style.textAlign = 'center';
+  }
+}
+
+// ============================================================
+// СБРОС
+// ============================================================
+
+export function resetSigns() {
+  const regionId = getRegionId();
+  if (regionId === null || regionId === undefined) {
+    alert('Сначала выберите край');
+    return;
+  }
+  
+  // Сбрасываем все примененные бонусы
+  if (currentSign) {
+    addSignMod(-currentModApplied);
+    addArrivalBonus(-currentArrivalApplied);
+  }
+  
+  currentSign = null;
+  currentModApplied = 0;
+  currentArrivalApplied = 0;
+
+  resetSignMod();
+  resetArrivalBonus();
+  updateDifficulty();
+  
+  signResult.classList.remove('visible');
+  signPlaceholder.style.display = 'block';
+  
+  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков (включая Прибытие) сброшены</span>';
+  signResult.classList.add('visible');
+  signPlaceholder.style.display = 'none';
+  
+  setTimeout(function() {
+    signResult.classList.remove('visible');
+    signPlaceholder.style.display = 'block';
+  }, 2000);
+}
