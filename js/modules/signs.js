@@ -3,7 +3,7 @@
 // ============================================================
 
 import { SIGNS } from '../data/signs.js';
-import { getRegionId, addSignMod, resetSignMod, updateDifficulty } from './region.js';
+import { getRegionId, addSignMod, resetSignMod, updateDifficulty, addArrivalBonus, resetArrivalBonus } from './region.js';
 
 const signInput = document.getElementById('signInput');
 const signResult = document.getElementById('signResult');
@@ -39,7 +39,16 @@ export function drawSign() {
     return;
   }
 
+  // Применяем модификатор сложности
   addSignMod(sign.mod);
+  
+  // Применяем бонус к Прибытию (для особых знаков)
+  if (index === 16) {
+    addArrivalBonus(2); // Знак Прибытия: +2 на фазу Прибытие
+  } else if (index === 17) {
+    addArrivalBonus(-2); // Знак Пути: -2 на фазу Прибытие
+  }
+
   signHistory.push({ index, title: sign.title, mod: sign.mod });
 
   signTitle.textContent = sign.title;
@@ -52,8 +61,15 @@ export function drawSign() {
     metaHtml += ' | Изменение сложности: <strong class="' + modClass + '">' + modText + '</strong>';
   }
   
+  // Показываем бонус к прибытию в мета-информации, если это 16 или 17 знак
+  if (index === 16) {
+    metaHtml += ' | <strong class="mod-negative">+2 к Прибытию</strong>';
+  } else if (index === 17) {
+    metaHtml += ' | <strong class="mod-positive">-2 к Прибытию</strong>';
+  }
+  
   const totalMod = signHistory.reduce(function(sum, s) { return sum + s.mod; }, 0);
-  metaHtml += '<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор: ' + (totalMod > 0 ? '+' : '') + totalMod + '</span>';
+  metaHtml += '<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор сложности: ' + (totalMod > 0 ? '+' : '') + totalMod + '</span>';
   
   if (sign.effect) {
     metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + sign.effect + '</span>';
@@ -90,13 +106,14 @@ export function resetSigns() {
   }
   
   resetSignMod();
+  resetArrivalBonus(); // Сбрасываем также бонус прибытия
   signHistory = [];
   updateDifficulty();
   
   signResult.classList.remove('visible');
   signPlaceholder.style.display = 'block';
   
-  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
+  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков (включая Прибытие) сброшены</span>';
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
   
