@@ -66,11 +66,20 @@ export function setArrivalBonus(val) { arrivalBonus = val; updateArrivalDisplay(
 export function addArrivalBonus(val) { 
   arrivalBonus += val; 
   updateArrivalDisplay();
-  console.log('Бонус кварны изменён: ' + arrivalBonus);
+  console.log('Бонус прибытия изменён: ' + arrivalBonus);
 }
 export function resetArrivalBonus() { 
   arrivalBonus = 0; 
   updateArrivalDisplay();
+}
+
+// ============================================================
+// ПОЛУЧЕНИЕ ТЕКУЩЕЙ СЛОЖНОСТИ
+// ============================================================
+
+export function getCurrentDifficulty() {
+  const total = baseDifficulty + currentSignMod;
+  return total < 0 ? 0 : total;
 }
 
 // ============================================================
@@ -180,10 +189,6 @@ export function initRegionChangeHandler() {
     }
   });
 }
-
-// ============================================================
-// ЭКСПОРТ ВСЕХ ФУНКЦИЙ
-// ============================================================
 
 export { 
   updateDifficulty,
