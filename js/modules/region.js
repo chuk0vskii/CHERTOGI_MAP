@@ -73,10 +73,6 @@ export function resetArrivalBonus() {
   updateArrivalDisplay();
 }
 
-// ============================================================
-// ПОЛУЧЕНИЕ ТЕКУЩЕЙ СЛОЖНОСТИ
-// ============================================================
-
 export function getCurrentDifficulty() {
   const total = baseDifficulty + currentSignMod;
   return total < 0 ? 0 : total;
