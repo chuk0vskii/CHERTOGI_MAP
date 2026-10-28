@@ -5,7 +5,10 @@
 import { SIGNS } from '../data/signs.js';
 import { 
   getRegionId, addSignMod, resetSignMod, updateDifficulty, 
-  addArrivalBonus, resetArrivalBonus 
+  addArrivalBonus, resetArrivalBonus,
+  addExtraEvents, resetExtraEvents,
+  addLuckDice, resetLuckDice,
+  addCurseDice, resetCurseDice
 } from './region.js';
 
 const signInput = document.getElementById('signInput');
@@ -21,6 +24,9 @@ const eyeInput = document.getElementById('eyeInput');
 let currentSign = null; 
 let currentModApplied = 0; 
 let currentArrivalApplied = 0; 
+let currentEventApplied = 0;
+let currentLuckApplied = 0;
+let currentCurseApplied = 0;
 
 // ============================================================
 // БРОСОК ЗНАКА
@@ -53,17 +59,24 @@ export function drawSign() {
   if (currentSign) {
     addSignMod(-currentModApplied);
     addArrivalBonus(-currentArrivalApplied);
+    addExtraEvents(-currentEventApplied);
+    addLuckDice(-currentLuckApplied);
+    addCurseDice(-currentCurseApplied);
   }
 
   currentSign = sign;
   currentModApplied = sign.mod || 0;
   currentArrivalApplied = sign.arrivalBonus || 0;
+  currentEventApplied = sign.extraEvents || 0;
+  currentLuckApplied = sign.luckDice || 0;
+  currentCurseApplied = sign.curseDice || 0;
 
   addSignMod(currentModApplied);
   
-  if (currentArrivalApplied) {
-    addArrivalBonus(currentArrivalApplied);
-  }
+  if (currentArrivalApplied) addArrivalBonus(currentArrivalApplied);
+  if (currentEventApplied) addExtraEvents(currentEventApplied);
+  if (currentLuckApplied) addLuckDice(currentLuckApplied);
+  if (currentCurseApplied) addCurseDice(currentCurseApplied);
 
   signTitle.textContent = sign.title;
   signDescription.textContent = sign.description;
@@ -97,11 +110,18 @@ export function checkEye() {
   const dc = currentSign.dc || 15;
   const isSuccess = eyeValue >= dc;
 
+  // Откатываем предыдущие бонусы
   addSignMod(-currentModApplied);
   addArrivalBonus(-currentArrivalApplied);
+  addExtraEvents(-currentEventApplied);
+  addLuckDice(-currentLuckApplied);
+  addCurseDice(-currentCurseApplied);
 
   let newMod = 0;
   let newArrival = 0;
+  let newEvents = 0;
+  let newLuck = 0;
+  let newCurse = 0;
 
   // Расчет для Сложности (mod)
   if (currentSign.mod !== undefined && currentSign.mod !== 0) {
@@ -123,31 +143,66 @@ export function checkEye() {
     }
   }
 
+  // Расчет для Событий (extraEvents)
+  // В базе: positiveEvents = true (например, +1 событие), negativeEvents = false (например, -1 событие)
+  if (currentSign.extraEvents !== undefined && currentSign.extraEvents !== 0) {
+    const isBad = currentSign.extraEvents > 0; // +1 событие - это плохо
+    if (isBad) {
+      newEvents = isSuccess ? (currentSign.extraEvents * -1) : (currentSign.extraEvents * 2);
+    } else {
+      newEvents = isSuccess ? (currentSign.extraEvents * 2) : (currentSign.extraEvents * -1);
+    }
+  }
+
+  // Расчет для Костей Удачи (luckDice) и Проклятья (curseDice)
+  // Если знак дает кости удачи (luckDice > 0), при провале они превращаются в кости проклятья.
+  if (currentSign.luckDice !== undefined && currentSign.luckDice > 0) {
+    if (isSuccess) {
+      newLuck = currentSign.luckDice * 2;
+    } else {
+      newCurse = currentSign.luckDice;
+    }
+  }
+
   currentModApplied = newMod;
   currentArrivalApplied = newArrival;
+  currentEventApplied = newEvents;
+  currentLuckApplied = newLuck;
+  currentCurseApplied = newCurse;
+
   addSignMod(newMod);
   addArrivalBonus(newArrival);
+  addExtraEvents(newEvents);
+  addLuckDice(newLuck);
+  addCurseDice(newCurse);
 
-  updateSignUI(currentSign, true, isSuccess, newMod, newArrival);
+  updateSignUI(currentSign, true, isSuccess, newMod, newArrival, newEvents, newLuck, newCurse);
 }
 
 // ============================================================
 // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ЗНАКА
 // ============================================================
 
-function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
+function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue, eventValue, luckValue, curseValue) {
   let metaHtml = 'Выпало: <strong>' + sign.title + '</strong>';
   
-  if (sign.mod !== 0 && !isChecked) {
-    const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
-    const modText = sign.mod > 0 ? '+' + sign.mod : '' + sign.mod;
-    metaHtml += ' | Изменение сложности: <strong class="' + modClass + '">' + modText + '</strong>';
-  }
-  
-  if (sign.arrivalBonus && !isChecked) {
-    const arrClass1 = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive'; 
-    const arrText = sign.arrivalBonus > 0 ? '+' + sign.arrivalBonus : '' + sign.arrivalBonus;
-    metaHtml += ' | Прибытие: <strong class="' + arrClass1 + '">' + arrText + '</strong>';
+  if (!isChecked) {
+    if (sign.mod !== 0) {
+      const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
+      const modText = sign.mod > 0 ? '+' + sign.mod : '' + sign.mod;
+      metaHtml += ' | Сложность: <strong class="' + modClass + '">' + modText + '</strong>';
+    }
+    if (sign.arrivalBonus) {
+      const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive';
+      metaHtml += ' | Прибытие: <strong class="' + arrClass + '">' + (sign.arrivalBonus > 0 ? '+' + sign.arrivalBonus : sign.arrivalBonus) + '</strong>';
+    }
+    if (sign.extraEvents) {
+      const evClass = sign.extraEvents > 0 ? 'mod-positive' : 'mod-negative';
+      metaHtml += ' | События: <strong class="' + evClass + '">' + (sign.extraEvents > 0 ? '+' + sign.extraEvents : sign.extraEvents) + '</strong>';
+    }
+    if (sign.luckDice) {
+      metaHtml += ' | Кости удачи: <strong class="mod-negative">+' + sign.luckDice + '</strong>';
+    }
   }
 
   if (isChecked) {
@@ -155,15 +210,23 @@ function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
     const resultColor = isSuccess ? '#51cf66' : '#ff6b6b';
     metaHtml += '<br><span style="color: ' + resultColor + '; font-weight: bold;">Око Предзнаменования: ' + resultText + '</span>';
     
-    if (sign.isNumeric) {
-      if (modValue !== 0) {
-        const modClass2 = modValue > 0 ? 'mod-positive' : 'mod-negative';
-        metaHtml += ' | Итоговая сложность: <strong class="' + modClass2 + '">' + (modValue > 0 ? '+' + modValue : modValue) + '</strong>';
-      }
-      if (arrivalValue !== 0) {
-        const arrClass2 = arrivalValue > 0 ? 'mod-negative' : 'mod-positive'; 
-        metaHtml += ' | Итоговое Прибытие: <strong class="' + arrClass2 + '">' + (arrivalValue > 0 ? '+' + arrivalValue : arrivalValue) + '</strong>';
-      }
+    if (modValue !== 0) {
+      const modClass = modValue > 0 ? 'mod-positive' : 'mod-negative';
+      metaHtml += ' | Сложность: <strong class="' + modClass + '">' + (modValue > 0 ? '+' + modValue : modValue) + '</strong>';
+    }
+    if (arrivalValue !== 0) {
+      const arrClass = arrivalValue > 0 ? 'mod-negative' : 'mod-positive';
+      metaHtml += ' | Прибытие: <strong class="' + arrClass + '">' + (arrivalValue > 0 ? '+' + arrivalValue : arrivalValue) + '</strong>';
+    }
+    if (eventValue !== 0) {
+      const evClass = eventValue > 0 ? 'mod-positive' : 'mod-negative';
+      metaHtml += ' | События: <strong class="' + evClass + '">' + (eventValue > 0 ? '+' + eventValue : eventValue) + '</strong>';
+    }
+    if (luckValue > 0) {
+      metaHtml += ' | Кости удачи: <strong class="mod-negative">+' + luckValue + '</strong>';
+    }
+    if (curseValue > 0) {
+      metaHtml += ' | Кости проклятья (Хранителю): <strong class="mod-positive">+' + curseValue + '</strong>';
     }
   }
 
@@ -205,20 +268,29 @@ export function resetSigns() {
   if (currentSign) {
     addSignMod(-currentModApplied);
     addArrivalBonus(-currentArrivalApplied);
+    addExtraEvents(-currentEventApplied);
+    addLuckDice(-currentLuckApplied);
+    addCurseDice(-currentCurseApplied);
   }
   
   currentSign = null;
   currentModApplied = 0;
   currentArrivalApplied = 0;
+  currentEventApplied = 0;
+  currentLuckApplied = 0;
+  currentCurseApplied = 0;
 
   resetSignMod();
   resetArrivalBonus();
+  resetExtraEvents();
+  resetLuckDice();
+  resetCurseDice();
   updateDifficulty();
   
   signResult.classList.remove('visible');
   signPlaceholder.style.display = 'block';
   
-  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков (включая Прибытие) сброшены</span>';
+  signMeta.innerHTML = '<span style="color:#51cf66;">✅ Эффекты всех знаков сброшены</span>';
   signResult.classList.add('visible');
   signPlaceholder.style.display = 'none';
   
