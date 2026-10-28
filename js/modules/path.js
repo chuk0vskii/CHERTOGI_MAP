@@ -6,13 +6,11 @@ import { _supabase } from '../config-module.js';
 import { 
   COMMON_EVENTS_MODULES, READER_EVENTS_MODULES, SHADOW_EVENTS_MODULES,
   CLAW_EVENTS_MODULES, EYES_EVENTS_MODULES, PALM_EVENTS_MODULES,
-  TABLE_TO_SECTION, getRegionalTableName, getEventModule
+  TABLE_TO_SECTION, getRegionalTableName
 } from '../events/index.js';
-import { getRandomInt, getResultLabel, getResultClass } from './utils.js';
+import { getRandomInt, getResultClass } from './utils.js';
 import { 
-  addArrivalBonus, getArrivalBonus, 
-  getCurrentDifficulty, getBaseDifficulty, getCurrentSignMod,
-  addSignMod, updateDifficulty
+  addArrivalBonus, getCurrentDifficulty 
 } from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
@@ -103,7 +101,6 @@ async function rollTableInternal(tableName, containerId, fields, isCreature, eve
           let value = item[field];
           if (isCreature) value = createBeastLink(value, actualTableName);
           
-                    // Красивые подписи для полей
           let label = field === 'name' ? '' : 
                       field === 'description' ? '' : 
                       field === 'pass_method' ? 'Как пройти: ' : 
@@ -184,7 +181,6 @@ function addBonusEventInternal(eventId, parentEventId) {
   
   if (!module) return;
   
-  // Проверяем, есть ли уже такое бонусное событие от этого родителя
   if (parentEventId) {
     const existingBonusIndex = currentEvents.findIndex(e => e.isBonus && e.fateParentId === parentEventId);
     if (existingBonusIndex !== -1) {
@@ -221,7 +217,6 @@ function addBonusEventInternal(eventId, parentEventId) {
   currentEvents.push(eventCopy);
   console.log('✅ Добавлено бонусное событие:', module.title);
   
-  // Сразу перерисовываем, чтобы бонусное событие появилось
   renderEvents();
 }
 
@@ -254,7 +249,6 @@ export async function generatePathEvents() {
   roleEventsCount.textContent = roleDisplay;
   totalEventsCount.textContent = common + roleCount;
 
-  // Сбрасываем счётчик ID при генерации
   eventIdCounter = 0;
   currentEvents = [];
   
@@ -289,7 +283,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // ВСЕ РОЛИ
   const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
@@ -324,7 +317,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // Перемешиваем события
   for (var k = currentEvents.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
@@ -334,7 +326,7 @@ export async function generatePathEvents() {
 }
 
 // ============================================================
-// ОБРАБОТКА ПРОВЕРКИ (ОСНОВНАЯ ЛОГИКА)
+// ОБРАБОТКА ПРОВЕРКИ
 // ============================================================
 
 function processCheck(eventId, type, values) {
@@ -350,15 +342,12 @@ function processCheck(eventId, type, values) {
   const difficulty = getCurrentDifficulty();
   const result = module.handleCheck(event, values, type, difficulty);
   
-  if (!result) {
-    return;
-  }
+  if (!result) return;
   
   const isSecond = type === 'second';
   const effectsAppliedKey = isSecond ? 'secondEffectsApplied' : 'effectsApplied';
   const arrivalKey = isSecond ? 'arrivalAppliedSecond' : 'arrivalApplied';
   
-  // Сохраняем результат
   if (isSecond) {
     event.secondResult = result.resultType;
     event.secondResultText = result.resultText;
@@ -369,7 +358,6 @@ function processCheck(eventId, type, values) {
     event.checked = true;
   }
   
-  // ПРИМЕНЯЕМ ЭФФЕКТЫ — СБРАСЫВАЕМ ФЛАГ ДЛЯ ПОВТОРНЫХ ПРОВЕРОК
   if (result.effects) {
     const effectKey = isSecond ? 'secondEffectResult' : 'effectResult';
     const previousResult = event[effectKey];
@@ -380,7 +368,6 @@ function processCheck(eventId, type, values) {
       
       console.log('📊 Применяем эффекты для события #' + eventId + ' (тип: ' + type + '):', result.effects);
       
-      // ===== ПРИМЕНЯЕМ ПРИБЫТИЕ =====
       if (result.effects.arrival !== undefined && result.effects.arrival !== null) {
         if (event[arrivalKey] && event[arrivalKey + 'Value'] !== undefined) {
           const oldValue = event[arrivalKey + 'Value'];
@@ -395,7 +382,6 @@ function processCheck(eventId, type, values) {
         addArrivalBonus(value);
       }
       
-      // ===== ДОБАВЛЯЕМ БОНУСНЫЕ СОБЫТИЯ =====
       if (result.effects.events) {
         const count = result.effects.events;
         console.log('📌 Нужно добавить бонусных событий:', count);
@@ -475,7 +461,6 @@ function renderEvents() {
         },
         createMultipleBars: function(ev, type, label, difficulty) {
           const isSecond = type === 'second';
-          const prefix = isSecond ? 'second-' : '';
           const bars = isSecond ? (ev.secondBars || []) : (ev.bars || []);
           const eventId = ev.id;
           
@@ -630,7 +615,7 @@ function handleClick(e) {
     handleRealityTear(eventId);
     return;
   }
-  
+
   if (target.classList.contains('btn-fail-roll')) {
     const eventId = parseInt(target.dataset.eventId);
     handleFailRoll(eventId);
@@ -812,7 +797,7 @@ function removeBar(eventId, type, barIdx) {
 }
 
 // ============================================================
-// ОБРАБОТКА ПРОЛОМА РЕАЛЬНОСТИ
+// ОБРАБОТКА ПРОЛОМА РЕАЛЬНОСТИ И 1d8
 // ============================================================
 
 function handleRealityTear(eventId) {
@@ -840,15 +825,10 @@ function handleRealityTear(eventId) {
   }
 }
 
-// ============================================================
-// ОБРАБОТКА 1d8 ДЛЯ "ПРОКЛЯТЫХ ЗЕМЕЛЬ" (fail_5)
-// ============================================================
-
 function handleFailRoll(eventId) {
   const event = findEventById(eventId);
   if (!event) return;
   
-  // Если уже бросали — показываем сохранённый результат, не перебрасываем
   if (event.failRollResult) {
     const container = document.getElementById('fail-roll-result-' + eventId);
     if (container) {
@@ -872,7 +852,6 @@ function handleFailRoll(eventId) {
   
   const resultText = results[roll] || 'Неизвестная природа пролома';
   
-  // Сохраняем в event, чтобы не терялось при перерисовке
   event.failRollResult = roll;
   event.failRollText = resultText;
   
