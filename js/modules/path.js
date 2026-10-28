@@ -11,7 +11,7 @@ import {
 import { getRandomInt, getResultClass } from './utils.js';
 import { 
   addArrivalBonus, getCurrentDifficulty,
-  getExtraEvents, resetExtraEvents // импортируем функции для доп событий
+  getExtraEvents // импортируем функцию для доп событий
 } from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
@@ -236,6 +236,11 @@ export async function generatePathEvents() {
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
+  // ПОЛУЧАЕМ БОНУС СОБЫТИЙ ОТ ЗНАКА
+  const extraEvents = getExtraEvents();
+  // Вычисляем общее количество событий с учетом знака
+  const totalCommon = Math.max(0, common + extraEvents);
+
   let roleCount = 0;
   let roleDisplay = '0';
   if (maxRole > 0) {
@@ -245,11 +250,12 @@ export async function generatePathEvents() {
     roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
   }
 
-  // Учитываем доп. события от знака
-  const signExtraEvents = getExtraEvents();
-  const totalCommon = Math.max(0, common + signExtraEvents);
-
+  // Обновляем счетчик в интерфейсе
   commonEventsCount.textContent = totalCommon;
+  if (extraEvents !== 0) {
+    commonEventsCount.textContent += ' (вкл. ' + (extraEvents > 0 ? '+' : '') + extraEvents + ' от знака)';
+  }
+  
   maxRoleEvents.textContent = maxRole;
   roleEventsCount.textContent = roleDisplay;
   totalEventsCount.textContent = totalCommon + roleCount;
@@ -257,14 +263,18 @@ export async function generatePathEvents() {
   eventIdCounter = 0;
   currentEvents = [];
   
+  // Генерируем общие события
   for (var i = 0; i < totalCommon; i++) {
     const result = getRandomEventByType('Общее');
     if (result.module) {
+      // Определяем, является ли это событие бонусным (сверх нормы)
+      const isBonusEvent = i >= common;
+      
       const eventCopy = { 
         data: { id: result.module.id }, 
-        type: 'Общее', 
+        type: isBonusEvent ? 'Общее (бонусное)' : 'Общее', 
         roll: result.roll, 
-        isBonus: false,
+        isBonus: isBonusEvent,
         module: result.module,
         id: getUniqueId(),
         tableResults: {},
@@ -282,12 +292,14 @@ export async function generatePathEvents() {
         arrivalApplied: false,
         arrivalAppliedSecond: false,
         selectedEventId: null,
-        selectedEventModule: null
+        selectedEventModule: null,
+        color: isBonusEvent ? 'rgba(255,215,0,0.08)' : null
       };
       currentEvents.push(eventCopy);
     }
   }
 
+  // Генерируем события ролей
   const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
@@ -322,6 +334,7 @@ export async function generatePathEvents() {
     }
   }
 
+  // Перемешиваем
   for (var k = currentEvents.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
