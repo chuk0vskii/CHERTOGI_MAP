@@ -10,7 +10,8 @@ import {
 } from '../events/index.js';
 import { getRandomInt, getResultClass } from './utils.js';
 import { 
-  addArrivalBonus, getCurrentDifficulty 
+  addArrivalBonus, getCurrentDifficulty,
+  getExtraEvents, resetExtraEvents // импортируем функции для доп событий
 } from './region.js';
 
 const generateBtn = document.getElementById('generateEventsBtn');
@@ -244,15 +245,19 @@ export async function generatePathEvents() {
     roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
   }
 
-  commonEventsCount.textContent = common;
+  // Учитываем доп. события от знака
+  const signExtraEvents = getExtraEvents();
+  const totalCommon = Math.max(0, common + signExtraEvents);
+
+  commonEventsCount.textContent = totalCommon;
   maxRoleEvents.textContent = maxRole;
   roleEventsCount.textContent = roleDisplay;
-  totalEventsCount.textContent = common + roleCount;
+  totalEventsCount.textContent = totalCommon + roleCount;
 
   eventIdCounter = 0;
   currentEvents = [];
   
-  for (var i = 0; i < common; i++) {
+  for (var i = 0; i < totalCommon; i++) {
     const result = getRandomEventByType('Общее');
     if (result.module) {
       const eventCopy = { 
