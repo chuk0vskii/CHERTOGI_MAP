@@ -3,7 +3,10 @@
 // ============================================================
 
 import { SIGNS } from '../data/signs.js';
-import { getRegionId, addSignMod, resetSignMod, updateDifficulty, addArrivalBonus, resetArrivalBonus } from './region.js';
+import { 
+  getRegionId, addSignMod, resetSignMod, updateDifficulty, 
+  addArrivalBonus, resetArrivalBonus 
+} from './region.js';
 
 const signInput = document.getElementById('signInput');
 const signResult = document.getElementById('signResult');
@@ -13,7 +16,15 @@ const signDescription = document.getElementById('signDescription');
 const signMeta = document.getElementById('signMeta');
 const signImage = document.getElementById('signImage');
 
-let signHistory = [];
+const eyeInput = document.getElementById('eyeInput');
+
+let currentSign = null; 
+let currentModApplied = 0; 
+let currentArrivalApplied = 0; 
+
+// ============================================================
+// БРОСОК ЗНАКА
+// ============================================================
 
 export function drawSign() {
   const regionId = getRegionId();
@@ -39,38 +50,122 @@ export function drawSign() {
     return;
   }
 
-  // Применяем модификатор сложности
-  addSignMod(sign.mod);
-  
-  // Применяем бонус к Прибытию (для особых знаков)
-  if (index === 16) {
-    addArrivalBonus(2); // Знак Прибытия: +2 на фазу Прибытие
-  } else if (index === 17) {
-    addArrivalBonus(-2); // Знак Пути: -2 на фазу Прибытие
+  if (currentSign) {
+    addSignMod(-currentModApplied);
+    addArrivalBonus(-currentArrivalApplied);
   }
 
-  signHistory.push({ index, title: sign.title, mod: sign.mod });
+  currentSign = sign;
+  currentModApplied = sign.mod || 0;
+  currentArrivalApplied = sign.arrivalBonus || 0;
+
+  addSignMod(currentModApplied);
+  
+  if (currentArrivalApplied) {
+    addArrivalBonus(currentArrivalApplied);
+  }
 
   signTitle.textContent = sign.title;
   signDescription.textContent = sign.description;
 
-  let metaHtml = 'Выпало: <strong>' + value + '</strong>';
-  if (sign.mod !== 0) {
+  updateSignUI(sign, false); 
+  signResult.classList.add('visible');
+  signPlaceholder.style.display = 'none';
+}
+
+// ============================================================
+// ПРОВЕРКА ОКА ПРЕДЗНАМЕНОВАНИЯ
+// ============================================================
+
+export function checkEye() {
+  if (!currentSign) {
+    alert('Сначала узнайте знак!');
+    return;
+  }
+
+  const eyeValue = parseInt(eyeInput.value);
+  if (isNaN(eyeValue) || eyeValue < 1) {
+    alert('Введите число проверки Ока Предзнаменования');
+    return;
+  }
+
+  if (!currentSign.isNumeric) {
+    alert('Этот знак не имеет числовых эффектов, которые можно изменить.');
+    return;
+  }
+
+  const dc = currentSign.dc || 15;
+  const isSuccess = eyeValue >= dc;
+  const isPositive = currentSign.type === 'positive';
+
+  addSignMod(-currentModApplied);
+  addArrivalBonus(-currentArrivalApplied);
+
+  let newMod = 0;
+  let newArrival = 0;
+
+  if (isPositive) {
+    if (isSuccess) {
+      newMod = (currentSign.mod || 0) * 2;
+      newArrival = (currentSign.arrivalBonus || 0) * 2;
+    } else {
+      newMod = (currentSign.mod || 0) * -1;
+      newArrival = (currentSign.arrivalBonus || 0) * -1;
+    }
+  } else {
+    if (isSuccess) {
+      newMod = (currentSign.mod || 0) * -1;
+      newArrival = (currentSign.arrivalBonus || 0) * -1;
+    } else {
+      newMod = (currentSign.mod || 0) * 2;
+      newArrival = (currentSign.arrivalBonus || 0) * 2;
+    }
+  }
+
+  currentModApplied = newMod;
+  currentArrivalApplied = newArrival;
+  addSignMod(newMod);
+  addArrivalBonus(newArrival);
+
+  updateSignUI(currentSign, true, isSuccess, newMod, newArrival);
+}
+
+// ============================================================
+// ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ЗНАКА
+// ============================================================
+
+function updateSignUI(sign, isChecked, isSuccess, modValue, arrivalValue) {
+  let metaHtml = 'Выпало: <strong>' + sign.title + '</strong>';
+  
+  if (sign.mod !== 0 && !isChecked) {
     const modClass = sign.mod > 0 ? 'mod-positive' : 'mod-negative';
     const modText = sign.mod > 0 ? '+' + sign.mod : '' + sign.mod;
     metaHtml += ' | Изменение сложности: <strong class="' + modClass + '">' + modText + '</strong>';
   }
   
-  // Показываем бонус к прибытию в мета-информации, если это 16 или 17 знак
-  if (index === 16) {
-    metaHtml += ' | <strong class="mod-negative">+2 к Прибытию</strong>';
-  } else if (index === 17) {
-    metaHtml += ' | <strong class="mod-positive">-2 к Прибытию</strong>';
+  if (sign.arrivalBonus && !isChecked) {
+    const arrClass = sign.arrivalBonus > 0 ? 'mod-negative' : 'mod-positive';
+    const arrText = sign.arrivalBonus > 0 ? '+' + sign.arrivalBonus : '' + sign.arrivalBonus;
+    metaHtml += ' | Прибытие: <strong class="' + arrClass + '">' + arrText + '</strong>';
   }
-  
-  const totalMod = signHistory.reduce(function(sum, s) { return sum + s.mod; }, 0);
-  metaHtml += '<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">Накопленный модификатор сложности: ' + (totalMod > 0 ? '+' : '') + totalMod + '</span>';
-  
+
+  if (isChecked) {
+    const resultText = isSuccess ? 'Успех!' : 'Провал...';
+    const resultColor = isSuccess ? '#51cf66' : '#ff6b6b';
+    metaHtml += '<br><span style="color: ' + resultColor + '; font-weight: bold;">Око Предзнаменования: ' + resultText + '</span>';
+    
+    if (sign.isNumeric) {
+      if (modValue !== 0) {
+        const modClass = modValue > 0 ? 'mod-positive' : 'mod-negative';
+        metaHtml += ' | Итоговая сложность: <strong class="' + modClass + '">' + (modValue > 0 ? '+' + modValue : modValue) + '</strong>';
+      }
+      if (arrivalValue !== 0) {
+        const arrClass = arrivalValue > 0 ? 'mod-negative' : 'mod-positive';
+        metaHtml += ' | Итоговое Прибытие: <strong class="' + arrClass + '">' + (arrivalValue > 0 ? '+' + arrivalValue : arrivalValue) + '</strong>';
+      }
+    }
+  }
+
   if (sign.effect) {
     metaHtml += '<br><span style="font-size:13px; color:rgba(255,255,255,0.6);">' + sign.effect + '</span>';
   }
@@ -93,10 +188,11 @@ export function drawSign() {
     signImage.style.fontSize = '14px';
     signImage.style.textAlign = 'center';
   }
-
-  signResult.classList.add('visible');
-  signPlaceholder.style.display = 'none';
 }
+
+// ============================================================
+// СБРОС
+// ============================================================
 
 export function resetSigns() {
   const regionId = getRegionId();
@@ -105,9 +201,17 @@ export function resetSigns() {
     return;
   }
   
+  if (currentSign) {
+    addSignMod(-currentModApplied);
+    addArrivalBonus(-currentArrivalApplied);
+  }
+  
+  currentSign = null;
+  currentModApplied = 0;
+  currentArrivalApplied = 0;
+
   resetSignMod();
-  resetArrivalBonus(); // Сбрасываем также бонус прибытия
-  signHistory = [];
+  resetArrivalBonus();
   updateDifficulty();
   
   signResult.classList.remove('visible');
