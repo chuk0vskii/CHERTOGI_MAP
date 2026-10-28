@@ -8,6 +8,9 @@ let currentRegionId = null;
 let baseDifficulty = 0;
 let currentSignMod = 0;
 let arrivalBonus = 0;
+let extraEvents = 0; // +1 или -1 событие
+let luckDice = 0; // Кости удачи
+let curseDice = 0; // Кости проклятья
 
 const regionSelect = document.getElementById('regionSelect');
 const difficultyDisplay = document.getElementById('difficultyValue');
@@ -72,6 +75,18 @@ export function resetArrivalBonus() {
   arrivalBonus = 0; 
   updateArrivalDisplay();
 }
+
+export function getExtraEvents() { return extraEvents; }
+export function addExtraEvents(val) { extraEvents += val; console.log('Бонус событий изменён: ' + extraEvents); }
+export function resetExtraEvents() { extraEvents = 0; }
+
+export function getLuckDice() { return luckDice; }
+export function addLuckDice(val) { luckDice += val; console.log('Кости удачи: ' + luckDice); }
+export function resetLuckDice() { luckDice = 0; }
+
+export function getCurseDice() { return curseDice; }
+export function addCurseDice(val) { curseDice += val; console.log('Кости проклятья: ' + curseDice); }
+export function resetCurseDice() { curseDice = 0; }
 
 export function getCurrentDifficulty() {
   const total = baseDifficulty + currentSignMod;
@@ -148,6 +163,9 @@ export function initRegionChangeHandler() {
       setBaseDifficulty(difficulty);
       resetSignMod();
       resetArrivalBonus();
+      resetExtraEvents();
+      resetLuckDice();
+      resetCurseDice();
       
       const signResult = document.getElementById('signResult');
       const signPlaceholder = document.getElementById('signPlaceholder');
@@ -169,6 +187,9 @@ export function initRegionChangeHandler() {
       setBaseDifficulty(0);
       resetSignMod();
       resetArrivalBonus();
+      resetExtraEvents();
+      resetLuckDice();
+      resetCurseDice();
       
       if (difficultyDisplay) {
         difficultyDisplay.textContent = '—';
