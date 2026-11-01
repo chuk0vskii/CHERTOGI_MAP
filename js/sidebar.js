@@ -26,8 +26,9 @@ let currentKeeper = '';
 
 let placementMode = null;
 let tempMarkers = {
-  resource: null,
-  shelter: null
+  resource: [],
+  shelter: [],
+  ruins: []
 };
 let mapClickListener = null;
 let activePlacementType = null;
