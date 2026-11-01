@@ -8,7 +8,6 @@ async function loadReports(regionId) {
   
   reportsList.innerHTML = '<p style="color: #777; font-size: 14px;">Загрузка...</p>';
   
-  // Загружаем ТОЛЬКО одобренные отчеты для отображения на карте
   var result = await _supabase
     .from('game_reports')
     .select('*')
@@ -36,24 +35,54 @@ async function loadReports(regionId) {
     
     var fullContent = '';
     
+    // Имя хранителя
     if (report.keeper_name) {
       fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + escapeHtml(report.keeper_name) + '</div>';
     }
     
+    // Основной текст
     if (report.content) {
       fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + escapeHtml(report.content) + '</div>';
     }
     
+    // Умершие
     if (report.deceased_names && report.deceased_names.length > 0) {
       var namesEscaped = report.deceased_names.map(function(n) { return escapeHtml(n); }).join(', ');
       fullContent += '<div style="color: #ff6b6b; font-size: 13px; margin-top: 4px;"><span style="color: #888;">Умершие:</span> ' + namesEscaped + '</div>';
     }
     
-    var points = [];
-    if (report.has_resource) points.push('Место ресурса');
-    if (report.has_shelter) points.push('Место ночлега');
-    if (points.length > 0) {
-      fullContent += '<div style="color: #51cf66; font-size: 13px; margin-top: 2px;"><span style="color: #888;">Точки интереса:</span> ' + points.join(', ') + '</div>';
+    // --- НОВЫЙ БЛОК: Точки интереса и описания ---
+    var markersHtml = '';
+    
+    // Функция для рендера группы меток
+    var renderMarkerGroup = function(title, arr, icon) {
+      if (!arr || !Array.isArray(arr) || arr.length === 0) return '';
+      var items = arr.map(function(m) {
+        return `<div style="margin-top: 4px; padding-left: 16px; position: relative;">
+          <span style="position: absolute; left: 0; top: 2px;"><img src="${icon}" width="12" height="12"></span>
+          <span style="color: #e0d5c0;">${escapeHtml(m.description || 'Без описания')}</span>
+        </div>`;
+      }).join('');
+      return `<div style="margin-top: 8px;">
+        <div style="color: #ffd700; font-size: 12px; font-weight: bold; margin-bottom: 2px;">${title}:</div>
+        ${items}
+      </div>`;
+    };
+
+    markersHtml += renderMarkerGroup('Ресурсы', report.resources, '/CHERTOGI_MAP/icons/resurs.png');
+    markersHtml += renderMarkerGroup('Ночлеги', report.shelters, '/CHERTOGI_MAP/icons/Nochleg.png');
+    markersHtml += renderMarkerGroup('Руины', report.ruins, '/CHERTOGI_MAP/icons/ruins.png');
+
+    // Обратная совместимость для старых отчётов
+    if (markersHtml === '') {
+      var points = [];
+      if (report.has_resource) points.push('Место ресурса');
+      if (report.has_shelter) points.push('Место ночлега');
+      if (points.length > 0) {
+        fullContent += '<div style="color: #51cf66; font-size: 13px; margin-top: 2px;"><span style="color: #888;">Точки интереса:</span> ' + points.join(', ') + '</div>';
+      }
+    } else {
+      fullContent += markersHtml;
     }
     
     if (!fullContent) {
@@ -63,7 +92,6 @@ async function loadReports(regionId) {
     var dateStr = new Date(report.created_at).toLocaleDateString('ru-RU');
     var timeStr = new Date(report.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     
-    // Кнопка редактирования (появляется только если введен пароль)
     var editBtnHTML = '';
     if (typeof isReportAuthorized === 'function' && isReportAuthorized()) {
       var safeContent = encodeURIComponent(report.content || '');
@@ -93,7 +121,6 @@ async function loadReports(regionId) {
   
   reportsList.innerHTML = html;
 
-  // Навешиваем обработчики на кнопки редактирования
   document.querySelectorAll('.btn-edit-report').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
