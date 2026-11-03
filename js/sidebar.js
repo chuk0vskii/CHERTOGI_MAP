@@ -1,4 +1,7 @@
-// ===================== БОКОВАЯ ПАНЕЛЬ =====================
+// ============================================================
+// БОКОВАЯ ПАНЕЛЬ
+// ============================================================
+
 let currentRegionId = null;
 const sidebar = document.getElementById('region-sidebar');
 const sidebarTitle = document.getElementById('sidebar-title');
@@ -6,151 +9,250 @@ const sidebarDesc = document.getElementById('sidebar-description');
 const reportsList = document.getElementById('reports-list');
 const difficultyContainer = document.getElementById('region-difficulty');
 
-// ===================== АВТОРИЗАЦИЯ =====================
+// ============================================================
+// КОНФИГУРАЦИЯ АВТОРИЗАЦИИ
+// ============================================================
+
 const STORAGE_KEY = 'chertogi_report_auth';
 const EDGE_FUNCTION_URL = 'https://djieimjwhgjgsjcysceh.supabase.co/functions/v1/check-report-password';
 const SUPABASE_PUBLIC_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
-let isAuthorized = false, currentKeeper = '';
 
-// ===================== РАЗМЕЩЕНИЕ МЕТОК =====================
+let isAuthorized = false;
+let currentKeeper = '';
+
+// ============================================================
+// СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
+// ============================================================
+
 let placementMode = null;
-let tempMarkers = { resource: null, shelter: null };
+let tempMarkers = {
+  resource: null,
+  shelter: null
+};
 let mapClickListener = null;
 let activePlacementType = null;
 
-// ===================== СТИЛИ =====================
-(function injectStyles() {
-  if (document.getElementById('sidebar-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'sidebar-styles';
-  s.textContent = `
-.region-img-container{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#4a0e0e;position:relative;width:100%;min-height:150px;max-height:350px;height:auto;padding:0}
-.region-img{width:100%;height:100%;object-fit:contain;max-height:350px;min-height:150px;background:#4a0e0e}
-.region-img-placeholder{color:rgba(255,255,255,.3);font-size:14px;font-family:Philosopher,sans-serif;display:flex;align-items:center;justify-content:center;width:100%;min-height:150px}
-.difficulty-row{display:flex;align-items:center;gap:10px;margin:12px 0 16px;padding:8px 12px;background:rgba(74,14,14,.4);border-radius:6px;border-left:3px solid #4a0e0e}
-.difficulty-label{color:#aaa;font-size:14px;font-family:Philosopher,sans-serif}
-.difficulty-value{color:#ffd700;font-size:18px;font-weight:700;font-family:Philosopher,sans-serif}
-.report-section{margin-top:20px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px}
-.report-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.report-title{color:#ffd700;font-family:Calypso,serif;font-size:18px;letter-spacing:1px}
-.btn-mini{background:transparent;border:1px solid rgba(255,215,0,.2);color:#ffd700;padding:2px 12px;border-radius:4px;cursor:pointer;font-family:Philosopher,sans-serif;font-size:12px}
-.field{margin-bottom:10px}
-.field label{font-size:13px;color:rgba(255,255,255,.5);display:block;margin-bottom:4px}
-.field-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.field input[type=text],.field textarea{width:100%;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:Philosopher,sans-serif;box-sizing:border-box;font-size:14px}
-.field textarea{min-height:60px;resize:vertical}
-#keeper-display{color:#ffd700}
-.deceased-field{display:flex;gap:8px;margin-bottom:8px;align-items:center}
-.deceased-name{flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:Philosopher,sans-serif;box-sizing:border-box;font-size:14px}
-.remove-deceased-btn{background:transparent;border:none;color:#ff6b6b;cursor:pointer;font-size:18px;padding:0 8px}
-.checks{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:6px}
-.checks label{font-size:14px;color:#e0d5c0;cursor:pointer;display:flex;align-items:center;gap:6px}
-.checks input{width:18px;height:18px;accent-color:#ffd700;cursor:pointer}
-.hint-yellow,.hint-green{margin-top:8px;padding:8px 12px;border-radius:6px;font-size:13px}
-.hint-yellow{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.2);color:#ffd700}
-.hint-green{background:rgba(81,207,102,.1);border:1px solid rgba(81,207,102,.2);color:#51cf66}
-.marker-status{margin-top:8px;font-size:13px;color:rgba(255,255,255,.3)}
-.marker-status span+span{margin-left:16px}
-.btn-primary{width:100%;padding:10px;background:#4a0e0e;color:#ffd700;border:none;border-radius:6px;cursor:pointer;font-family:Philosopher,sans-serif;font-weight:bold;transition:all .3s}
-.btn-change-keeper{width:100%;padding:6px;margin-top:6px;background:rgba(74,14,14,.3);border:1px solid rgba(74,14,14,.3);border-radius:4px;color:rgba(255,255,255,.5);cursor:pointer;font-family:Philosopher,sans-serif;font-size:12px;transition:all .3s}
-.btn-change-keeper:hover{background:rgba(74,14,14,.6);color:#fff}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:2000;justify-content:center;align-items:center}
-.modal-box{background:#1a0a1a;border:1px solid #4a0e0e;border-radius:12px;padding:30px;max-width:400px;width:90%;color:#fff;box-shadow:0 8px 40px rgba(0,0,0,.8)}
-.modal-title{font-family:Calypso,serif;color:#ffd700;text-align:center;margin:0 0 10px;font-weight:400;letter-spacing:2px}
-.modal-sub{text-align:center;color:rgba(255,255,255,.4);font-size:13px;margin-bottom:16px}
-.modal-input{width:100%;padding:10px;margin-bottom:12px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:Philosopher,sans-serif;box-sizing:border-box;font-size:16px}
-.modal-actions{display:flex;gap:10px}
-.modal-actions .btn-primary{flex:1;padding:10px}
-.btn-cancel{padding:10px 20px;background:transparent;color:#888;border:1px solid #555;border-radius:6px;cursor:pointer;font-family:Philosopher,sans-serif}
-.modal-error{color:#ff6b6b;font-size:13px;text-align:center;margin-top:8px;display:none}
-`;
-  document.head.appendChild(s);
-})();
+// ============================================================
+// ПРОВЕРКА ПАРОЛЯ ЧЕРЕЗ EDGE FUNCTION SUPABASE
+// ============================================================
 
-// ===================== ПРОВЕРКА ПАРОЛЯ =====================
 async function checkPasswordViaServer(password) {
   try {
-    const r = await fetch(EDGE_FUNCTION_URL, {
+    const response = await fetch(EDGE_FUNCTION_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLIC_KEY },
-      body: JSON.stringify({ password })
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_PUBLIC_KEY
+      },
+      body: JSON.stringify({ password: password })
     });
-    if (!r.ok) { console.error('Ошибка запроса:', r.status); return false; }
-    return (await r.json()).ok === true;
-  } catch (e) { console.error('Ошибка проверки пароля:', e); return false; }
+    
+    if (!response.ok) {
+      console.error('Ошибка запроса к серверу:', response.status);
+      return false;
+    }
+    
+    const data = await response.json();
+    return data.ok === true;
+    
+  } catch (err) {
+    console.error('Ошибка проверки пароля:', err);
+    return false;
+  }
 }
 
-// ===================== СОСТОЯНИЕ =====================
+// ============================================================
+// СОХРАНЕНИЕ / ЗАГРУЗКА СОСТОЯНИЯ
+// ============================================================
+
 function loadAuthState() {
   try {
-    const s = sessionStorage.getItem(STORAGE_KEY);
-    if (s) { const d = JSON.parse(s); isAuthorized = d.isAuthorized || false; currentKeeper = d.currentKeeper || ''; return true; }
-  } catch (e) { console.warn('Ошибка загрузки:', e); }
+    var saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      var data = JSON.parse(saved);
+      isAuthorized = data.isAuthorized || false;
+      currentKeeper = data.currentKeeper || '';
+      console.log('Загружено состояние авторизации:', isAuthorized ? 'Открыт' : 'Закрыт');
+      return true;
+    }
+  } catch (e) {
+    console.warn('Ошибка загрузки состояния:', e);
+  }
   return false;
 }
+
 function saveAuthState() {
-  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ isAuthorized, currentKeeper })); }
-  catch (e) { console.warn('Ошибка сохранения:', e); }
+  try {
+    var data = {
+      isAuthorized: isAuthorized,
+      currentKeeper: currentKeeper
+    };
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Ошибка сохранения состояния:', e);
+  }
 }
-function isReportAuthorized() { return isAuthorized; }
-function setReportAuthorized(v) { isAuthorized = v; saveAuthState(); }
-function getCurrentKeeper() { return currentKeeper; }
-function setCurrentKeeper(n) { currentKeeper = n; saveAuthState(); }
+
+function isReportAuthorized() {
+  return isAuthorized;
+}
+
+function setReportAuthorized(value) {
+  isAuthorized = value;
+  saveAuthState();
+  console.log('Статус доступа к отчётам:', isAuthorized ? 'Открыт' : 'Закрыт');
+}
+
+function getCurrentKeeper() {
+  return currentKeeper;
+}
+
+function setCurrentKeeper(name) {
+  currentKeeper = name;
+  saveAuthState();
+}
 
 function addDeceasedField() {
-  const c = document.getElementById('deceased-container');
-  if (!c) return;
-  const d = document.createElement('div');
-  d.className = 'deceased-field';
-  d.innerHTML = `<input type="text" class="deceased-name" placeholder="Имя умершего персонажа..."><button class="remove-deceased-btn">X</button>`;
-  d.querySelector('.remove-deceased-btn').onclick = () => d.remove();
-  c.appendChild(d);
+  var container = document.getElementById('deceased-container');
+  if (!container) return;
+  
+  var div = document.createElement('div');
+  div.className = 'deceased-field';
+  div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+  div.innerHTML = `
+    <input type="text" class="deceased-name" placeholder="Имя умершего персонажа..." style="flex:1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px;">
+    <button class="remove-deceased-btn" style="background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 0 8px;">X</button>
+  `;
+  
+  var removeBtn = div.querySelector('.remove-deceased-btn');
+  removeBtn.addEventListener('click', function() {
+    div.remove();
+  });
+  
+  container.appendChild(div);
 }
 
-// ===================== ИЗОБРАЖЕНИЕ РЕГИОНА =====================
-function getRegionImagePath(id) {
-  const m = { 0:0, 1:2, 2:1, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 10:10 };
-  return '/CHERTOGI_MAP/images/' + (m[id] !== undefined ? m[id] : id);
+// ============================================================
+// ФУНКЦИЯ ПОЛУЧЕНИЯ ПУТИ К КАРТИНКЕ
+// ============================================================
+
+function getRegionImagePath(regionId) {
+  var mapping = {
+    0: 0,
+    1: 2,
+    2: 1,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10
+  };
+  
+  var imageNumber = mapping[regionId] !== undefined ? mapping[regionId] : regionId;
+  return '/CHERTOGI_MAP/images/' + imageNumber;
 }
+
+// ============================================================
+// ЗАГРУЗКА ИЗОБРАЖЕНИЯ (адаптивная)
+// ============================================================
 
 function loadRegionImage(regionId) {
-  const c = document.getElementById('region-image-placeholder');
-  if (!c) return;
-  c.innerHTML = '';
-  c.className = 'region-img-container';
-  const base = getRegionImagePath(regionId), exts = ['.png', '.jpg', '.jpeg', '.webp'];
-  let i = 0;
-  const img = document.createElement('img');
-  img.className = 'region-img';
-  img.style.display = 'none';
-  img.alt = 'Изображение региона';
-  c.appendChild(img);
-  (function next() {
-    if (i >= exts.length) {
-      const p = document.createElement('div');
-      p.className = 'region-img-placeholder';
-      p.textContent = 'Нет изображения';
-      c.appendChild(p);
+  var imgContainer = document.getElementById('region-image-placeholder');
+  if (!imgContainer) return;
+  
+  imgContainer.innerHTML = '';
+  imgContainer.style.display = 'flex';
+  imgContainer.style.alignItems = 'center';
+  imgContainer.style.justifyContent = 'center';
+  imgContainer.style.overflow = 'hidden';
+  imgContainer.style.backgroundColor = '#4a0e0e';
+  imgContainer.style.position = 'relative';
+  imgContainer.style.width = '100%';
+  imgContainer.style.minHeight = '150px';
+  imgContainer.style.maxHeight = '350px';
+  imgContainer.style.height = 'auto';
+  imgContainer.style.padding = '0';
+  
+  var basePath = getRegionImagePath(regionId);
+  var extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+  var currentIndex = 0;
+  
+  var imgElement = document.createElement('img');
+  imgElement.style.width = '100%';
+  imgElement.style.height = '100%';
+  imgElement.style.objectFit = 'contain';
+  imgElement.style.maxHeight = '350px';
+  imgElement.style.minHeight = '150px';
+  imgElement.style.display = 'none';
+  imgElement.alt = 'Изображение региона';
+  imgElement.style.background = '#4a0e0e';
+  
+  imgContainer.appendChild(imgElement);
+  
+  function tryLoadNext() {
+    if (currentIndex >= extensions.length) {
+      imgElement.style.display = 'none';
+      var placeholder = document.createElement('div');
+      placeholder.textContent = 'Нет изображения';
+      placeholder.style.color = 'rgba(255, 255, 255, 0.3)';
+      placeholder.style.fontSize = '14px';
+      placeholder.style.fontFamily = 'Philosopher, sans-serif';
+      placeholder.style.display = 'flex';
+      placeholder.style.alignItems = 'center';
+      placeholder.style.justifyContent = 'center';
+      placeholder.style.width = '100%';
+      placeholder.style.height = '100%';
+      placeholder.style.minHeight = '150px';
+      imgContainer.appendChild(placeholder);
       return;
     }
-    img.onload = () => { img.style.display = 'block'; };
-    img.onerror = () => { i++; next(); };
-    img.src = base + exts[i];
-  })();
+    
+    var ext = extensions[currentIndex];
+    var fullPath = basePath + ext;
+    
+    imgElement.onload = function() {
+      imgElement.style.display = 'block';
+      console.log('Загружено изображение:', fullPath);
+    };
+    imgElement.onerror = function() {
+      currentIndex++;
+      tryLoadNext();
+    };
+    imgElement.src = fullPath;
+  }
+  
+  tryLoadNext();
 }
 
-// ===================== ОТКРЫТИЕ/ЗАКРЫТИЕ =====================
+// ============================================================
+// ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ
+// ============================================================
+
 function openSidebar(regionId, name, description, difficulty) {
   currentRegionId = regionId;
   sidebarTitle.textContent = name || '';
   sidebarDesc.textContent = description || 'Описание отсутствует';
+
   loadRegionImage(regionId);
+
   if (difficultyContainer) {
-    difficultyContainer.innerHTML = (difficulty !== undefined && difficulty !== null)
-      ? `<div class="difficulty-row"><span class="difficulty-label">Сложность пути:</span><span class="difficulty-value">${Number(difficulty)}</span></div>`
-      : '';
+    if (difficulty !== undefined && difficulty !== null) {
+      difficultyContainer.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin: 12px 0 16px 0; padding: 8px 12px; background: rgba(74, 14, 14, 0.4); border-radius: 6px; border-left: 3px solid #4a0e0e;">
+          <span style="color: #aaa; font-size: 14px; font-family: "Philosopher", sans-serif;">Сложность пути:</span>
+          <span style="color: #ffd700; font-size: 18px; font-weight: 700; font-family: "Philosopher", sans-serif;">${Number(difficulty)}</span>
+        </div>
+      `;
+    } else {
+      difficultyContainer.innerHTML = '';
+    }
   }
+
   addReportSection();
+
   sidebar.style.display = 'block';
   sidebar.classList.add('open');
   setTimeout(() => { sidebar.style.transform = 'translateX(0)'; }, 10);
@@ -160,376 +262,806 @@ function openSidebar(regionId, name, description, difficulty) {
 }
 
 function closeSidebar() {
-  if (placementMode) { console.log('Режим размещения активен'); return; }
+  if (placementMode) {
+    console.log('Режим размещения метки активен, сайдбар не закрывается');
+    return;
+  }
+  
   sidebar.classList.remove('open');
   sidebar.style.transform = 'translateX(100%)';
   setTimeout(() => { sidebar.style.display = 'none'; }, 300);
 }
 
-document.getElementById('close-icon').addEventListener('click', e => {
+document.getElementById('close-icon').addEventListener('click', function(e) {
   e.stopPropagation();
-  if (placementMode) resetPlacementState();
+  if (placementMode) {
+    resetPlacementState();
+  }
   closeSidebar();
 });
 
-// ===================== СЕКЦИЯ ОТЧЁТА =====================
+// ============================================================
+// ДОБАВЛЕНИЕ СЕКЦИИ ОТЧЁТА В ПАНЕЛЬ
+// ============================================================
+
 function addReportSection() {
-  const panel = document.querySelector('.panel-content');
-  if (!panel) return;
-  const existing = document.getElementById('report-section');
-  if (existing) { existing.style.display = isAuthorized ? 'block' : 'none'; return; }
-
-  const section = document.createElement('div');
+  var panelContent = document.querySelector('.panel-content');
+  if (!panelContent) return;
+  
+  var existingSection = document.getElementById('report-section');
+  if (existingSection) {
+    existingSection.style.display = isAuthorized ? 'block' : 'none';
+    return;
+  }
+  
+  var section = document.createElement('div');
   section.id = 'report-section';
-  section.className = 'report-section';
-  section.style.display = 'none';
+  section.style.cssText = 'margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; display: none;';
+  
   section.innerHTML = `
-    <div class="report-header">
-      <span class="report-title">Создать отчёт</span>
-      <button id="toggle-report-btn" class="btn-mini">Свернуть</button>
+    <div style="margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="color: #ffd700; font-family: "Calypso", serif; font-size: 18px; letter-spacing: 1px; font-weight: normal;">Создать отчёт</span>
+        <button id="toggle-report-btn" style="background: transparent; border: 1px solid rgba(255,215,0,0.2); color: #ffd700; padding: 2px 12px; border-radius: 4px; cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px;">Свернуть</button>
+      </div>
+      
+      <div id="report-fields" style="display: block;">
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Имя Хранителя узлов</label>
+          <input id="keeper-display" type="text" style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffd700; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px;" readonly>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Текст отчёта</label>
+          <textarea id="report-content" placeholder="Опишите события..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px; min-height: 60px; resize: vertical;"></textarea>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 13px; color: rgba(255,255,255,0.5);">Умершие персонажи</label>
+            <button id="add-deceased-btn" style="background: rgba(74,14,14,0.3); border: 1px solid #4a0e0e; border-radius: 4px; color: #ffd700; padding: 2px 12px; cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px;">+ Добавить</button>
+          </div>
+          <div id="deceased-container"></div>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Точки интереса</label>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
+              Место ресурса
+            </label>
+            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
+              Место ночлега
+            </label>
+          </div>
+          <div id="marker-placement-hint" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border: 1px solid rgba(255,215,0,0.2); font-size: 13px; color: #ffd700;">
+            Кликните на карту в то место, где хотите разместить метку
+          </div>
+          <div id="marker-placed-info" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(81,207,102,0.1); border-radius: 6px; border: 1px solid rgba(81,207,102,0.2); font-size: 13px; color: #51cf66;">
+            Метка размещена. Вы можете переместить её, кликнув в другое место.
+          </div>
+          <div id="marker-status" style="margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.3);">
+            <span id="resource-status">Ресурс: не выбран</span>
+            <span id="shelter-status" style="margin-left: 16px;">Ночлег: не выбран</span>
+          </div>
+        </div>
+        
+        <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
+      </div>
     </div>
-    <div id="report-fields">
-      <div class="field"><label>Имя Хранителя узлов</label><input id="keeper-display" type="text" readonly></div>
-      <div class="field"><label>Текст отчёта</label><textarea id="report-content" placeholder="Опишите события..."></textarea></div>
-      <div class="field">
-        <div class="field-row"><label>Умершие персонажи</label><button id="add-deceased-btn" class="btn-mini">+ Добавить</button></div>
-        <div id="deceased-container"></div>
-      </div>
-      <div class="field">
-        <label>Точки интереса</label>
-        <div class="checks">
-          <label><input type="checkbox" id="resource-check"> Место ресурса</label>
-          <label><input type="checkbox" id="shelter-check"> Место ночлега</label>
-        </div>
-        <div id="marker-placement-hint" class="hint-yellow" style="display:none">Кликните на карту в то место, где хотите разместить метку</div>
-        <div id="marker-placed-info" class="hint-green" style="display:none">Метка размещена. Вы можете переместить её, кликнув в другое место.</div>
-        <div id="marker-status" class="marker-status">
-          <span id="resource-status">Ресурс: не выбран</span>
-          <span id="shelter-status">Ночлег: не выбран</span>
-        </div>
-      </div>
-      <button id="submit-report-btn" class="btn-primary">Отправить отчёт</button>
-    </div>`;
-  panel.appendChild(section);
-
-  document.getElementById('toggle-report-btn').onclick = function() {
-    const f = document.getElementById('report-fields');
-    const hidden = f.style.display === 'none';
-    f.style.display = hidden ? 'block' : 'none';
-    this.textContent = hidden ? 'Свернуть' : 'Развернуть';
-  };
-  document.getElementById('add-deceased-btn').onclick = addDeceasedField;
-  document.getElementById('submit-report-btn').onclick = submitReportHandler;
-  document.getElementById('resource-check').onchange = function() {
-    if (this.checked) { activePlacementType = 'resource'; startPlacementMode('resource'); }
-    else {
-      removeTempMarker('resource'); updateMarkerStatus();
-      if (!document.getElementById('shelter-check').checked) stopPlacementMode();
-      else { activePlacementType = 'shelter'; startPlacementMode('shelter'); }
+  `;
+  
+  panelContent.appendChild(section);
+  
+  document.getElementById('toggle-report-btn')?.addEventListener('click', function() {
+    var fields = document.getElementById('report-fields');
+    if (fields) {
+      if (fields.style.display === 'none') {
+        fields.style.display = 'block';
+        this.textContent = 'Свернуть';
+      } else {
+        fields.style.display = 'none';
+        this.textContent = 'Развернуть';
+      }
     }
-  };
-  document.getElementById('shelter-check').onchange = function() {
-    if (this.checked) { activePlacementType = 'shelter'; startPlacementMode('shelter'); }
-    else {
-      removeTempMarker('shelter'); updateMarkerStatus();
-      if (!document.getElementById('resource-check').checked) stopPlacementMode();
-      else { activePlacementType = 'resource'; startPlacementMode('resource'); }
+  });
+  
+  document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
+  document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
+  
+  document.getElementById('resource-check')?.addEventListener('change', function() {
+    if (this.checked) {
+      activePlacementType = 'resource';
+      startPlacementMode('resource');
+    } else {
+      removeTempMarker('resource');
+      updateMarkerStatus();
+      if (!document.getElementById('shelter-check')?.checked) {
+        stopPlacementMode();
+      } else {
+        activePlacementType = 'shelter';
+        startPlacementMode('shelter');
+      }
     }
-  };
+  });
+  
+  document.getElementById('shelter-check')?.addEventListener('change', function() {
+    if (this.checked) {
+      activePlacementType = 'shelter';
+      startPlacementMode('shelter');
+    } else {
+      removeTempMarker('shelter');
+      updateMarkerStatus();
+      if (!document.getElementById('resource-check')?.checked) {
+        stopPlacementMode();
+      } else {
+        activePlacementType = 'resource';
+        startPlacementMode('resource');
+      }
+    }
+  });
+  
   addDeceasedField();
   updateKeeperDisplay();
   updateMarkerStatus();
-  if (isAuthorized) section.style.display = 'block';
+  
+  if (isAuthorized) {
+    section.style.display = 'block';
+  }
 }
 
 function updateReportSectionVisibility() {
-  const s = document.getElementById('report-section');
-  if (s) s.style.display = isAuthorized ? 'block' : 'none';
-}
-function updateKeeperDisplay() {
-  const el = document.getElementById('keeper-display');
-  if (el) el.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : 'Войдите по паролю');
-}
-function updateMarkerStatus() {
-  const rc = document.getElementById('resource-check'), sc = document.getElementById('shelter-check');
-  const rs = document.getElementById('resource-status'), ss = document.getElementById('shelter-status');
-  if (rs) {
-    const on = rc && rc.checked, pos = tempMarkers.resource !== null;
-    rs.textContent = 'Ресурс: ' + (on ? (pos ? 'размещён' : 'выберите место на карте') : 'не выбран');
-    rs.style.color = on ? (pos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
-  }
-  if (ss) {
-    const on = sc && sc.checked, pos = tempMarkers.shelter !== null;
-    ss.textContent = 'Ночлег: ' + (on ? (pos ? 'размещён' : 'выберите место на карте') : 'не выбран');
-    ss.style.color = on ? (pos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
+  var section = document.getElementById('report-section');
+  if (section) {
+    section.style.display = isAuthorized ? 'block' : 'none';
   }
 }
 
-// ===================== РЕЖИМ РАЗМЕЩЕНИЯ =====================
+function updateKeeperDisplay() {
+  var keeperDisplay = document.getElementById('keeper-display');
+  if (keeperDisplay) {
+    keeperDisplay.value = getCurrentKeeper() || (isAuthorized ? 'Не указан' : 'Войдите по паролю');
+  }
+}
+
+function updateMarkerStatus() {
+  var resourceCheck = document.getElementById('resource-check');
+  var shelterCheck = document.getElementById('shelter-check');
+  var resourceStatus = document.getElementById('resource-status');
+  var shelterStatus = document.getElementById('shelter-status');
+  
+  if (resourceStatus) {
+    var hasResource = resourceCheck && resourceCheck.checked;
+    var hasResourcePos = tempMarkers.resource !== null;
+    resourceStatus.textContent = 'Ресурс: ' + (hasResource ? (hasResourcePos ? 'размещён' : 'выберите место на карте') : 'не выбран');
+    resourceStatus.style.color = hasResource ? (hasResourcePos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
+  }
+  
+  if (shelterStatus) {
+    var hasShelter = shelterCheck && shelterCheck.checked;
+    var hasShelterPos = tempMarkers.shelter !== null;
+    shelterStatus.textContent = 'Ночлег: ' + (hasShelter ? (hasShelterPos ? 'размещён' : 'выберите место на карте') : 'не выбран');
+    shelterStatus.style.color = hasShelter ? (hasShelterPos ? '#51cf66' : '#ffd700') : 'rgba(255,255,255,0.3)';
+  }
+}
+
+// ============================================================
+// РЕЖИМ РАЗМЕЩЕНИЯ МЕТКИ НА КАРТЕ
+// ============================================================
+
 function startPlacementMode(type) {
   placementMode = type;
-  const hint = document.getElementById('marker-placement-hint');
+  
+  var hint = document.getElementById('marker-placement-hint');
   if (hint) hint.style.display = 'block';
-  const info = document.getElementById('marker-placed-info');
+  
+  var info = document.getElementById('marker-placed-info');
   if (info) info.style.display = 'none';
-  const mapEl = document.getElementById('map');
-  if (mapEl) mapEl.style.cursor = 'crosshair';
-  if (mapClickListener) map.un('click', mapClickListener);
-  mapClickListener = ev => {
-    const [x, y] = ev.coordinate;
+  
+  var mapElement = document.getElementById('map');
+  if (mapElement) {
+    mapElement.style.cursor = 'crosshair';
+  }
+  
+  if (mapClickListener) {
+    map.un('click', mapClickListener);
+  }
+  
+  mapClickListener = function(event) {
+    var coord = event.coordinate;
+    var x = coord[0];
+    var y = coord[1];
+    
     updateTempMarker(x, y, type);
+    
+    var info = document.getElementById('marker-placed-info');
     if (info) info.style.display = 'block';
+    
+    var hint = document.getElementById('marker-placement-hint');
     if (hint) hint.style.display = 'none';
+    
     updateMarkerStatus();
   };
+  
   map.on('click', mapClickListener);
+  
+  console.log('Режим размещения метки активирован:', type);
 }
+
 function stopPlacementMode() {
-  placementMode = null; activePlacementType = null;
-  const hint = document.getElementById('marker-placement-hint');
+  placementMode = null;
+  activePlacementType = null;
+  
+  var hint = document.getElementById('marker-placement-hint');
   if (hint) hint.style.display = 'none';
-  const info = document.getElementById('marker-placed-info');
+  
+  var info = document.getElementById('marker-placed-info');
   if (info) info.style.display = 'none';
-  const mapEl = document.getElementById('map');
-  if (mapEl) mapEl.style.cursor = '';
-  if (mapClickListener) { map.un('click', mapClickListener); mapClickListener = null; }
+  
+  var mapElement = document.getElementById('map');
+  if (mapElement) {
+    mapElement.style.cursor = '';
+  }
+  
+  if (mapClickListener) {
+    map.un('click', mapClickListener);
+    mapClickListener = null;
+  }
+  
+  console.log('Режим размещения метки деактивирован');
 }
+
 function updateTempMarker(x, y, type) {
-  const iconSrc = type === 'resource' ? '/CHERTOGI_MAP/icons/resurs.png' : '/CHERTOGI_MAP/icons/Nochleg.png';
-  const tooltip = type === 'resource' ? 'Место ресурса' : 'Место безопасного ночлега';
+  var iconSrc = type === 'resource' 
+    ? '/CHERTOGI_MAP/icons/resurs.png' 
+    : '/CHERTOGI_MAP/icons/Nochleg.png';
+  
+  var tooltipText = type === 'resource' ? 'Место ресурса' : 'Место безопасного ночлега';
+  
   removeTempMarker(type);
-  const el = document.createElement('div');
-  el.className = 'marker-button temp-marker temp-marker-' + type;
-  el.innerHTML = `<img src="${iconSrc}" alt="${tooltip}" width="28" height="28"><span class="marker-tooltip">${tooltip}</span>`;
-  el.style.opacity = '0.7';
-  const ov = new ol.Overlay({ element: el, position: [x, y], positioning: 'bottom-center', offset: [0, -8], stopEvent: false });
-  map.addOverlay(ov);
-  tempMarkers[type] = { overlay: ov, position: { x, y } };
+  
+  var element = document.createElement('div');
+  element.className = 'marker-button temp-marker temp-marker-' + type;
+  element.innerHTML = `
+    <img src="${iconSrc}" alt="${tooltipText}" width="28" height="28">
+    <span class="marker-tooltip">${tooltipText}</span>
+  `;
+  element.style.opacity = '0.7';
+  
+  var overlay = new ol.Overlay({
+    element: element,
+    position: [x, y],
+    positioning: 'bottom-center',
+    offset: [0, -8],
+    stopEvent: false
+  });
+  
+  map.addOverlay(overlay);
+  tempMarkers[type] = {
+    overlay: overlay,
+    position: { x: x, y: y }
+  };
+  
+  console.log('Временная метка ' + type + ' размещена на:', x, y);
   updateMarkerStatus();
 }
+
 function removeTempMarker(type) {
-  if (tempMarkers[type]?.overlay) { map.removeOverlay(tempMarkers[type].overlay); tempMarkers[type] = null; }
+  if (tempMarkers[type] && tempMarkers[type].overlay) {
+    map.removeOverlay(tempMarkers[type].overlay);
+    tempMarkers[type] = null;
+    console.log('Временная метка ' + type + ' удалена');
+  }
 }
-function getTempMarkerPosition(type) { return tempMarkers[type]?.position || null; }
+
+function getTempMarkerPosition(type) {
+  if (tempMarkers[type]) {
+    return tempMarkers[type].position;
+  }
+  return null;
+}
+
 function resetPlacementState() {
   stopPlacementMode();
-  removeTempMarker('resource'); removeTempMarker('shelter');
-  const rc = document.getElementById('resource-check'), sc = document.getElementById('shelter-check');
-  if (rc) rc.checked = false;
-  if (sc) sc.checked = false;
+  removeTempMarker('resource');
+  removeTempMarker('shelter');
+  
+  var resourceCheck = document.getElementById('resource-check');
+  var shelterCheck = document.getElementById('shelter-check');
+  if (resourceCheck) resourceCheck.checked = false;
+  if (shelterCheck) shelterCheck.checked = false;
+  
   updateMarkerStatus();
 }
 
-// ===================== ОТПРАВКА ОТЧЁТА =====================
+// ============================================================
+// ОТПРАВКА ОТЧЁТА
+// ============================================================
+
 async function submitReportHandler() {
-  if (!isAuthorized) return alert('Сначала введите пароль!');
-  if (currentRegionId === null || currentRegionId === undefined) return alert('Регион не выбран!');
-  const content = document.getElementById('report-content')?.value.trim();
-  if (!content) return alert('Напишите текст отчёта');
+  console.log('Отправка отчёта...');
+  
+  if (!isAuthorized) {
+    alert('Сначала введите пароль!');
+    return;
+  }
+  
+  if (currentRegionId === null || currentRegionId === undefined) {
+    alert('Регион не выбран!');
+    return;
+  }
+  
+  var content = document.getElementById('report-content')?.value.trim();
+  if (!content) {
+    alert('Напишите текст отчёта');
+    return;
+  }
 
-  const deceasedNames = [...document.querySelectorAll('.deceased-name')].map(i => i.value.trim()).filter(Boolean);
-  const hasResource = document.getElementById('resource-check')?.checked || false;
-  const hasShelter = document.getElementById('shelter-check')?.checked || false;
-  if (hasResource && !tempMarkers.resource) return alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
-  if (hasShelter && !tempMarkers.shelter) return alert('Кликните на карту, чтобы разместить метку для "Место ночлега"');
+  var deceasedInputs = document.querySelectorAll('.deceased-name');
+  var deceasedNames = [];
+  deceasedInputs.forEach(function(input) {
+    var name = input.value.trim();
+    if (name) deceasedNames.push(name);
+  });
 
-  const keeper = getCurrentKeeper();
+  var hasResource = document.getElementById('resource-check')?.checked || false;
+  var hasShelter = document.getElementById('shelter-check')?.checked || false;
+
+  if (hasResource && !tempMarkers.resource) {
+    alert('Кликните на карту, чтобы разместить метку для "Место ресурса"');
+    return;
+  }
+  
+  if (hasShelter && !tempMarkers.shelter) {
+    alert('Кликните на карту, чтобы разместить метку для "Место ночлега"');
+    return;
+  }
+
+  var keeperName = getCurrentKeeper();
+
   try {
-    const rr = await _supabase.from('regions').select('x, y').eq('id', currentRegionId).single();
-    if (rr.error) { console.error(rr.error); return alert('Не удалось получить координаты региона'); }
-
-    const today = new Date().toISOString().split('T')[0];
-    const toInsert = [];
-    const base = { region_id: currentRegionId, keeper_name: keeper || null, content, deceased_names: deceasedNames.length ? deceasedNames : null, has_resource: false, has_shelter: false, marker_type: null, marker_x: null, marker_y: null, game_date: today };
-    toInsert.push(base);
-
+    var regionResult = await _supabase
+      .from('regions')
+      .select('x, y')
+      .eq('id', currentRegionId)
+      .single();
+    
+    if (regionResult.error) {
+      console.error('Ошибка получения координат региона:', regionResult.error);
+      alert('Не удалось получить координаты региона');
+      return;
+    }
+    
+    var reportsToInsert = [];
+    
+    var baseReport = {
+      region_id: currentRegionId,
+      keeper_name: keeperName || null,
+      content: content,
+      deceased_names: deceasedNames.length > 0 ? deceasedNames : null,
+      has_resource: false,
+      has_shelter: false,
+      marker_type: null,
+      marker_x: null,
+      marker_y: null,
+      game_date: new Date().toISOString().split('T')[0]
+    };
+    
+    reportsToInsert.push(baseReport);
+    
     if (hasResource && tempMarkers.resource) {
-      const p = tempMarkers.resource.position;
-      base.has_resource = true; base.marker_type = 'resource'; base.marker_x = p.x; base.marker_y = p.y;
+      var pos = tempMarkers.resource.position;
+      baseReport.has_resource = true;
+      baseReport.marker_type = 'resource';
+      baseReport.marker_x = pos.x;
+      baseReport.marker_y = pos.y;
     }
+    
     if (hasShelter && tempMarkers.shelter) {
-      const p = tempMarkers.shelter.position;
-      base.has_shelter = true;
-      if (!base.marker_type) { base.marker_type = 'shelter'; base.marker_x = p.x; base.marker_y = p.y; }
-      else toInsert.push({ ...base, content: content + ' (Место ночлега)', deceased_names: null, has_resource: false, has_shelter: true, marker_type: 'shelter', marker_x: p.x, marker_y: p.y });
+      var pos2 = tempMarkers.shelter.position;
+      baseReport.has_shelter = true;
+      if (!baseReport.marker_type) {
+        baseReport.marker_type = 'shelter';
+        baseReport.marker_x = pos2.x;
+        baseReport.marker_y = pos2.y;
+      } else {
+        reportsToInsert.push({
+          region_id: currentRegionId,
+          keeper_name: keeperName || null,
+          content: content + ' (Место ночлега)',
+          deceased_names: null,
+          has_resource: false,
+          has_shelter: true,
+          marker_type: 'shelter',
+          marker_x: pos2.x,
+          marker_y: pos2.y,
+          game_date: new Date().toISOString().split('T')[0]
+        });
+      }
+    }
+    
+    var allResults = [];
+    for (var i = 0; i < reportsToInsert.length; i++) {
+      var result = await _supabase
+        .from('game_reports')
+        .insert([reportsToInsert[i]]);
+      
+      if (result.error) {
+        console.error('Ошибка отправки отчёта:', result.error);
+        alert('Ошибка: ' + result.error.message);
+        return;
+      }
+      allResults.push(result);
     }
 
-    for (const row of toInsert) {
-      const r = await _supabase.from('game_reports').insert([row]);
-      if (r.error) { console.error(r.error); return alert('Ошибка: ' + r.error.message); }
+    var message = '📝 Отчёт отправлен на модерацию!\n\n';
+    message += 'Он будет проверен Хранителем узлов в ближайшее время.\n';
+    message += 'После одобрения отчёт появится на карте.\n\n';
+
+    if (deceasedNames.length > 0) {
+      message += '✅ Добавлено имён умерших: ' + deceasedNames.length + '\n';
     }
+    if (hasResource) message += '✅ Отмечено место ресурса\n';
+    if (hasShelter) message += '✅ Отмечено место ночлега\n';
 
-    let msg = '📝 Отчёт отправлен на модерацию!\n\nОн будет проверен Хранителем узлов в ближайшее время.\nПосле одобрения отчёт появится на карте.\n\n';
-    if (deceasedNames.length) msg += `✅ Добавлено имён умерших: ${deceasedNames.length}\n`;
-    if (hasResource) msg += '✅ Отмечено место ресурса\n';
-    if (hasShelter) msg += '✅ Отмечено место ночлега\n';
-    alert(msg);
-
+    alert(message);
+    
     document.getElementById('report-content').value = '';
     document.getElementById('deceased-container').innerHTML = '';
     document.getElementById('resource-check').checked = false;
     document.getElementById('shelter-check').checked = false;
     addDeceasedField();
+    
     resetPlacementState();
+    
     await loadReports(currentRegionId);
-    if (typeof loadReportMarkers === 'function') await loadReportMarkers();
-  } catch (e) { console.error('Критическая ошибка:', e); alert('Ошибка: ' + e.message); }
+    
+    if (typeof loadReportMarkers === 'function') {
+      await loadReportMarkers();
+    }
+    
+  } catch (err) {
+    console.error('Критическая ошибка:', err);
+    alert('Ошибка: ' + err.message);
+  }
 }
 
 function resetAuthorization() {
-  if (!confirm('Вы уверены, что хотите сменить Хранителя узлов? Текущий сеанс будет завершён.')) return;
-  setReportAuthorized(false); setCurrentKeeper('');
-  updateReportButton(); updateKeeperDisplay(); updateReportSectionVisibility(); resetPlacementState();
-  const s = document.getElementById('report-section'); if (s) s.style.display = 'none';
-  const b = document.getElementById('report-btn');
-  if (b) { b.textContent = 'Введите пароль для создания отчёта'; b.style.opacity = '0.6'; b.style.cursor = 'pointer'; b.onclick = openPasswordModal; }
+  if (confirm('Вы уверены, что хотите сменить Хранителя узлов? Текущий сеанс будет завершён.')) {
+    setReportAuthorized(false);
+    setCurrentKeeper('');
+    updateReportButton();
+    updateKeeperDisplay();
+    updateReportSectionVisibility();
+    resetPlacementState();
+    
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'none';
+    }
+    
+    var reportBtn = document.getElementById('report-btn');
+    if (reportBtn) {
+      reportBtn.textContent = 'Введите пароль для создания отчёта';
+      reportBtn.style.opacity = '0.6';
+      reportBtn.style.cursor = 'pointer';
+      reportBtn.onclick = function() {
+        openPasswordModal();
+      };
+    }
+    
+    console.log('Авторизация сброшена');
+  }
 }
 
 function updateReportButton() {
-  const b = document.getElementById('report-btn'); if (!b) return;
+  var reportBtn = document.getElementById('report-btn');
+  if (!reportBtn) return;
+  
   if (isAuthorized) {
-    const k = getCurrentKeeper();
-    b.textContent = k ? `Составить отчёт (${k})` : 'Составить отчёт';
-    b.style.opacity = '1'; b.style.cursor = 'pointer'; b.onclick = null;
+    var keeper = getCurrentKeeper();
+    reportBtn.textContent = keeper ? 'Составить отчёт (' + keeper + ')' : 'Составить отчёт';
+    reportBtn.style.opacity = '1';
+    reportBtn.style.cursor = 'pointer';
+    reportBtn.onclick = null;
     updateReportSectionVisibility();
-    if (!document.getElementById('change-keeper-btn')) {
-      const btn = document.createElement('button');
+    
+    var changeBtn = document.getElementById('change-keeper-btn');
+    if (!changeBtn) {
+      var btn = document.createElement('button');
       btn.id = 'change-keeper-btn';
       btn.textContent = 'Сменить Хранителя';
-      btn.className = 'btn-change-keeper';
+      btn.style.cssText = 'width: 100%; padding: 6px; margin-top: 6px; background: rgba(74,14,14,0.3); border: 1px solid rgba(74,14,14,0.3); border-radius: 4px; color: rgba(255,255,255,0.5); cursor: pointer; font-family: "Philosopher", sans-serif; font-size: 12px; transition: all 0.3s;';
+      btn.onmouseover = function() { this.style.background = 'rgba(74,14,14,0.6)'; this.style.color = '#ffffff'; };
+      btn.onmouseout = function() { this.style.background = 'rgba(74,14,14,0.3)'; this.style.color = 'rgba(255,255,255,0.5)'; };
       btn.onclick = resetAuthorization;
-      b.parentNode.insertBefore(btn, b.nextSibling);
+      reportBtn.parentNode.insertBefore(btn, reportBtn.nextSibling);
     }
   } else {
-    b.textContent = 'Введите пароль для создания отчёта';
-    b.style.opacity = '0.6'; b.style.cursor = 'pointer'; b.onclick = openPasswordModal;
-    updateReportSectionVisibility(); resetPlacementState();
-    document.getElementById('change-keeper-btn')?.remove();
+    reportBtn.textContent = 'Введите пароль для создания отчёта';
+    reportBtn.style.opacity = '0.6';
+    reportBtn.style.cursor = 'pointer';
+    reportBtn.onclick = function() {
+      openPasswordModal();
+    };
+    updateReportSectionVisibility();
+    resetPlacementState();
+    
+    var changeBtn = document.getElementById('change-keeper-btn');
+    if (changeBtn) {
+      changeBtn.remove();
+    }
   }
 }
 
-// ===================== МОДАЛКА ПАРОЛЯ =====================
-const passwordModal = document.createElement('div');
+// ============================================================
+// МОДАЛЬНОЕ ОКНО ПАРОЛЯ
+// ============================================================
+
+var passwordModal = document.createElement('div');
 passwordModal.id = 'password-modal';
-passwordModal.className = 'modal-overlay';
+passwordModal.style.cssText = `
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+`;
 passwordModal.innerHTML = `
-  <div class="modal-box">
-    <h3 class="modal-title">Введите пароль</h3>
-    <p class="modal-sub">Введите пароль для доступа к созданию отчётов</p>
-    <input id="password-input" type="password" placeholder="Введите пароль..." class="modal-input">
-    <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." class="modal-input">
-    <div class="modal-actions">
-      <button id="password-submit-btn" class="btn-primary">Подтвердить</button>
-      <button id="password-cancel-btn" class="btn-cancel">Отмена</button>
+  <div style="background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; color: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.8);">
+    <h3 style="font-family: "Calypso", serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; letter-spacing: 2px;">Введите пароль</h3>
+    <p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 16px;">Введите пароль для доступа к созданию отчётов</p>
+    <input id="password-input" type="password" placeholder="Введите пароль..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 16px;">
+    <input id="keeper-input" type="text" placeholder="Имя Хранителя узлов..." style="width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 16px;">
+    <div style="display: flex; gap: 10px;">
+      <button id="password-submit-btn" style="flex: 1; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Подтвердить</button>
+      <button id="password-cancel-btn" style="padding: 10px 20px; background: transparent; color: #888; border: 1px solid #555; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif;">Отмена</button>
     </div>
-    <div id="password-error" class="modal-error"></div>
-  </div>`;
+    <div id="password-error" style="color: #ff6b6b; font-size: 13px; text-align: center; margin-top: 8px; display: none;"></div>
+  </div>
+`;
 document.body.appendChild(passwordModal);
 
-const passwordInput = document.getElementById('password-input');
-const keeperInput = document.getElementById('keeper-input');
-const passwordSubmitBtn = document.getElementById('password-submit-btn');
-const passwordError = document.getElementById('password-error');
+var passwordInput = document.getElementById('password-input');
+var keeperInput = document.getElementById('keeper-input');
+var passwordSubmitBtn = document.getElementById('password-submit-btn');
+var passwordCancelBtn = document.getElementById('password-cancel-btn');
+var passwordError = document.getElementById('password-error');
 
 function openPasswordModal() {
-  passwordInput.value = ''; keeperInput.value = '';
+  passwordInput.value = '';
+  keeperInput.value = '';
   passwordError.style.display = 'none';
   passwordModal.style.display = 'flex';
-  setTimeout(() => passwordInput.focus(), 100);
+  setTimeout(function() { passwordInput.focus(); }, 100);
 }
-function closePasswordModal() { passwordModal.style.display = 'none'; }
 
-passwordSubmitBtn.onclick = async () => {
-  const pwd = passwordInput.value.trim(), kn = keeperInput.value.trim();
-  if (!pwd) { passwordError.textContent = 'Введите пароль'; passwordError.style.display = 'block'; return; }
-  if (!kn) { passwordError.textContent = 'Введите имя Хранителя узлов'; passwordError.style.display = 'block'; return; }
-  passwordSubmitBtn.disabled = true; passwordSubmitBtn.textContent = 'Проверка...';
-  passwordError.style.display = 'none';
-  const ok = await checkPasswordViaServer(pwd);
-  passwordSubmitBtn.disabled = false; passwordSubmitBtn.textContent = 'Подтвердить';
-  if (ok) {
-    setReportAuthorized(true); setCurrentKeeper(kn); closePasswordModal();
-    updateReportButton(); updateKeeperDisplay(); updateReportSectionVisibility();
-    const s = document.getElementById('report-section'); if (s) s.style.display = 'block';
-    if (currentRegionId !== null && currentRegionId !== undefined) loadReports(currentRegionId);
-  } else {
-    passwordError.textContent = 'Неверный пароль'; passwordError.style.display = 'block';
-    passwordInput.value = ''; passwordInput.focus();
+function closePasswordModal() {
+  passwordModal.style.display = 'none';
+}
+
+passwordSubmitBtn.addEventListener('click', async function() {
+  var inputPassword = passwordInput.value.trim();
+  var keeperName = keeperInput.value.trim();
+
+  if (!inputPassword) {
+    passwordError.textContent = 'Введите пароль';
+    passwordError.style.display = 'block';
+    return;
   }
-};
-document.getElementById('password-cancel-btn').onclick = closePasswordModal;
-passwordModal.onclick = e => { if (e.target === passwordModal) closePasswordModal(); };
-passwordInput.onkeydown = e => { if (e.key === 'Enter') keeperInput.focus(); };
-keeperInput.onkeydown = e => { if (e.key === 'Enter') passwordSubmitBtn.click(); };
+
+  if (!keeperName) {
+    passwordError.textContent = 'Введите имя Хранителя узлов';
+    passwordError.style.display = 'block';
+    return;
+  }
+
+  passwordSubmitBtn.disabled = true;
+  passwordSubmitBtn.textContent = 'Проверка...';
+  passwordError.style.display = 'none';
+
+  var isCorrect = await checkPasswordViaServer(inputPassword);
+
+  passwordSubmitBtn.disabled = false;
+  passwordSubmitBtn.textContent = 'Подтвердить';
+
+  if (isCorrect) {
+    setReportAuthorized(true);
+    setCurrentKeeper(keeperName);
+    closePasswordModal();
+    updateReportButton();
+    updateKeeperDisplay();
+    updateReportSectionVisibility();
+    
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'block';
+    }
+    if (currentRegionId !== null && currentRegionId !== undefined) {
+      loadReports(currentRegionId);
+    }
+  } else {
+    passwordError.textContent = 'Неверный пароль';
+    passwordError.style.display = 'block';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+});
+
+passwordCancelBtn.addEventListener('click', closePasswordModal);
+passwordModal.addEventListener('click', function(e) {
+  if (e.target === this) closePasswordModal();
+});
+
+passwordInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') keeperInput.focus();
+});
+keeperInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') passwordSubmitBtn.click();
+});
 
 loadAuthState();
+
 if (isAuthorized) {
-  document.addEventListener('DOMContentLoaded', () => {
-    updateReportButton(); updateKeeperDisplay(); updateReportSectionVisibility();
-    const s = document.getElementById('report-section'); if (s) s.style.display = 'block';
+  document.addEventListener('DOMContentLoaded', function() {
+    updateReportButton();
+    updateKeeperDisplay();
+    updateReportSectionVisibility();
+    
+    var section = document.getElementById('report-section');
+    if (section) {
+      section.style.display = 'block';
+    }
   });
 }
 
-// ===================== МОДАЛКА РЕДАКТИРОВАНИЯ =====================
-const editModal = document.createElement('div');
-editModal.id = 'edit-report-modal';
-editModal.className = 'modal-overlay';
-editModal.innerHTML = `
-  <div class="modal-box" style="max-width:500px">
-    <h3 class="modal-title">Редактировать отчёт</h3>
-    <input type="hidden" id="edit-report-id">
-    <textarea id="edit-report-content" class="modal-input" style="min-height:150px;resize:vertical;"></textarea>
-    <div class="modal-actions">
-      <button id="edit-submit-btn" class="btn-primary">Отправить на модерацию</button>
-      <button id="edit-cancel-btn" class="btn-cancel">Отмена</button>
-    </div>
-    <div id="edit-error" class="modal-error"></div>
-  </div>`;
-document.body.appendChild(editModal);
+// ============================================================
+// МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ ОТЧЕТА
+// ============================================================
 
-function openEditReportModal(id, content) {
-  document.getElementById('edit-report-id').value = id;
+var editReportModal = document.createElement('div');
+editReportModal.id = 'edit-report-modal';
+editReportModal.style.cssText = `
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+`;
+editReportModal.innerHTML = `
+  <div style="background: #1a0a1a; border: 1px solid #4a0e0e; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; color: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.8);">
+    <h3 style="font-family: "Calypso", serif; color: #ffd700; text-align: center; margin-top: 0; margin-bottom: 16px; font-weight: normal; letter-spacing: 2px;">Редактировать отчёт</h3>
+    <input type="hidden" id="edit-report-id">
+    <textarea id="edit-report-content" style="width: 100%; min-height: 150px; padding: 10px; margin-bottom: 16px; background: rgba(255,255,255,0.05); border: 1px solid #4a0e0e; border-radius: 6px; color: #ffffff; font-family: "Philosopher", sans-serif; box-sizing: border-box; font-size: 14px; resize: vertical;"></textarea>
+    <div style="display: flex; gap: 10px;">
+      <button id="edit-submit-btn" style="flex: 1; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить на модерацию</button>
+      <button id="edit-cancel-btn" style="padding: 10px 20px; background: transparent; color: #888; border: 1px solid #555; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif;">Отмена</button>
+    </div>
+    <div id="edit-error" style="color: #ff6b6b; font-size: 13px; text-align: center; margin-top: 8px; display: none;"></div>
+  </div>
+`;
+document.body.appendChild(editReportModal);
+
+function openEditReportModal(reportId, content) {
+  document.getElementById('edit-report-id').value = reportId;
   document.getElementById('edit-report-content').value = content;
   document.getElementById('edit-error').style.display = 'none';
-  editModal.style.display = 'flex';
+  editReportModal.style.display = 'flex';
 }
-document.getElementById('edit-cancel-btn').onclick = () => { editModal.style.display = 'none'; };
-document.getElementById('edit-submit-btn').onclick = async function() {
-  const id = document.getElementById('edit-report-id').value;
-  const content = document.getElementById('edit-report-content').value.trim();
-  const errEl = document.getElementById('edit-error');
-  if (!content) { errEl.textContent = 'Текст отчёта не может быть пустым'; errEl.style.display = 'block'; return; }
-  this.disabled = true; this.textContent = 'Отправка...';
+
+document.getElementById('edit-cancel-btn').addEventListener('click', function() {
+  editReportModal.style.display = 'none';
+});
+
+document.getElementById('edit-submit-btn').addEventListener('click', async function() {
+  var reportId = document.getElementById('edit-report-id').value;
+  var newContent = document.getElementById('edit-report-content').value.trim();
+  var errorEl = document.getElementById('edit-error');
+  var submitBtn = this;
+
+  if (!newContent) {
+    errorEl.textContent = 'Текст отчёта не может быть пустым';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Отправка...';
+
   try {
-    const r = await _supabase.from('game_reports').update({ content, is_approved: null }).eq('id', id);
-    if (r.error) throw new Error(r.error.message);
+    // 1. Обновляем базу данных (текст и статус)
+    var result = await _supabase
+      .from('game_reports')
+      .update({ 
+        content: newContent,
+        is_approved: null
+      })
+      .eq('id', reportId);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    // 2. Вручную вызываем бота, чтобы он точно прислал уведомление
     try {
       await fetch('https://djieimjwhgjgsjcysceh.supabase.co/functions/v1/notify-telegram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLIC_KEY, Authorization: 'Bearer ' + SUPABASE_PUBLIC_KEY },
-        body: JSON.stringify({ type: 'UPDATE', record: { id, region_id: currentRegionId, keeper_name: getCurrentKeeper(), content } })
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_PUBLIC_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_PUBLIC_KEY
+        },
+        body: JSON.stringify({
+          type: 'UPDATE', // Говорим боту, что это редактирование
+          record: {
+            id: reportId,
+            region_id: currentRegionId,
+            keeper_name: getCurrentKeeper(),
+            content: newContent
+          }
+        })
       });
-    } catch (e) { console.error('Ошибка вызова бота:', e); }
+    } catch (botErr) {
+      console.error('Ошибка вызова бота:', botErr);
+    }
+
     alert('✅ Отчёт отправлен на повторную модерацию!');
-    editModal.style.display = 'none';
+    editReportModal.style.display = 'none';
+
+    // 3. Перезагружаем список отчётов
     if (currentRegionId !== null && currentRegionId !== undefined) {
       await loadReports(currentRegionId);
-      if (typeof loadReportMarkers === 'function') await loadReportMarkers();
+      if (typeof loadReportMarkers === 'function') {
+        await loadReportMarkers();
+      }
     }
-  } catch (e) {
-    console.error('Ошибка редактирования:', e);
-    errEl.textContent = 'Ошибка: ' + e.message; errEl.style.display = 'block';
-  } finally { this.disabled = false; this.textContent = 'Отправить на модерацию'; }
-};
 
-// ===================== ЗАКРЫТИЕ ПО КЛИКУ НА КАРТУ =====================
+  } catch (err) {
+    console.error('Ошибка редактирования:', err);
+    errorEl.textContent = 'Ошибка: ' + err.message;
+    errorEl.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Отправить на модерацию';
+  }
+});
+
+// ============================================================
+// ЗАКРЫТИЕ ПРИ КЛИКЕ НА КАРТУ
+// ============================================================
+
 function closeSidebarOnMapClick() {
-  if (typeof map === 'undefined') return;
-  map.on('click', ev => {
-    if (placementMode) return;
-    if (ev.originalEvent.target.closest('.ol-overlay-container')) return;
-    const sb = document.getElementById('region-sidebar');
-    if (sb && sb.style.display === 'block') closeSidebar();
-  });
+  if (typeof map !== 'undefined') {
+    map.on('click', function(event) {
+      if (placementMode) {
+        return;
+      }
+      
+      var target = event.originalEvent.target;
+      var isOverlay = target.closest('.ol-overlay-container') !== null;
+      
+      if (!isOverlay) {
+        var sidebarEl = document.getElementById('region-sidebar');
+        if (sidebarEl && sidebarEl.style.display === 'block') {
+          closeSidebar();
+        }
+      }
+    });
+  }
 }
+
 setTimeout(closeSidebarOnMapClick, 1000);
