@@ -24,13 +24,11 @@ let currentKeeper = '';
 // СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
 // ============================================================
 
-let placementMode = null;
-let tempMarkers = {
-  resource: null,
-  shelter: null
-};
+let pendingMarkers = [];           // [{type, description, x, y, overlay, id}]
+let placementMode = null;          // null | 'new' | 'move'
+let activeMarkerId = null;         // id метки, которую сейчас двигаем/создаём
 let mapClickListener = null;
-let activePlacementType = null;
+let nextMarkerId = 1;
 
 // ============================================================
 // ПРОВЕРКА ПАРОЛЯ ЧЕРЕЗ EDGE FUNCTION SUPABASE
