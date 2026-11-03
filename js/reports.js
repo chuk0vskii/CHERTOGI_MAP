@@ -40,10 +40,10 @@ async function loadReports(regionId) {
       fullContent += '<div style="color: #aaa; font-size: 13px; margin-top: 6px;"><span style="color: #888;">Хранитель узлов:</span> ' + escapeHtml(report.keeper_name) + '</div>';
     }
     
-    // Основной текст
-    if (report.content) {
-      fullContent += '<div style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + escapeHtml(report.content) + '</div>';
-    }
+  // Основной текст
+if (report.content) {
+  fullContent += '<div class="report-content-text" style="color: #e0d5c0; font-size: 14px; line-height: 1.5; margin-top: 6px;">' + escapeHtml(report.content) + '</div>';
+}
     
     // Умершие
     if (report.deceased_names && report.deceased_names.length > 0) {
