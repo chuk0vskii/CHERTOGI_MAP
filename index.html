@@ -311,6 +311,51 @@
       margin-bottom: 8px;
       align-items: center;
     }
+    #report-modal .marker-field {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+#report-modal .marker-field select,
+#report-modal .marker-field input {
+  flex: 1;
+  min-width: 0;
+}
+#report-modal .marker-field input.marker-desc {
+  flex: 2;
+}
+#report-modal .marker-field .pick-on-map-btn {
+  background: rgba(74,14,14,0.3);
+  border: 1px solid #4a0e0e;
+  border-radius: 4px;
+  color: #ffd700;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-family: 'Philosopher', sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#report-modal .marker-field .pick-on-map-btn.picked {
+  background: rgba(81,207,102,0.2);
+  border-color: rgba(81,207,102,0.4);
+  color: #51cf66;
+}
+#report-modal .marker-field .pick-on-map-btn.waiting {
+  background: rgba(255,215,0,0.15);
+  border-color: rgba(255,215,0,0.4);
+  color: #ffd700;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+#report-modal .marker-field .marker-status-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
+}
     #report-modal .deceased-field input,
     #report-modal .resource-field select {
       flex: 1;
