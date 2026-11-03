@@ -449,130 +449,20 @@ function updateMarkerStatus() {
 // РЕЖИМ РАЗМЕЩЕНИЯ МЕТКИ НА КАРТЕ
 // ============================================================
 
-function startPlacementMode(type) {
-  placementMode = type;
-  
-  var hint = document.getElementById('marker-placement-hint');
-  if (hint) hint.style.display = 'block';
-  
-  var info = document.getElementById('marker-placed-info');
-  if (info) info.style.display = 'none';
-  
-  var mapElement = document.getElementById('map');
-  if (mapElement) {
-    mapElement.style.cursor = 'crosshair';
-  }
-  
-  if (mapClickListener) {
-    map.un('click', mapClickListener);
-  }
-  
-  mapClickListener = function(event) {
-    var coord = event.coordinate;
-    var x = coord[0];
-    var y = coord[1];
-    
-    updateTempMarker(x, y, type);
-    
-    var info = document.getElementById('marker-placed-info');
-    if (info) info.style.display = 'block';
-    
-    var hint = document.getElementById('marker-placement-hint');
-    if (hint) hint.style.display = 'none';
-    
-    updateMarkerStatus();
-  };
-  
-  map.on('click', mapClickListener);
-  
-  console.log('Режим размещения метки активирован:', type);
-}
-
-function stopPlacementMode() {
-  placementMode = null;
-  activePlacementType = null;
-  
-  var hint = document.getElementById('marker-placement-hint');
-  if (hint) hint.style.display = 'none';
-  
-  var info = document.getElementById('marker-placed-info');
-  if (info) info.style.display = 'none';
-  
-  var mapElement = document.getElementById('map');
-  if (mapElement) {
-    mapElement.style.cursor = '';
-  }
-  
-  if (mapClickListener) {
-    map.un('click', mapClickListener);
-    mapClickListener = null;
-  }
-  
-  console.log('Режим размещения метки деактивирован');
-}
-
-function updateTempMarker(x, y, type) {
-  var iconSrc = type === 'resource' 
-    ? '/CHERTOGI_MAP/icons/resurs.png' 
-    : '/CHERTOGI_MAP/icons/Nochleg.png';
-  
-  var tooltipText = type === 'resource' ? 'Место ресурса' : 'Место безопасного ночлега';
-  
-  removeTempMarker(type);
-  
-  var element = document.createElement('div');
-  element.className = 'marker-button temp-marker temp-marker-' + type;
-  element.innerHTML = `
-    <img src="${iconSrc}" alt="${tooltipText}" width="28" height="28">
-    <span class="marker-tooltip">${tooltipText}</span>
-  `;
-  element.style.opacity = '0.7';
-  
-  var overlay = new ol.Overlay({
-    element: element,
-    position: [x, y],
-    positioning: 'bottom-center',
-    offset: [0, -8],
-    stopEvent: false
-  });
-  
-  map.addOverlay(overlay);
-  tempMarkers[type] = {
-    overlay: overlay,
-    position: { x: x, y: y }
-  };
-  
-  console.log('Временная метка ' + type + ' размещена на:', x, y);
-  updateMarkerStatus();
-}
-
-function removeTempMarker(type) {
-  if (tempMarkers[type] && tempMarkers[type].overlay) {
-    map.removeOverlay(tempMarkers[type].overlay);
-    tempMarkers[type] = null;
-    console.log('Временная метка ' + type + ' удалена');
-  }
-}
-
-function getTempMarkerPosition(type) {
-  if (tempMarkers[type]) {
-    return tempMarkers[type].position;
-  }
-  return null;
-}
-
-function resetPlacementState() {
-  stopPlacementMode();
-  removeTempMarker('resource');
-  removeTempMarker('shelter');
-  
-  var resourceCheck = document.getElementById('resource-check');
-  var shelterCheck = document.getElementById('shelter-check');
-  if (resourceCheck) resourceCheck.checked = false;
-  if (shelterCheck) shelterCheck.checked = false;
-  
-  updateMarkerStatus();
-}
+// ========== МЕТКИ (неограниченно) ==========
+var pendingMarkers=[],placementMode=null,activeMarkerId=null,mapClickListener=null,nextMarkerId=1;
+var MARKER_TYPES={resource:{label:'Место ресурса',icon:'/CHERTOGI_MAP/icons/resurs.png'},shelter:{label:'Место ночлега',icon:'/CHERTOGI_MAP/icons/Nochleg.png'},ruin:{label:'Руины',icon:'/CHERTOGI_MAP/icons/ruins.png'}};
+function startNewMarkerPlacement(){placementMode='new';activeMarkerId=null;attachMapClickListener();var m=document.getElementById('map');if(m)m.style.cursor='crosshair'}
+function startMoveMarkerPlacement(id){placementMode='move';activeMarkerId=id;attachMapClickListener();var m=document.getElementById('map');if(m)m.style.cursor='crosshair'}
+function attachMapClickListener(){if(mapClickListener){map.un('click',mapClickListener);mapClickListener=null}mapClickListener=function(e){var c=e.coordinate,x=c[0],y=c[1];if('new'===placementMode){var f=document.querySelector('.marker-field:last-child'),t=f?f.querySelector('.marker-type').value:'resource',d=f?f.querySelector('.marker-desc').value.trim():'';var mk=addPendingMarker(t,d,x,y);markFieldAsPicked(mk.id)}else if('move'===placementMode&&null!==activeMarkerId)movePendingMarker(activeMarkerId,x,y);stopPlacementMode()};map.on('click',mapClickListener)}
+function stopPlacementMode(){placementMode=null;activeMarkerId=null;var m=document.getElementById('map');if(m)m.style.cursor='';if(mapClickListener){map.un('click',mapClickListener);mapClickListener=null}}
+function addPendingMarker(type,desc,x,y){var id=nextMarkerId++,cfg=MARKER_TYPES[type]||MARKER_TYPES.resource,el=document.createElement('div');el.className='marker-button temp-marker';el.innerHTML='<img src="'+cfg.icon+'" alt="'+cfg.label+'" width="28" height="28"><span class="marker-tooltip">'+cfg.label+(desc?': '+desc:'')+'</span>';el.style.opacity='.8';var ov=new ol.Overlay({element:el,position:[x,y],positioning:'bottom-center',offset:[0,-8],stopEvent:!1});map.addOverlay(ov);var mk={id:id,type:type,description:desc,x:x,y:y,overlay:ov};pendingMarkers.push(mk);renderMarkersList();return mk}
+function movePendingMarker(id,x,y){for(var i=0;i<pendingMarkers.length;i++)if(pendingMarkers[i].id===id){pendingMarkers[i].x=x;pendingMarkers[i].y=y;pendingMarkers[i].overlay.setPosition([x,y]);renderMarkersList();return}}
+function removePendingMarker(id){for(var i=pendingMarkers.length-1;i>=0;i--)if(pendingMarkers[i].id===id){map.removeOverlay(pendingMarkers[i].overlay);pendingMarkers.splice(i,1);renderMarkersList();return}}
+function markFieldAsPicked(id){var fs=document.querySelectorAll('.marker-field'),f=fs[fs.length-1];if(!f)return;var b=f.querySelector('.pick-on-map-btn');if(b){b.classList.remove('waiting');b.classList.add('picked');b.textContent='✓ Готово'}}
+function resetPendingMarkers(){for(var i=0;i<pendingMarkers.length;i++)if(pendingMarkers[i].overlay)map.removeOverlay(pendingMarkers[i].overlay);pendingMarkers=[];nextMarkerId=1;stopPlacementMode();var c=document.getElementById('resources-container');if(c)c.innerHTML='';renderMarkersList()}
+function addMarkerField(){var c=document.getElementById('resources-container');if(!c)return;var d=document.createElement('div');d.className='marker-field';d.innerHTML='<select class="marker-type" style="padding:6px 8px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:\'Philosopher\',sans-serif;font-size:13px"><option value="resource">Ресурс</option><option value="shelter">Ночлег</option><option value="ruin">Руины</option></select><input type="text" class="marker-desc" placeholder="Описание (необязательно)" style="padding:6px 8px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:\'Philosopher\',sans-serif;font-size:13px;box-sizing:border-box"><button class="pick-on-map-btn waiting" type="button">Указать на карте</button><button class="remove-btn" type="button">X</button>';d.querySelector('.pick-on-map-btn').addEventListener('click',function(e){e.preventDefault();startNewMarkerPlacement();document.querySelectorAll('.pick-on-map-btn').forEach(function(b){b.classList.remove('waiting')});this.classList.add('waiting');this.textContent='Кликните на карту...'});d.querySelector('.remove-btn').addEventListener('click',function(e){e.preventDefault();d.remove();renderMarkersList()});c.appendChild(d)}
+function renderMarkersList(){var c=document.getElementById('resources-container');if(!c)return;c.querySelectorAll('.marker-field').forEach(function(f,idx){var b=f.querySelector('.pick-on-map-btn');if(!b)return;var mk=pendingMarkers[idx];if(mk){b.classList.remove('waiting');b.classList.add('picked');b.textContent='✓ '+MARKER_TYPES[mk.type].label+' ('+Math.round(mk.x)+', '+Math.round(mk.y)+')';f.dataset.markerId=mk.id}else{b.classList.remove('picked');if(!b.classList.contains('waiting'))b.textContent='Указать на карте'}})}
 
 // ============================================================
 // ОТПРАВКА ОТЧЁТА
