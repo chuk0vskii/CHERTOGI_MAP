@@ -315,27 +315,13 @@ function addReportSection() {
         </div>
         
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Точки интереса</label>
-          <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="resource-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              Место ресурса
-            </label>
-            <label style="font-size: 14px; color: #e0d5c0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="shelter-check" style="width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer;">
-              Место ночлега
-            </label>
-          </div>
-          <div id="marker-placement-hint" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(255,215,0,0.1); border-radius: 6px; border: 1px solid rgba(255,215,0,0.2); font-size: 13px; color: #ffd700;">
-            Кликните на карту в то место, где хотите разместить метку
-          </div>
-          <div id="marker-placed-info" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(81,207,102,0.1); border-radius: 6px; border: 1px solid rgba(81,207,102,0.2); font-size: 13px; color: #51cf66;">
-            Метка размещена. Вы можете переместить её, кликнув в другое место.
-          </div>
-          <div id="marker-status" style="margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.3);">
-            <span id="resource-status">Ресурс: не выбран</span>
-            <span id="shelter-status" style="margin-left: 16px;">Ночлег: не выбран</span>
-          </div>
+          <div style="margin-bottom:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <label style="font-size:13px;color:rgba(255,255,255,.5)">Точки интереса</label>
+    <button id="add-marker-btn" style="background:rgba(74,14,14,.3);border:1px solid #4a0e0e;border-radius:4px;color:#ffd700;padding:2px 12px;cursor:pointer;font-family:'Philosopher',sans-serif;font-size:12px">+ Добавить метку</button>
+  </div>
+  <div id="resources-container"></div>
+</div>
         </div>
         
         <button id="submit-report-btn" style="width: 100%; padding: 10px; background: #4a0e0e; color: #ffd700; border: none; border-radius: 6px; cursor: pointer; font-family: "Philosopher", sans-serif; font-weight: bold; transition: all 0.3s;">Отправить отчёт</button>
@@ -361,37 +347,8 @@ function addReportSection() {
   document.getElementById('add-deceased-btn')?.addEventListener('click', addDeceasedField);
   document.getElementById('submit-report-btn')?.addEventListener('click', submitReportHandler);
   
-  document.getElementById('resource-check')?.addEventListener('change', function() {
-    if (this.checked) {
-      activePlacementType = 'resource';
-      startPlacementMode('resource');
-    } else {
-      removeTempMarker('resource');
-      updateMarkerStatus();
-      if (!document.getElementById('shelter-check')?.checked) {
-        stopPlacementMode();
-      } else {
-        activePlacementType = 'shelter';
-        startPlacementMode('shelter');
-      }
-    }
-  });
-  
-  document.getElementById('shelter-check')?.addEventListener('change', function() {
-    if (this.checked) {
-      activePlacementType = 'shelter';
-      startPlacementMode('shelter');
-    } else {
-      removeTempMarker('shelter');
-      updateMarkerStatus();
-      if (!document.getElementById('resource-check')?.checked) {
-        stopPlacementMode();
-      } else {
-        activePlacementType = 'resource';
-        startPlacementMode('resource');
-      }
-    }
-  });
+  document.getElementById('add-marker-btn')?.addEventListener('click', addMarkerField);
+if (!document.querySelector('.marker-field')) addMarkerField();
   
   addDeceasedField();
   updateKeeperDisplay();
