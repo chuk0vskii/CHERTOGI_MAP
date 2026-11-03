@@ -20,15 +20,7 @@ const SUPABASE_PUBLIC_KEY = 'sb_publishable_R2gXWQPVT5trC7cL2BDIpw_Av1QHxDi';
 let isAuthorized = false;
 let currentKeeper = '';
 
-// ============================================================
-// СОСТОЯНИЕ ДЛЯ РАЗМЕЩЕНИЯ МЕТОК
-// ============================================================
 
-let pendingMarkers = [];           // [{type, description, x, y, overlay, id}]
-let placementMode = null;          // null | 'new' | 'move'
-let activeMarkerId = null;         // id метки, которую сейчас двигаем/создаём
-let mapClickListener = null;
-let nextMarkerId = 1;
 
 // ============================================================
 // ПРОВЕРКА ПАРОЛЯ ЧЕРЕЗ EDGE FUNCTION SUPABASE
