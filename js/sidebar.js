@@ -339,7 +339,7 @@ function addMarkerField() {
       <option value="shelter">Ночлег</option>
       <option value="ruin">Руины</option>
     </select>
-    <input type="text" class="marker-desc" placeholder="Описание (необязательно)">
+    <input type="text" class="marker-desc" placeholder="Описание">
     <button class="pick-on-map-btn waiting" type="button">Указать на карте</button>
     <button class="remove-btn" type="button" title="Удалить метку">×</button>
   `;
