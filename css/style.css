@@ -481,6 +481,96 @@ body {
   cursor: pointer;
   transition: all 0.3s;
 }
+/* ===== СТИЛИ ДЛЯ МЕТОК (ТОЧКИ ИНТЕРЕСА) ===== */
+.marker-field {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+/* Выпадающий список и поле ввода */
+.marker-type, .marker-desc {
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #4a0e0e;
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: 'Philosopher', sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.marker-type:focus, .marker-desc:focus {
+  outline: none;
+  border-color: #ffd700;
+}
+
+.marker-type {
+  cursor: pointer;
+  appearance: none; /* Убирает стандартную стрелку браузера */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffd700%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px top 50%;
+  background-size: 10px auto;
+  padding-right: 24px; /* Место для стрелки */
+}
+
+.marker-type option {
+  background: #1a0a1a; /* Темный фон для выпадающего списка */
+  color: #ffffff;
+}
+
+.marker-desc {
+  flex: 1; /* Поле ввода занимает оставшееся место */
+}
+
+/* Кнопка "Указать на карте" */
+.pick-on-map-btn {
+  background: rgba(74, 14, 14, 0.3);
+  border: 1px solid #4a0e0e;
+  border-radius: 4px;
+  color: #ffd700;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-family: 'Philosopher', sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+
+.pick-on-map-btn:hover {
+  background: rgba(74, 14, 14, 0.6);
+  color: #ffffff;
+}
+
+.pick-on-map-btn.picked {
+  background: rgba(81, 207, 102, 0.2);
+  border-color: rgba(81, 207, 102, 0.4);
+  color: #51cf66;
+}
+
+.pick-on-map-btn.waiting {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* Кнопка удаления (крестик) */
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.remove-btn:hover {
+  color: #ff4444;
+}
 
 #submit-report-btn {
   background: #4a0e0e;
