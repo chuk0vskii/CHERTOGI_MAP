@@ -326,23 +326,43 @@ function resetPendingMarkers(){
   renderMarkersList();
 }
 
-function addMarkerField(){
-  var c=document.getElementById('resources-container'); if(!c) return;
-  var d=document.createElement('div'); d.className='marker-field';
-  d.innerHTML=`
-    <select class="marker-type" style="padding:6px 8px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:'Philosopher',sans-serif;font-size:13px">
-      <option value="resource">Ресурс</option><option value="shelter">Ночлег</option><option value="ruin">Руины</option>
+function addMarkerField() {
+  var c = document.getElementById('resources-container'); 
+  if (!c) return;
+
+  var d = document.createElement('div'); 
+  d.className = 'marker-field';
+  
+  d.innerHTML = `
+    <select class="marker-type">
+      <option value="resource">Ресурс</option>
+      <option value="shelter">Ночлег</option>
+      <option value="ruin">Руины</option>
     </select>
-    <input type="text" class="marker-desc" placeholder="Описание (необязательно)" style="padding:6px 8px;background:rgba(255,255,255,.05);border:1px solid #4a0e0e;border-radius:6px;color:#fff;font-family:'Philosopher',sans-serif;font-size:13px;box-sizing:border-box">
+    <input type="text" class="marker-desc" placeholder="Описание (необязательно)">
     <button class="pick-on-map-btn waiting" type="button">Указать на карте</button>
-    <button class="remove-btn" type="button">X</button>
+    <button class="remove-btn" type="button" title="Удалить метку">×</button>
   `;
-  d.querySelector('.pick-on-map-btn').addEventListener('click',function(e){
-    e.preventDefault(); startNewMarkerPlacement();
-    document.querySelectorAll('.pick-on-map-btn').forEach(function(b){ b.classList.remove('waiting'); });
-    this.classList.add('waiting'); this.textContent='Кликните на карту...';
+  
+  d.querySelector('.pick-on-map-btn').addEventListener('click', function(e) {
+    e.preventDefault(); 
+    startNewMarkerPlacement();
+    
+    // Убираем активный статус у всех кнопок
+    document.querySelectorAll('.pick-on-map-btn').forEach(function(b) { 
+      b.classList.remove('waiting'); 
+    });
+    
+    this.classList.add('waiting'); 
+    this.textContent = 'Кликните на карту...';
   });
-  d.querySelector('.remove-btn').addEventListener('click',function(e){ e.preventDefault(); d.remove(); renderMarkersList(); });
+  
+  d.querySelector('.remove-btn').addEventListener('click', function(e) { 
+    e.preventDefault(); 
+    d.remove(); 
+    renderMarkersList(); 
+  });
+  
   c.appendChild(d);
 }
 
