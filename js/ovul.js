@@ -276,7 +276,7 @@ function openResidentModal(id) {
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
-    const imageMap = {
+      const imageMap = {
     'Бани Онжары': 'odjara',
     'Бочка Габура': 'gabur',
     'Обо ветрам Хазула': 'hazul',
