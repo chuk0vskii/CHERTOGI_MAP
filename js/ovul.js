@@ -289,8 +289,8 @@ function openResidentModal(id) {
     'Кусачий сад Элюба': 'elub',
     'Костоправная братьев Сха': 'sha',
     'Йондани': 'iondani',
-    'Тери': 'Terii',
-    'Бебур': 'Bebur'
+       'Мафраш': 'Mafrash',          // <-- Слева точное имя из БД, справа точное имя файла
+    'Империя Ярмас': 'Imperia'
   };
 
   let imgName = imageMap[res.name] || res.icon;
