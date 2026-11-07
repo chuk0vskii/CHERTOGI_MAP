@@ -390,7 +390,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDeceasedNames();
   loadCharacters();
   loadResidents();
+  // Принудительно очищаем поиск при загрузке (от автозаполнения браузера)
+  const sInput = document.getElementById('search-input');
+  if (sInput) sInput.value = '';
+  const sResInput = document.getElementById('search-resident-input');
+  if (sResInput) sResInput.value = '';
 
+ 
   const searchResidentInput = document.getElementById('search-resident-input');
   if (searchResidentInput) searchResidentInput.addEventListener('input', renderResidents);
 
