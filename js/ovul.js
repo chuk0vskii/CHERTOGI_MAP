@@ -276,7 +276,7 @@ function openResidentModal(id) {
   const bigImage = document.getElementById('res-view-image');
   const placeholder = document.getElementById('res-view-image-placeholder');
   
-  const imageMap = {
+    const imageMap = {
     'Бани Онжары': 'odjara',
     'Бочка Габура': 'gabur',
     'Обо ветрам Хазула': 'hazul',
@@ -288,9 +288,9 @@ function openResidentModal(id) {
     'Арена Намашу': 'namashu',
     'Кусачий сад Элюба': 'elub',
     'Костоправная братьев Сха': 'sha',
-    'Йондани': 'iondani'
-    'Тери': 'Terii',   // <-- ДОБАВЛЕНО
-    'Бебур': 'Bebur'   // <-- ДОБАВЛЕНО
+    'Йондани': 'iondani',
+    'Тери': 'Terii',
+    'Бебур': 'Bebur'
   };
 
   let imgName = imageMap[res.name] || res.icon;
