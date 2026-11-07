@@ -97,6 +97,15 @@ function renderCharacters() {
   const grid = document.getElementById('characters-grid');
   if (!grid) return;
   
+  // ЗАЩИТА ОТ АВТОЗАПОЛНЕНИЯ БРАУЗЕРА
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    const val = searchInput.value.toLowerCase();
+    if (val.includes('войдите') || val.includes('пароль') || val.length > 30) {
+      searchInput.value = '';
+    }
+  }
+  
   const search = document.getElementById('search-input').value.toLowerCase();
   const filterClass = document.getElementById('filter-class').value;
   const filterRace = document.getElementById('filter-race').value;
@@ -220,6 +229,10 @@ function openViewModal(id) {
   const char = allCharacters.find(c => c.id === id);
   if (!char) return;
   currentViewChar = char;
+
+  // Принудительная очистка поиска, если туда влезли пароли
+  const sIn = document.getElementById('search-input');
+  if (sIn) sIn.value = '';
   
   document.getElementById('view-name').textContent = char.name;
   document.getElementById('view-class-race').textContent = `${char.class} • ${char.race}`;
@@ -249,6 +262,10 @@ function openViewModal(id) {
 function openResidentModal(id) {
   const res = allResidents.find(r => r.id === id);
   if (!res) return;
+
+  // Принудительная очистка поиска, если туда влезли пароли
+  const sResIn = document.getElementById('search-resident-input');
+  if (sResIn) sResIn.value = '';
 
   document.getElementById('res-view-name').textContent = res.name;
   
