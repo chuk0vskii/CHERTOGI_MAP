@@ -458,16 +458,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           const { data: urlData } = _supabase.storage.from('characters').getPublicUrl(fileName);
           imageUrl = urlData.publicUrl;
         }
-        const charData = { name, class: charClass, race, squad_name: squad || null, mini_traits: traits || null, description: desc, image_url: imageUrl, is_approved: null };
-        if (id) {
-          const { error } = await _supabase.from('characters').update(charData).eq('id', id);
-          if (error) throw error;
-          alert('Персонаж обновлен и отправлен на модерацию!');
-        } else {
-          const { error } = await _supabase.from('characters').insert([charData]);
-          if (error) throw error;
-          alert('Персонаж добавлен и отправлен на модерацию!');
-        }
+        // Убираем is_approved из базового объекта
+const baseData = { 
+  name, 
+  class: charClass, 
+  race, 
+  squad_name: squad || null, 
+  mini_traits: traits || null, 
+  description: desc, 
+  image_url: imageUrl 
+};
+
+if (id) {
+  // При редактировании НЕ трогаем is_approved, чтобы не сбрасывать одобрение
+  const { error } = await _supabase.from('characters').update(baseData).eq('id', id);
+  if (error) throw error;
+  alert('Персонаж обновлен!');
+} else {
+  // При создании нового — ставим на модерацию
+  const { error } = await _supabase.from('characters').insert([{ ...baseData, is_approved: null }]);
+  if (error) throw error;
+  alert('Персонаж добавлен и отправлен на модерацию!');
+}
         document.getElementById('edit-modal').style.display = 'none';
         loadCharacters(); 
       } catch (err) {
