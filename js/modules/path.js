@@ -34,6 +34,11 @@ let isRendering = false;
 function getUniqueId() { return ++eventIdCounter; }
 function findEventById(id) { return currentEvents.find(e => e.id === id); }
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // ============================================================
 // ЗАГРУЗКА ТАБЛИЦ
 // ============================================================
@@ -57,6 +62,62 @@ function createBeastLink(name, tableName) {
   let sectionId = TABLE_TO_SECTION[tableName] || 'dangerous_creatures';
   const url = 'bestiary.html?section=' + sectionId + '&beast=' + encodedName;
   return '<a href="' + url + '" target="_blank" style="color: #ffd700; text-decoration: underline; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color=\'#ffffff\'" onmouseout="this.style.color=\'#ffd700\'">' + name + '</a>';
+}
+
+// ============================================================
+// СПЕЦИАЛЬНЫЙ РОЛЛ ДЛЯ РУИН (НЕЗАВИСИМЫЕ КОЛОНКИ)
+// ============================================================
+
+async function rollRuinsIndependent(containerId, eventId, resultKey) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  try {
+    // Загружаем данные из таблицы 'ruins'
+    const data = await getTableData('ruins');
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div style="color: #ff6b6b;">Нет данных в таблице руин</div>';
+      container.style.display = 'block';
+      return;
+    }
+
+    // Берем 3 случайных строки (для типа, прохождения и награды)
+    const randomIndex = () => Math.floor(Math.random() * data.length);
+    const rowType = data[randomIndex()];
+    const rowPass = data[randomIndex()];
+    const rowReward = data[randomIndex()];
+
+    // Собираем результат
+    const result = {
+      type: rowType.name || rowType.type || 'Неизвестно',
+      pass: rowPass.pass_method || rowPass.pass || 'Неизвестно',
+      reward: rowReward.reward_type || rowReward.reward || 'Неизвестно'
+    };
+
+    // Формируем HTML
+    let html = '<div style="background: rgba(255,215,0,0.05); padding: 10px 14px; border-radius: 6px; border-left: 2px solid #ffd700; margin-top: 6px;">';
+    html += `<div style="color: #ffd700; font-size: 13px; margin-bottom: 4px;">Результат:</div>`;
+    html += `<div style="font-size: 15px; color: #e0d5c0; line-height: 1.6;">`;
+    html += `<div style="margin-bottom: 4px;">🏛️ <b>Тип:</b> ${escapeHtml(result.type)}</div>`;
+    html += `<div style="margin-bottom: 4px;">🔑 <b>Как пройти:</b> ${escapeHtml(result.pass)}</div>`;
+    html += `<div>💎 <b>Что хранят:</b> ${escapeHtml(result.reward)}</div>`;
+    html += `</div></div>`;
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+
+    // Сохраняем результат в событие
+    const event = findEventById(eventId);
+    if (event) {
+      if (!event.tableResults) event.tableResults = {};
+      event.tableResults[resultKey] = { html: html };
+    }
+
+  } catch (err) {
+    console.error('Ошибка генерации руин:', err);
+    container.innerHTML = '<div style="color: #ff6b6b;">Ошибка</div>';
+    container.style.display = 'block';
+  }
 }
 
 // ============================================================
@@ -236,9 +297,7 @@ export async function generatePathEvents() {
   const maxRole = parseInt(selectedOption.dataset.maxRoleEvents) || 0;
   const roleBonus = parseInt(selectedOption.dataset.roleBonus) || 0;
 
-  // ПОЛУЧАЕМ БОНУС СОБЫТИЙ ОТ ЗНАКА
   const extraEvents = getExtraEvents();
-  // Вычисляем общее количество событий с учетом знака
   const totalCommon = Math.max(0, common + extraEvents);
 
   let roleCount = 0;
@@ -250,7 +309,6 @@ export async function generatePathEvents() {
     roleDisplay = '1d' + maxRole + ' = ' + rollResult + bonusDisplay + ' → ' + roleCount;
   }
 
-  // Обновляем счетчик в интерфейсе
   commonEventsCount.textContent = totalCommon;
   if (extraEvents !== 0) {
     commonEventsCount.textContent += ' (вкл. ' + (extraEvents > 0 ? '+' : '') + extraEvents + ' от знака)';
@@ -263,11 +321,9 @@ export async function generatePathEvents() {
   eventIdCounter = 0;
   currentEvents = [];
   
-  // Генерируем общие события
   for (var i = 0; i < totalCommon; i++) {
     const result = getRandomEventByType('Общее');
     if (result.module) {
-      // Определяем, является ли это событие бонусным (сверх нормы)
       const isBonusEvent = i >= common;
       
       const eventCopy = { 
@@ -299,7 +355,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // Генерируем события ролей
   const roles = ['Чтец_Знаков', 'Тень_Нарара', 'Коготь_Акрепы', 'Глаза_Звезд', 'Длань_Батрины'];
   for (var j = 0; j < roleCount; j++) {
     const roleIndex = getRandomInt(0, roles.length - 1);
@@ -334,7 +389,6 @@ export async function generatePathEvents() {
     }
   }
 
-  // Перемешиваем
   for (var k = currentEvents.length - 1; k > 0; k--) {
     const j2 = Math.floor(Math.random() * (k + 1));
     [currentEvents[k], currentEvents[j2]] = [currentEvents[j2], currentEvents[k]];
@@ -460,6 +514,23 @@ function renderEvents() {
           if (!tableConfig) return '';
           
           const containerId = 'table-result-' + eventId + '-' + tableName;
+
+          // === НОВЫЙ БЛОК ДЛЯ РУИН ===
+          if (tableName === 'ruins') {
+            let h = '<div style="margin-top: 8px;">';
+            h += `<button class="btn-roll-table btn-special-ruins" data-container="${containerId}" data-event-id="${eventId}" data-result-key="${resultKey}" style="background: transparent; border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 4px 14px; border-radius: 6px; cursor: pointer; font-family: 'Philosopher', sans-serif; font-size: 13px;">`;
+            h += `🎲 Сгенерировать руины (3 колонки)`;
+            h += `</button>`;
+            if (ev && ev.tableResults && ev.tableResults[resultKey]) {
+              h += `<div id="${containerId}" style="display: block; margin-top: 6px;">${ev.tableResults[resultKey].html}</div>`;
+            } else {
+              h += `<div id="${containerId}" style="display: none; margin-top: 6px;"></div>`;
+            }
+            h += '</div>';
+            return h;
+          }
+          // === КОНЕЦ НОВОГО БЛОКА ===
+
           const fields = tableConfig.fields || ['name'];
           const isCreature = tableConfig.isCreature || false;
           const label = tableConfig.label || 'Таблица';
@@ -614,7 +685,17 @@ function handleClick(e) {
     removeBar(eventId, type, barIdx);
     return;
   }
-  
+
+  // === НОВЫЙ ОБРАБОТЧИК ДЛЯ РУИН ===
+  if (target.classList.contains('btn-special-ruins')) {
+    const containerId = target.dataset.container;
+    const eventId = parseInt(target.dataset.eventId);
+    const resultKey = target.dataset.resultKey;
+    rollRuinsIndependent(containerId, eventId, resultKey);
+    return;
+  }
+  // === КОНЕЦ ===
+
   if (target.classList.contains('btn-roll-table')) {
     const tableName = target.dataset.table;
     const containerId = target.dataset.container;
